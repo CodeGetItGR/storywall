@@ -2,9 +2,10 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { NextIntlClientProvider } from 'next-intl';
 import type { ReactNode } from 'react';
-import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { createDraftServer } from '@/hooks/invitationDraftTestServer';
+import { EDITOR_TOUR_SEEN_KEY } from '@/lib/invitation/editorTour';
 import en from '@/messages/en.json';
 import { AuthContext, type AuthContextValue } from '@/providers/AuthProvider';
 
@@ -78,6 +79,8 @@ function storedSection(id: string) {
 
 describe('Invitation editor: section settings', () => {
     beforeAll(() => backend.server.listen({ onUnhandledRequest: 'error' }));
+    // The tour would cover the editor; the tour has its own tests.
+    beforeEach(() => localStorage.setItem(EDITOR_TOUR_SEEN_KEY, '1'));
     afterEach(() => {
         cleanup();
         backend.server.resetHandlers();

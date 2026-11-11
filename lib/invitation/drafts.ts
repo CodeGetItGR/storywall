@@ -42,6 +42,8 @@ export type EditableDraft = {
     revision: number;
     // The event type the theme is for: it decides which sections the host may add.
     eventType: string;
+    // The event that pays for publishing; null until the draft is put on one.
+    eventId: string | null;
     document: InvitationDocument;
     theme: ThemeDesign;
     media: MediaResolver;
@@ -54,6 +56,7 @@ export function readEditableDraft(dto: InvitationDraftDto): EditableDraft {
         id: dto.id,
         revision: dto.revision,
         eventType: dto.eventType,
+        eventId: dto.eventId ?? null,
         document: upgradeInvitationDocument(dto.document),
         theme: themeDesignSchema.parse(dto.design),
         media: (mediaId) => imageUrls[mediaId],
