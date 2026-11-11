@@ -36,6 +36,7 @@ export const EVENT_MODULE_KEYS = [
     'quiz_polls',
     'vendors',
     'qr_cards',
+    'save_my_date',
 ] as const;
 // Use this (not the raw `ModuleKey` wire type below) whenever code branches on
 // a specific module — it's a closed set and catches typos at compile time.

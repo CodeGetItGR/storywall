@@ -7,6 +7,7 @@ import {
     HelpCircle,
     Images,
     Mail,
+    MailOpen,
     MessageCircleQuestion,
     MessageSquareText,
     Music,
@@ -43,6 +44,7 @@ const moduleIcons: Record<string, ComponentType<{ className?: string }>> = {
     he_or_she: Baby,
     quiz_polls: MessageCircleQuestion,
     qr_cards: QrCode,
+    save_my_date: MailOpen,
 };
 
 const moduleFallbacks: Record<string, { name: string; description: string }> = {
@@ -98,6 +100,10 @@ const moduleFallbacks: Record<string, { name: string; description: string }> = {
     qr_cards: {
         name: 'QR cards',
         description: 'Designed cards for printing your QR codes.',
+    },
+    save_my_date: {
+        name: 'Online invitation',
+        description: 'An online invitation with its own link.',
     },
 };
 
