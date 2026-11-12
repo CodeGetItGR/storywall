@@ -30,6 +30,9 @@ export function createDraftServer() {
     let startToken: string | null = null;
     const claims: (string | null)[] = [];
     const attaches: string[] = [];
+    // Photos: the names of the files sent, and a refusal for the next upload.
+    const uploads: string[] = [];
+    let uploadRefusal: { status: number; errorCode: number } | null = null;
 
     // Given to setupServer, so resetHandlers() brings them back after a test overrides one.
     const server = setupServer(
@@ -92,6 +95,16 @@ export function createDraftServer() {
             };
             return HttpResponse.json(publication);
         }),
+        http.post(`${TEST_API}/api/invitation-drafts/:id/images`, async ({ request }) => {
+            const file = (await request.formData()).get('file');
+            uploads.push(typeof file === 'object' && file !== null ? file.name : '');
+            if (uploadRefusal) return problem(uploadRefusal.status, uploadRefusal.errorCode);
+            const mediaId = `img-${uploads.length}`;
+            return HttpResponse.json(
+                { mediaId, url: `/images/uploaded-${uploads.length}.jpg`, contentType: 'image/jpeg', width: 1200, height: 800, byteSize: 1000 },
+                { status: 201 },
+            );
+        }),
         http.get(`${TEST_API}/api/invitation-slugs/availability`, ({ request }) => {
             const slug = new URL(request.url).searchParams.get('slug') ?? '';
             if (slug === 'admin') return HttpResponse.json({ slug, available: false, reason: 'RESERVED' });
@@ -125,6 +138,7 @@ export function createDraftServer() {
         publishes,
         claims,
         attaches,
+        uploads,
         stored: () => stored,
         publication: () => publication,
         // The draft is on an event, so it can be published.
@@ -156,6 +170,10 @@ export function createDraftServer() {
         refusePublish(errorCode: number) {
             publishRefusal = errorCode;
         },
+        // Every upload is refused with this status and error code.
+        refuseUploads(status: number, errorCode: number) {
+            uploadRefusal = { status, errorCode };
+        },
         // Someone else saved the draft: the stored copy moves on without us.
         saveElsewhere(document: InvitationDocument) {
             stored = { ...stored, revision: stored.revision + 1, document };
@@ -177,6 +195,8 @@ export function createDraftServer() {
             startToken = null;
             claims.length = 0;
             attaches.length = 0;
+            uploads.length = 0;
+            uploadRefusal = null;
         },
     };
 }

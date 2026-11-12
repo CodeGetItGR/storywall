@@ -25,6 +25,7 @@ import { TextColorSetting } from '@/components/saveMyDate/editor/TextColorSettin
 import { ThemeAssetsPanel } from '@/components/saveMyDate/editor/ThemeAssetsPanel';
 import { EditorTour } from '@/components/saveMyDate/editor/tour/EditorTour';
 import { useInvitationEditor } from '@/hooks/useInvitationEditor';
+import { PhotoUploadsContext } from '@/hooks/usePhotoUploadsContext';
 import type { EditableDraft } from '@/lib/invitation/drafts';
 import { inviteHostFor } from '@/lib/invitation/publication';
 import type { InvitationFontDto } from '@/lib/invitation/uploadedFonts';
@@ -69,6 +70,11 @@ export function InvitationEditor({ draft, uploadedFonts, onReload, isReloading =
             {/* Save problem */}
             {editor.status === 'error' && <EditorNotice tone="error" message={t('notSaved')} actionLabel={t('retry')} onAction={editor.retrySave} />}
 
+            {/* Photo problem */}
+            {editor.photos.problem && (
+                <EditorNotice tone="error" message={t(`photos.errors.${editor.photos.problem}`)} actionLabel={t('close')} onAction={editor.photos.dismissProblem} />
+            )}
+
             {/* Publish note */}
             <PublishNotice notice={editor.publishing.notice} onOpen={editor.publishing.openPublished} />
 
@@ -76,16 +82,18 @@ export function InvitationEditor({ draft, uploadedFonts, onReload, isReloading =
             <div className="flex min-h-0 flex-1">
                 <EditorDockedPanel title={t('themeAssets')}>{assets}</EditorDockedPanel>
                 <InlineTextEditing store={editor.store} document={editor.document} theme={editor.theme} uploadedFonts={uploadedFonts}>
-                    <CanvasHandles store={editor.store}>
-                        <EditorCanvas
-                            document={editor.document}
-                            theme={editor.theme}
-                            media={editor.media}
-                            uploadedFonts={uploadedFonts}
-                            sections={editor.sections}
-                            sectionSettings={sectionSettings.opener}
-                        />
-                    </CanvasHandles>
+                    <PhotoUploadsContext.Provider value={editor.photos.slots}>
+                        <CanvasHandles store={editor.store}>
+                            <EditorCanvas
+                                document={editor.document}
+                                theme={editor.theme}
+                                media={editor.media}
+                                uploadedFonts={uploadedFonts}
+                                sections={editor.sections}
+                                sectionSettings={sectionSettings.opener}
+                            />
+                        </CanvasHandles>
+                    </PhotoUploadsContext.Provider>
                 </InlineTextEditing>
                 {sectionSettings.isDocked && sectionSettings.panel ? (
                     <SectionSettings panel={sectionSettings.panel} isDocked onClose={sectionSettings.close} />
@@ -119,6 +127,7 @@ export function InvitationEditor({ draft, uploadedFonts, onReload, isReloading =
 
             {/* Publishing */}
             <PublishSignInDialog signIn={editor.publishing.signIn} />
+            <PublishSignInDialog signIn={editor.photos.signIn} title={t('photos.signInTitle')} />
             <PublishEventSheet step={editor.publishing.eventStep} draftId={draft.id} eventType={draft.eventType} document={editor.document} />
             <PublishSheet sheet={editor.publishing.sheet} inviteHost={INVITE_HOST} />
             <PublishPlanDialog
