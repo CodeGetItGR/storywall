@@ -10342,6 +10342,19 @@
             "photoFrame": "Framed photo",
             "footer": "Footer"
         },
+        "photos": {
+            "upload": "Upload photo",
+            "change": "Change photo",
+            "empty": "Photo",
+            "uploading": "Uploading…",
+            "signInTitle": "Sign in to add photos",
+            "errors": {
+                "type": "Only JPG, PNG and WebP are allowed.",
+                "size": "The file is over 10 MB.",
+                "failed": "The photo didn't upload. Try again.",
+                "full": "You've reached the photo limit."
+            }
+        },
         "sectionSettings": {
             "open": "Section settings",
             "done": "Done",
