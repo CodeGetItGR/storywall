@@ -23,6 +23,8 @@ interface InviteLayoutProps {
     // 'page' scrolls the hero away with the body, for long forms (the QR upload). By default the
     // hero stays put and only the body scrolls.
     scroll?: 'body' | 'page';
+    // 'plain' keeps the logo hero (no cover, no illustration) on the page's own white, for the QR choice page.
+    heroTone?: 'muted' | 'plain';
     children: ReactNode;
 }
 
@@ -34,6 +36,7 @@ export function InviteLayout({
     eventSubtitle,
     actions,
     scroll = 'body',
+    heroTone = 'muted',
     children,
 }: InviteLayoutProps) {
     const { hero, handleIllustrationError } = useInviteHero(theme, coverImageSrc);
@@ -95,7 +98,12 @@ export function InviteLayout({
 
             {hero.kind === 'logo' && (
                 // Logo mode: no illustration and no cover, so the app logo stands in, with the title below it.
-                <div className="flex h-64 w-full shrink-0 flex-col items-center justify-center gap-6 bg-surface-muted px-6 text-center md:h-80 md:rounded-3xl">
+                <div
+                    className={cn(
+                        'flex w-full shrink-0 flex-col items-center justify-center gap-6 px-6 text-center md:rounded-3xl',
+                        heroTone === 'plain' ? 'h-56 bg-background md:h-64' : 'h-64 bg-surface-muted md:h-80',
+                    )}
+                >
                     <Logo direction="col" iconClassName="h-12 w-auto" wordmarkClassName="h-6 w-auto" />
                     <div>
                         <h1 className="text-2xl font-bold text-balance text-ink md:text-3xl">{eventTitle}</h1>
@@ -105,7 +113,13 @@ export function InviteLayout({
             )}
 
             <div className={cn('flex flex-1 flex-col', scroll === 'body' && 'overflow-y-auto')}>
-                <div className="mx-auto flex w-full max-w-sm flex-1 flex-col px-6 pt-8">
+                {/* With no footer logo and no actions bar, the body keeps its own space at the bottom. */}
+                <div
+                    className={cn(
+                        'mx-auto flex w-full max-w-sm flex-1 flex-col px-6 pt-8',
+                        hero.kind === 'logo' && !actions && 'pb-[max(2rem,env(safe-area-inset-bottom))]',
+                    )}
+                >
                     {/* Body */}
                     <div className="w-full">{children}</div>
 
@@ -118,7 +132,12 @@ export function InviteLayout({
 
                     {/* Footer: the logo column already shows it */}
                     {hero.kind !== 'logo' && (
-                        <Logo direction="row" iconClassName="h-5 w-auto" wordmarkClassName="h-3.5 w-auto" className={cn('justify-center gap-2 pb-8 opacity-70', actions ? 'pt-6 md:pt-10' : 'mt-auto pt-10')} />
+                        <Logo
+                            direction="row"
+                            iconClassName="h-5 w-auto"
+                            wordmarkClassName="h-3.5 w-auto"
+                            className={cn('justify-center gap-2 pb-8 opacity-70', actions ? 'pt-6 md:pt-10' : 'mt-auto pt-10')}
+                        />
                     )}
                 </div>
             </div>
