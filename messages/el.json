@@ -10368,6 +10368,31 @@
                 "size": "Το αρχείο ξεπερνά τα 10 MB.",
                 "failed": "Η φωτογραφία δεν ανέβηκε. Δοκιμάστε ξανά.",
                 "full": "Φτάσατε το όριο των φωτογραφιών."
+            },
+            "move": "Μετακίνηση φωτογραφίας",
+            "zoomOut": "Σμίκρυνση φωτογραφίας",
+            "zoomIn": "Μεγέθυνση φωτογραφίας",
+            "frame": "Κορνίζα",
+            "chooseFrame": "Επιλογή κορνίζας",
+            "noFrames": "Προσθέστε κορνίζες στο θέμα.",
+            "frameEffect": "Εφέ κορνίζας",
+            "frameEffects": {
+                "none": "Χωρίς εφέ",
+                "fade-in": "Fade In",
+                "fade-up": "Fade Up",
+                "fade-down": "Fade Down",
+                "zoom-in-soft": "Zoom In Soft",
+                "zoom-out-soft": "Zoom Out Soft",
+                "slide-left": "Slide Left",
+                "slide-right": "Slide Right",
+                "float": "Float",
+                "gentle-pulse": "Gentle Pulse",
+                "soft-rotate-in": "Soft Rotate In",
+                "swing-soft": "Swing Soft",
+                "blur-reveal": "Blur Reveal",
+                "mask-reveal": "Mask Reveal",
+                "parallax-soft": "Parallax Soft",
+                "pop-elegant": "Pop Elegant"
             }
         },
         "sectionSettings": {

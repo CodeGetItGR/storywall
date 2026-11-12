@@ -80,6 +80,31 @@ describe('isEmptyForGuests', () => {
         expect(isEmptyForGuests({ ...photo, data: { imageY: 50 } }, editing)).toBe(false);
     });
 
+    describe('a frame section', () => {
+        const section = SAMPLE_SECTIONS.photoFrame;
+        const withFrame = (frameId: string) => ({
+            ...section,
+            elements: section.elements.map((element) => (element.kind === 'photoFrame' ? { ...element, frameId, photo: undefined } : element)),
+        });
+        // The frame's art and mask load; its photo is gone.
+        const framed = buildRenderContext(SAMPLE_DOCUMENT, SAMPLE_THEME, (mediaId) => (mediaId.startsWith('m-frame') ? `/${mediaId}.png` : undefined));
+        const host = { ...framed, canvasTools: { photo: () => null } };
+        const admin = { ...host, canvasTools: { ...host.canvasTools, frameSettings: () => null } };
+
+        it('is hidden for guests with no photo in its frame', () => {
+            expect(isEmptyForGuests(withFrame('fr-oval'), framed)).toBe(true);
+        });
+
+        it('shows its empty frame in the editor', () => {
+            expect(isEmptyForGuests(withFrame('fr-oval'), host)).toBe(false);
+        });
+
+        it('with no frame chosen is hidden for hosts but kept for admins', () => {
+            expect(isEmptyForGuests(withFrame(''), host)).toBe(true);
+            expect(isEmptyForGuests(withFrame(''), admin)).toBe(false);
+        });
+    });
+
     it('keeps a photo section with a photo', () => {
         expect(isEmptyForGuests(photo, ctx)).toBe(false);
     });
