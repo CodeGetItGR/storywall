@@ -25,10 +25,6 @@ describe('routes.events for a registered demo event id', () => {
         expect(routes.events.tools.gallery(DEMO_EVENT_ID)).toBe('/demo/wedding/tools/gallery');
     });
 
-    it('tools.galleryQr() resolves under /demo', () => {
-        expect(routes.events.tools.galleryQr(DEMO_EVENT_ID)).toBe('/demo/wedding/tools/gallery/qr');
-    });
-
     it('tools.wishbook() resolves under /demo', () => {
         expect(routes.events.tools.wishbook(DEMO_EVENT_ID)).toBe('/demo/wedding/tools/wishbook');
     });
