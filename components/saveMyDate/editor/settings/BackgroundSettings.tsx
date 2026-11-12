@@ -64,7 +64,7 @@ function BackgroundCard({ choice, isSelected, onPick }: BackgroundCardProps) {
             aria-checked={isSelected}
             aria-label={choice.src ? undefined : choice.label}
             onClick={pick}
-            className="grid aspect-[3/4] place-items-center overflow-hidden rounded-[10px] border-2 border-transparent bg-(--smd-editor-control) text-[12px] font-semibold text-(--smd-editor-muted) focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none aria-checked:border-white aria-checked:text-white"
+            className="grid aspect-[3/4] place-items-center overflow-hidden rounded-[10px] border-2 border-transparent bg-(--smd-editor-control) text-[12px] font-semibold text-(--smd-editor-muted) focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none aria-checked:border-(--smd-editor-strong) aria-checked:text-(--smd-editor-strong)"
         >
             {choice.src ? (
                 // eslint-disable-next-line @next/next/no-img-element

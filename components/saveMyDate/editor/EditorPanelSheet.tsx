@@ -1,5 +1,7 @@
 'use client';
 
+import './editor.css';
+
 import { useTranslations } from 'next-intl';
 import type { ReactNode } from 'react';
 
@@ -18,7 +20,7 @@ export function EditorPanelSheet({ open, title, onClose, children }: EditorPanel
 
     return (
         <Modal open={open} onClose={onClose} variant="sheet" ariaLabel={title} closeLabel={t('close')}>
-            <Modal.Body className="flex flex-col gap-3 px-5 pt-5 pb-8 text-sm text-ink">
+            <Modal.Body className="smd-editor-sheet flex flex-col gap-3 px-5 pt-5 pb-8 text-sm text-ink">
                 {/* Title */}
                 <h2 className="pr-10 text-base font-semibold">{title}</h2>
 
