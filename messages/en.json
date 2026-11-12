@@ -1300,7 +1300,10 @@
             "extend": "Extend",
             "qrAlt": "QR code for the invitation",
             "empty": "No invitation yet.",
-            "chooseTheme": "Choose a theme"
+            "chooseTheme": "Choose a theme",
+            "artAlt": "Drawing of an online invitation",
+            "upgradeBody": "Upgrade your plan to make an online invitation for this event.",
+            "upgradePlan": "Upgrade plan"
         },
         "sectionSwitcher": "Change section",
         "stats": {

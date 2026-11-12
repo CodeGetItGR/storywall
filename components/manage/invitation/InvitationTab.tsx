@@ -3,13 +3,14 @@
 import { MailOpen } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
+import { InvitationPlanPrompt } from '@/components/manage/invitation/InvitationPlanPrompt';
 import { InvitationShareLink } from '@/components/manage/invitation/InvitationShareLink';
 import { InvitationStatusRow } from '@/components/manage/invitation/InvitationStatusRow';
 import { AppLink } from '@/components/ui/AppLink';
 import { LoadingState } from '@/components/ui/LoadingState';
 import type { EventOnlineInvitation } from '@/hooks/useEventOnlineInvitation';
 
-// Manage → Invitation: the event's online invitation, or a way to start one from a theme.
+// Manage → Invitation: the event's online invitation, a way to start one from a theme, or the upgrade when the plan lacks it.
 export function InvitationTab({ invitation }: { invitation: EventOnlineInvitation }) {
     const t = useTranslations('ManagePage.invitation');
     const tEditor = useTranslations('InvitationEditor');
@@ -23,6 +24,9 @@ export function InvitationTab({ invitation }: { invitation: EventOnlineInvitatio
             </p>
         );
     }
+
+    // Plan
+    if (invitation.locked) return <InvitationPlanPrompt invitation={invitation} />;
 
     if (invitation.status === 'none') {
         return (
