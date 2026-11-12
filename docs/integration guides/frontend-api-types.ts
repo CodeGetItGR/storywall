@@ -1834,7 +1834,6 @@ export const CROSS_EVENT_REFERENCE = 3073;               // 400, The request nam
 export const CO_HOST_NEEDS_ACCOUNT = 3074;               // 400, Only a member with an account can be a co-host
 export const MEMBER_HOST_ROLE_NOT_ALLOWED = 3075;        // 400, Members can't be created as hosts through the member endpoint; invite a co-host instead
 export const QR_LINK_MAX_GUESTS_NOT_ALLOWED = 3076;      // 400, maxGuests can only be set on an EVENT_JOIN QR link
-export const QR_LINK_TARGET_INVALID = 3077;              // 400, targetId is missing for an INVITATION QR link, or sent for another target type
 export const BUG_REPORT_TOO_SHORT = 3078;                // 400, A bug report description is shorter than the minimum, not counting surrounding spaces
 export const FEEDBACK_PAGE_URL_INVALID = 3079;           // 400, Feedback pageUrl is not an absolute http or https URL
 export const UPLOAD_FILES_REQUIRED = 3080;               // 400, An upload request carried no files
@@ -3024,28 +3023,15 @@ export interface CostProviderActualDto {
 
 // ---- Dynamic QR links ----
 
-export type QrTargetType = 'EVENT_JOIN' | 'MEDIA_UPLOAD' | 'INVITATION';
+export type QrTargetType = 'EVENT_JOIN' | 'MEDIA_UPLOAD' | 'GUEST';
 
 export type QrLinkStatus = 'ACTIVE' | 'REVOKED' | 'EXPIRED' | 'TARGET_UNAVAILABLE';
-
-/** POST /api/events/{eventId}/qr-links */
-export interface QrLinkRequestDto {
-  targetType: QrTargetType;
-  /** Required for INVITATION (must belong to the same event); must be omitted otherwise. */
-  targetId?: string;
-  /** EVENT_JOIN / MEDIA_UPLOAD only. 1..1000, default 50. */
-  maxGuests?: number;
-  label?: string;                        // max 100, host-facing only
-  metadata?: Record<string, unknown>;    // host-facing only, never returned publicly
-  expiresAt?: string;
-}
 
 /** PATCH /api/qr-links/{id}. Every field optional; omitted fields are left unchanged. */
 export interface QrLinkPatchDto {
   targetType?: QrTargetType;
-  targetId?: string;
   /** 1..1000. Raises/lowers the shared code's guest limit — the fix for a 5035.
-   *  EVENT_JOIN / MEDIA_UPLOAD only; a 400 on an INVITATION-targeted link. */
+   *  EVENT_JOIN only. */
   maxGuests?: number;
   label?: string;
   metadata?: Record<string, unknown>;

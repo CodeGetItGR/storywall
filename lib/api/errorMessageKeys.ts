@@ -64,7 +64,6 @@ export type ApiErrorMessageKey =
     | 'coHostNeedsAccount'
     | 'memberHostRoleNotAllowed'
     | 'qrLinkMaxGuestsNotAllowed'
-    | 'qrLinkTargetInvalid'
     | 'bugReportTooShort'
     | 'feedbackPageUrlInvalid'
     | 'uploadFilesRequired'
@@ -595,7 +594,6 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.CO_HOST_NEEDS_ACCOUNT]: 'coHostNeedsAccount',
     [ERROR_CODES.MEMBER_HOST_ROLE_NOT_ALLOWED]: 'memberHostRoleNotAllowed',
     [ERROR_CODES.QR_LINK_MAX_GUESTS_NOT_ALLOWED]: 'qrLinkMaxGuestsNotAllowed',
-    [ERROR_CODES.QR_LINK_TARGET_INVALID]: 'qrLinkTargetInvalid',
     [ERROR_CODES.BUG_REPORT_TOO_SHORT]: 'bugReportTooShort',
     [ERROR_CODES.FEEDBACK_PAGE_URL_INVALID]: 'feedbackPageUrlInvalid',
     [ERROR_CODES.UPLOAD_FILES_REQUIRED]: 'uploadFilesRequired',
