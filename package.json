@@ -39,6 +39,7 @@
         "@tiptap/pm": "^3.32.2",
         "@vercel/analytics": "1.6.1",
         "@vercel/speed-insights": "2.0.0",
+        "browser-image-compression": "^2.0.2",
         "canvas-confetti": "^1.9.4",
         "class-variance-authority": "^0.7.1",
         "clsx": "^2.1.1",

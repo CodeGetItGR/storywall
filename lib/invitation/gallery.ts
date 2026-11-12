@@ -46,9 +46,11 @@ export function stepGalleryIndex(index: number, direction: 1 | -1, count: number
 // A photo or gallery section with nothing to show renders nothing for guests,
 // even with its own texts: the old page's "no photos" text was never meant for
 // them. So does a frame section whose frames all have nothing to show; one with
-// no elements at all is a plain band on the old page too, so it stays.
+// no elements at all is a plain band on the old page too, so it stays. The
+// editor shows an empty photo or frame, with its camera, so the host can fill it.
 export function isEmptyForGuests(section: InvitationSection, ctx: RenderContext): boolean {
     if (section.type === 'gallery') return galleryImages(section.data, ctx).length === 0;
+    if (ctx.canvasTools?.photo) return false;
     if (section.type === 'photo') return !resolveImage(section.data.photo, ctx);
     if (section.type === 'photoFrame' || section.type === 'blank') {
         const { elements } = section;

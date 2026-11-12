@@ -146,14 +146,16 @@
         "locationMissing": "Location not set"
     },
     "GuestOffer": {
-        "title": "Planning your own event?",
-        "line": "Storywall works for weddings, baptisms, birthdays and more.",
-        "discover": "Discover Storywall",
-        "claim": "Get <pct>{percent}%</pct> off",
+        "title": "Make your own Storywall",
+        "line": "For weddings, baptisms, birthdays and more.",
+        "percentOff": "−{percent}%",
+        "onAllPlans": "on all plans",
+        "discover": "See how",
+        "claim": "Get your code",
         "codeLabel": "Your discount code",
+        "validUntil": "Valid until {date}",
         "copy": "Copy",
         "copied": "Copied",
-        "expires": "Use it when you activate an event. Valid until {date}.",
         "close": "Close",
         "claimFailed": "Your code could not be created. Try again."
     },
@@ -1073,7 +1075,8 @@
             "review": {
                 "heading": "One last look",
                 "edit": "Edit",
-                "pay": "Pay {amount}"
+                "pay": "Pay {amount}",
+                "consentHint": "Tick the boxes to continue."
             },
             "account": {
                 "heading": "Almost there. Save your event",
@@ -4328,7 +4331,15 @@
                 "vendorSettings": "Vendor settings",
                 "vendorSettingsChanged": "{count} changed",
                 "vendorSettingsLoading": "Loading the plan's settings…",
-                "vendorSettingsTurnOn": "This turns vendors on for this event only. The plan doesn't change."
+                "vendorSettingsTurnOn": "This turns vendors on for this event only. The plan doesn't change.",
+                "scheduleSection": "Schedule",
+                "addSession": "Add session",
+                "editSession": "Edit session",
+                "sessionSave": "Save",
+                "sessionRemove": "Remove",
+                "sessionCancel": "Cancel",
+                "receptionVenue": "Reception venue",
+                "giftSection": "Gift account"
             },
             "email": {
                 "title": "Email",
@@ -10326,6 +10337,19 @@
             "weddingSponsorsSimple": "Wedding sponsors (no photos)",
             "photoFrame": "Framed photo",
             "footer": "Footer"
+        },
+        "photos": {
+            "upload": "Upload photo",
+            "change": "Change photo",
+            "empty": "Photo",
+            "uploading": "Uploading…",
+            "signInTitle": "Sign in to add photos",
+            "errors": {
+                "type": "Only JPG, PNG and WebP are allowed.",
+                "size": "The file is over 10 MB.",
+                "failed": "The photo didn't upload. Try again.",
+                "full": "You've reached the photo limit."
+            }
         },
         "sectionSettings": {
             "open": "Section settings",
