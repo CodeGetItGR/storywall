@@ -4,29 +4,23 @@ import { ArrowLeft } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { AnonymousQrMediaUploadForm } from '@/components/invite/AnonymousQrMediaUploadForm';
-import { GuestCodeChooser } from '@/components/qrGuest/GuestCodeChooser';
 import { GuestWishForm } from '@/components/qrGuest/GuestWishForm';
-import { useGuestCodeScreen } from '@/hooks/useGuestCodeScreen';
-import type { QrGuestAction } from '@/lib/api/types';
+import { QrLandingChoices } from '@/components/qrLanding/QrLandingChoices';
+import type { useQrLanding } from '@/hooks/useQrLanding';
 
 const EYEBROW_CLASS = 'mb-4 flex items-center gap-2 text-xs font-semibold tracking-wide text-ink-muted uppercase';
 
-interface GuestCodeScreenProps {
-    token: string;
-    actions: QrGuestAction[];
-}
-
-export function GuestCodeScreen({ token, actions }: GuestCodeScreenProps) {
+// The body of a scanned event code's page: the choices, or the form one of them opened.
+export function QrLandingScreen({ landing }: { landing: ReturnType<typeof useQrLanding> }) {
     const t = useTranslations('QrCodePage');
-    const { view, open, back, canGoBack } = useGuestCodeScreen(actions);
 
     return (
         <>
             {/* Back */}
-            {canGoBack ? (
+            {landing.canGoBack ? (
                 <button
                     type="button"
-                    onClick={back}
+                    onClick={landing.back}
                     className="mb-4 inline-flex items-center gap-1 text-sm font-semibold text-ink-muted hover:text-ink"
                 >
                     <ArrowLeft className="h-4 w-4" aria-hidden="true" />
@@ -34,22 +28,22 @@ export function GuestCodeScreen({ token, actions }: GuestCodeScreenProps) {
                 </button>
             ) : null}
 
-            {/* Chooser */}
-            {view === 'chooser' ? <GuestCodeChooser onChoose={open} /> : null}
+            {/* Choices */}
+            {landing.view === 'chooser' ? <QrLandingChoices plan={landing.plan} eventId={landing.eventId} onChoose={landing.choose} /> : null}
 
             {/* Upload */}
-            {view === 'upload' ? (
+            {landing.view === 'upload' && landing.uploadToken ? (
                 <>
                     <div className={EYEBROW_CLASS}>{t('mediaUploadEyebrow')}</div>
-                    <AnonymousQrMediaUploadForm token={token} />
+                    <AnonymousQrMediaUploadForm token={landing.uploadToken} member={landing.member} />
                 </>
             ) : null}
 
             {/* Wish */}
-            {view === 'wish' ? (
+            {landing.view === 'wish' && landing.wishToken ? (
                 <>
                     <div className={EYEBROW_CLASS}>{t('guestCode.wishEyebrow')}</div>
-                    <GuestWishForm token={token} />
+                    <GuestWishForm token={landing.wishToken} />
                 </>
             ) : null}
         </>

@@ -277,13 +277,10 @@
                 "label": "Dashboard",
                 "description": "Overview of your event"
             },
-            "galleryQr": {
-                "label": "Upload QR code",
-                "description": "Download or share the photo upload code"
-            },
             "invitationsQr": {
                 "label": "Share links",
-                "description": "QR codes and links guests can use to join"
+                "description": "QR codes and links guests can use to join",
+                "descriptionWithUpload": "QR codes and links guests can use to join or upload photos"
             },
             "help": {
                 "label": "Help",
@@ -554,8 +551,8 @@
         "all": "I accept the <terms>Terms of Use</terms> and <guidelines>Community Guidelines</guidelines> and have read the <privacy>Privacy Policy</privacy>",
         "termsOnly": "I accept the <terms>Terms of Use</terms> and have read the <privacy>Privacy Policy</privacy>",
         "signup": "I accept the <terms>Terms of Use</terms> and <guidelines>Community Guidelines</guidelines>, have read the <privacy>Privacy Policy</privacy>, and am 18 or older",
+        "qrGuest": "I accept the <terms>Terms of Use</terms> and <guidelines>Community Guidelines</guidelines>, have read the <privacy>Privacy Policy</privacy>, and am 16 or older",
         "adult": "I am 18 or older",
-        "age16": "I am 16 or older",
         "opensInNewTab": "(opens in a new tab)"
     },
     "WelcomePage": {
@@ -647,11 +644,13 @@
         "fallbackTitle": "You're invited",
         "defaultHeroImageAlt": "Event cover photo",
         "mediaUploadEyebrow": "Share your photos",
+        "choices": {
+            "title": "What would you like to do?",
+            "join": "Join the event",
+            "open": "Open the event"
+        },
         "guestCode": {
-            "uploadLine": "Add your photos and videos.",
             "uploadButton": "Upload photos",
-            "or": "or",
-            "wishLine": "Write a message for their wishbook.",
             "wishButton": "Leave a wish",
             "back": "Back",
             "wishEyebrow": "Leave a wish",
@@ -2713,10 +2712,6 @@
         },
         "qrLinks": {
             "title": "Links",
-            "gallery": {
-                "body": "Scan to upload photos and videos",
-                "missing": "No upload code yet"
-            },
             "invitations": {
                 "body": "{count, plural, one {# share link} other {# share links}}",
                 "missing": "No active share link"
@@ -6781,17 +6776,6 @@
         "videoProcessing": "Processing video…",
         "videoFailed": "This video couldn't be processed."
     },
-    "GalleryQrPage": {
-        "title": "Upload QR code",
-        "back": "Back to feed",
-        "subtitle": "Anyone who scans this code can upload photos and videos straight to the event, no sign-in required.",
-        "permanentNote": "This code is set up for you and can't be deleted or replaced.",
-        "temporarilyOff": "Uploads through this code are temporarily turned off. Existing photos and videos aren't affected.",
-        "linkUnavailable": "This code isn't accepting uploads right now.",
-        "missing": {
-            "body": "This event doesn't have a photo upload code yet."
-        }
-    },
     "QrCardPage": {
         "title": "Print card",
         "back": "Back",
@@ -6833,7 +6817,8 @@
     "InvitationsQrPage": {
         "title": "Share links",
         "back": "Back to feed",
-        "subtitle": "QR codes and links guests can use to join right away."
+        "subtitle": "QR codes and links guests can use to join right away.",
+        "subtitleWithUpload": "QR codes and links guests can use to join or upload photos."
     },
     "MediaThumbnail": {
         "processing": "Processing video",
@@ -9626,7 +9611,6 @@
     },
     "ImageAlt": {
         "gift": "Gift",
-        "photoUpload": "Photo upload",
         "wishbook": "Wishbook",
         "eventCover": "Event cover photo",
         "eventCoverOf": "Cover photo of {name}",
@@ -9715,10 +9699,7 @@
                 ]
             },
             "portal": {
-                "events": [
-                    "Anna & Nikos",
-                    "Lydia's baptism"
-                ]
+                "events": ["Anna & Nikos", "Lydia's baptism"]
             },
             "schedule": {
                 "ceremonyPlace": "Saint Nicholas Church",
@@ -9730,11 +9711,7 @@
             },
             "rsvp": {
                 "couple": "Nefeli & Orestis",
-                "guests": [
-                    "Nantia Efthymiou",
-                    "Stelios Raptis",
-                    "Alexandros Markou"
-                ]
+                "guests": ["Nantia Efthymiou", "Stelios Raptis", "Alexandros Markou"]
             }
         },
         "heroCta": "Apply to partner",
@@ -10580,8 +10557,7 @@
     },
     "SaveMyDatePreview": {
         "metaTitle": "Invitation preview"
-    }
-,
+    },
     "PublishedInvitation": {
         "metaTitle": "Invitation",
         "notFound": "We couldn't find this invitation.",
