@@ -77,6 +77,7 @@ describe('useEventOnlineInvitation', () => {
             publicUrl: expect.stringMatching(/^https:\/\/invite\..+\/maria-nikos$/),
             editHref: '/save-my-date/editor/draft-evt-1',
             planMissing: false,
+            locked: false,
             canExtend: true,
         });
     });
@@ -101,8 +102,31 @@ describe('useEventOnlineInvitation', () => {
         const { result } = renderInvitation(storyEvent({ id: 'evt-1' }));
 
         await waitFor(() => expect(result.current.isLoading).toBe(false));
-        expect(result.current).toMatchObject({ status: 'none', planMissing: true, catalogueHref: '/invitations?type=WEDDING' });
+        expect(result.current).toMatchObject({ status: 'none', planMissing: true, locked: true, catalogueHref: '/invitations?type=WEDDING' });
         result.current.chooseTheme();
         expect(takeStartIntent()).toEqual({ eventId: 'evt-1', eventType: 'WEDDING' });
+    });
+
+    it('keeps a draft behind the upgrade without the plan, and a published invitation in view', async () => {
+        const planless = storyEvent({ id: 'evt-1' });
+        server.use(
+            http.get(`${API}/api/invitation-drafts`, () => HttpResponse.json([summary('evt-1')])),
+            http.get(`${API}/api/invitation-drafts/draft-evt-1/publication`, () => HttpResponse.json({ status: 404 }, { status: 404 })),
+        );
+        const draft = renderInvitation(planless);
+        await waitFor(() => expect(draft.result.current.status).toBe('draft'));
+        expect(draft.result.current).toMatchObject({ planMissing: true, locked: true, addOnHref: null });
+
+        server.use(http.get(`${API}/api/invitation-drafts/draft-evt-1/publication`, () => HttpResponse.json(publication({ online: false }))));
+        const published = renderInvitation(planless);
+        await waitFor(() => expect(published.result.current.status).toBe('offline'));
+        expect(published.result.current).toMatchObject({ planMissing: true, locked: false });
+    });
+
+    it('is not locked when the plan includes the invitation', async () => {
+        server.use(http.get(`${API}/api/invitation-drafts`, () => HttpResponse.json([])));
+        const { result } = renderInvitation();
+        await waitFor(() => expect(result.current.isLoading).toBe(false));
+        expect(result.current).toMatchObject({ status: 'none', planMissing: false, locked: false });
     });
 });
