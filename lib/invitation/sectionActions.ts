@@ -105,7 +105,9 @@ export function reorderSections(activeId: string, overId: string) {
 export function setSectionVisible(id: string, visible: boolean) {
     return (draft: DocumentDraft) => {
         const section = draft.sections.find((item) => item.id === id);
-        if (section && !section.locked) section.visible = visible;
+        if (!section || section.locked) return;
+        section.visible = visible;
+        delete section.hiddenByTheme;
     };
 }
 

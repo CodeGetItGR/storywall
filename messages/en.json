@@ -10173,6 +10173,19 @@
         "linkFallback": "See more"
     },
     "InvitationEditor": {
+        "themeSwitch": {
+            "change": "Change design",
+            "current": "Design: {name}",
+            "currentBadge": "Current",
+            "thumbAlt": "{name} design",
+            "listFailed": "We couldn't load the designs.",
+            "confirmTitle": "Switch to {name}?",
+            "confirmBody": "Your texts, photos and dates stay. Only the design changes. You can undo this.",
+            "hiddenTitle": "This design doesn't have these sections. They'll be hidden, not deleted:",
+            "restoredTitle": "These hidden sections will show again:",
+            "textLookReset": "Your text color and fonts go back to the design's.",
+            "themeFailed": "We couldn't load this design. Try again."
+        },
         "metaTitle": "Edit invitation",
         "back": "Back",
         "undo": "Undo",

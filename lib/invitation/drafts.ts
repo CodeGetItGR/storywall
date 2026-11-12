@@ -52,6 +52,9 @@ export const invitationDraftKeys = {
 export type EditableDraft = {
     id: string;
     revision: number;
+    // The theme the draft was loaded with. A theme switch in the editor changes it on the next save.
+    themeSlug: string;
+    themeName: string;
     // The event type the theme is for: it decides which sections the host may add.
     eventType: string;
     // The event that pays for publishing; null until the draft is put on one.
@@ -67,6 +70,8 @@ export function readEditableDraft(dto: InvitationDraftDto): EditableDraft {
     return {
         id: dto.id,
         revision: dto.revision,
+        themeSlug: dto.themeSlug,
+        themeName: dto.themeName,
         eventType: dto.eventType,
         eventId: dto.eventId ?? null,
         document: upgradeInvitationDocument(dto.document),

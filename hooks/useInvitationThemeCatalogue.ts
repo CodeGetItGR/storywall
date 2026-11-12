@@ -18,7 +18,8 @@ async function fetchCatalogue(): Promise<InvitationThemeCardDto[]> {
 
 // Every active theme the catalogue lists. A full page load finds them already in the cache (the page
 // prefetches them on the server).
-export function useInvitationThemeCatalogue() {
-    const { data, isPending, isError, refetch } = useQuery({ queryKey: invitationThemeKeys.catalogue(), queryFn: fetchCatalogue });
+// `enabled: false` waits until the list is needed (the editor's theme switch).
+export function useInvitationThemeCatalogue({ enabled = true }: { enabled?: boolean } = {}) {
+    const { data, isPending, isError, refetch } = useQuery({ queryKey: invitationThemeKeys.catalogue(), queryFn: fetchCatalogue, enabled });
     return { themes: data ?? null, isPending, isError, retry: refetch };
 }

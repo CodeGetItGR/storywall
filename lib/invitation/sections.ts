@@ -331,6 +331,9 @@ function sectionSchemaFor<T extends SectionType>(type: T) {
             type: z.literal(type),
             name: shortTextSchema,
             visible: z.boolean(),
+            // Hidden by a theme switch because the new theme has no such section. Switching to a
+            // theme that has one shows it again; showing it by hand clears the mark.
+            hiddenByTheme: z.literal(true).optional(),
             locked: z.boolean(),
             data: SECTION_DATA_SCHEMAS[type],
             textStyles: z.record(z.string().max(200), textStyleSchema),
