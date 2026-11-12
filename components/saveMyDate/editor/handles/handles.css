@@ -32,3 +32,17 @@
     }
     .smd-invitation .wedart-custom-columns:has(> .smd-column-break) .wedart-custom-column.is-right { margin-top: 0; }
 }
+
+/* The element picker of a family section in an admin's theme editor. */
+.smd-invitation .smd-decoration-picker { display: flex; justify-content: center; margin-top: 8px; }
+.smd-invitation .smd-decoration-picker select {
+    height: 32px;
+    max-width: 100%;
+    padding: 0 10px;
+    border: 1px dashed rgb(120 182 164 / 0.9);
+    border-radius: 8px;
+    background: rgb(255 255 255 / 0.9);
+    color: #2f3b37;
+    font: 600 13px/1 system-ui, sans-serif;
+    cursor: pointer;
+}

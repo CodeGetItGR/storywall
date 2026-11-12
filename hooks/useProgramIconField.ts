@@ -33,7 +33,7 @@ export function useProgramIconField(
     item: IconItem,
     onChange: (itemId: string, patch: ProgramItemPatch) => void,
 ) {
-    const { isAdmin, media, addUploaded, draftId } = scope;
+    const { isAdmin, media, addUploaded, uploadImage } = scope;
     const setIcon = useCallback((icon: ProgramIcon) => onChange(item.id, { icon }), [item.id, onChange]);
 
     const onUploaded = useCallback(
@@ -43,7 +43,7 @@ export function useProgramIconField(
         },
         [addUploaded, setIcon],
     );
-    const upload = useProgramIconUpload(draftId, onUploaded);
+    const upload = useProgramIconUpload(uploadImage, onUploaded);
 
     const onSelect = useCallback(
         (event: ChangeEvent<HTMLSelectElement>) => {

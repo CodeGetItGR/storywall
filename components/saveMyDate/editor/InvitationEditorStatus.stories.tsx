@@ -28,3 +28,11 @@ export const Loading: Story = {
     render: () => <InvitationEditorLoading />,
     tags: ['visual-skip'],
 };
+
+// The admin's theme editor could not load the theme.
+export const ThemeLoadFailed: Story = {
+    args: { subject: 'theme' },
+    play: async ({ canvasElement, globals }) => {
+        await expect(within(canvasElement).getByText(copyFor(globals).InvitationEditor.themeLoadFailed)).toBeVisible();
+    },
+};

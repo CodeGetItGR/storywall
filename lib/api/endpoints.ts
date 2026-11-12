@@ -272,6 +272,9 @@ export const endpoints = {
         publication: (id: string) => `/api/invitation-drafts/${id}/publication`,
     },
 
+    // The font pairings the invitation editor offers for an event type (guestwall-be InvitationCatalogueController).
+    invitationTypographyPresets: (eventType: string) => `/api/invitation-typography-presets?eventType=${encodeURIComponent(eventType)}`,
+
     // Whether an invitation link is free (guestwall-be InvitationPublicationController).
     invitationSlugs: {
         availability: (slug: string) => `/api/invitation-slugs/availability?slug=${encodeURIComponent(slug)}`,
@@ -506,6 +509,8 @@ export const endpoints = {
             list: '/api/admin/invitation-themes',
             byId: (id: string) => `/api/admin/invitation-themes/${id}`,
             duplicate: (id: string) => `/api/admin/invitation-themes/${id}/duplicate`,
+            assets: (id: string) => `/api/admin/invitation-themes/${id}/assets`,
+            asset: (id: string, assetId: string) => `/api/admin/invitation-themes/${id}/assets/${encodeURIComponent(assetId)}`,
         },
         qrCardTemplates: {
             list: '/api/admin/qr-card-templates',

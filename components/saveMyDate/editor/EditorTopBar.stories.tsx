@@ -18,7 +18,7 @@ const meta = {
         onUndo: fn(),
         onRedo: fn(),
         onPreview: fn(),
-        onPublish: fn(),
+        primary: { action: 'publish', onClick: fn() },
         onTour: fn(),
     },
 } satisfies Meta<typeof EditorTopBar>;
@@ -48,4 +48,14 @@ export const SavingFirst: Story = {
 
 export const NothingToUndo: Story = {
     args: { canUndo: false },
+};
+
+// An admin's live theme: Save instead of Publish, and no tour.
+export const ThemeSave: Story = {
+    args: { status: 'unsaved', primary: { action: 'save', onClick: fn() }, onTour: undefined },
+};
+
+// An admin's draft theme saves as it goes: no button at the end.
+export const ThemeAutosave: Story = {
+    args: { primary: undefined, onTour: undefined },
 };

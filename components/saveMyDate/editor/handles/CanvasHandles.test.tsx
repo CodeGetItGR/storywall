@@ -229,3 +229,63 @@ describe('Section height handle', () => {
         expect(handle).not.toHaveClass('translate-y-1/2');
     });
 });
+
+// An admin's theme editor: the store holds the theme, and the canvas draws it.
+function ThemeCanvas({ store }: { store: InvitationEditorStore }) {
+    const document = useStore(store, (state) => state.document);
+    const theme = useStore(store, (state) => state.theme!);
+    const tools = useCanvasHandles()?.tools;
+    return <InvitationRenderer document={document} theme={theme} media={media} canvasTools={tools} />;
+}
+
+function renderThemeCanvas() {
+    const store = createInvitationEditorStore(draft.document, draft.theme, { imageId: null });
+    render(
+        <NextIntlClientProvider locale="en" messages={en}>
+            <AuthContext.Provider value={admin}>
+                <CanvasHandles store={store}>
+                    <ThemeCanvas store={store} />
+                </CanvasHandles>
+            </AuthContext.Provider>
+        </NextIntlClientProvider>,
+    );
+    return store;
+}
+
+describe('Theme canvas tools', () => {
+    it('leaves the element picker and the art size out of the host editor', () => {
+        renderCanvas(admin);
+        expect(screen.queryByRole('combobox', { name: 'Pick an element' })).not.toBeInTheDocument();
+        expect(document.querySelector('.wedart-asset-wrap [role="slider"]')).toBeNull();
+    });
+
+    it('picks the element of a family section, and keeps the slot once it is taken out', () => {
+        const store = renderThemeCanvas();
+        const section = document.querySelector<HTMLElement>('[data-section-id="s-parentsSimple"]')!;
+        const picker = within(section).getByRole('combobox', { name: 'Pick an element' });
+        expect(picker).toHaveValue('el-leaf');
+
+        fireEvent.change(picker, { target: { value: '' } });
+        expect(sectionIn(store, 's-parentsSimple').data).not.toHaveProperty('decoration');
+        expect(within(section).getByRole('combobox', { name: 'Pick an element' })).toHaveValue('');
+
+        fireEvent.change(within(section).getByRole('combobox', { name: 'Pick an element' }), { target: { value: 'el-leaf' } });
+        expect(sectionIn(store, 's-parentsSimple').data).toMatchObject({ decoration: { image: { source: 'theme', assetId: 'el-leaf' }, width: 220 } });
+        act(() => store.getState().undo());
+        expect(sectionIn(store, 's-parentsSimple').data).not.toHaveProperty('decoration');
+    });
+
+    it('sizes the main illustration by dragging or with the arrow keys', () => {
+        const store = renderThemeCanvas();
+        const handle = document.querySelector<HTMLElement>('.wedart-asset-wrap [role="slider"]')!;
+        expect(handle).toHaveAttribute('aria-valuetext', '80%');
+
+        drag(handle, 210, 0);
+        expect(store.getState().theme?.art.main?.scale).toBe(1.3);
+        expect(store.getState().past).toHaveLength(1);
+
+        fireEvent.keyDown(handle, { key: 'ArrowLeft', shiftKey: true });
+        expect(store.getState().theme?.art.main?.scale).toBe(1.2);
+        expect(handle).toHaveAttribute('aria-valuetext', '120%');
+    });
+});

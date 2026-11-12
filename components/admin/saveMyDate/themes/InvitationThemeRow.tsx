@@ -1,12 +1,14 @@
 'use client';
 
-import { Eye, Pencil } from 'lucide-react';
+import { Eye, Paintbrush, Pencil } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 
 import { InvitationThemeStatusPill } from '@/components/admin/saveMyDate/themes/InvitationThemeStatusPill';
 import { ProtectedImage } from '@/components/common/ProtectedImage';
+import { AppLink } from '@/components/ui/AppLink';
 import type { AdminInvitationThemeSummaryDto } from '@/lib/adminInvitationThemes';
 import { formatDate } from '@/lib/datetime';
+import { routes } from '@/lib/routes';
 
 const DATE_FORMAT: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short', year: 'numeric' };
 
@@ -26,6 +28,7 @@ export function InvitationThemeRow({
     const locale = useLocale();
     const editLabel = t('edit', { name: theme.name });
     const previewLabel = t('preview', { name: theme.name });
+    const designLabel = t('editDesign', { name: theme.name });
 
     function handleEdit() {
         onEditAction(theme.id);
@@ -78,6 +81,14 @@ export function InvitationThemeRow({
                     >
                         <Eye className="h-4 w-4" />
                     </button>
+                    <AppLink
+                        href={routes.saveMyDateAdmin.themeEditor(theme.id)}
+                        aria-label={designLabel}
+                        title={designLabel}
+                        className="rounded-md p-1.5 text-ink-muted hover:bg-canvas hover:text-ink"
+                    >
+                        <Paintbrush className="h-4 w-4" />
+                    </AppLink>
                     <button
                         type="button"
                         onClick={handleEdit}

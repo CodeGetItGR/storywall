@@ -4,12 +4,16 @@ import { useCallback, useState } from 'react';
 import { useStore } from 'zustand';
 
 import type { InvitationDocument } from '@/lib/invitation/document';
-import { createInvitationEditorStore } from '@/lib/invitation/editorStore';
+import { createInvitationEditorStore, type ThemeShare } from '@/lib/invitation/editorStore';
+import type { ThemeDesign } from '@/lib/invitation/theme';
 
-// The open draft's document with its undo history. One store per editor mount.
-export function useInvitationEditorStore(initialDocument: InvitationDocument) {
-    const [store] = useState(() => createInvitationEditorStore(initialDocument));
+// The open draft's document with its undo history, and the theme when an admin edits one.
+// One store per editor mount.
+export function useInvitationEditorStore(initialDocument: InvitationDocument, initialTheme?: ThemeDesign, initialShare?: ThemeShare) {
+    const [store] = useState(() => createInvitationEditorStore(initialDocument, initialTheme, initialShare));
     const document = useStore(store, (state) => state.document);
+    const theme = useStore(store, (state) => state.theme);
+    const share = useStore(store, (state) => state.share);
     const canUndo = useStore(store, (state) => state.past.length > 0);
     const canRedo = useStore(store, (state) => state.future.length > 0);
     const undo = useCallback(() => store.getState().undo(), [store]);
@@ -23,5 +27,5 @@ export function useInvitationEditorStore(initialDocument: InvitationDocument) {
         [store],
     );
 
-    return { store, document, canUndo, canRedo, undo, redo, setTextColor };
+    return { store, document, theme, share, canUndo, canRedo, undo, redo, setTextColor };
 }

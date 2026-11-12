@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { InvitationDocument } from '@/lib/invitation/document';
 import { createInvitationEditorStore, EDITOR_HISTORY_LIMIT, EDITOR_MERGE_WINDOW_MS } from '@/lib/invitation/editorStore';
-import { previewDocument } from '@/lib/saveMyDatePreview';
+import { PREVIEW_THEME, previewDocument } from '@/lib/saveMyDatePreview';
 
 const setColor = (color: string) => (draft: { overrides: InvitationDocument['overrides'] }) => {
     draft.overrides.textColor = color;
@@ -129,4 +129,59 @@ describe('createInvitationEditorStore', () => {
         }
         expect(store.getState().past).toHaveLength(EDITOR_HISTORY_LIMIT);
     });
+
+    describe('theme edits', () => {
+        it('has no theme and ignores theme edits without one', () => {
+            const store = createInvitationEditorStore(previewDocument());
+            store.getState().editTheme((theme) => {
+                theme.colors.primary = '#000000';
+            });
+            expect(store.getState().theme).toBeUndefined();
+            expect(store.getState().past).toHaveLength(0);
+        });
+
+        it('edits the theme and the document in one step that undoes as one', () => {
+            const document = previewDocument();
+            const store = createInvitationEditorStore(document, PREVIEW_THEME);
+            store.getState().editTheme((theme, draft) => {
+                theme.colors.primary = '#000000';
+                draft.overrides.textColor = '#111111';
+            });
+            expect(store.getState().theme?.colors.primary).toBe('#000000');
+            expect(store.getState().document.overrides.textColor).toBe('#111111');
+            expect(store.getState().past).toHaveLength(1);
+
+            store.getState().undo();
+            expect(store.getState().theme).toEqual(PREVIEW_THEME);
+            expect(store.getState().document).toEqual(document);
+
+            store.getState().redo();
+            expect(store.getState().theme?.colors.primary).toBe('#000000');
+        });
+
+        it('keeps theme and document edits in one shared history', () => {
+            const store = createInvitationEditorStore(previewDocument(), PREVIEW_THEME);
+            store.getState().editTheme((theme) => {
+                theme.photoShape = 'circle';
+            });
+            store.getState().edit(setColor('#222222'));
+            store.getState().undo();
+            expect(store.getState().theme?.photoShape).toBe('circle');
+            store.getState().undo();
+            expect(store.getState().theme?.photoShape).toBe(PREVIEW_THEME.photoShape);
+        });
+
+        it('keeps the share image with the theme and undoes its change', () => {
+            const store = createInvitationEditorStore(previewDocument(), PREVIEW_THEME, { imageId: 'og' });
+            store.getState().editTheme((_theme, _document, share) => {
+                share.imageId = 'og-2';
+            });
+            expect(store.getState().share).toEqual({ imageId: 'og-2' });
+            store.getState().undo();
+            expect(store.getState().share).toEqual({ imageId: 'og' });
+            expect(createInvitationEditorStore(previewDocument(), PREVIEW_THEME).getState().share).toEqual({ imageId: null });
+            expect(createInvitationEditorStore(previewDocument()).getState().share).toBeUndefined();
+        });
+    });
 });
+

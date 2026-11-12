@@ -5414,6 +5414,7 @@
             }
         },
         "invitationThemes": {
+            "editDesign": "Edit design of {name}",
             "title": "Themes",
             "create": "New theme",
             "search": "Search by name or slug",
@@ -5441,6 +5442,7 @@
                 "HIDDEN": "Out of the catalogue. Invitations made from it keep working."
             },
             "drawer": {
+                "editDesign": "Edit design",
                 "name": "Name",
                 "eventType": "Event type",
                 "status": "Status",
@@ -10173,6 +10175,75 @@
         "linkFallback": "See more"
     },
     "InvitationEditor": {
+        "save": "Save",
+        "themeMetaTitle": "Edit theme",
+        "themeLoadFailed": "We couldn't load this theme.",
+        "themeConflictTitle": "This theme has newer changes.",
+        "themeConflictBody": "It was saved in another tab or by another admin. Changes not saved here will be lost.",
+        "assets": {
+            "tabs": {
+                "illustrations": "Illustrations",
+                "elements": "Elements",
+                "frames": "Frames",
+                "transitions": "Transitions",
+                "share": "Share image"
+            },
+            "art": {
+                "main": "Main illustration",
+                "ceremonyIcon": "Ceremony icon",
+                "welcomeIcon": "Welcome icon",
+                "receptionIcon": "Reception icon"
+            },
+            "frameArt": "Art",
+            "mask": "Mask",
+            "upload": "Upload",
+            "replace": "Replace",
+            "addElement": "Add element",
+            "addFrame": "Add frame",
+            "addTransition": "Add transition",
+            "name": "Name",
+            "uploadFailed": "The image didn't upload. Try again.",
+            "pickElement": "Pick an element",
+            "noElement": "No element"
+        },
+        "themeStyle": {
+            "mainColor": "Main color",
+            "secondColor": "Second color",
+            "backgrounds": "Backgrounds",
+            "modes": {
+                "cover": "Cover",
+                "repeat": "Repeat",
+                "texture": "Texture"
+            },
+            "stableRepeat": "Stable scale, repeat down",
+            "fonts": "Fonts",
+            "fontStyle": "Font style",
+            "customFonts": "Custom",
+            "bodyFont": "Body font",
+            "photoShape": "Photo shape",
+            "shapes": {
+                "rounded": "Rounded corners",
+                "square": "Square",
+                "portrait": "Portrait",
+                "landscape": "Landscape",
+                "circle": "Circle",
+                "oval": "Oval",
+                "arch": "Arch",
+                "extraRounded": "Extra rounded",
+                "hexagon": "Hexagon",
+                "diamond": "Diamond",
+                "octagon": "Octagon",
+                "teardrop": "Teardrop",
+                "blob": "Organic"
+            },
+            "autoContrast": "Automatic contrast on dark backgrounds",
+            "buttons": "Buttons",
+            "buttonFill": "Button fill",
+            "buttonText": "Button text color",
+            "buttonFont": "Button font",
+            "sameAsBody": "Same as body font",
+            "reset": "Reset"
+        },
         "metaTitle": "Edit invitation",
         "back": "Back",
         "undo": "Undo",
