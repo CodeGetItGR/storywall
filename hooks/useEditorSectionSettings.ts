@@ -10,7 +10,7 @@ import { useUploadedMedia } from '@/hooks/useUploadedMedia';
 import type { InvitationDocument } from '@/lib/invitation/document';
 import type { EditableDraft } from '@/lib/invitation/drafts';
 import type { InvitationEditorStore } from '@/lib/invitation/editorStore';
-import type { InvitationEventData } from '@/lib/invitation/eventLinks';
+import type { InvitationEventData, SampleSections } from '@/lib/invitation/eventLinks';
 import type { MediaResolver } from '@/lib/invitation/render';
 import type { InvitationFontDto } from '@/lib/invitation/uploadedFonts';
 
@@ -26,7 +26,7 @@ export function useEditorSectionSettings(
     activate: (id: string) => void,
     uploadedFonts?: InvitationFontDto[],
     // The draft's images with the event's on top (useInvitationEventSync), and what the event tells the invitation.
-    events: { media: MediaResolver; event: InvitationEventData | null } = { media: draft.media, event: null },
+    events: { media: MediaResolver; event: InvitationEventData | null; samples?: SampleSections | null } = { media: draft.media, event: null },
 ) {
     const mode = useEditorMode();
     const uploads = useUploadedMedia(events.media);
@@ -40,6 +40,7 @@ export function useEditorSectionSettings(
         draftId: draft.id,
         addUploaded: uploads.addUploaded,
         event: events.event,
+        eventSamples: events.samples ?? null,
     });
 
     const { open: openSettings, hasSettings, close } = settings;

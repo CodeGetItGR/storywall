@@ -252,7 +252,7 @@ function samplePhoto(section: Draft<Section>, samples: SampleSections | null, fr
 }
 
 // The event has no cover any more: an event photo it left goes back to the theme's photo, or to none.
-function dropGoneCover(section: Draft<Section>, samples: SampleSections | null) {
+function dropGoneCover(section: Draft<Section>, samples: SampleSections) {
     if (section.type === 'photo' && section.link?.enabled && section.data.photo?.source === 'event') {
         section.data.photo = samplePhoto(section, samples);
     }
@@ -261,7 +261,8 @@ function dropGoneCover(section: Draft<Section>, samples: SampleSections | null) 
 }
 
 function applySection(section: Draft<Section>, event: InvitationEventData, language: 'el' | 'en', samples: SampleSections | null = null) {
-    if (!event.cover) dropGoneCover(section, samples);
+    // Without the theme (the published page, or before it loads) the saved photo stays.
+    if (!event.cover && samples) dropGoneCover(section, samples);
     switch (section.type) {
         case 'top':
             if (section.link?.enabled) applyNames(section, event.title);
@@ -333,10 +334,12 @@ function applyEvent(draft: Draft<InvitationDocument>, event: InvitationEventData
     for (const section of draft.sections) applySection(section, event, language, samples);
 }
 
-// The followed values without row ids, which every new list gets afresh: equal values mean the same content.
+// What the host may have typed or picked in a section the event would fill: the followed values without row ids,
+// which every new list gets afresh, plus what following the event would reset (the addresses, the program's icons).
 function contentValues(section: Section): unknown {
     if (section.type === 'program') return section.data.items.map((item) => [item.time, item.label]);
-    if (section.type === 'programIcons') return section.data.items.map((item) => [item.time, item.label, item.description]);
+    if (section.type === 'programIcons') return section.data.items.map((item) => [item.time, item.label, item.description, item.icon]);
+    if (section.type === 'locations') return [followedValues(section), section.data.ceremonyAddress, section.data.receptionAddress];
     return followedValues(section);
 }
 
@@ -398,12 +401,12 @@ export function syncWithEvent(event: InvitationEventData, samples: SampleSection
 
 // A section the host adds follows the event from the start, as the theme's do, and shows its data at once. Runs in
 // the same edit as the add, so one undo takes both away.
-export function followFromTheStart(sectionId: string, event: InvitationEventData) {
+export function followFromTheStart(sectionId: string, event: InvitationEventData, samples: SampleSections | null = null) {
     return (draft: Draft<InvitationDocument>) => {
         const section = draft.sections.find((item) => item.id === sectionId);
         if (!section || section.link || !mayFollow(draft, section, event)) return;
         section.link = { ...FOLLOWING };
-        applySection(section, event, invitationLanguage(draft as InvitationDocument));
+        applySection(section, event, invitationLanguage(draft as InvitationDocument), samples);
     };
 }
 
@@ -448,7 +451,7 @@ export function followState(section: Section): { available: boolean; following: 
 }
 
 // The switch: on, the section follows the event again and shows the event's data at once; off, it keeps its copy.
-export function setFollowEvent(sectionId: string, following: boolean, event: InvitationEventData | null) {
+export function setFollowEvent(sectionId: string, following: boolean, event: InvitationEventData | null, samples: SampleSections | null = null) {
     return (draft: Draft<InvitationDocument>) => {
         const section = draft.sections.find((item) => item.id === sectionId);
         if (!section) return;
@@ -457,7 +460,7 @@ export function setFollowEvent(sectionId: string, following: boolean, event: Inv
             const frame = coverFrame(section);
             if (frame?.link) frame.link.enabled = following;
         }
-        if (following && event) applySection(section, event, invitationLanguage(draft as InvitationDocument));
+        if (following && event) applySection(section, event, invitationLanguage(draft as InvitationDocument), samples);
     };
 }
 

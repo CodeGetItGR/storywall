@@ -6,7 +6,7 @@ import { useAddSectionList } from '@/hooks/useAddSectionList';
 import { useDeleteSectionConfirm } from '@/hooks/useDeleteSectionConfirm';
 import type { InvitationDocument } from '@/lib/invitation/document';
 import type { InvitationEditorStore } from '@/lib/invitation/editorStore';
-import type { InvitationEventData } from '@/lib/invitation/eventLinks';
+import type { InvitationEventData, SampleSections } from '@/lib/invitation/eventLinks';
 import {
     type MoveDirection,
     moveSection,
@@ -26,13 +26,14 @@ export function useSectionActions(
     eventType: string,
     mode: EditorMode = 'host',
     event: InvitationEventData | null = null,
+    samples: SampleSections | null = null,
 ) {
     // The section whose tools show on touch screens: the one last tapped.
     const [activeId, setActiveId] = useState<string | null>(null);
 
     const edit = useCallback<SectionEdit>((recipe) => store.getState().edit(recipe), [store]);
     const controls = useMemo(() => sectionControls(document), [document]);
-    const addList = useAddSectionList(edit, document, eventType, mode, setActiveId, event);
+    const addList = useAddSectionList(edit, document, eventType, mode, setActiveId, event, samples);
     const deleteConfirm = useDeleteSectionConfirm(edit, document);
 
     const move = useCallback((id: string, direction: MoveDirection) => edit(moveSection(id, direction)), [edit]);

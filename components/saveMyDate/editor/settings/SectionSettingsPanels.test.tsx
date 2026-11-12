@@ -64,6 +64,7 @@ function scopeFor<T extends InvitationSection['type']>(
         draftId: draft.id,
         addUploaded: vi.fn(),
         event,
+        eventSamples: null,
     };
     return { scope, edit, edited: () => document.sections.find((item) => item.id === section.id) as SectionOf<T> };
 }

@@ -36,5 +36,5 @@ export function useInvitationEventSync(store: InvitationEditorStore, eventId: st
     const imageUrls = useMemo(() => eventImageUrls(detail), [detail]);
     const withEventImages = useMemo<MediaResolver>(() => (mediaId) => media(mediaId) ?? imageUrls[mediaId], [media, imageUrls]);
 
-    return { event, media: withEventImages, joinUrl: event?.joinUrl ?? undefined };
+    return { event, samples, media: withEventImages, joinUrl: event?.joinUrl ?? undefined };
 }

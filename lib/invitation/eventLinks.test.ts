@@ -237,8 +237,8 @@ describe('syncWithEvent', () => {
         const withCover = synced(theme);
         const document = synced(withCover, eventData({ cover: null }), samplesOf(theme));
         expect(coverOf(document).photo).toEqual({ source: 'media', mediaId: 'm-own' });
-        // On a published copy there is no theme to go back to: the frame shows no photo rather than a missing one.
-        expect(coverOf(resolveLinkedSections(withCover, eventData({ cover: null }))).photo).toBeUndefined();
+        // The published page has no theme to go back to: it keeps the photo it was published with.
+        expect(coverOf(resolveLinkedSections(withCover, eventData({ cover: null }))).photo).toEqual(coverOf(withCover).photo);
     });
 
     it('does not link what the plan does not include', () => {
@@ -311,6 +311,28 @@ describe('syncWithEvent', () => {
         expect(find(document, 'programIcons').data.items[0].label).toBe('Η τελετή μας');
         // What still holds the theme's text follows.
         expect(find(document, 'rsvp').link).toEqual({ source: 'event', enabled: true });
+    });
+
+    it('never links the places when the host typed only an address', () => {
+        const theme = sampleDocument();
+        const typed = edited(theme, (draft) => {
+            const places = draft.sections.find((section) => section.type === 'locations');
+            if (places?.type === 'locations') places.data.ceremonyAddress = 'Πλάκα, Αθήνα';
+        });
+        const document = synced(typed, eventData(), samplesOf(theme));
+        expect(find(document, 'locations').link).toBeUndefined();
+        expect(find(document, 'locations').data.ceremonyAddress).toBe('Πλάκα, Αθήνα');
+    });
+
+    it('never links the program when the host picked only its icons', () => {
+        const theme = sampleDocument();
+        const picked = edited(theme, (draft) => {
+            const program = draft.sections.find((section) => section.type === 'programIcons');
+            if (program?.type === 'programIcons') program.data.items[0].icon = { kind: 'preset', key: 'champagne' };
+        });
+        const document = synced(picked, eventData(), samplesOf(theme));
+        expect(find(document, 'programIcons').link).toBeUndefined();
+        expect(find(document, 'programIcons').data.items[0].icon).toEqual({ kind: 'preset', key: 'champagne' });
     });
 
     it('links a section added before, still as it was added', () => {
@@ -487,6 +509,14 @@ describe('following again', () => {
 
         store.getState().undo();
         expect(find(store.getState().document, 'date').data.iso).toBe('2027-01-01T12:00');
+    });
+
+    it("puts the theme's photo back when the switch goes on and the event has no cover", () => {
+        const theme = sampleDocument();
+        const withCover = synced(theme);
+        const off = produce(withCover, setFollowEvent(top.id, false, eventData()));
+        const on = produce(off, setFollowEvent(top.id, true, eventData({ cover: null }), samplesOf(theme)));
+        expect(coverOf(on).photo).toEqual({ source: 'media', mediaId: 'm-own' });
     });
 
     it('turns the names and the cover of the top together', () => {

@@ -7,11 +7,14 @@ import { eventKeys } from '@/hooks/useEvent';
 import { qrLinkKeys } from '@/hooks/useQrLinks';
 import { endpoints } from '@/lib/api/endpoints';
 import { normalizeList } from '@/lib/api/pagination';
-import { serverGet } from '@/lib/api/serverFetch';
+import { serverGet, serverPublicCachedGetOrNull } from '@/lib/api/serverFetch';
 import type { EventDetailResponseDto, QrLinkResponseDto } from '@/lib/api/types';
 import { prefetchAccessToken } from '@/lib/auth/serverEventContext';
 import { type InvitationDraftDto, invitationDraftKeys } from '@/lib/invitation/drafts';
+import { THEME_CATALOGUE_REVALIDATE_SECONDS } from '@/lib/invitation/serverThemeCatalogue';
 import { fetchUploadedFonts } from '@/lib/invitation/serverUploadedFonts';
+import { invitationThemeKeys } from '@/lib/invitation/themeCatalogue';
+import { invitationThemeEndpoint, type InvitationThemePublicDto } from '@/lib/invitation/themePreview';
 import { makeQueryClient } from '@/lib/queryClient';
 import { showsSaveMyDate } from '@/lib/saveMyDateRelease';
 import { NO_INDEX } from '@/lib/seo';
@@ -25,9 +28,16 @@ export async function generateMetadata(): Promise<Metadata> {
 
 type PageProps = { params: Promise<{ draftId: string }> };
 
-// What the draft follows (KAN-84): its event and the event's guest link, the same queries useInvitationEventSync makes.
-async function prefetchEvent(queryClient: ReturnType<typeof makeQueryClient>, eventId: string, accessToken: string) {
+// What the draft follows (KAN-84): its event, the event's guest link and its theme's sample content, the same
+// queries useInvitationEventSync makes.
+async function prefetchEvent(queryClient: ReturnType<typeof makeQueryClient>, draft: InvitationDraftDto, eventId: string, accessToken: string) {
+    const themeSlug = draft.themeSlug;
     await Promise.all([
+        themeSlug
+            ? serverPublicCachedGetOrNull<InvitationThemePublicDto>(invitationThemeEndpoint(themeSlug), THEME_CATALOGUE_REVALIDATE_SECONDS)
+                  .then((theme) => theme && queryClient.setQueryData(invitationThemeKeys.samples(themeSlug), theme.document))
+                  .catch(() => {})
+            : null,
         serverGet<EventDetailResponseDto>(endpoints.events.byId(eventId), accessToken)
             .then((event) => queryClient.setQueryData(eventKeys.detail(eventId), event))
             .catch(() => {}),
@@ -52,7 +62,7 @@ export default async function Page({ params }: PageProps) {
             try {
                 const draft = await serverGet<InvitationDraftDto>(endpoints.invitationDrafts.byId(draftId), accessToken);
                 queryClient.setQueryData(invitationDraftKeys.detail(draftId), draft);
-                if (draft.eventId) await prefetchEvent(queryClient, draft.eventId, accessToken);
+                if (draft.eventId) await prefetchEvent(queryClient, draft, draft.eventId, accessToken);
                 return true;
             } catch {
                 // Best-effort: the editor loads the draft itself.

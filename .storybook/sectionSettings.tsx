@@ -36,7 +36,7 @@ export function useStoryPanel(sectionId: string, isAdmin: boolean, followsEvent 
 
     const section = document.sections.find((item) => item.id === sectionId)!;
     const mode = isAdmin ? 'admin' : 'host';
-    const scope: SettingsScope = { section, edit, mode, isAdmin, theme: draft.theme, media, fonts, draftId: draft.id, addUploaded, event: null };
+    const scope: SettingsScope = { section, edit, mode, isAdmin, theme: draft.theme, media, fonts, draftId: draft.id, addUploaded, event: null, eventSamples: null };
     return { scope, groups: settingsGroups(section, mode, draft.theme) };
 }
 
