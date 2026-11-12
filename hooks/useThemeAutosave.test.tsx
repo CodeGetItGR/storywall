@@ -44,15 +44,22 @@ function storedTheme(overrides: Partial<AdminInvitationThemeDto> = {}): AdminInv
 }
 
 const saves: AdminInvitationThemeRequestDto[] = [];
+const deleted: string[] = [];
 let stale = false;
 const server = setupServer(
+    http.delete(`${THEME_URL}/assets/:assetId`, ({ params }) => {
+        deleted.push(params.assetId as string);
+        return new HttpResponse(null, { status: 204 });
+    }),
     http.put(THEME_URL, async ({ request }) => {
         const body = (await request.json()) as AdminInvitationThemeRequestDto & { revision: number };
         if (stale) {
             return HttpResponse.json({ status: 409, errorCode: 5201, title: 'Stale' }, { status: 409, headers: { 'Content-Type': 'application/problem+json' } });
         }
         saves.push(body);
-        return HttpResponse.json(storedTheme({ design: body.design, document: body.document, revision: body.revision + 1 }));
+        return HttpResponse.json(
+            storedTheme({ design: body.design, document: body.document, ogImageAssetId: body.ogImageAssetId, revision: body.revision + 1 }),
+        );
     }),
     http.get(THEME_URL, () => HttpResponse.json(storedTheme({ revision: 9, design: { ...BLANK_THEME_DESIGN, photoShape: 'oval' } }))),
 );
@@ -60,7 +67,7 @@ const server = setupServer(
 function renderThemeAutosave(mode: ThemeSaveMode, status: AdminInvitationThemeDto['status'] = 'DRAFT') {
     const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
     const theme = readEditableTheme(storedTheme({ status }));
-    const store = createInvitationEditorStore(theme.document, theme.design);
+    const store = createInvitationEditorStore(theme.document, theme.design, { imageId: null });
     const wrapper = ({ children }: { children: ReactNode }) => <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
     const hook = renderHook(() => useThemeAutosave(store, theme, mode), { wrapper });
     const setPrimary = (color: string) =>
@@ -78,6 +85,7 @@ describe('useThemeAutosave', () => {
         cleanup();
         vi.useRealTimers();
         saves.length = 0;
+        deleted.length = 0;
         stale = false;
     });
     afterAll(() => server.close());
@@ -129,5 +137,32 @@ describe('useThemeAutosave', () => {
             await result.current.flush();
         });
         await waitFor(() => expect(result.current.status).toBe('conflict'));
+    });
+
+    it('saves the share image with the theme', async () => {
+        const { result, store } = renderThemeAutosave('manual', 'ACTIVE');
+        act(() => store.getState().editTheme((_design, _document, share) => void (share.imageId = 'og-new')));
+        await act(async () => {
+            await result.current.flush();
+        });
+        expect(saves[0].ogImageAssetId).toBe('og-new');
+    });
+
+    it('deletes a removed image after a save that no longer uses it', async () => {
+        const { result, store } = renderThemeAutosave('manual', 'ACTIVE');
+        act(() =>
+            store.getState().editTheme((design) => {
+                design.art.main = { image: { mediaId: 'kept' }, scale: 1, animation: 'none' };
+            }),
+        );
+        act(() => {
+            result.current.markRemoved('gone');
+            // Still in the theme: its file stays.
+            result.current.markRemoved('kept');
+        });
+        await act(async () => {
+            await result.current.flush();
+        });
+        await waitFor(() => expect(deleted).toEqual(['gone']));
     });
 });

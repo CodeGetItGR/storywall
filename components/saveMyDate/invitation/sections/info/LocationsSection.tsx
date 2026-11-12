@@ -2,6 +2,7 @@ import { useTranslations } from 'next-intl';
 
 import { InvitationElements } from '@/components/saveMyDate/invitation/InvitationElements';
 import { SectionText } from '@/components/saveMyDate/invitation/sections/SectionText';
+import { ThemeArtImage } from '@/components/saveMyDate/invitation/sections/ThemeArtImage';
 import { mapsUrl } from '@/lib/invitation/mapLinks';
 import { artAnimationClass, artImageStyle, type RenderContext, type TextContrast } from '@/lib/invitation/render';
 import type { InvitationSection } from '@/lib/invitation/sections';
@@ -62,12 +63,12 @@ function LocationCard({ section, place, contrast, ctx }: LocationCardProps) {
             {/* Icon */}
             {art && src && (
                 <div className="wedart-asset-wrap">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
+                    <ThemeArtImage
                         className={['icon', artAnimationClass(art.animation)].filter(Boolean).join(' ')}
                         src={src}
                         alt={name.trim() || t('imageAlt')}
                         style={artImageStyle(ICON_BASE, art.scale, true)}
+                        handle={place === 'ceremony' ? ctx.canvasTools?.art?.('ceremonyIcon', art.scale) : undefined}
                     />
                 </div>
             )}

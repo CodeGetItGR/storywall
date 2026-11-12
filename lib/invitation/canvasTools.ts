@@ -11,6 +11,11 @@ export type CanvasTools = {
     element?: (element: InvitationElement) => ReactNode;
     // Inside a section's decoration.
     decoration?: (sectionId: string, decoration: SectionDecoration) => ReactNode;
+    // Under a family section's decoration, or in its place when there is none: which of the
+    // theme's elements it shows (an admin's theme editor).
+    decorationSlot?: (sectionId: string, decoration: SectionDecoration | undefined) => ReactNode;
+    // On the main illustration and the ceremony icon: their size (an admin's theme editor).
+    art?: (slot: 'main' | 'ceremonyIcon', scale: number) => ReactNode;
     // Around one item of a custom section.
     customItem?: (sectionId: string, elements: readonly InvitationElement[], item: InvitationElement, content: ReactNode) => ReactNode;
     // Between the columns of a custom section.

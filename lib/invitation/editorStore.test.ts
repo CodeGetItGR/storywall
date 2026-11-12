@@ -170,6 +170,18 @@ describe('createInvitationEditorStore', () => {
             store.getState().undo();
             expect(store.getState().theme?.photoShape).toBe(PREVIEW_THEME.photoShape);
         });
+
+        it('keeps the share image with the theme and undoes its change', () => {
+            const store = createInvitationEditorStore(previewDocument(), PREVIEW_THEME, { imageId: 'og' });
+            store.getState().editTheme((_theme, _document, share) => {
+                share.imageId = 'og-2';
+            });
+            expect(store.getState().share).toEqual({ imageId: 'og-2' });
+            store.getState().undo();
+            expect(store.getState().share).toEqual({ imageId: 'og' });
+            expect(createInvitationEditorStore(previewDocument(), PREVIEW_THEME).getState().share).toEqual({ imageId: null });
+            expect(createInvitationEditorStore(previewDocument()).getState().share).toBeUndefined();
+        });
     });
 });
 

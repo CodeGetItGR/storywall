@@ -23,7 +23,7 @@ export function CanvasHandles({ store, children }: CanvasHandlesProps) {
     const mode = useEditorMode();
     const value = useMemo<CanvasHandlesValue>(() => {
         const { edit } = store.getState();
-        return { mode, edit, tools: canvasToolRenderers(mode, edit) };
+        return { mode, edit, tools: canvasToolRenderers(mode, edit, store) };
     }, [mode, store]);
     const text = useContext(TextEditingContext);
 

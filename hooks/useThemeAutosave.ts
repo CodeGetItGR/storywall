@@ -9,11 +9,12 @@ import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
 import { createDraftAutosave, type DraftAutosave, type SaveStatus } from '@/lib/invitation/draftAutosave';
 import type { InvitationEditorStore } from '@/lib/invitation/editorStore';
+import { referencedAssetIds } from '@/lib/invitation/themeAssets';
 import { type EditableTheme, type ThemeContent, themeContentRequest, type ThemeSaveMode } from '@/lib/invitation/themeEditing';
 
 function contentOf(store: InvitationEditorStore): { document: ThemeContent; changeCount: number } {
-    const { document, theme, changeCount } = store.getState();
-    return { document: { design: theme ?? ({} as ThemeContent['design']), document }, changeCount };
+    const { document, theme, share, changeCount } = store.getState();
+    return { document: { design: theme ?? ({} as ThemeContent['design']), document, shareImageId: share?.imageId ?? null }, changeCount };
 }
 
 // Saves an admin's theme: its design and default invitation together, naming the revision
@@ -24,6 +25,8 @@ export function useThemeAutosave(store: InvitationEditorStore, theme: EditableTh
     // What the editor opened with, taken on the first render (see useDraftAutosave).
     const [opened] = useState(() => ({ theme, snapshot: contentOf(store) }));
     const autosaveRef = useRef<DraftAutosave | null>(null);
+    // Images the admin took out of the theme. Their files go once a save no longer uses them.
+    const removedRef = useRef(new Set<string>());
 
     useEffect(() => {
         const { theme: loaded, snapshot } = opened;
@@ -37,11 +40,12 @@ export function useThemeAutosave(store: InvitationEditorStore, theme: EditableTh
             save: async (revision, content) => {
                 const saved = await api.put<AdminInvitationThemeDto>(path, themeContentRequest(loaded.dto, content, revision));
                 queryClient.setQueryData(adminInvitationThemeKeys.detail(loaded.id), saved);
+                deleteUnused(loaded.id, removedRef.current, content, saved);
                 return saved;
             },
             loadLatest: async () => {
                 const latest = await api.get<AdminInvitationThemeDto>(path);
-                return { revision: latest.revision, document: { design: latest.design, document: latest.document } };
+                return { revision: latest.revision, document: { design: latest.design, document: latest.document, shareImageId: latest.ogImageAssetId } };
             },
             onStatus: setStatus,
         });
@@ -60,9 +64,23 @@ export function useThemeAutosave(store: InvitationEditorStore, theme: EditableTh
         };
     }, [mode, opened, queryClient, store]);
 
+    const markRemoved = useCallback((assetId: string) => removedRef.current.add(assetId), []);
     const flush = useCallback(() => autosaveRef.current?.flush() ?? Promise.resolve(true), []);
     // Leaving a live theme never saves it: it is saved when nothing is waiting.
     const isSaved = useCallback(() => Promise.resolve((autosaveRef.current?.status() ?? 'saved') === 'saved'), []);
 
-    return { status, flush, isSaved };
+    return { status, flush, isSaved, markRemoved };
+}
+
+// Deletes the files of removed images the saved theme no longer uses. The backend keeps one
+// that a published invitation still shows; that refusal, or any other, is left alone.
+function deleteUnused(themeId: string, removed: Set<string>, content: ThemeContent, saved: AdminInvitationThemeDto) {
+    const used = referencedAssetIds(content.design, content.document, content.shareImageId);
+    if (saved.cardThumbAssetId) used.add(saved.cardThumbAssetId);
+    for (const photo of saved.productPhotos) used.add(photo.mediaId);
+    for (const assetId of [...removed]) {
+        if (used.has(assetId)) continue;
+        removed.delete(assetId);
+        api.del(endpoints.admin.invitationThemes.asset(themeId, assetId)).catch(() => undefined);
+    }
 }

@@ -10169,6 +10169,32 @@
         "themeLoadFailed": "We couldn't load this theme.",
         "themeConflictTitle": "This theme has newer changes.",
         "themeConflictBody": "It was saved in another tab or by another admin. Changes not saved here will be lost.",
+        "assets": {
+            "tabs": {
+                "illustrations": "Illustrations",
+                "elements": "Elements",
+                "frames": "Frames",
+                "transitions": "Transitions",
+                "share": "Share image"
+            },
+            "art": {
+                "main": "Main illustration",
+                "ceremonyIcon": "Ceremony icon",
+                "welcomeIcon": "Welcome icon",
+                "receptionIcon": "Reception icon"
+            },
+            "frameArt": "Art",
+            "mask": "Mask",
+            "upload": "Upload",
+            "replace": "Replace",
+            "addElement": "Add element",
+            "addFrame": "Add frame",
+            "addTransition": "Add transition",
+            "name": "Name",
+            "uploadFailed": "The image didn't upload. Try again.",
+            "pickElement": "Pick an element",
+            "noElement": "No element"
+        },
         "themeStyle": {
             "mainColor": "Main color",
             "secondColor": "Second color",

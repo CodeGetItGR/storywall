@@ -1,6 +1,7 @@
 import { useTranslations } from 'next-intl';
 
 import { InvitationElements } from '@/components/saveMyDate/invitation/InvitationElements';
+import { ThemeArtImage } from '@/components/saveMyDate/invitation/sections/ThemeArtImage';
 import { artAnimationClass, artImageStyle, type RenderContext, type TextContrast } from '@/lib/invitation/render';
 import type { InvitationSection } from '@/lib/invitation/sections';
 
@@ -22,12 +23,12 @@ export function TopSection({ section, contrast, ctx }: TopSectionProps) {
             {/* Art */}
             {art && src && (
                 <div className="wedart-asset-wrap">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
+                    <ThemeArtImage
                         className={['hero-art', artAnimationClass(art.animation)].filter(Boolean).join(' ')}
                         src={src}
                         alt={t('mainArtAlt')}
                         style={artImageStyle(MAIN_ART_BASE, art.scale)}
+                        handle={ctx.canvasTools?.art?.('main', art.scale)}
                     />
                 </div>
             )}

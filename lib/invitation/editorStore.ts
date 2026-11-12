@@ -16,8 +16,11 @@ type HistoryStep = { patches: Patch[]; inversePatches: Patch[]; mergeKey?: strin
 // `gesture`: the edits of one drag stay one undo step however long the pointer rests.
 export type EditOptions = { gesture?: boolean };
 
-// What the history covers: the document, and the theme when an admin edits one.
-type Edited = { document: InvitationDocument; theme: ThemeDesign | undefined };
+// A theme's share image: a theme asset id, or none. Saved beside the design.
+export type ThemeShare = { imageId: string | null };
+
+// What the history covers: the document, and the theme and its share image when an admin edits one.
+type Edited = { document: InvitationDocument; theme: ThemeDesign | undefined; share: ThemeShare | undefined };
 
 export type InvitationEditorState = Edited & {
     past: HistoryStep[];
@@ -28,7 +31,7 @@ export type InvitationEditorState = Edited & {
     // Only an admin's theme editor has a theme to change; elsewhere it does nothing.
     // The recipe gets the document too, for a theme change that also clears what sections chose.
     editTheme: (
-        recipe: (theme: Draft<ThemeDesign>, document: Draft<InvitationDocument>) => void,
+        recipe: (theme: Draft<ThemeDesign>, document: Draft<InvitationDocument>, share: Draft<ThemeShare>) => void,
         mergeKey?: string,
         options?: EditOptions,
     ) => void;
@@ -41,9 +44,9 @@ export type InvitationEditorStore = StoreApi<InvitationEditorState>;
 // One store per open draft or theme. Every edit is kept as Immer patches, so undo and redo
 // replay exactly what changed instead of swapping whole copies of the document. Document and
 // theme edits share one history, so undo steps back through both in order.
-export function createInvitationEditorStore(document: InvitationDocument, theme?: ThemeDesign): InvitationEditorStore {
+export function createInvitationEditorStore(document: InvitationDocument, theme?: ThemeDesign, share?: ThemeShare): InvitationEditorStore {
     return createStore<InvitationEditorState>()((set, get) => {
-        const edited = (): Edited => ({ document: get().document, theme: get().theme });
+        const edited = (): Edited => ({ document: get().document, theme: get().theme, share: get().share });
 
         const record = (recipe: (draft: Draft<Edited>) => void, mergeKey: string | undefined, options: EditOptions | undefined) => {
             const { past, changeCount } = get();
@@ -65,6 +68,7 @@ export function createInvitationEditorStore(document: InvitationDocument, theme?
         return {
             document,
             theme,
+            share: theme ? (share ?? { imageId: null }) : undefined,
             past: [],
             future: [],
             changeCount: 0,
@@ -73,7 +77,7 @@ export function createInvitationEditorStore(document: InvitationDocument, theme?
 
             editTheme: (recipe, mergeKey, options) => {
                 if (!get().theme) return;
-                record((draft) => recipe(draft.theme as Draft<ThemeDesign>, draft.document), mergeKey, options);
+                record((draft) => recipe(draft.theme as Draft<ThemeDesign>, draft.document, draft.share as Draft<ThemeShare>), mergeKey, options);
             },
 
             undo: () => {

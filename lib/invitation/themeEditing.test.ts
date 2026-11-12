@@ -65,8 +65,8 @@ describe('themeSaveMode', () => {
 describe('themeContentRequest', () => {
     it('sends the loaded details back with the edited content and revision', () => {
         const document = previewDocument();
-        const request = themeContentRequest(theme(), { design: PREVIEW_THEME, document }, 7);
-        expect(request).toMatchObject({ name: 'Garden', slug: 'garden', code: 'W001', ogImageAssetId: 'og', revision: 7, sortOrder: 3 });
+        const request = themeContentRequest(theme(), { design: PREVIEW_THEME, document, shareImageId: 'og-2' }, 7);
+        expect(request).toMatchObject({ name: 'Garden', slug: 'garden', code: 'W001', ogImageAssetId: 'og-2', revision: 7, sortOrder: 3 });
         expect(request.design).toBe(PREVIEW_THEME);
         expect(request.document).toBe(document);
     });

@@ -52,5 +52,5 @@ export function useEditorSectionSettings(
     );
     const opener = useMemo(() => ({ hasSettings, open }), [hasSettings, open]);
 
-    return { media: uploads.media, panel, opener, close, isDocked };
+    return { media: uploads.media, addUploaded: uploads.addUploaded, panel, opener, close, isDocked };
 }
