@@ -6623,10 +6623,6 @@
             "name": "Co-hosts",
             "description": "Invite co-hosts to help manage the event."
         },
-        "named_invites": {
-            "name": "Personal invitations",
-            "description": "Invitations sent to a guest by name and email."
-        },
         "schedule": {
             "name": "Schedule",
             "description": "The event's timeline, session by session."
@@ -7029,7 +7025,6 @@
         "eventHostAlreadyCoHost": "This person is already a co-host.",
         "eventHostLastHost": "An event needs at least one host.",
         "eventHostAlreadyPrimary": "This person is already the main host.",
-        "inviteCodeTaken": "This invite code is already in use. Choose a different one.",
         "coHostAlreadyMember": "This person is already a member. Make them a co-host from the members list.",
         "memberIsHost": "This member is a host. Remove their host role first.",
         "reactionTypeCodeTaken": "A reaction with this code already exists for this event type.",

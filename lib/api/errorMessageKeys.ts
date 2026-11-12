@@ -134,7 +134,6 @@ export type ApiErrorMessageKey =
     | 'eventHostAlreadyCoHost'
     | 'eventHostLastHost'
     | 'eventHostAlreadyPrimary'
-    | 'inviteCodeTaken'
     | 'coHostAlreadyMember'
     | 'memberIsHost'
     | 'reactionTypeCodeTaken'
@@ -569,7 +568,6 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.EVENT_HOST_ALREADY_CO_HOST]: 'eventHostAlreadyCoHost',
     [ERROR_CODES.EVENT_HOST_LAST_HOST]: 'eventHostLastHost',
     [ERROR_CODES.EVENT_HOST_ALREADY_PRIMARY]: 'eventHostAlreadyPrimary',
-    [ERROR_CODES.INVITE_CODE_TAKEN]: 'inviteCodeTaken',
     [ERROR_CODES.CO_HOST_ALREADY_MEMBER]: 'coHostAlreadyMember',
     [ERROR_CODES.MEMBER_IS_HOST]: 'memberIsHost',
     [ERROR_CODES.REACTION_TYPE_CODE_TAKEN]: 'reactionTypeCodeTaken',

@@ -13,7 +13,6 @@ import type { CoHostInvitationRequestDto, EventInvitationPreviewDto, EventInvita
 
 export const eventInvitationKeys = {
     list: (eventId: string) => ['events', eventId, 'invitations'] as const,
-    detail: (id: string) => ['event-invitations', id] as const,
     preview: (inviteToken: string) => ['event-invitations', inviteToken, 'preview'] as const,
 };
 
@@ -29,8 +28,8 @@ export function useEventInvitationPreview(inviteToken: string | null) {
     });
 }
 
-// GET /api/events/{eventId}/invitations — HOST of the event only. Carries
-// PII (name/email) and the raw inviteToken.
+// GET /api/events/{eventId}/invitations — HOST of the event only. The event's
+// co-host invitations; carries PII (name/email) and the raw inviteToken.
 export function useEventInvitations(eventId: string | null) {
     const { isAuthenticated } = useAuth();
 
@@ -41,16 +40,6 @@ export function useEventInvitations(eventId: string | null) {
             return normalizeList(res).items;
         },
         enabled: Boolean(eventId) && isAuthenticated,
-    });
-}
-
-export function useEventInvitation(id: string | null) {
-    const { isAuthenticated } = useAuth();
-
-    return useQuery({
-        queryKey: eventInvitationKeys.detail(id ?? ''),
-        queryFn: () => api.get<EventInvitationResponseDto>(endpoints.eventInvitations.byId(id!)),
-        enabled: Boolean(id) && isAuthenticated,
     });
 }
 

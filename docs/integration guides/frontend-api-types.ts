@@ -723,24 +723,13 @@ interface EventHostPatchDto { displayOrder?: number; } // the only editable fiel
 
 // --- Event Invitations ---
 
-interface EventInvitationRequestDto {
-  eventId: string;
-  inviteCode: string;    // required, max 100 chars
-  email?: string;        // must be a well-formed email, max 255
-  firstName?: string;    // max 100
-  lastName?: string;     // max 100
-  maxGuests: number;     // required
-  expiresAt?: string;
-  // inviteToken and usedAt were removed 2026-09-21: the token is always server-minted and usedAt
-  // is stamped on accept. Sending either now fails the request with 400 (unknown property).
-}
 interface EventInvitationResponseDto {
   id: string; eventId: string; inviteCode: string; inviteToken: string;
   email: string | null; firstName: string | null; lastName: string | null;
   maxGuests: number; expiresAt: string | null; usedAt: string | null; createdAt: string;
-  /** Added 2026-08-16. 'HOST' = co-host invitation, 'ATTENDEE' = ordinary guest one.
-   *  `GET /api/events/{eventId}/invitations` returns both kinds — filter on this to keep
-   *  co-host invitations out of the guest list. */
+  /** Added 2026-08-16. 'HOST' = co-host invitation. Since KAN-210 `GET /api/events/{eventId}/invitations`
+   *  returns co-host invitations only, and `DELETE /api/event-invitations/{id}` revokes only those.
+   *  POST/PATCH/GET-by-id on /api/event-invitations (personal guest invitations) were removed. */
   role: EventRole;
 }
 
@@ -759,10 +748,6 @@ interface CoHostInvitationRequestDto {
   lastName?: string;    // max 100
   expiresAt?: string;   // omit for an invitation that never expires
 }
-interface EventInvitationPatchDto { // every field optional
-  firstName?: string; lastName?: string; email?: string;
-  maxGuests?: number; expiresAt?: string;
-} // no inviteCode/inviteToken (immutable), no usedAt (system-managed)
 
 /**
  * GET /api/event-invitations/{inviteToken}/preview — public, no auth. Renders the invite landing
@@ -1802,7 +1787,6 @@ export const COVERAGE_OPTION_PROMO_PRICE_INVALID = 5151; // 400 admin coverage-o
 export const EVENT_HOST_ALREADY_CO_HOST = 5157;          // 409, promote: the user is already a co-host
 export const EVENT_HOST_LAST_HOST = 5158;                // 409, DELETE event host: it is the event's only host
 export const EVENT_HOST_ALREADY_PRIMARY = 5159;          // 409, primary transfer to the current primary host
-export const INVITE_CODE_TAKEN = 5160;                   // 409, POST /api/event-invitations: inviteCode already used in this event
 export const CO_HOST_ALREADY_MEMBER = 5161;              // 409, POST /api/events/{id}/host-invitations: that address is already a member; details {memberId, userId, displayName} — promote with POST /api/events/{id}/hosts {userId}. An address that already co-hosts gets 5157 instead
 export const MEMBER_IS_HOST = 5162;                      // 409, remove member: they are a host; remove the host role first
 export const MEMBER_ROLE_KEY_TAKEN = 5163;               // no longer returned since 2026-10-21: role keys are generated
@@ -2170,10 +2154,10 @@ interface PlatformFeatureFlagPatchDto {
  *  this set. `wishlist` and `wishbook` were added 2026-08-16; prefer sourcing this union from
  *  `eventModuleKeys` at runtime rather than maintaining the literal list by hand. */
 // All fifteen canonical keys as of V176 (`vendors` added; fourteen as of V175 with `quiz_polls`; thirteen as of V170 with `he_or_she`; twelve as of V146, eleven as of V136, ten as of V82). `eventModuleKeys` on /api/config carries only the ones
-// currently enabled platform-wide, which is a subset: `named_invites` was switched off in V87 and
-// does not appear there today. Gate on what the config returns, not on this union.
+// currently enabled platform-wide, which may be a subset. `named_invites` was removed in V225 (KAN-210).
+// Gate on what the config returns, not on this union.
 type ModuleKey = 'posts' | 'rsvp' | 'playlist' | 'stories' | 'gallery' | 'wishlist' | 'wishbook'
-  | 'co_hosts' | 'named_invites' | 'schedule' | 'member_roles' | 'theme' | 'he_or_she' | 'quiz_polls' | 'vendors';
+  | 'co_hosts' | 'schedule' | 'member_roles' | 'theme' | 'he_or_she' | 'quiz_polls' | 'vendors';
 
 interface AppMediaConfigDto {
   maxFileSizeBytes: number;
