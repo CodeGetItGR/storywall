@@ -12,13 +12,22 @@ export type SectionSettingsStoryArgs = {
     sectionId: string;
     isAdmin: boolean;
     isDocked: boolean;
+    // The section follows its event (KAN-84), so its sheet starts with the "Follow the event" switch.
+    followsEvent?: boolean;
     onClose: () => void;
 };
 
 // The settings of one sample section, with changes kept, as the editor shows them.
-function useStoryPanel(sectionId: string, isAdmin: boolean) {
+function useStoryPanel(sectionId: string, isAdmin: boolean, followsEvent = false) {
     const [draft] = useState(storyDraft);
-    const [document, setDocument] = useState(draft.document);
+    const [document, setDocument] = useState(() =>
+        followsEvent
+            ? produce(draft.document, (next) => {
+                  const target = next.sections.find((item) => item.id === sectionId);
+                  if (target) target.link = { source: 'event', enabled: true };
+              })
+            : draft.document,
+    );
     const [uploaded, setUploaded] = useState<Record<string, string>>({});
     const edit = useCallback((recipe: DocumentRecipe) => setDocument((current) => produce(current, recipe)), []);
     const addUploaded = useCallback((mediaId: string, url: string) => setUploaded((current) => ({ ...current, [mediaId]: url })), []);
@@ -27,12 +36,12 @@ function useStoryPanel(sectionId: string, isAdmin: boolean) {
 
     const section = document.sections.find((item) => item.id === sectionId)!;
     const mode = isAdmin ? 'admin' : 'host';
-    const scope: SettingsScope = { section, edit, mode, isAdmin, theme: draft.theme, media, fonts, draftId: draft.id, addUploaded };
+    const scope: SettingsScope = { section, edit, mode, isAdmin, theme: draft.theme, media, fonts, draftId: draft.id, addUploaded, event: null };
     return { scope, groups: settingsGroups(section, mode, draft.theme) };
 }
 
 // One section's settings sheet or docked panel over the sample draft.
-export function SectionSettingsStory({ sectionId, isAdmin, isDocked, onClose }: SectionSettingsStoryArgs) {
-    const panel = useStoryPanel(sectionId, isAdmin);
+export function SectionSettingsStory({ sectionId, isAdmin, isDocked, followsEvent, onClose }: SectionSettingsStoryArgs) {
+    const panel = useStoryPanel(sectionId, isAdmin, followsEvent);
     return <SectionSettings panel={panel} isDocked={isDocked} onClose={onClose} />;
 }

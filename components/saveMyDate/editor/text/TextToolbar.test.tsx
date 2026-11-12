@@ -30,6 +30,7 @@ function toolbarState(overrides: Partial<TextToolbarState> = {}): TextToolbarSta
         setAlign: vi.fn(),
         pickColor: vi.fn(),
         add: vi.fn(),
+        followsEvent: false,
         ...overrides,
     };
 }
@@ -102,6 +103,15 @@ describe('TextToolbar', () => {
         fireEvent.click(trigger);
         expect(await screen.findByRole('button', { name: 'Playfair Display' })).toHaveAttribute('aria-pressed', 'true');
         expect(screen.getByRole('button', { name: 'Theme font' })).toHaveAttribute('aria-pressed', 'false');
+    });
+
+    it('says when the text comes from the event, and only then', () => {
+        const hint = en.InvitationEditor.sectionSettings.followEventHint;
+        renderToolbar(toolbarState({ followsEvent: true }));
+        expect(screen.getByText(hint)).toBeInTheDocument();
+        cleanup();
+        renderToolbar();
+        expect(screen.queryByText(hint)).toBeNull();
     });
 
     it('cannot add a text where the section takes no more', () => {

@@ -3,8 +3,12 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 
+import { eventKeys } from '@/hooks/useEvent';
+import { qrLinkKeys } from '@/hooks/useQrLinks';
 import { endpoints } from '@/lib/api/endpoints';
+import { normalizeList } from '@/lib/api/pagination';
 import { serverGet } from '@/lib/api/serverFetch';
+import type { EventDetailResponseDto, QrLinkResponseDto } from '@/lib/api/types';
 import { prefetchAccessToken } from '@/lib/auth/serverEventContext';
 import { type InvitationDraftDto, invitationDraftKeys } from '@/lib/invitation/drafts';
 import { fetchUploadedFonts } from '@/lib/invitation/serverUploadedFonts';
@@ -21,6 +25,18 @@ export async function generateMetadata(): Promise<Metadata> {
 
 type PageProps = { params: Promise<{ draftId: string }> };
 
+// What the draft follows (KAN-84): its event and the event's guest link, the same queries useInvitationEventSync makes.
+async function prefetchEvent(queryClient: ReturnType<typeof makeQueryClient>, eventId: string, accessToken: string) {
+    await Promise.all([
+        serverGet<EventDetailResponseDto>(endpoints.events.byId(eventId), accessToken)
+            .then((event) => queryClient.setQueryData(eventKeys.detail(eventId), event))
+            .catch(() => {}),
+        serverGet<QrLinkResponseDto[]>(endpoints.events.qrLinks(eventId), accessToken)
+            .then((links) => queryClient.setQueryData(qrLinkKeys.list(eventId), normalizeList(links).items))
+            .catch(() => {}),
+    ]);
+}
+
 // The invitation editor. Signed in only (proxy.ts); the backend decides who may open the draft.
 export default async function Page({ params }: PageProps) {
     if (!showsSaveMyDate()) notFound();
@@ -36,6 +52,7 @@ export default async function Page({ params }: PageProps) {
             try {
                 const draft = await serverGet<InvitationDraftDto>(endpoints.invitationDrafts.byId(draftId), accessToken);
                 queryClient.setQueryData(invitationDraftKeys.detail(draftId), draft);
+                if (draft.eventId) await prefetchEvent(queryClient, draft.eventId, accessToken);
                 return true;
             } catch {
                 // Best-effort: the editor loads the draft itself.

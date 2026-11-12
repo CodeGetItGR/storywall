@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
+import type { InvitationEventData } from '@/lib/invitation/eventLinks';
 import {
     type PublicInvitationDto,
     publicInvitationEndpoint,
@@ -47,6 +48,38 @@ describe('publishedInvitationState', () => {
     it('treats missing image urls as none', () => {
         const state = publishedInvitationState(200, { ...dto, imageUrls: undefined });
         expect(state.kind === 'found' && state.invitation.media('m-1')).toBeUndefined();
+    });
+});
+
+describe('following the event', () => {
+    const event: InvitationEventData = {
+        eventType: 'WEDDING',
+        title: 'Μαρία & Νίκος',
+        timezone: 'Europe/Athens',
+        startAt: '2027-07-12T15:30:00Z',
+        rsvp: null,
+        cover: null,
+        location: { name: null, address: null, mapsUrl: null },
+        sessions: null,
+        joinUrl: 'https://storywall.gr/q/tok',
+    };
+    const linkedDate = {
+        ...SAMPLE_DOCUMENT,
+        sections: SAMPLE_DOCUMENT.sections.map((section) => (section.type === 'date' ? { ...section, link: { source: 'event', enabled: true } } : section)),
+    };
+    const dateOf = (state: ReturnType<typeof publishedInvitationState>) =>
+        state.kind === 'found' ? state.invitation.document.sections.find((section) => section.type === 'date') : undefined;
+
+    it('shows a linked section as the event is now, and hands over the join link', () => {
+        const state = publishedInvitationState(200, { ...dto, document: linkedDate, event });
+        expect(dateOf(state)?.type === 'date' && dateOf(state)?.data).toMatchObject({ iso: '2027-07-12T18:30' });
+        expect(state.kind === 'found' && state.invitation.joinUrl).toBe('https://storywall.gr/q/tok');
+    });
+
+    it('keeps the saved copy when the backend sends no event', () => {
+        const state = publishedInvitationState(200, { ...dto, document: linkedDate });
+        expect(state.kind === 'found' && state.invitation.document).toEqual(linkedDate);
+        expect(state.kind === 'found' && state.invitation.joinUrl).toBeUndefined();
     });
 });
 

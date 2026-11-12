@@ -6,6 +6,7 @@ import type { InvitationElement } from '@/lib/invitation/elements';
 import { INVITATION_LABELS, invitationLanguage } from '@/lib/invitation/labels';
 import { type EventLink, linkSchema } from '@/lib/invitation/primitives';
 import { type InvitationSection, LINKABLE_SECTION_TYPES } from '@/lib/invitation/sections';
+import { textSectionId,type TextTarget } from '@/lib/invitation/textEditing';
 
 // The invitation following its event (KAN-84; docs/superpowers/specs/2026-11-06-invitation-module-integration-design.md,
 // "Following the event"). What the event knows fills the invitation's linked fields until the host edits them on the
@@ -404,4 +405,13 @@ export function textFollowsEvent(section: Section, target: { kind: 'field'; path
         default:
             return false;
     }
+}
+
+// The same for the text being edited anywhere in the document.
+export function editedTextFollowsEvent(document: InvitationDocument, target: TextTarget | null): boolean {
+    if (!target) return false;
+    const sectionId = textSectionId(document, target);
+    const section = document.sections.find((item) => item.id === sectionId);
+    if (!section) return false;
+    return textFollowsEvent(section, target.kind === 'field' ? { kind: 'field', path: target.path } : target);
 }

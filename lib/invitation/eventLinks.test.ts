@@ -1,9 +1,11 @@
 import { produce } from 'immer';
 import { describe, expect, it } from 'vitest';
 
-import { invitationDocumentSchema, type InvitationDocument } from '@/lib/invitation/document';
+import { type InvitationDocument,invitationDocumentSchema } from '@/lib/invitation/document';
 import { createInvitationEditorStore } from '@/lib/invitation/editorStore';
+import type { InvitationElement } from '@/lib/invitation/elements';
 import {
+    editedTextFollowsEvent,
     followState,
     type InvitationEventData,
     localDateTime,
@@ -14,7 +16,6 @@ import {
     takeOverEditedFields,
     textFollowsEvent,
 } from '@/lib/invitation/eventLinks';
-import type { InvitationElement } from '@/lib/invitation/elements';
 import { SAMPLE_SECTIONS } from '@/lib/invitation/samples';
 import type { InvitationSection } from '@/lib/invitation/sections';
 
@@ -404,5 +405,14 @@ describe('textFollowsEvent', () => {
         expect(textFollowsEvent(find(document, 'programIcons'), { kind: 'field', path: 'items.s-church.label' })).toBe(true);
         expect(textFollowsEvent(find(document, 'locations'), { kind: 'field', path: 'note' })).toBe(false);
         expect(textFollowsEvent(SAMPLE_SECTIONS.rsvp, { kind: 'field', path: 'deadline' })).toBe(false);
+    });
+
+    it('finds the section of the text being edited', () => {
+        const document = synced(sampleDocument());
+        const rsvp = find(document, 'rsvp');
+        expect(editedTextFollowsEvent(document, { kind: 'field', sectionId: rsvp.id, path: 'deadline' })).toBe(true);
+        expect(editedTextFollowsEvent(document, { kind: 'element', elementId: 'e-a' })).toBe(true);
+        expect(editedTextFollowsEvent(document, { kind: 'element', elementId: 'e-missing' })).toBe(false);
+        expect(editedTextFollowsEvent(document, null)).toBe(false);
     });
 });

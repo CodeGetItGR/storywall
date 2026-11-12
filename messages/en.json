@@ -10339,6 +10339,12 @@
             "photoFrame": "Framed photo",
             "footer": "Footer"
         },
+        "eventPhotos": {
+            "fromEvent": "From the event",
+            "title": "Event photos",
+            "empty": "The event has no photos yet.",
+            "photoAlt": "Event photo {n}"
+        },
         "sectionSettings": {
             "open": "Section settings",
             "done": "Done",
@@ -10452,6 +10458,8 @@
             "backgroundAuto": "Automatic",
             "backgroundNumber": "Background {n}",
             "hostCanChange": "The host can change it",
+            "followEvent": "Follow the event",
+            "followEventHint": "Comes from your event. If you edit it here, it stops following the event. Your event doesn't change.",
             "hostBackgrounds": "Backgrounds the host can pick",
             "effect": "Background effect",
             "effects": {

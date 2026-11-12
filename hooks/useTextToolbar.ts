@@ -5,6 +5,7 @@ import { type ChangeEvent, useCallback, useMemo } from 'react';
 import type { InlineTextEdit } from '@/hooks/useInlineTextEdit';
 import { useShownTextStyle } from '@/hooks/useShownTextStyle';
 import type { InvitationDocument } from '@/lib/invitation/document';
+import { editedTextFollowsEvent } from '@/lib/invitation/eventLinks';
 import type { TextStyle } from '@/lib/invitation/primitives';
 import {
     type ColorScope,
@@ -22,7 +23,7 @@ type Align = NonNullable<TextStyle['align']>;
 
 // The text toolbar's values for the text being edited, and what each control does to it.
 export function useTextToolbar(edit: InlineTextEdit, document: InvitationDocument, theme: ThemeDesign, uploadedFonts: InvitationFontDto[] = []) {
-    const { snapshot, element, setStyle, applyColor, addText } = edit;
+    const { active, snapshot, element, setStyle, applyColor, addText } = edit;
     const style: TextStyle = useMemo(() => snapshot?.style ?? {}, [snapshot]);
     const shown = useShownTextStyle(element);
 
@@ -46,6 +47,8 @@ export function useTextToolbar(edit: InlineTextEdit, document: InvitationDocumen
     const setAlign = useCallback((align: Align) => setStyle({ align }), [setStyle]);
     const pickColor = useCallback((color: string, scope: ColorScope) => applyColor(color, scope), [applyColor]);
     const add = useCallback((role: TextRole) => addText(role), [addText]);
+    // Editing it makes it the invitation's own (KAN-84), so the toolbar says so.
+    const followsEvent = useMemo(() => editedTextFollowsEvent(document, active), [document, active]);
 
     return {
         font,
@@ -67,6 +70,7 @@ export function useTextToolbar(edit: InlineTextEdit, document: InvitationDocumen
         setAlign,
         pickColor,
         add,
+        followsEvent,
     };
 }
 

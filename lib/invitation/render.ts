@@ -40,6 +40,9 @@ export type RenderContext = {
     // Sends an RSVP reply. Without one (the preview) the form shows its
     // success state and nothing is saved.
     sendRsvp?: RsvpSender;
+    // The event's guest link, for the RSVP section's "Join the event" button (KAN-84). Only while the event's plan has
+    // the wall and the link is active.
+    joinUrl?: string;
     // The editor draws every text so it can be typed in; guests get plain text.
     renderText?: TextRenderer;
     // The editor's handles and arrows inside the invitation.

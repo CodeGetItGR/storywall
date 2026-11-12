@@ -1,4 +1,5 @@
 import { type InvitationDocument, upgradeInvitationDocument } from '@/lib/invitation/document';
+import { type InvitationEventData, resolveLinkedSections } from '@/lib/invitation/eventLinks';
 import type { MediaResolver } from '@/lib/invitation/render';
 import { type ThemeDesign, themeDesignSchema } from '@/lib/invitation/theme';
 
@@ -13,9 +14,17 @@ export type PublicInvitationDto = {
     // Image id to URL for every image the copy uses. The URLs expire, so the page is never cached.
     imageUrls: Record<string, string>;
     updatedAt: string;
+    // What the invitation follows from its event (KAN-84). Missing from a backend older than it.
+    event?: InvitationEventData | null;
 };
 
-export type PublishedInvitation = { document: InvitationDocument; theme: ThemeDesign; media: MediaResolver };
+export type PublishedInvitation = {
+    document: InvitationDocument;
+    theme: ThemeDesign;
+    media: MediaResolver;
+    // The event's guest link, for the "Join the event" button.
+    joinUrl?: string;
+};
 
 export type PublishedInvitationState =
     | { kind: 'found'; invitation: PublishedInvitation }
@@ -59,13 +68,15 @@ export function publicInvitationRsvpEndpoint(slug: string): string {
     return `${publicInvitationEndpoint(slug)}/rsvp`;
 }
 
-// Throws when the copy or theme isn't in the format the renderer draws.
+// Throws when the copy or theme isn't in the format the renderer draws. Linked sections show the event as it is now.
 export function readPublishedInvitation(dto: PublicInvitationDto): PublishedInvitation {
     const imageUrls = dto.imageUrls ?? {};
+    const event = dto.event ?? null;
     return {
-        document: upgradeInvitationDocument(dto.document),
+        document: resolveLinkedSections(upgradeInvitationDocument(dto.document), event),
         theme: themeDesignSchema.parse(dto.design),
         media: (mediaId) => imageUrls[mediaId],
+        joinUrl: event?.joinUrl ?? undefined,
     };
 }
 
