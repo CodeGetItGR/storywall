@@ -72,6 +72,8 @@ export function useCreateEventWizardPlanStep() {
     return {
         isLoading: isPlansLoading || !media,
         isEmpty: full.length === 0 && lite.length === 0,
+        // The compare sheet lists every plan; with only one there is nothing to compare.
+        canCompare: full.length + lite.length > 1,
         chips,
         card,
         onSelectPlan,
