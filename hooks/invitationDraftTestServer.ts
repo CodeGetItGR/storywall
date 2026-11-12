@@ -17,7 +17,8 @@ export const TEST_API = 'http://api.test';
 type SavedBody = { revision: number; document: InvitationDocument; themeSlug?: string };
 type PublishBody = { revision: number; slug?: string };
 
-// The draft's own theme, and a second wedding theme with no gift list or FAQ, to switch to.
+// The draft's own theme, a second wedding theme with no gift list or FAQ, to switch to, and a copy
+// of the first that keeps its document's themeId, as a copied theme does.
 const OLIVE_DOCUMENT = sampleDraftDocument();
 export const TEST_THEMES: Record<string, InvitationThemePublicDto> = {
     olive: { slug: 'olive', name: 'Olive', eventType: 'WEDDING', design: PREVIEW_THEME, document: OLIVE_DOCUMENT, assetUrls: {} },
@@ -31,6 +32,14 @@ export const TEST_THEMES: Record<string, InvitationThemePublicDto> = {
             themeId: 'linen',
             sections: OLIVE_DOCUMENT.sections.filter((section) => section.type !== 'gift' && section.type !== 'faq'),
         },
+        assetUrls: {},
+    },
+    sage: {
+        slug: 'sage',
+        name: 'Sage',
+        eventType: 'WEDDING',
+        design: { ...PREVIEW_THEME, colors: { primary: '#9caf88', secondary: '#eef2e8', text: '#2f3a28' } },
+        document: OLIVE_DOCUMENT,
         assetUrls: {},
     },
 };

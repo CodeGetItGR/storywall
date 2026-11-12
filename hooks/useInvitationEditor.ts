@@ -23,8 +23,8 @@ export type EditorPanel = 'assets' | 'settings';
 
 // Everything the editor shell shows and does for one open draft.
 export function useInvitationEditor(draft: EditableDraft, uploadedFonts?: InvitationFontDto[]) {
-    const editor = useInvitationEditorStore(draft.document);
-    const themes = useDraftThemes(draft, editor.document);
+    const editor = useInvitationEditorStore(draft.document, draft.themeSlug);
+    const themes = useDraftThemes(draft, editor.themeSlug);
     // The draft as the document shows it now: in the theme it names, which a switch changes.
     const shown = useMemo<EditableDraft>(
         () => ({ ...draft, theme: themes.active.theme, media: themes.media }),

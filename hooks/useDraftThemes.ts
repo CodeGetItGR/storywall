@@ -2,7 +2,6 @@
 
 import { useCallback, useMemo, useRef, useState } from 'react';
 
-import type { InvitationDocument } from '@/lib/invitation/document';
 import type { EditableDraft } from '@/lib/invitation/drafts';
 import type { MediaResolver } from '@/lib/invitation/render';
 import type { ThemeDesign } from '@/lib/invitation/theme';
@@ -22,29 +21,30 @@ export type DraftTheme = {
 
 type Themes = Record<string, DraftTheme>;
 
-// The themes of an open draft, keyed by the themeId their invitations carry: the editor draws the
-// one the document names, so an undo or redo across a theme switch also switches the look back.
-export function useDraftThemes(draft: EditableDraft, document: InvitationDocument) {
+// The themes of an open draft, keyed by slug: the editor draws the one its store names, so an undo
+// or redo across a theme switch also switches the look back. Not by the document's themeId, which a
+// copied theme shares with its source.
+export function useDraftThemes(draft: EditableDraft, themeSlug: string) {
     // The theme the editor opened with. Taken once: a save that switches theme updates the cached
     // draft, and the editor must not read that back as the theme it started from.
-    const [initial] = useState<{ themeId: string; themes: Themes }>(() => ({
-        themeId: draft.document.themeId,
-        themes: { [draft.document.themeId]: { slug: draft.themeSlug, name: draft.themeName, theme: draft.theme, media: draft.media } },
+    const [initial] = useState<{ slug: string; themes: Themes }>(() => ({
+        slug: draft.themeSlug,
+        themes: { [draft.themeSlug]: { slug: draft.themeSlug, name: draft.themeName, theme: draft.theme, media: draft.media } },
     }));
     const [themes, setThemes] = useState<Themes>(initial.themes);
     // The same themes for saves, which read them outside render.
     const latest = useRef<Themes>(initial.themes);
 
-    const active = themes[document.themeId] ?? themes[initial.themeId];
+    const active = themes[themeSlug] ?? themes[initial.slug];
     // The theme's images first, then the draft's own uploads and the images it was loaded with.
     const draftMedia = draft.media;
     const media = useMemo<MediaResolver>(() => (mediaId) => active.media(mediaId) ?? draftMedia(mediaId), [active, draftMedia]);
 
-    const add = useCallback((themeId: string, theme: DraftTheme) => {
-        latest.current = { ...latest.current, [themeId]: theme };
+    const add = useCallback((theme: DraftTheme) => {
+        latest.current = { ...latest.current, [theme.slug]: theme };
         setThemes(latest.current);
     }, []);
-    const themeFor = useCallback((themeId: string): DraftTheme | undefined => latest.current[themeId], []);
+    const themeFor = useCallback((slug: string): DraftTheme | undefined => latest.current[slug], []);
 
     return { active, media, add, themeFor };
 }

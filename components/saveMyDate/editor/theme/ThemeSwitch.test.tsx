@@ -32,7 +32,6 @@ function confirming(plan: Partial<ThemeSwitchPlan>): ThemeSwitchStep {
     return {
         kind: 'confirming',
         slug: 'linen',
-        themeId: 'linen',
         theme: { slug: 'linen', name: 'Linen' } as DraftTheme,
         plan: { document: {} as InvitationDocument, hidden: [], restored: [], resetsTextLook: false, ...plan },
     };

@@ -161,6 +161,25 @@ describe('Invitation editor: changing the design', { timeout: 20_000 }, () => {
         expect(backend.stored()).toMatchObject({ themeSlug: 'linen' });
     });
 
+    it('switches to a copied design that shares the themeId, and undo switches back', async () => {
+        await openEditor();
+        fireEvent.click(screen.getByRole('button', { name: 'Change design' }));
+        fireEvent.click(await screen.findByRole('button', { name: /Sage/ }, SLOW));
+        const title = await screen.findByText('Switch to Sage?', {}, SLOW);
+        fireEvent.click(within(title.closest<HTMLElement>('[role="dialog"]')!).getByRole('button', { name: 'Change design' }));
+
+        expect(await screen.findByText('Design: Sage', {}, SLOW)).toBeInTheDocument();
+        await save();
+        expect(backend.saves.at(-1)?.themeSlug).toBe('sage');
+        expect(backend.stored()).toMatchObject({ themeSlug: 'sage', document: { themeId: 'preview' } });
+
+        fireEvent.click(screen.getByRole('button', { name: 'Undo' }));
+        expect(screen.getByText('Design: Olive')).toBeInTheDocument();
+        await save();
+        expect(backend.saves.at(-1)?.themeSlug).toBe('olive');
+        expect(backend.stored()).toMatchObject({ themeSlug: 'olive' });
+    });
+
     it('shows a message when the design fails to load, and the list stays', async () => {
         backend.server.use(http.get(`${TEST_API}/api/invitation-themes/linen`, () => HttpResponse.json({ status: 500 }, { status: 500 })));
         await openEditor();

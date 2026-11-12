@@ -17,7 +17,7 @@ export type ThemeSwitchStep =
     // The chosen theme is loading; the picker stays open under it.
     | { kind: 'loading'; slug: string }
     | { kind: 'failed'; slug: string }
-    | { kind: 'confirming'; slug: string; themeId: string; theme: DraftTheme; plan: ThemeSwitchPlan };
+    | { kind: 'confirming'; slug: string; theme: DraftTheme; plan: ThemeSwitchPlan };
 
 export type ThemeSwitchList = { kind: 'loading' } | { kind: 'error' } | { kind: 'themes'; themes: InvitationThemeCardDto[] };
 
@@ -27,11 +27,11 @@ type ThemeSwitchOptions = {
     // The theme the editor shows now.
     current: DraftTheme;
     // Makes a theme drawable once the host switches to it.
-    addTheme: (themeId: string, theme: DraftTheme) => void;
+    addTheme: (theme: DraftTheme) => void;
 };
 
 // Changing the design of an open draft: the list of the event type's themes, the switch the host
-// confirms, and the switch itself, one undoable edit of the document.
+// confirms, and the switch itself, one undo step.
 export function useThemeSwitch({ store, eventType, current, addTheme }: ThemeSwitchOptions) {
     const queryClient = useQueryClient();
     const [step, setStep] = useState<ThemeSwitchStep>({ kind: 'closed' });
@@ -73,9 +73,7 @@ export function useThemeSwitch({ store, eventType, current, addTheme }: ThemeSwi
                     design: target.design,
                     assetUrls: target.assetUrls,
                 };
-                setStep((now) =>
-                    now.kind === 'loading' && now.slug === slug ? { kind: 'confirming', slug, themeId: preview.document.themeId, theme, plan } : now,
-                );
+                setStep((now) => (now.kind === 'loading' && now.slug === slug ? { kind: 'confirming', slug, theme, plan } : now));
             } catch {
                 setStep((now) => (now.kind === 'loading' && now.slug === slug ? { kind: 'failed', slug } : now));
             }
@@ -86,8 +84,8 @@ export function useThemeSwitch({ store, eventType, current, addTheme }: ThemeSwi
     const confirm = useCallback(() => {
         if (step.kind !== 'confirming') return;
         const { plan } = step;
-        addTheme(step.themeId, step.theme);
-        store.getState().edit((draft) => {
+        addTheme(step.theme);
+        store.getState().switchTheme(step.slug, (draft) => {
             draft.themeId = plan.document.themeId;
             draft.overrides = plan.document.overrides;
             draft.sections = plan.document.sections;
