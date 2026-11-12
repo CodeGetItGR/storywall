@@ -23,7 +23,7 @@ import { INCIDENT_MODE } from '@/lib/incident';
 export const GUEST_WISH_NAME_MAX_LENGTH = 120;
 
 // State, submit and error mapping for the wish form on a guest code. No account: the 16+ confirmation
-// and the Terms / Guidelines acceptance are asked on every wish, like the anonymous upload form.
+// and the Terms / Guidelines acceptance are asked on every wish, in one box, like the anonymous upload form.
 export function useGuestWishForm(token: string) {
     const t = useTranslations('QrCodePage');
     const toErrorMessage = useApiErrorMessage();
@@ -37,13 +37,12 @@ export function useGuestWishForm(token: string) {
     const [guestName, setGuestName] = useState('');
     const [message, setMessage] = useState('');
     const [acceptedDocuments, setAcceptedDocuments] = useState(false);
-    const [ageConfirmed, setAgeConfirmed] = useState(false);
     const [sent, setSent] = useState(false);
     const [submitError, setSubmitError] = useState<string | null>(null);
     const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
     const isPending = sendWish.isPending;
-    const canSubmit = !INCIDENT_MODE && !isPending && guestName.trim() !== '' && message.trim() !== '' && acceptedDocuments && ageConfirmed;
+    const canSubmit = !INCIDENT_MODE && !isPending && guestName.trim() !== '' && message.trim() !== '' && acceptedDocuments;
 
     const changeGuestName = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
         setGuestName(e.target.value);
@@ -55,10 +54,6 @@ export function useGuestWishForm(token: string) {
 
     const changeAccepted = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
         setAcceptedDocuments(e.target.checked);
-    }, []);
-
-    const changeAgeConfirmed = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-        setAgeConfirmed(e.target.checked);
     }, []);
 
     const writeAnother = useCallback(() => {
@@ -118,7 +113,6 @@ export function useGuestWishForm(token: string) {
         guestName,
         message,
         acceptedDocuments,
-        ageConfirmed,
         sent,
         submitError,
         fieldErrors,
@@ -128,7 +122,6 @@ export function useGuestWishForm(token: string) {
         changeGuestName,
         changeMessage,
         changeAccepted,
-        changeAgeConfirmed,
         submit,
         writeAnother,
     };

@@ -54,12 +54,7 @@ export function useQrCardScreen() {
         unavailable,
         qrUrl: qrLink?.publicUrl ?? '',
         // A guest code's card goes back to the event's home.
-        backHref:
-            qrLink?.targetType === 'GUEST'
-                ? eventHomeHref(activeEvent)
-                : qrLink?.targetType === 'MEDIA_UPLOAD'
-                  ? routes.events.tools.galleryQr(eventId)
-                  : routes.events.invitationsQr(eventId),
+        backHref: qrLink?.targetType === 'GUEST' ? eventHomeHref(activeEvent) : routes.events.invitationsQr(eventId),
         designer,
         exporter,
         lines,

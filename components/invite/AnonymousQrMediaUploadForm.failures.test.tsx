@@ -14,6 +14,7 @@ vi.mock('@/hooks/useFilePreviews', () => ({
     useFilePreviews: (files: File[]) => files.map((file) => ({ file, url: `blob:${file.name}`, isVideo: false })),
 }));
 vi.mock('@/components/common/ProtectedImage', () => ({ ProtectedImage: ({ src }: { src: string }) => <span data-preview={src} /> }));
+vi.mock('@/hooks/useMedia', () => ({ useUploadMediaBatch: () => ({ isPending: false, mutateAsync: vi.fn() }) }));
 vi.mock('@/hooks/useQrMediaUpload', () => ({ useUploadQrMediaBatch: () => ({ isPending: false, mutateAsync }) }));
 vi.mock('@/hooks/useAppConfig', () => ({ useAppConfig: () => ({ data: undefined }) }));
 vi.mock('@/hooks/useUploadAccept', () => ({ useUploadAccept: () => ({ media: 'image/*,video/*' }) }));
@@ -23,19 +24,10 @@ vi.mock('@/hooks/useCommunityGuidelinesVersion', () => ({
     communityGuidelinesQueryKey: ['legal', 'community-guidelines'],
     useCommunityGuidelinesVersion: () => ({ data: '2026-09-30' }),
 }));
-// The checkbox copy and links are covered by AcceptanceCheckboxes.test.
-vi.mock('@/components/legal/AcceptanceCheckboxes', () => ({
-    AcceptanceCheckboxes: (props: {
-        minimumAge?: number;
-        accepted: boolean;
-        adultConfirmed: boolean;
-        onAcceptedChangeAction: () => void;
-        onAdultConfirmedChangeAction: () => void;
-    }) => (
-        <>
-            <input type="checkbox" aria-label="documents" checked={props.accepted} onChange={props.onAcceptedChangeAction} />
-            <input type="checkbox" aria-label={`age ${props.minimumAge}`} checked={props.adultConfirmed} onChange={props.onAdultConfirmedChangeAction} />
-        </>
+// The checkbox copy and links are covered by SignupAcceptanceCheckbox's own use at sign-up.
+vi.mock('@/components/legal/SignupAcceptanceCheckbox', () => ({
+    SignupAcceptanceCheckbox: (props: { minimumAge?: number; checked: boolean; onChangeAction: () => void }) => (
+        <input type="checkbox" aria-label={`accept ${props.minimumAge}`} checked={props.checked} onChange={props.onChangeAction} />
     ),
 }));
 
@@ -45,8 +37,7 @@ function file(name: string) {
 
 function chooseAndSubmit(container: HTMLElement, files: File[]) {
     fireEvent.change(container.querySelector('input[type="file"]')!, { target: { files } });
-    fireEvent.click(screen.getByRole('checkbox', { name: 'documents' }));
-    fireEvent.click(screen.getByRole('checkbox', { name: 'age 16' }));
+    fireEvent.click(screen.getByRole('checkbox', { name: 'accept 16' }));
     fireEvent.submit(container.querySelector('form')!);
 }
 
@@ -86,7 +77,15 @@ describe('AnonymousQrMediaUploadForm per-file failures', () => {
     });
 
     it('says how many files failed for any other reason', async () => {
-        mutateAsync.mockResolvedValue(result([], [['a.jpg', 'UNSUPPORTED_MEDIA_FORMAT'], ['b.jpg', 'MEDIA_FILE_CORRUPT']]));
+        mutateAsync.mockResolvedValue(
+            result(
+                [],
+                [
+                    ['a.jpg', 'UNSUPPORTED_MEDIA_FORMAT'],
+                    ['b.jpg', 'MEDIA_FILE_CORRUPT'],
+                ],
+            ),
+        );
         const { container } = render(<AnonymousQrMediaUploadForm token="t" />);
 
         chooseAndSubmit(container, [file('a.jpg'), file('b.jpg')]);
