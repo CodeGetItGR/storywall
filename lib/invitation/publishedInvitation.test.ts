@@ -81,6 +81,12 @@ describe('following the event', () => {
         expect(state.kind === 'found' && state.invitation.document).toEqual(linkedDate);
         expect(state.kind === 'found' && state.invitation.joinUrl).toBeUndefined();
     });
+
+    it('keeps the saved copy, rather than failing, when the event is not in the shape the page reads', () => {
+        const state = publishedInvitationState(200, { ...dto, document: linkedDate, event: { ...event, sessions: [{ id: 's1' }] } });
+        expect(state.kind === 'found' && state.invitation.document).toEqual(linkedDate);
+        expect(state.kind === 'found' && state.invitation.joinUrl).toBeUndefined();
+    });
 });
 
 describe('publishedInvitationTitle', () => {

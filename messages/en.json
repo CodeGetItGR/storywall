@@ -10340,7 +10340,6 @@
             "footer": "Footer"
         },
         "eventPhotos": {
-            "fromEvent": "From the event",
             "title": "Event photos",
             "empty": "The event has no photos yet.",
             "photoAlt": "Event photo {n}"

@@ -18,11 +18,11 @@ function showPhotos(ids: string[]) {
     media.current = { data: { pages: [{ content: ids.map((id) => storyMedia(id)), page: { number: 0, totalPages: 1, size: 30, totalElements: ids.length } }] }, isLoading: false };
 }
 
-function renderPicker(props: { selectedIds?: string[]; limit?: number; onChange?: (ids: string[]) => void } = {}) {
+function renderPicker(props: { selectedIds?: string[]; limit?: number; taken?: number; onChange?: (ids: string[]) => void } = {}) {
     const onChange = props.onChange ?? vi.fn();
     render(
         <NextIntlClientProvider locale="en" messages={en}>
-            <EventPhotoPicker open onClose={vi.fn()} eventId="evt-1" selectedIds={props.selectedIds ?? []} limit={props.limit ?? 9} onChange={onChange} />
+            <EventPhotoPicker open onClose={vi.fn()} eventId="evt-1" selectedIds={props.selectedIds ?? []} limit={props.limit ?? 9} taken={props.taken ?? 0} onChange={onChange} />
         </NextIntlClientProvider>,
     );
     return onChange;
@@ -56,6 +56,15 @@ describe('EventPhotoPicker', () => {
 
         expect(screen.getByAltText('Event photo 1').closest('button')).toBeDisabled();
         expect(screen.getByAltText('Event photo 2').closest('button')).toBeEnabled();
+    });
+
+    it("counts the gallery's own photos toward the limit", () => {
+        showPhotos(['a', 'b']);
+        const onChange = vi.fn();
+        renderPicker({ selectedIds: [], limit: 10, taken: 10, onChange });
+
+        expect(screen.getByAltText('Event photo 1').closest('button')).toBeDisabled();
+        expect(screen.getByAltText('Event photo 2').closest('button')).toBeDisabled();
     });
 
     it('says when the event has no photos', () => {

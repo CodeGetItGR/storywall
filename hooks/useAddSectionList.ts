@@ -3,6 +3,7 @@
 import { useCallback, useMemo, useState } from 'react';
 
 import type { InvitationDocument } from '@/lib/invitation/document';
+import { followFromTheStart, type InvitationEventData } from '@/lib/invitation/eventLinks';
 import { createSection, type NewSectionType } from '@/lib/invitation/newSection';
 import { canAddAt, insertSection, type SectionEdit, type SectionSlot } from '@/lib/invitation/sectionActions';
 import { addableSectionTypes, type EditorMode } from '@/lib/invitation/sectionRules';
@@ -14,6 +15,7 @@ export function useAddSectionList(
     eventType: string,
     mode: EditorMode,
     onAdded: (sectionId: string) => void,
+    event: InvitationEventData | null = null,
 ) {
     // Where the list adds, while it is open.
     const [slot, setSlot] = useState<SectionSlot | null>(null);
@@ -28,10 +30,14 @@ export function useAddSectionList(
             setSlot(null);
             if (!slot || !canAddAt(document.sections, slot)) return;
             const section = createSection(type, eventType);
-            edit(insertSection(slot, section));
+            // One edit: the section and, on a draft with an event, its link to it.
+            edit((draft) => {
+                insertSection(slot, section)(draft);
+                if (event) followFromTheStart(section.id, event)(draft);
+            });
             onAdded(section.id);
         },
-        [slot, document, edit, eventType, onAdded],
+        [slot, document, edit, eventType, onAdded, event],
     );
 
     return { isOpen: slot !== null, types, open, close, add };

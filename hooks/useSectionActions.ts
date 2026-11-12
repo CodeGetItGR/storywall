@@ -6,6 +6,7 @@ import { useAddSectionList } from '@/hooks/useAddSectionList';
 import { useDeleteSectionConfirm } from '@/hooks/useDeleteSectionConfirm';
 import type { InvitationDocument } from '@/lib/invitation/document';
 import type { InvitationEditorStore } from '@/lib/invitation/editorStore';
+import type { InvitationEventData } from '@/lib/invitation/eventLinks';
 import {
     type MoveDirection,
     moveSection,
@@ -18,13 +19,20 @@ import type { EditorMode } from '@/lib/invitation/sectionRules';
 
 // Adding, moving, hiding and deleting sections. Every change goes through the
 // editor store, so it is one undo step and autosaves like any other edit.
-export function useSectionActions(store: InvitationEditorStore, document: InvitationDocument, eventType: string, mode: EditorMode = 'host') {
+// With the draft's event, a section the host adds follows it from the start.
+export function useSectionActions(
+    store: InvitationEditorStore,
+    document: InvitationDocument,
+    eventType: string,
+    mode: EditorMode = 'host',
+    event: InvitationEventData | null = null,
+) {
     // The section whose tools show on touch screens: the one last tapped.
     const [activeId, setActiveId] = useState<string | null>(null);
 
     const edit = useCallback<SectionEdit>((recipe) => store.getState().edit(recipe), [store]);
     const controls = useMemo(() => sectionControls(document), [document]);
-    const addList = useAddSectionList(edit, document, eventType, mode, setActiveId);
+    const addList = useAddSectionList(edit, document, eventType, mode, setActiveId, event);
     const deleteConfirm = useDeleteSectionConfirm(edit, document);
 
     const move = useCallback((id: string, direction: MoveDirection) => edit(moveSection(id, direction)), [edit]);

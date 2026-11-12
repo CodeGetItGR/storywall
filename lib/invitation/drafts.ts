@@ -56,6 +56,8 @@ export type EditableDraft = {
     eventType: string;
     // The event that pays for publishing; null until the draft is put on one.
     eventId: string | null;
+    // The theme it was made from, whose sample content tells what the host hasn't typed over (KAN-84).
+    themeSlug?: string | null;
     document: InvitationDocument;
     theme: ThemeDesign;
     media: MediaResolver;
@@ -69,6 +71,7 @@ export function readEditableDraft(dto: InvitationDraftDto): EditableDraft {
         revision: dto.revision,
         eventType: dto.eventType,
         eventId: dto.eventId ?? null,
+        themeSlug: dto.themeSlug ?? null,
         document: upgradeInvitationDocument(dto.document),
         theme: themeDesignSchema.parse(dto.design),
         media: (mediaId) => imageUrls[mediaId],

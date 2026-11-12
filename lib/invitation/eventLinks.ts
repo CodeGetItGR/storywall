@@ -1,9 +1,10 @@
 import { type Draft, produce } from 'immer';
 
 import { applyDateLanguage, dayAndMonthWords } from '@/lib/invitation/dateDisplay';
-import type { InvitationDocument } from '@/lib/invitation/document';
+import { type InvitationDocument, upgradeInvitationDocument } from '@/lib/invitation/document';
 import type { InvitationElement } from '@/lib/invitation/elements';
 import { INVITATION_LABELS, invitationLanguage } from '@/lib/invitation/labels';
+import { createSection, type NewSectionType } from '@/lib/invitation/newSection';
 import { type EventLink, linkSchema } from '@/lib/invitation/primitives';
 import { type InvitationSection, LINKABLE_SECTION_TYPES } from '@/lib/invitation/sections';
 import { textSectionId,type TextTarget } from '@/lib/invitation/textEditing';
@@ -82,9 +83,23 @@ export function splitNames(title: string): [string, string] | null {
     return parts.length === 2 && parts[0] && parts[1] ? [parts[0], parts[1]] : null;
 }
 
+// The event's own order (displayOrder), as the event page and the backend list them; the time breaks a tie.
 function sortedSessions(sessions: InvitationEventSession[]): InvitationEventSession[] {
     const start = (session: InvitationEventSession) => (session.startAt ? new Date(session.startAt).getTime() : Number.MAX_SAFE_INTEGER);
-    return [...sessions].sort((a, b) => start(a) - start(b) || a.displayOrder - b.displayOrder);
+    return [...sessions].sort((a, b) => a.displayOrder - b.displayOrder || start(a) - start(b));
+}
+
+// The ceremony's place from the event: the main session's, else the event's own. Null when it has none.
+function ceremonyPlace(event: InvitationEventData): { name: string; address: string; mapsUrl: string | null } | null {
+    const main = (event.sessions ?? []).find((session) => session.isMain && session.locationName);
+    if (main?.locationName) return { name: main.locationName, address: '', mapsUrl: main.mapsUrl };
+    if (event.location.name) return { name: event.location.name, address: event.location.address ?? '', mapsUrl: event.location.mapsUrl };
+    return null;
+}
+
+function receptionSession(event: InvitationEventData): InvitationEventSession | undefined {
+    if (!RECEPTION_EVENT_TYPES.has(event.eventType)) return undefined;
+    return (event.sessions ?? []).find((session) => session.isSecondary && session.locationName);
 }
 
 // A link the format accepts, else none.
@@ -106,7 +121,9 @@ function coverFrame<T extends { elements: readonly InvitationElement[] }>(sectio
 }
 
 const DATE_WORDS = ['iso', 'day', 'number', 'month', 'monthName', 'monthGenitive', 'monthNumber', 'time', 'yearLabel', 'yearShort', 'periodLabel'] as const;
-const PLACE_FIELDS = ['ceremony', 'ceremonyAddress', 'ceremonyMap', 'reception', 'receptionMap'] as const;
+// The places' names and map links follow the event. The address doesn't: a session has none, so the host types it,
+// and it goes with the ceremony's place (applyPlaces).
+const PLACE_FIELDS = ['ceremony', 'ceremonyMap', 'reception', 'receptionMap'] as const;
 
 // The values a section's own `link` covers. An edit that changes them takes the section over.
 function followedValues(section: Section): unknown {
@@ -147,12 +164,12 @@ function eventFeeds(section: Section, event: InvitationEventData, hasTopFrame: b
         case 'date':
             return event.startAt !== null;
         case 'rsvp':
-            return event.rsvp !== null;
+            return Boolean(event.rsvp?.deadline);
         case 'program':
         case 'programIcons':
-            return event.sessions !== null;
+            return Boolean(event.sessions?.length);
         case 'locations':
-            return true;
+            return ceremonyPlace(event) !== null || receptionSession(event) !== undefined;
         case 'photo':
             return !hasTopFrame;
         default:
@@ -202,27 +219,49 @@ function applyCover(frame: Draft<PhotoFrame>, cover: InvitationEventCover) {
     frame.imageY = 50;
 }
 
+// The address belongs to the ceremony's place: it changes only when the place does, to the event's own address, or
+// to none when a session gives the place (sessions have no address). Otherwise the host's address stays.
 function applyPlaces(section: Draft<SectionOf<'locations'>>, event: InvitationEventData) {
-    const sessions = event.sessions ?? [];
-    const main = sessions.find((session) => session.isMain && session.locationName);
-    if (main) {
-        section.data.ceremony = main.locationName ?? '';
-        section.data.ceremonyMap = mapLink(main.mapsUrl);
-    } else if (event.location.name) {
-        section.data.ceremony = event.location.name;
-        section.data.ceremonyAddress = event.location.address ?? '';
-        section.data.ceremonyMap = mapLink(event.location.mapsUrl);
+    const ceremony = ceremonyPlace(event);
+    if (ceremony) {
+        if (ceremony.name !== section.data.ceremony) section.data.ceremonyAddress = ceremony.address;
+        section.data.ceremony = ceremony.name;
+        section.data.ceremonyMap = mapLink(ceremony.mapsUrl);
     }
-    const reception = RECEPTION_EVENT_TYPES.has(event.eventType)
-        ? sessions.find((session) => session.isSecondary && session.locationName)
-        : undefined;
+    const reception = receptionSession(event);
     if (reception) {
         section.data.reception = reception.locationName ?? '';
         section.data.receptionMap = mapLink(reception.mapsUrl);
     }
 }
 
-function applySection(section: Draft<Section>, event: InvitationEventData, language: 'el' | 'en') {
+// The theme's sample sections by id: what a section held before anyone typed in it. The editor reads them from the
+// theme; the published page has none.
+export type SampleSections = ReadonlyMap<string, Section>;
+
+// The sample sections of a theme the catalogue sent. Throws when its document isn't in the format.
+export function readSampleSections(theme: { document: unknown }): SampleSections {
+    return new Map(upgradeInvitationDocument(theme.document).sections.map((section) => [section.id, section]));
+}
+
+function samplePhoto(section: Draft<Section>, samples: SampleSections | null, frameId?: string) {
+    const sample = samples?.get(section.id);
+    if (!sample || sample.type !== section.type) return undefined;
+    if (frameId) return coverFrame(sample)?.id === frameId ? coverFrame(sample)?.photo : undefined;
+    return sample.type === 'photo' ? sample.data.photo : undefined;
+}
+
+// The event has no cover any more: an event photo it left goes back to the theme's photo, or to none.
+function dropGoneCover(section: Draft<Section>, samples: SampleSections | null) {
+    if (section.type === 'photo' && section.link?.enabled && section.data.photo?.source === 'event') {
+        section.data.photo = samplePhoto(section, samples);
+    }
+    const frame = section.type === 'top' ? coverFrame(section) : undefined;
+    if (frame?.link?.enabled && frame.photo?.source === 'event') frame.photo = samplePhoto(section, samples, frame.id);
+}
+
+function applySection(section: Draft<Section>, event: InvitationEventData, language: 'el' | 'en', samples: SampleSections | null = null) {
+    if (!event.cover) dropGoneCover(section, samples);
     switch (section.type) {
         case 'top':
             if (section.link?.enabled) applyNames(section, event.title);
@@ -289,27 +328,56 @@ function applySection(section: Draft<Section>, event: InvitationEventData, langu
     }
 }
 
-function applyEvent(draft: Draft<InvitationDocument>, event: InvitationEventData) {
+function applyEvent(draft: Draft<InvitationDocument>, event: InvitationEventData, samples: SampleSections | null = null) {
     const language = invitationLanguage(draft as InvitationDocument);
-    for (const section of draft.sections) applySection(section, event, language);
+    for (const section of draft.sections) applySection(section, event, language, samples);
 }
 
-// Links every section that has never been linked and that the event can feed: by default everything follows the
-// event. A section the host took over keeps `enabled: false` and is left alone.
-function linkNewSections(draft: Draft<InvitationDocument>, event: InvitationEventData) {
-    const top = draft.sections.find((section) => section.type === 'top');
-    const topFrame = top ? coverFrame(top) : undefined;
-    let photoLinked = draft.sections.some((section) => section.type === 'photo' && section.link);
-    for (const section of draft.sections) {
-        if (section.link || !LINKABLE_SECTION_TYPES.has(section.type)) continue;
-        if (section.type === 'photo') {
-            // Only the first Photo section, and only when the top has no frame for the cover.
-            if (photoLinked) continue;
-            photoLinked = true;
-        }
-        if (eventFeeds(section as Section, event, Boolean(topFrame))) section.link = { ...FOLLOWING };
+// The followed values without row ids, which every new list gets afresh: equal values mean the same content.
+function contentValues(section: Section): unknown {
+    if (section.type === 'program') return section.data.items.map((item) => [item.time, item.label]);
+    if (section.type === 'programIcons') return section.data.items.map((item) => [item.time, item.label, item.description]);
+    return followedValues(section);
+}
+
+// Whether a section still holds sample content nobody typed over: the theme's own section with its id, or a fresh
+// section of its type. Only such a section may start following the event, so the event never replaces the host's text.
+function holdsSample(section: Section, samples: SampleSections, eventType: string): boolean {
+    const sample = samples.get(section.id);
+    if (sample?.type === section.type && sameValues(contentValues(sample), contentValues(section))) return true;
+    return sameValues(contentValues(createSection(section.type as NewSectionType, eventType)), contentValues(section));
+}
+
+function frameHoldsSample(top: Section, frame: PhotoFrame, samples: SampleSections): boolean {
+    const sampleFrame = samples.get(top.id)?.type === top.type ? coverFrame(samples.get(top.id)!) : undefined;
+    return sampleFrame?.id === frame.id ? sameValues(sampleFrame.photo, frame.photo) : !frame.photo;
+}
+
+// Whether a section may follow the event: one of the linkable types, with something of the event to show. Of the
+// Photo sections only the first, and only when the top has no frame for the cover.
+function mayFollow(draft: Draft<InvitationDocument>, section: Draft<Section>, event: InvitationEventData): boolean {
+    if (!LINKABLE_SECTION_TYPES.has(section.type)) return false;
+    const top = draft.sections.find((item) => item.type === 'top');
+    if (section.type === 'photo') {
+        const firstPhoto = draft.sections.find((item) => item.type === 'photo');
+        const otherLinked = draft.sections.some((item) => item.type === 'photo' && item.id !== section.id && item.link);
+        if (firstPhoto?.id !== section.id || otherLinked) return false;
     }
-    if (topFrame && !topFrame.link) topFrame.link = { ...FOLLOWING };
+    return eventFeeds(section as Section, event, Boolean(top && coverFrame(top)));
+}
+
+// Links what has never been linked and still holds sample content: a new draft follows the event from the start, a
+// draft the host typed in before keeps the host's text. A section the host took over keeps `enabled: false`.
+function linkSampleSections(draft: Draft<InvitationDocument>, event: InvitationEventData, samples: SampleSections) {
+    for (const section of draft.sections) {
+        if (!section.link && mayFollow(draft, section, event) && holdsSample(section as Section, samples, event.eventType)) {
+            section.link = { ...FOLLOWING };
+        }
+        const frame = section.type === 'top' ? coverFrame(section) : undefined;
+        if (frame && !frame.link && event.cover && frameHoldsSample(section as Section, frame as PhotoFrame, samples)) {
+            frame.link = { ...FOLLOWING };
+        }
+    }
 }
 
 // The document with the event's data in every field that follows it. Changes nothing else; the same document back
@@ -319,11 +387,23 @@ export function resolveLinkedSections(document: InvitationDocument, event: Invit
     return produce(document, (draft) => applyEvent(draft, event));
 }
 
-// The editor's sync: links what has never been linked, then writes the event in. A recipe for the editor store.
-export function syncWithEvent(event: InvitationEventData) {
+// The editor's sync: writes the event into what follows it. With the theme's samples it also links what still holds
+// sample content. A recipe for the editor store.
+export function syncWithEvent(event: InvitationEventData, samples: SampleSections | null) {
     return (draft: Draft<InvitationDocument>) => {
-        linkNewSections(draft, event);
-        applyEvent(draft, event);
+        if (samples) linkSampleSections(draft, event, samples);
+        applyEvent(draft, event, samples);
+    };
+}
+
+// A section the host adds follows the event from the start, as the theme's do, and shows its data at once. Runs in
+// the same edit as the add, so one undo takes both away.
+export function followFromTheStart(sectionId: string, event: InvitationEventData) {
+    return (draft: Draft<InvitationDocument>) => {
+        const section = draft.sections.find((item) => item.id === sectionId);
+        if (!section || section.link || !mayFollow(draft, section, event)) return;
+        section.link = { ...FOLLOWING };
+        applySection(section, event, invitationLanguage(draft as InvitationDocument));
     };
 }
 

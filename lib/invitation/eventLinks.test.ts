@@ -1,4 +1,4 @@
-import { produce } from 'immer';
+import { type Draft, produce } from 'immer';
 import { describe, expect, it } from 'vitest';
 
 import { type InvitationDocument,invitationDocumentSchema } from '@/lib/invitation/document';
@@ -6,17 +6,21 @@ import { createInvitationEditorStore } from '@/lib/invitation/editorStore';
 import type { InvitationElement } from '@/lib/invitation/elements';
 import {
     editedTextFollowsEvent,
+    followFromTheStart,
     followState,
     type InvitationEventData,
     localDateTime,
     resolveLinkedSections,
+    type SampleSections,
     setFollowEvent,
     splitNames,
     syncWithEvent,
     takeOverEditedFields,
     textFollowsEvent,
 } from '@/lib/invitation/eventLinks';
+import { createSection } from '@/lib/invitation/newSection';
 import { SAMPLE_SECTIONS } from '@/lib/invitation/samples';
+import { insertSection } from '@/lib/invitation/sectionActions';
 import type { InvitationSection } from '@/lib/invitation/sections';
 
 const frame: InvitationElement = {
@@ -101,8 +105,17 @@ function eventData(overrides: Partial<InvitationEventData> = {}): InvitationEven
     };
 }
 
-function synced(document: InvitationDocument, event: InvitationEventData = eventData()): InvitationDocument {
-    return produce(document, syncWithEvent(event));
+// The theme a draft was made from: by default the draft itself, as a new draft is.
+function samplesOf(document: InvitationDocument): SampleSections {
+    return new Map(document.sections.map((section) => [section.id, section]));
+}
+
+function synced(document: InvitationDocument, event: InvitationEventData = eventData(), samples: SampleSections | null = samplesOf(document)): InvitationDocument {
+    return produce(document, syncWithEvent(event, samples));
+}
+
+function edited(document: InvitationDocument, recipe: (draft: Draft<InvitationDocument>) => void): InvitationDocument {
+    return produce(document, recipe);
 }
 
 function find<T extends InvitationSection['type']>(document: InvitationDocument, type: T): Extract<InvitationSection, { type: T }> {
@@ -149,8 +162,8 @@ describe('syncWithEvent', () => {
         expect(find(document, 'locations').data).toMatchObject({
             ceremony: 'Άγιος Νικόλαος',
             ceremonyMap: 'https://maps.google.com/?q=church',
-            // Not linked: the event has no address per session.
-            ceremonyAddress: 'Παραλία Ρόδου',
+            // A session has no address: the sample's, which belonged to the sample place, goes.
+            ceremonyAddress: '',
             reception: 'Κτήμα Ρόδων',
             receptionMap: 'https://maps.google.com/?q=rodon',
         });
@@ -213,10 +226,19 @@ describe('syncWithEvent', () => {
         expect(photos[1].data).toMatchObject({ photo: { source: 'media', mediaId: 'm-photo' } });
     });
 
-    it('keeps the invitation photo when the event has no cover', () => {
+    it('keeps the invitation photo, unlinked, when the event has no cover', () => {
         const document = synced(sampleDocument(), eventData({ cover: null }));
         expect(coverOf(document).photo).toEqual({ source: 'media', mediaId: 'm-own' });
-        expect(coverOf(document).link).toEqual({ source: 'event', enabled: true });
+        expect(coverOf(document).link).toBeUndefined();
+    });
+
+    it("puts the theme's photo back when the event's cover goes", () => {
+        const theme = sampleDocument();
+        const withCover = synced(theme);
+        const document = synced(withCover, eventData({ cover: null }), samplesOf(theme));
+        expect(coverOf(document).photo).toEqual({ source: 'media', mediaId: 'm-own' });
+        // On a published copy there is no theme to go back to: the frame shows no photo rather than a missing one.
+        expect(coverOf(resolveLinkedSections(withCover, eventData({ cover: null }))).photo).toBeUndefined();
     });
 
     it('does not link what the plan does not include', () => {
@@ -230,10 +252,21 @@ describe('syncWithEvent', () => {
         expect(find(document, 'locations').data).toMatchObject({ ceremony: 'Κτήμα Ρόδων', ceremonyAddress: 'Ρόδος', reception: 'Κτήμα' });
     });
 
-    it('keeps the line when the event has no reply-by date', () => {
+    it('does not link the RSVP line when the event has no reply-by date', () => {
         const document = synced(sampleDocument(), eventData({ rsvp: { deadline: null } }));
-        expect(find(document, 'rsvp').link).toEqual({ source: 'event', enabled: true });
+        expect(find(document, 'rsvp').link).toBeUndefined();
         expect(find(document, 'rsvp').data.deadline).toBe('έως 1 Ιουλίου');
+    });
+
+    it('does not link the places when the event has none', () => {
+        const document = synced(sampleDocument(), eventData({ sessions: [], location: { name: null, address: null, mapsUrl: null } }));
+        expect(find(document, 'locations').link).toBeUndefined();
+    });
+
+    it("writes the schedule in the event's own order", () => {
+        const sessions = eventData().sessions!.map((session) => ({ ...session, displayOrder: session.isMain ? 1 : 0 }));
+        const items = find(synced(sampleDocument(), eventData({ sessions })), 'programIcons').data.items;
+        expect(items.map((item) => item.id)).toEqual(['s-party', 's-church']);
     });
 
     it('writes the RSVP line in English for an English invitation', () => {
@@ -260,6 +293,38 @@ describe('syncWithEvent', () => {
             if (date) date.link = { source: 'event', enabled: false };
         });
         expect(find(synced(owned), 'date').data.iso).toBe('2026-07-12T18:00');
+    });
+
+    it("never links a section the host typed in before it could follow the event", () => {
+        const theme = sampleDocument();
+        const typed = edited(theme, (draft) => {
+            const date = draft.sections.find((section) => section.type === 'date');
+            if (date?.type === 'date') date.data.iso = '2027-01-01T12:00';
+            const program = draft.sections.find((section) => section.type === 'programIcons');
+            if (program?.type === 'programIcons') program.data.items[0].label = 'Η τελετή μας';
+        });
+        const document = synced(typed, eventData(), samplesOf(theme));
+
+        expect(find(document, 'date').link).toBeUndefined();
+        expect(find(document, 'date').data.iso).toBe('2027-01-01T12:00');
+        expect(find(document, 'programIcons').link).toBeUndefined();
+        expect(find(document, 'programIcons').data.items[0].label).toBe('Η τελετή μας');
+        // What still holds the theme's text follows.
+        expect(find(document, 'rsvp').link).toEqual({ source: 'event', enabled: true });
+    });
+
+    it('links a section added before, still as it was added', () => {
+        const added = createSection('coupleNames', 'WEDDING');
+        const document = synced(sampleDocument([added]), eventData(), samplesOf(sampleDocument()));
+        const couple = document.sections.find((section) => section.id === added.id);
+        expect(couple?.link).toEqual({ source: 'event', enabled: true });
+    });
+
+    it('links nothing new before the theme is known, and keeps what follows up to date', () => {
+        const once = synced(sampleDocument());
+        const fresh = sampleDocument([createSection('coupleNames', 'WEDDING')]);
+        expect(synced(fresh, eventData(), null).sections.some((section) => section.link)).toBe(false);
+        expect(find(synced(once, eventData({ startAt: '2027-09-05T15:00:00Z' }), null), 'date').data.iso).toBe('2027-09-05T18:00');
     });
 
     it('changes nothing a second time', () => {
@@ -353,6 +418,47 @@ describe('taking over', () => {
         expect(find(store.getState().document, 'programIcons').link?.enabled).toBe(false);
         store.getState().undo();
         expect(find(store.getState().document, 'programIcons').link?.enabled).toBe(true);
+    });
+
+    it("keeps a section the host added and then edited, when the event changes", () => {
+        const event = eventData();
+        const store = createInvitationEditorStore(synced(sampleDocument(), event));
+        const added = createSection('date', 'WEDDING');
+        store.getState().edit((draft) => {
+            insertSection({ id: top.id, place: 'after' }, added)(draft);
+            followFromTheStart(added.id, event)(draft);
+        });
+        const addedDate = () => store.getState().document.sections.find((section) => section.id === added.id);
+        expect(addedDate()?.link).toEqual({ source: 'event', enabled: true });
+
+        store.getState().edit((draft) => {
+            const date = draft.sections.find((section) => section.id === added.id);
+            if (date?.type === 'date') date.data.iso = '2027-02-02T12:00';
+        });
+        store.getState().sync(syncWithEvent(eventData({ startAt: '2027-09-05T15:00:00Z' }), samplesOf(sampleDocument())));
+
+        const date = addedDate();
+        expect(date?.type === 'date' && date.data.iso).toBe('2027-02-02T12:00');
+        expect(date?.link?.enabled).toBe(false);
+    });
+
+    it('lets the host type an address without taking the places over', () => {
+        const store = editorWith(sampleDocument());
+        store.getState().edit((draft) => {
+            const places = draft.sections.find((section) => section.type === 'locations');
+            if (places?.type === 'locations') places.data.ceremonyAddress = 'Πλάκα, Αθήνα';
+        });
+        const places = find(store.getState().document, 'locations');
+        expect(places.link?.enabled).toBe(true);
+        expect(textFollowsEvent(places, { kind: 'field', path: 'ceremonyAddress' })).toBe(false);
+        expect(textFollowsEvent(places, { kind: 'field', path: 'ceremony' })).toBe(true);
+
+        // The address stays while the place does, and goes with it.
+        store.getState().sync(syncWithEvent(eventData(), null));
+        expect(find(store.getState().document, 'locations').data.ceremonyAddress).toBe('Πλάκα, Αθήνα');
+        const moved = eventData().sessions!.map((session) => (session.isMain ? { ...session, locationName: 'Αγία Ειρήνη' } : session));
+        store.getState().sync(syncWithEvent(eventData({ sessions: moved }), null));
+        expect(find(store.getState().document, 'locations').data).toMatchObject({ ceremony: 'Αγία Ειρήνη', ceremonyAddress: '' });
     });
 
     it('is a no-op on a section without a link', () => {

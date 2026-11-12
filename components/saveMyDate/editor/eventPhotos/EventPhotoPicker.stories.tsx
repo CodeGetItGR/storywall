@@ -19,9 +19,9 @@ function mediaPage(urls: string[]) {
 }
 
 // The picker keeps its picks, as the gallery settings will.
-function PickerStory({ limit, initial = [] }: { limit: number; initial?: string[] }) {
+function PickerStory({ limit, taken = 0, initial = [] }: { limit: number; taken?: number; initial?: string[] }) {
     const [selected, setSelected] = useState(initial);
-    return <EventPhotoPicker open onClose={fn()} eventId={STORY_EVENT_ID} selectedIds={selected} limit={limit} onChange={setSelected} />;
+    return <EventPhotoPicker open onClose={fn()} eventId={STORY_EVENT_ID} selectedIds={selected} limit={limit} taken={taken} onChange={setSelected} />;
 }
 
 // Adding the event's own photos to the invitation's gallery (KAN-84).

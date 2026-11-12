@@ -16,13 +16,15 @@ type EventPhotoPickerProps = {
     selectedIds: readonly string[];
     // How many photos the gallery takes in all.
     limit: number;
+    // The gallery's other photos (the host's uploads), which count toward the limit too.
+    taken: number;
     onChange: (mediaIds: string[]) => void;
 };
 
 // The event's photos, to add to the invitation's gallery. A tap adds or removes one at once.
-export function EventPhotoPicker({ open, onClose, eventId, selectedIds, limit, onChange }: EventPhotoPickerProps) {
+export function EventPhotoPicker({ open, onClose, eventId, selectedIds, limit, taken, onChange }: EventPhotoPickerProps) {
     const t = useTranslations('InvitationEditor.eventPhotos');
-    const { photos, isLoading, isEmpty, sentinel, toggle, isPicked, isFull } = useEventPhotoPicker({ eventId, selectedIds, limit, onChange });
+    const { photos, isLoading, isEmpty, sentinel, toggle, isPicked, isFull } = useEventPhotoPicker({ eventId, selectedIds, limit, taken, onChange });
 
     return (
         <EditorPanelSheet open={open} title={t('title')} onClose={onClose}>

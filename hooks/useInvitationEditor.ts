@@ -25,8 +25,8 @@ export function useInvitationEditor(draft: EditableDraft, uploadedFonts?: Invita
     const editor = useInvitationEditorStore(draft.document);
     const { status, flush, savedRevision } = useDraftAutosave(editor.store, draft.id, draft.revision);
     const leave = useEditorLeave(flush);
-    const sections = useSectionActions(editor.store, editor.document, draft.eventType);
-    const eventSync = useInvitationEventSync(editor.store, draft.eventId, draft.media);
+    const eventSync = useInvitationEventSync(editor.store, draft.eventId, draft.media, draft.themeSlug ?? null);
+    const sections = useSectionActions(editor.store, editor.document, draft.eventType, 'host', eventSync.event);
     const sectionSettings = useEditorSectionSettings(editor.store, editor.document, draft, sections.setActiveId, uploadedFonts, eventSync);
     const [openPanel, setOpenPanel] = useState<EditorPanel | null>(null);
     const [isPreviewOpen, setIsPreviewOpen] = useState(false);
