@@ -113,7 +113,13 @@ export function InviteLayout({
             )}
 
             <div className={cn('flex flex-1 flex-col', scroll === 'body' && 'overflow-y-auto')}>
-                <div className="mx-auto flex w-full max-w-sm flex-1 flex-col px-6 pt-8">
+                {/* With no footer logo and no actions bar, the body keeps its own space at the bottom. */}
+                <div
+                    className={cn(
+                        'mx-auto flex w-full max-w-sm flex-1 flex-col px-6 pt-8',
+                        hero.kind === 'logo' && !actions && 'pb-[max(2rem,env(safe-area-inset-bottom))]',
+                    )}
+                >
                     {/* Body */}
                     <div className="w-full">{children}</div>
 
