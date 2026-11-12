@@ -18,7 +18,7 @@ import { useEventQrLinks, useEventQrLinkStats } from '@/hooks/useQrLinks';
 import { useEventUsage } from '@/hooks/useUsage';
 import { isEventWritable } from '@/lib/eventLifecycle';
 import { findPlanByCode } from '@/lib/planTiers';
-import { isInvitationQrLink } from '@/lib/qrLinks';
+import { isGalleryQrFeatureEnabled, isInvitationQrLink } from '@/lib/qrLinks';
 import { routes } from '@/lib/routes';
 
 export function InvitationsQrScreen() {
@@ -43,10 +43,8 @@ export function InvitationsQrScreen() {
     const currentPlan = eventUsage ? findPlanByCode(appConfig?.planTiers ?? [], 'EVENT', eventUsage.planTier) : undefined;
     const nextUpgradeOption = upgradeOptions[0];
     const isLoading = qrLinksLoading || statsLoading || usageLoading || upgradesLoading;
-    // The gallery upload code has its own dedicated page and its own summary
-    // row in the right context panel (see QrLinksSection), and the guest code
-    // lives on a lite event's home — exclude both here so this "Share links"
-    // list and its count only cover join-type links.
+    // The gallery upload code isn't listed: scanning the join code offers uploading too (KAN-208).
+    // The guest code lives on a lite event's home. Both are left out of this list and its count.
     const shareQrLinks = qrLinks.filter(isInvitationQrLink);
 
     const handleClampNotice = useCallback((message: string) => setLimitNotice(message), []);
@@ -58,7 +56,8 @@ export function InvitationsQrScreen() {
             icon={QrCode}
             backLabel={tPage('back')}
             backHref={routes.events.feed(eventId)}
-            subtitle={tPage('subtitle')}
+            // The join code also uploads when the plan has photo uploads (KAN-208).
+            subtitle={isGalleryQrFeatureEnabled(activeEvent?.modules) ? tPage('subtitleWithUpload') : tPage('subtitle')}
         >
             {isLoading ? (
                 <QrLinksListSkeleton />

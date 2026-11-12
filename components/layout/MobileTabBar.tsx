@@ -74,9 +74,8 @@ export function MobileTabBar() {
     const contextItems: ContextNavItem[] = activeEvent
         ? isHost
             ? [
-                  // Help links into the manage page's Help section, and the gallery QR only makes
-                  // sense once the event is live — both hidden for draft events.
-                  ...(isDraft ? hostItems.filter((item) => item.key !== 'help' && item.key !== 'galleryQr') : hostItems),
+                  // Help links into the manage page's Help section, which draft events don't show.
+                  ...(isDraft ? hostItems.filter((item) => item.key !== 'help') : hostItems),
                   // Hosts answer RSVPs from the dashboard's RSVP section, not the guest self-RSVP tool.
                   ...(isDraft ? [] : toolItems.filter((item) => item.key !== 'rsvp')),
               ]

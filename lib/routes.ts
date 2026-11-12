@@ -88,7 +88,6 @@ export const routes = {
             rsvpSubmit: (eventId: string, attending?: 'attending' | 'not-attending' | null) =>
                 withQuery(`${eventBasePath(eventId)}/tools/rsvp/submit`, { attending }),
             gallery: (eventId: string) => `${eventBasePath(eventId)}/tools/gallery`,
-            galleryQr: (eventId: string) => `${eventBasePath(eventId)}/tools/gallery/qr`,
             playlist: (eventId: string) => `${eventBasePath(eventId)}/tools/playlist`,
             quiz: (eventId: string) => `${eventBasePath(eventId)}/tools/quiz`,
             heOrShe: (eventId: string) => `${eventBasePath(eventId)}/tools/he-or-she`,
