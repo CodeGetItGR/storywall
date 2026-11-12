@@ -100,8 +100,27 @@ export function createDraftServer() {
         }),
     );
 
+    // Requests still on their way, such as the save the editor sends as it closes.
+    let inFlight = 0;
+    server.events.on('request:start', () => {
+        inFlight += 1;
+    });
+    // An unhandled request fails without an end event.
+    for (const done of ['request:end', 'request:unhandled'] as const) {
+        server.events.on(done, () => {
+            inFlight -= 1;
+        });
+    }
+
     return {
         server,
+        // Resolves once no request is on its way. Await it before reset(), or a late save lands
+        // on the next test's draft.
+        async settled() {
+            // The editor's closing save starts a moment after it unmounts.
+            do await new Promise((resolve) => setTimeout(resolve, 20));
+            while (inFlight > 0);
+        },
         saves,
         publishes,
         claims,
