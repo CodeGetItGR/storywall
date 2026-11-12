@@ -31,17 +31,15 @@ describe('useRightContextPanel links', () => {
         mocks.activeEvent = null;
     });
 
-    it('shows the upload and share links on a full event', () => {
+    it('shows the share links on a full event', () => {
         mocks.activeEvent = event([{ moduleKey: 'posts', isEnabled: true, isAvailable: true }, galleryWithQr]);
         const { result } = renderHook(() => useRightContextPanel());
         expect(result.current.showInvitationsQr).toBe(true);
-        expect(result.current.showGalleryQr).toBe(true);
     });
 
     it('hides them on a lite event, whose one guest code sits in the home quick actions', () => {
         mocks.activeEvent = event([galleryWithQr]);
         const { result } = renderHook(() => useRightContextPanel());
         expect(result.current.showInvitationsQr).toBe(false);
-        expect(result.current.showGalleryQr).toBe(false);
     });
 });
