@@ -1,10 +1,11 @@
 'use client';
 
-import { BookHeart, Loader2, Send } from 'lucide-react';
+import { Loader2, Send } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { IncidentPausedNote } from '@/components/incident/IncidentPausedNote';
 import { SignupAcceptanceCheckbox } from '@/components/legal/SignupAcceptanceCheckbox';
+import { QrSentArt } from '@/components/qrGuest/QrSentArt';
 import { FormFieldLabel } from '@/components/ui/FormFieldLabel';
 import { GUEST_WISH_NAME_MAX_LENGTH, useGuestWishForm } from '@/hooks/useGuestWishForm';
 
@@ -20,7 +21,7 @@ export function GuestWishForm({ token }: GuestWishFormProps) {
         return (
             /* Sent */
             <div className="flex flex-col items-center gap-4 py-8 text-center">
-                <BookHeart className="h-9 w-9 text-pink-500" />
+                <QrSentArt kind="wish" />
                 <p className="text-base font-semibold text-ink">{t('guestCode.wish.sent')}</p>
                 <button
                     type="button"

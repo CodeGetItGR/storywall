@@ -84,6 +84,23 @@ describe('AnonymousQrMediaUploadForm acceptance', () => {
         );
     });
 
+    // KAN-208: the sent screen shows its drawing, and Upload more opens an empty form with the name kept and the box to tick again.
+    it('goes back to the form for another set from the sent screen', async () => {
+        mutateAsync.mockResolvedValue({ created: [], failed: [] });
+        const { container } = render(<AnonymousQrMediaUploadForm token="t" />);
+        fireEvent.change(screen.getByPlaceholderText('anonymousUpload.namePlaceholder'), { target: { value: 'Nikos' } });
+        chooseFile(container);
+        tickBox();
+        fireEvent.submit(container.querySelector('form')!);
+
+        expect(await screen.findByRole('img', { name: 'qrUploadSent' })).toBeInTheDocument();
+        fireEvent.click(screen.getByRole('button', { name: 'anonymousUpload.uploadMore' }));
+
+        expect(screen.getByDisplayValue('Nikos')).toBeInTheDocument();
+        expect(screen.getByRole('checkbox', { name: 'accept 16' })).not.toBeChecked();
+        expect(screen.getByRole('button', { name: /anonymousUpload.submit/ })).toBeDisabled();
+    });
+
     it('unticks the documents and asks again when the Terms changed meanwhile', async () => {
         mutateAsync.mockImplementation(() => Promise.reject(new ApiError(400, { errorCode: 3043 })));
         const { container } = render(<AnonymousQrMediaUploadForm token="t" />);

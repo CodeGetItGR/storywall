@@ -672,6 +672,7 @@
             "chooseFiles": "Choose files",
             "submit": "Upload",
             "success": "Thanks! Your photos are on their way.",
+            "uploadMore": "Upload more",
             "rateLimited": "This event has had a lot of uploads in the last hour. The files below weren't sent; try them again later.",
             "someFailed": "{count, plural, one {One file wasn't sent} other {# files weren't sent}}. Check the files below and try again.",
             "addMore": "Add more",
@@ -9637,7 +9638,9 @@
         "appIcon": "StoryWall app icon",
         "location": "Location",
         "guestPhoto": "Guest photo",
-        "photoBy": "Photo by {name}"
+        "photoBy": "Photo by {name}",
+        "qrUploadSent": "Photos sent",
+        "qrWishSent": "Wish sent"
     },
     "VendorPages": {
         "breadcrumb": "For business",
