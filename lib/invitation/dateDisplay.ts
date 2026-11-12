@@ -119,6 +119,13 @@ export function applyDateLanguage(data: DateData, language: DateLanguage) {
     data.time = data.iso.slice(11, 16);
 }
 
+// "5 Ιουλίου" / "July 5": a day of the month as a sentence says it.
+export function dayAndMonthWords(month: number, day: number, language: DateLanguage): string {
+    const months = LANGUAGE_WORDS[language].genitives;
+    const name = months[month - 1] ?? '';
+    return language === 'el' ? `${day} ${name}` : `${name} ${day}`;
+}
+
 // Capitals without accents, as Greek typesetting writes them.
 export function upperWithoutAccents(value: string): string {
     return value.normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/ς/g, 'Σ').toUpperCase();

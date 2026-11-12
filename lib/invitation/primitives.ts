@@ -42,12 +42,19 @@ function isAllowedLink(value: string): boolean {
 // data for images; the renderer turns the id into a URL.
 export const mediaRefSchema = z.object({ mediaId: idSchema }).strict();
 
-// An image is either an upload or a piece of the theme's own library
-// (elements, frames, icons), referenced by the theme's asset id.
+// An image is an upload, a piece of the theme's own library (elements,
+// frames, icons) referenced by the theme's asset id, or a photo of the
+// invitation's event (the gallery's picks and the cover). The backend accepts
+// an event photo only from the draft's own event.
 export const imageRefSchema = z.discriminatedUnion('source', [
     z.object({ source: z.literal('media'), mediaId: idSchema }).strict(),
     z.object({ source: z.literal('theme'), assetId: idSchema }).strict(),
+    z.object({ source: z.literal('event'), mediaId: idSchema }).strict(),
 ]);
+
+// Fields that follow the invitation's event until the host edits them on the
+// invitation (docs/superpowers/specs/2026-11-06-invitation-module-integration-design.md).
+export const eventLinkSchema = z.object({ source: z.literal('event'), enabled: z.boolean() }).strict();
 
 export const alignSchema = z.enum(['left', 'center', 'right']);
 
@@ -67,4 +74,5 @@ export const textStyleSchema = z
 
 export type MediaRef = z.infer<typeof mediaRefSchema>;
 export type ImageRef = z.infer<typeof imageRefSchema>;
+export type EventLink = z.infer<typeof eventLinkSchema>;
 export type TextStyle = z.infer<typeof textStyleSchema>;

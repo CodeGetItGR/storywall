@@ -113,7 +113,7 @@ export function themeCssVars(ctx: RenderContext): CSSProperties {
 
 export function resolveImage(ref: ImageRef | undefined, ctx: RenderContext): string | undefined {
     if (!ref) return undefined;
-    if (ref.source === 'media') return ctx.media(ref.mediaId);
+    if (ref.source === 'media' || ref.source === 'event') return ctx.media(ref.mediaId);
     const asset = ctx.theme.elements.find((element) => element.id === ref.assetId);
     return asset ? ctx.media(asset.image.mediaId) : undefined;
 }
