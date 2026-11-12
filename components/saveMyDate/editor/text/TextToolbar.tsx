@@ -59,7 +59,7 @@ export function TextToolbar({ toolbar, anchor, canAdd, onDelete, toolbarRef, onK
             )}
 
             {/* Tools */}
-            <div className="flex items-center gap-1 overflow-x-auto">
+            <div className="-m-1.5 flex items-center gap-1 overflow-x-auto p-1.5">
                 {/* Font and size */}
                 <TextFontPicker value={toolbar.font} label={toolbar.fontLabel} options={toolbar.fonts} onChange={toolbar.setFont} />
                 <TextToolbarSelect label={t('fontSize')} value={toolbar.size ? String(toolbar.size) : ''} onChange={toolbar.setSize}>
