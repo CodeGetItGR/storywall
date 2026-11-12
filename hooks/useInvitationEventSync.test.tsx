@@ -11,7 +11,7 @@ import { SAMPLE_DOCUMENT } from '@/lib/invitation/samples';
 const sources = vi.hoisted(() => ({
     event: undefined as EventDetailResponseDto | undefined,
     qrLinks: undefined as unknown,
-    samples: null as ReadonlyMap<string, unknown> | null,
+    samples: null as { sections: ReadonlyMap<string, unknown>; imageUrls: Record<string, string> } | null,
     themeSlug: undefined as string | null | undefined,
 }));
 
@@ -99,14 +99,16 @@ describe('useInvitationEventSync', () => {
         sources.event = storyEvent({ schedule: { ...storyEvent().schedule, startAt: '2027-07-12T15:30:00Z', timezone: 'Europe/Athens' } });
         sources.samples = null;
         const store = createInvitationEditorStore(SAMPLE_DOCUMENT);
-        const { rerender } = renderHook(() => useInvitationEventSync(store, sources.event!.id, vi.fn(() => undefined), 'classic'));
+        const { result, rerender } = renderHook(() => useInvitationEventSync(store, sources.event!.id, vi.fn(() => undefined), 'classic'));
 
         expect(store.getState().document.sections.some((section) => section.link)).toBe(false);
 
-        sources.samples = new Map(SAMPLE_DOCUMENT.sections.map((section) => [section.id, section]));
+        sources.samples = { sections: new Map(SAMPLE_DOCUMENT.sections.map((section) => [section.id, section])), imageUrls: { 'm-theme': 'https://cdn.test/theme.jpg' } };
         rerender();
         expect(store.getState().document.sections.find((section) => section.type === 'date')?.link).toEqual({ source: 'event', enabled: true });
         expect(dateIso(store)).toBe('2027-07-12T18:30');
+        // The theme's images draw a sample photo the draft never had.
+        expect(result.current.media('m-theme')).toBe('https://cdn.test/theme.jpg');
         sources.samples = null;
     });
 });

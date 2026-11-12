@@ -23,6 +23,9 @@ export function invitationThemesEndpoint(eventType: CatalogueEventType): string 
     return `/api/invitation-themes?eventType=${eventType}`;
 }
 
+// What the editor keeps of the draft's theme, under invitationThemeKeys.samples: its document and image URLs.
+export type ThemeSamples = { document: unknown; assetUrls?: Record<string, string> };
+
 export const invitationThemeKeys = {
     all: ['invitationThemes'] as const,
     catalogue: () => [...invitationThemeKeys.all, 'catalogue'] as const,

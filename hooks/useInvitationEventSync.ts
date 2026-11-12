@@ -19,7 +19,8 @@ import { findAutoInviteQrLink } from '@/lib/qrLinks';
 export function useInvitationEventSync(store: InvitationEditorStore, eventId: string | null, media: MediaResolver, themeSlug: string | null) {
     const { data: detail } = useEvent(eventId);
     const { data: qrLinks } = useEventQrLinks(eventId);
-    const samples = useThemeSampleSections(eventId ? themeSlug : null);
+    const theme = useThemeSampleSections(eventId ? themeSlug : null);
+    const samples = theme?.sections ?? null;
     // The reply-by line is written in the invitation's language: a language switch writes it again.
     const language = useStore(store, (state) => invitationLanguage(state.document));
     const joinUrl = qrLinks ? (findAutoInviteQrLink(qrLinks)?.publicUrl ?? null) : null;
@@ -34,7 +35,12 @@ export function useInvitationEventSync(store: InvitationEditorStore, eventId: st
     }, [store, event, samples, language]);
 
     const imageUrls = useMemo(() => eventImageUrls(detail), [detail]);
-    const withEventImages = useMemo<MediaResolver>(() => (mediaId) => media(mediaId) ?? imageUrls[mediaId], [media, imageUrls]);
+    // A sample photo put back when the event's cover goes may be one the draft never had: the theme's URL draws it.
+    const themeUrls = theme?.imageUrls;
+    const withEventImages = useMemo<MediaResolver>(
+        () => (mediaId) => media(mediaId) ?? imageUrls[mediaId] ?? themeUrls?.[mediaId],
+        [media, imageUrls, themeUrls],
+    );
 
     return { event, samples, media: withEventImages, joinUrl: event?.joinUrl ?? undefined };
 }
