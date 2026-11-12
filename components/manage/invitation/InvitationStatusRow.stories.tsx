@@ -12,6 +12,8 @@ const invitation = (state: Partial<EventOnlineInvitation> = {}): EventOnlineInvi
     liveUntil: 'Jun 15, 2027',
     publicUrl: 'https://invite.storywall.gr/maria-nikos',
     planMissing: false,
+    locked: false,
+    addOnHref: null,
     canExtend: true,
     editHref: '/save-my-date/editor/draft-1',
     planHref: '/events/evt-story/manage?tab=plan',
