@@ -74,6 +74,12 @@ describe('isEmptyForGuests', () => {
         expect(isEmptyForGuests({ ...gallery, data: { ...gallery.data, images } }, ctx)).toBe(true);
     });
 
+    it('keeps an empty photo section in the editor, which shows its camera', () => {
+        const editing = { ...ctx, canvasTools: { photo: () => null } };
+
+        expect(isEmptyForGuests({ ...photo, data: { imageY: 50 } }, editing)).toBe(false);
+    });
+
     it('keeps a photo section with a photo', () => {
         expect(isEmptyForGuests(photo, ctx)).toBe(false);
     });
