@@ -10350,6 +10350,31 @@
                 "size": "The file is over 10 MB.",
                 "failed": "The photo didn't upload. Try again.",
                 "full": "You've reached the photo limit."
+            },
+            "move": "Move photo",
+            "zoomOut": "Zoom out",
+            "zoomIn": "Zoom in",
+            "frame": "Frame",
+            "chooseFrame": "Choose a frame",
+            "noFrames": "Add frames to the theme.",
+            "frameEffect": "Frame effect",
+            "frameEffects": {
+                "none": "No effect",
+                "fade-in": "Fade In",
+                "fade-up": "Fade Up",
+                "fade-down": "Fade Down",
+                "zoom-in-soft": "Zoom In Soft",
+                "zoom-out-soft": "Zoom Out Soft",
+                "slide-left": "Slide Left",
+                "slide-right": "Slide Right",
+                "float": "Float",
+                "gentle-pulse": "Gentle Pulse",
+                "soft-rotate-in": "Soft Rotate In",
+                "swing-soft": "Swing Soft",
+                "blur-reveal": "Blur Reveal",
+                "mask-reveal": "Mask Reveal",
+                "parallax-soft": "Parallax Soft",
+                "pop-elegant": "Pop Elegant"
             }
         },
         "sectionSettings": {
