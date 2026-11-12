@@ -1,6 +1,6 @@
 'use client';
 
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
@@ -9,6 +9,8 @@ import { useAppConfig } from '@/hooks/useAppConfig';
 import { useAuth } from '@/hooks/useAuth';
 import { usePreviewCreateEventCode } from '@/hooks/useBilling';
 import { useCreateEventGift } from '@/hooks/useCreateEventGift';
+import { type CreateEventFlowMode, useCreateEventStepNavigation } from '@/hooks/useCreateEventStepNavigation';
+import { useCreateEventWizardDraft } from '@/hooks/useCreateEventWizardDraft';
 import { useDurationPicks } from '@/hooks/useDurationPicks';
 import { useCreateEvent, useUpdateEvent } from '@/hooks/useEvent';
 import { useThemePresetsForType } from '@/hooks/useEventTheme';
@@ -42,54 +44,64 @@ import {
     rememberCreateEventCheckout,
     resolveCreateEventStep,
     resolveCreateEventType,
+    stepAfter,
+    stepBefore,
     visibleCreateEventSteps,
 } from '@/lib/createEventSteps';
+import { needsAccountStep } from '@/lib/createEventWizardAccount';
+import { CREATE_EVENT_STEP_PARAM } from '@/lib/createEventWizardUrl';
 import { eventWindowFromLocalStart, formatDate, getScheduleDatetimeLocalBounds, isDatetimeLocalAfter, isDatetimeLocalBefore } from '@/lib/datetime';
 import { getLatestStartAt, projectCoverage } from '@/lib/eventCoverage';
 import { normalizeEventTypeSlug } from '@/lib/eventTypeSlug';
 import { defaultSelectedPlan, liveInitialOptions, resolveInitialOption } from '@/lib/planTiers';
-import { routes } from '@/lib/routes';
 import { getCurrentTimezone, getSupportedTimezones } from '@/lib/timezones';
 import type { CreateEventFormValue, CreateEventStep } from '@/providers/createEvent/CreateEventFormContext';
 
 export const CREATE_EVENT_FORM_ID = 'create-event-form';
 
-export function useCreateEventFormController(): CreateEventFormValue {
+export function useCreateEventFormController({ mode = 'legacy' }: { mode?: CreateEventFlowMode } = {}): CreateEventFormValue {
+    const isWizard = mode === 'wizard';
     const t = useTranslations('CreateEventPage');
     const locale = useLocale();
-    const router = useRouter();
     const searchParams = useSearchParams();
-    const { isAuthenticated, user } = useAuth();
+    const { isAuthenticated, isBootstrapping, user } = useAuth();
     useMe();
     // Fail closed: submission stays blocked until we positively know the
     // account is verified. `user.emailVerified` is `null` until /api/me
     // resolves, so an in-flight or failed fetch must not read as "verified".
-    // (The entry point itself — the home screen's Create Event action — is
-    // where an unverified account is stopped and told why; this is a
-    // defense-in-depth backstop for anyone who still reaches this route.)
     const isEmailVerified = user?.emailVerified === true;
     const createEvent = useCreateEvent();
+    const [requestedTypeSlug] = useState(() => normalizeEventTypeSlug(searchParams.get(CREATE_EVENT_TYPE_PARAM)));
+    // The wizard picks up where the host left off; a link's own type, plan, duration or code wins.
+    const draft = useCreateEventWizardDraft(isWizard, requestedTypeSlug);
+    const saved = draft.initial;
+    // The wizard asks a guest or an unverified account to sign in before review; once shown, the step
+    // stays in the count for the run (spec 3.1).
+    const needsAccount = isWizard && needsAccountStep(user ? { emailVerified: user.emailVerified, role: user.role } : null);
+    const [accountStepShown, setAccountStepShown] = useState(() => saved?.accountStepShown ?? false);
+    // Set during render, not in an effect, so the step never renders once without being counted.
+    if (needsAccount && !isBootstrapping && !accountStepShown) setAccountStepShown(true);
+    const showAccountStep = isWizard && (accountStepShown || (needsAccount && !isBootstrapping));
     // A link may pick the plan and its duration (?plan=, ?option=); a code or id not on sale falls back.
-    const [linkedPlanCode] = useState(() => searchParams.get(CREATE_EVENT_PLAN_PARAM) ?? '');
+    const [linkedPlanCode] = useState(() => searchParams.get(CREATE_EVENT_PLAN_PARAM) ?? saved?.planCode ?? '');
     const [linkedOptionId] = useState(() => searchParams.get(CREATE_EVENT_OPTION_PARAM));
-    const durationPicks = useDurationPicks(linkedPlanCode && linkedOptionId ? { [linkedPlanCode]: linkedOptionId } : {});
+    const durationPicks = useDurationPicks(linkedPlanCode && linkedOptionId ? { [linkedPlanCode]: linkedOptionId } : (saved?.durationPicks ?? {}));
     const previewCreateEventCode = usePreviewCreateEventCode();
     const { data: appConfig, refetch: refetchAppConfig } = useAppConfig();
     const toErrorMessage = useApiErrorMessage();
     const consent = useWithdrawalConsent();
 
-    const [title, setTitle] = useState('');
+    const [title, setTitle] = useState(() => saved?.title ?? '');
     // The type picked here; until then, the one the link asked for (see resolveCreateEventType).
-    const [eventType, setEventType] = useState<EventTypeConvention | null>(null);
-    const [requestedTypeSlug] = useState(() => normalizeEventTypeSlug(searchParams.get(CREATE_EVENT_TYPE_PARAM)));
-    const [startAt, setStartAt] = useState('');
-    const [timezone, setTimezone] = useState(getCurrentTimezone);
-    const [locationName, setLocationName] = useState('');
-    const [locationAddress, setLocationAddress] = useState('');
-    const [mapsUrl, setMapsUrl] = useState('');
+    const [eventType, setEventType] = useState<EventTypeConvention | null>(() => (requestedTypeSlug ? null : (saved?.eventType ?? null)));
+    const [startAt, setStartAt] = useState(() => saved?.startAt ?? '');
+    const [timezone, setTimezone] = useState(() => saved?.timezone || getCurrentTimezone());
+    const [locationName, setLocationName] = useState(() => saved?.locationName ?? '');
+    const [locationAddress, setLocationAddress] = useState(() => saved?.locationAddress ?? '');
+    const [mapsUrl, setMapsUrl] = useState(() => saved?.mapsUrl ?? '');
     const [error, setError] = useState<string | null>(null);
     const [selectedPlanCode, setSelectedPlanCode] = useState(linkedPlanCode);
-    const [themePresetId, setThemePresetId] = useState<string | null>(null);
+    const [themePresetId, setThemePresetId] = useState<string | null>(() => saved?.themePresetId ?? null);
     const [createdDraftEventId, setCreatedDraftEventId] = useState<string | null>(null);
     // What the draft was created with, so a duration changed afterwards is
     // saved to it before checkout.
@@ -103,7 +115,7 @@ export function useCreateEventFormController(): CreateEventFormValue {
     const [startPassed, setStartPassed] = useState(false);
     const updateDraft = useUpdateEvent(createdDraftEventId);
     // A link may carry a discount code (?code=); the field opens with it filled (EventOverviewDiscountCode).
-    const [checkoutCode, setCheckoutCode] = useState(() => searchParams.get(CREATE_EVENT_CODE_PARAM)?.trim() ?? '');
+    const [checkoutCode, setCheckoutCode] = useState(() => searchParams.get(CREATE_EVENT_CODE_PARAM)?.trim() ?? saved?.checkoutCode ?? '');
     const [appliedCheckoutCode, setAppliedCheckoutCode] = useState<string | null>(null);
     const [checkoutCodePreview, setCheckoutCodePreview] = useState<CollaborationCodePreviewResponseDto | null>(null);
     const [checkoutCodeError, setCheckoutCodeError] = useState<string | null>(null);
@@ -123,7 +135,7 @@ export function useCreateEventFormController(): CreateEventFormValue {
     // fail-closed if a stale or malformed response includes a disabled type.
     const eventTypes = appConfig?.eventTypes.filter((eventType) => eventType.isEnabled) ?? [];
     const step = resolveCreateEventStep(
-        searchParams.get('step'),
+        searchParams.get('step') ?? (isWizard ? (saved?.step ?? null) : null),
         eventTypes.map((type) => type.eventTypeKey),
         requestedTypeSlug,
     );
@@ -137,19 +149,20 @@ export function useCreateEventFormController(): CreateEventFormValue {
         requestedTypeSlug,
     );
     // Not before the config: the type isn't known until then, and WEDDING's plans would be fetched for nothing.
-    const planTiersQuery = usePlanTiersForEventType(selectedEventType, isAuthenticated && Boolean(appConfig));
+    // The wizard shows plans before sign-up; the old flow only ever runs signed in.
+    const planTiersQuery = usePlanTiersForEventType(selectedEventType, (isAuthenticated || isWizard) && Boolean(appConfig), isWizard);
     // A plan with no duration on sale can't be bought, so it isn't offered.
     const eventPlans = useMemo(() => (planTiersQuery.data ?? []).filter((plan) => liveInitialOptions(plan).length > 0), [planTiersQuery.data]);
     const selectedPlan = defaultSelectedPlan(eventPlans, selectedPlanCode);
     const selectedCode = selectedPlan?.code ?? selectedPlanCode;
     const selectedOption = selectedPlan ? resolveInitialOption(selectedPlan, durationPicks.picks[selectedPlan.code]) : null;
-    const gift = useCreateEventGift(selectedPlan);
+    const gift = useCreateEventGift(selectedPlan, saved?.gift ?? null);
     const planHasTheme = selectedPlan?.moduleKeys.includes('theme') ?? false;
-    const themePresetsQuery = useThemePresetsForType(planHasTheme ? selectedEventType : null);
+    const themePresetsQuery = useThemePresetsForType(planHasTheme ? selectedEventType : null, isWizard);
     const themePresets = planHasTheme ? themePresetsQuery.data : undefined;
     const themeStepAvailable = isThemeStepAvailable({ planHasTheme, isLoading: themePresetsQuery.isLoading, presets: themePresets });
     const selectedThemePresetId = effectiveThemePresetId(themePresetId, themePresets);
-    const steps = visibleCreateEventSteps(themeStepAvailable);
+    const steps = visibleCreateEventSteps(themeStepAvailable, showAccountStep);
     const { reset: resetGift, saveToDraft: saveGiftToDraft } = gift;
     const initialSessionTitleKey = getInitialSessionTitleKey(selectedEventType);
     const initialSessionTitle = t.has(initialSessionTitleKey) ? t(initialSessionTitleKey) : undefined;
@@ -179,20 +192,35 @@ export function useCreateEventFormController(): CreateEventFormValue {
         trimmedTitle && startAt && isTimezoneValid && !scheduleError && trimmedLocationName && trimmedLocationAddress && gift.isValid,
     );
     const canReachOverview = canReachDetails && canSubmitDetails;
-    const reachableStep: CreateEventStep = canReachOverview ? 'overview' : canReachDetails ? 'details' : canReachPlan ? 'plan' : 'type';
+    // While the account still needs signing in, review isn't reachable yet: the account step is.
+    const reachableStep: CreateEventStep = canReachOverview
+        ? needsAccount
+            ? 'account'
+            : 'overview'
+        : canReachDetails
+          ? 'details'
+          : canReachPlan
+            ? 'plan'
+            : 'type';
 
-    const goToStep = useCallback(
-        (nextStep: CreateEventStep) => {
-            router.push(routes.events.new({ step: nextStep, run }), { scroll: false });
-        },
-        [router, run],
-    );
+    const navigation = useCreateEventStepNavigation(mode, run);
+    const goToStep = useCallback((nextStep: CreateEventStep) => navigation.push(nextStep), [navigation]);
 
     const goToType = useCallback(() => goToStep('type'), [goToStep]);
     const goToPlan = useCallback(() => goToStep('plan'), [goToStep]);
     const goToDetails = useCallback(() => goToStep('details'), [goToStep]);
     const goToTheme = useCallback(() => goToStep('theme'), [goToStep]);
     const goToOverview = useCallback(() => goToStep('overview'), [goToStep]);
+    // The step after this one among the steps shown (details → theme → account → review).
+    const goToNextStep = useCallback(() => {
+        const next = stepAfter(step, steps);
+        if (next) goToStep(next);
+    }, [goToStep, step, steps]);
+    // The top-left Back: the step before this one among the steps shown, over a finished account step.
+    const goBack = useCallback(() => {
+        const previous = stepBefore(step, steps, !needsAccount);
+        if (previous) navigation.back(previous);
+    }, [navigation, needsAccount, step, steps]);
 
     useEffect(() => {
         if (step === 'type') {
@@ -203,15 +231,25 @@ export function useCreateEventFormController(): CreateEventFormValue {
     useEffect(() => {
         // Until the config and the type's plans load, no step past the type (or plan) one looks
         // reachable: a link straight to a later step (a landing plan card opens on details) must not
-        // be sent back meanwhile.
-        if (!appConfig || planTiersQuery.isLoading) return;
+        // be sent back meanwhile. Nor while the session loads: who needs the account step isn't known yet.
+        if (!appConfig || planTiersQuery.isLoading || isBootstrapping) return;
         if (CREATE_EVENT_STEPS.indexOf(step) > CREATE_EVENT_STEPS.indexOf(reachableStep)) {
-            router.replace(routes.events.new({ step: reachableStep, run }));
+            navigation.replace(reachableStep);
         } else if (step === 'theme' && !themeStepAvailable) {
             // Nothing to pick for this plan or type, or the list failed: skip ahead.
-            router.replace(routes.events.new({ step: 'overview', run }));
+            navigation.replace(showAccountStep ? 'account' : 'overview');
+        } else if (step === 'account' && !showAccountStep) {
+            // The old flow, or an account that never needed it (a legacy or shared link).
+            navigation.replace('overview');
         }
-    }, [appConfig, planTiersQuery.isLoading, reachableStep, router, run, step, themeStepAvailable]);
+    }, [appConfig, isBootstrapping, navigation, planTiersQuery.isLoading, reachableStep, showAccountStep, step, themeStepAvailable]);
+
+    // The pop-up opens on a URL with no step (it resumes the saved one). Write the step into that entry,
+    // so going Back to it later shows that step instead of resuming wherever the host got to.
+    const hasStepParam = searchParams.has(CREATE_EVENT_STEP_PARAM);
+    useEffect(() => {
+        if (isWizard && run && !hasStepParam) navigation.replace(step);
+    }, [hasStepParam, isWizard, navigation, run, step]);
 
     const onSelectEventType = useCallback(
         (type: EventTypeConvention) => {
@@ -246,6 +284,49 @@ export function useCreateEventFormController(): CreateEventFormValue {
         setThemePresetId(presetId);
         setError(null);
     }, []);
+
+    const { save: saveDraft, clear: clearDraft } = draft;
+    useEffect(() => {
+        if (!isWizard) return;
+        saveDraft({
+            run,
+            step,
+            eventType: eventType ?? (requestedTypeSlug ? selectedEventType : null),
+            planCode: selectedPlanCode,
+            durationPicks: durationPicks.picks,
+            title,
+            startAt,
+            timezone,
+            locationName,
+            locationAddress,
+            mapsUrl,
+            themePresetId,
+            gift: { isGift: gift.isGift, details: gift.details.value },
+            checkoutCode,
+            accountStepShown,
+        });
+    }, [
+        accountStepShown,
+        checkoutCode,
+        durationPicks.picks,
+        eventType,
+        gift.details.value,
+        gift.isGift,
+        isWizard,
+        locationAddress,
+        locationName,
+        mapsUrl,
+        requestedTypeSlug,
+        run,
+        saveDraft,
+        selectedEventType,
+        selectedPlanCode,
+        startAt,
+        step,
+        themePresetId,
+        timezone,
+        title,
+    ]);
 
     // A code preview prices one plan at one duration, so it goes stale when
     // either changes. The typed code stays so the host can apply it again.
@@ -317,7 +398,7 @@ export function useCreateEventFormController(): CreateEventFormValue {
             setError(null);
             setStartPassed(false);
             if (step === 'details') {
-                if (canSubmitDetails) goToStep(themeStepAvailable ? 'theme' : 'overview');
+                if (canSubmitDetails) goToNextStep();
                 return;
             }
             if (step !== 'overview') return;
@@ -426,6 +507,8 @@ export function useCreateEventFormController(): CreateEventFormValue {
                 });
                 // Back from checkout then opens the draft instead of an emptied wizard.
                 if (run) rememberCreateEventCheckout(run, eventId);
+                // The run is done: the next wizard starts fresh, and Back from checkout opens the draft.
+                if (isWizard) clearDraft();
                 navigateToCheckout(eventId, checkout);
             } catch (checkoutError) {
                 setIsCheckoutPending(false);
@@ -440,13 +523,16 @@ export function useCreateEventFormController(): CreateEventFormValue {
         [
             appliedCheckoutCode,
             canSubmitDetails,
+            clearDraft,
             consent,
             createEvent,
             createdDraftEventId,
             createdDraftSelection,
+            goToNextStep,
             goToStep,
             initialSessionTitle,
             isEmailVerified,
+            isWizard,
             mapsUrl,
             partnerBranding,
             planTiersQuery,
@@ -455,7 +541,6 @@ export function useCreateEventFormController(): CreateEventFormValue {
             selectedCode,
             selectedThemePresetId,
             themePresetsQuery,
-            themeStepAvailable,
             selectedEventType,
             selectedOption,
             step,
@@ -479,6 +564,8 @@ export function useCreateEventFormController(): CreateEventFormValue {
         goToDetails,
         goToTheme,
         goToOverview,
+        goBack,
+        goToNextStep,
         steps,
 
         eventTypes,

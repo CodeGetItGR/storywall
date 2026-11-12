@@ -19,6 +19,9 @@ export type OverlayHistoryRegistration = {
 
 const activeLayers: ActiveOverlayLayer[] = [];
 const skippableAnchors = new Set<string>();
+// Addresses of pages that are gone (a deleted record). Back passes over every
+// entry left at one of them. Kept in memory: Next rewrites history state.
+const goneUrls = new Set<string>();
 let listening = false;
 let registrationCount = 0;
 
@@ -56,7 +59,7 @@ function removeLayerFromCurrentEntry(layerId: string) {
 }
 
 function stopListeningWhenIdle() {
-    if (!listening || activeLayers.length > 0 || skippableAnchors.size > 0) return;
+    if (!listening || activeLayers.length > 0 || skippableAnchors.size > 0 || goneUrls.size > 0) return;
 
     window.removeEventListener('popstate', handlePopState);
     listening = false;
@@ -64,7 +67,7 @@ function stopListeningWhenIdle() {
 
 function handlePopState(event: PopStateEvent) {
     const destinationAnchor = getOverlayAnchor(event.state);
-    const shouldSkipAnchor = destinationAnchor !== null && skippableAnchors.has(destinationAnchor);
+    const shouldSkipAnchor = (destinationAnchor !== null && skippableAnchors.has(destinationAnchor)) || goneUrls.has(window.location.href);
 
     // A skip is only ever valid for the traversal immediately following the
     // close that armed it. An anchor is written into a history entry and can
@@ -212,12 +215,28 @@ export function replacePageUrl(url: string) {
     window.history.replaceState(withoutNextRouterMarkers(currentState), '', url);
 }
 
+// How many open overlays were opened on the current page. Each one pushed a
+// Back step above it that is still in the history, so going back this many
+// steps plus one never goes below the page's own entry's predecessor. Read from
+// memory, not history state, which Next rewrites.
+export function overlayStepsOnPage(): number {
+    return activeLayers.filter((layer) => layer.active && layer.openedHref === window.location.href).length;
+}
+
+// The page at this address is gone: from now on Back passes over every history
+// entry at it, as it does over a closed overlay's entry, and Forward onto one
+// turns straight back.
+export function skipGonePage(url: string) {
+    goneUrls.add(url);
+    ensureListening();
+}
+
 // A same-page navigation (a hash route, or a search param like ?post=) that
 // should be its own Back step, made without a server render.
 // A closed overlay leaves its entry behind; while we are still on it at the
 // URL it opened from, it only duplicates the entry below, so it is reused
 // instead of stacking one more dead Back press on top.
-export function pushPageEntry(url: string) {
+export function pushPageEntry(url: string, extraState: Record<string, unknown> = {}) {
     const currentState = window.history.state && typeof window.history.state === 'object' ? window.history.state : {};
     const {
         [OVERLAY_HISTORY_KEY]: stack,
@@ -233,6 +252,6 @@ export function pushPageEntry(url: string) {
     skippableAnchors.clear();
     stopListeningWhenIdle();
 
-    if (isLeftoverOverlayEntry) window.history.replaceState(pageState, '', url);
-    else window.history.pushState(pageState, '', url);
+    if (isLeftoverOverlayEntry) window.history.replaceState({ ...pageState, ...extraState }, '', url);
+    else window.history.pushState({ ...pageState, ...extraState }, '', url);
 }

@@ -9,7 +9,7 @@ import { localeCookieName } from '@/i18n/config';
 // lib/auth/accountLocale.ts). The root layout survives a client-side
 // navigation and would stay in the old language, so a changed language gets a
 // full page load instead.
-function localeCookieChanged(): boolean {
+export function localeCookieChanged(): boolean {
     const match = document.cookie.match(new RegExp(`(?:^|; )${localeCookieName}=([^;]*)`));
     return match !== null && decodeURIComponent(match[1]) !== document.documentElement.lang;
 }

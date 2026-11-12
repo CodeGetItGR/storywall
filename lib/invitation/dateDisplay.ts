@@ -78,6 +78,47 @@ export function dateDisplayModel(data: DateData): DateDisplayModel {
     };
 }
 
+const GREEK_GENITIVES = ['Ιανουαρίου', 'Φεβρουαρίου', 'Μαρτίου', 'Απριλίου', 'Μαΐου', 'Ιουνίου', 'Ιουλίου', 'Αυγούστου', 'Σεπτεμβρίου', 'Οκτωβρίου', 'Νοεμβρίου', 'Δεκεμβρίου'];
+
+// The words a language change writes into the date (old wedartApplyDateLanguage).
+const LANGUAGE_WORDS: Record<DateLanguage, { days: string[]; months: string[]; monthNames: string[]; genitives: string[] }> = {
+    el: {
+        days: ['Κυριακή', 'Δευτέρα', 'Τρίτη', 'Τετάρτη', 'Πέμπτη', 'Παρασκευή', 'Σάββατο'],
+        months: GREEK_GENITIVES,
+        monthNames: DISPLAY_NAMES.el.months,
+        genitives: GREEK_GENITIVES,
+    },
+    en: {
+        days: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
+        months: DISPLAY_NAMES.en.months,
+        monthNames: DISPLAY_NAMES.en.months,
+        genitives: DISPLAY_NAMES.en.months,
+    },
+};
+
+// Switches the date's words to another language. The day, month, year and
+// time are rewritten from `iso`, so the host's own wording of them is replaced
+// as in the old editor; `iso` itself never changes.
+export function applyDateLanguage(data: DateData, language: DateLanguage) {
+    const parts = isoParts(data.iso);
+    if (!parts) return;
+    const words = LANGUAGE_WORDS[language];
+    const monthIndex = parts.month - 1;
+    // The calendar day of the written date, wherever the editor runs.
+    const weekday = new Date(Date.UTC(parts.year, monthIndex, parts.day)).getUTCDay();
+    data.displayLanguage = language;
+    data.day = words.days[weekday];
+    data.number = String(parts.day);
+    data.month = `${words.months[monthIndex]} ${parts.year}`;
+    data.monthName = words.monthNames[monthIndex];
+    data.monthGenitive = words.genitives[monthIndex];
+    data.monthNumber = String(parts.month).padStart(2, '0');
+    data.yearLabel = String(parts.year);
+    data.yearShort = String(parts.year).slice(-2);
+    data.periodLabel = DISPLAY_NAMES[language].period;
+    data.time = data.iso.slice(11, 16);
+}
+
 // Capitals without accents, as Greek typesetting writes them.
 export function upperWithoutAccents(value: string): string {
     return value.normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/ς/g, 'Σ').toUpperCase();

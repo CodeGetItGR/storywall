@@ -17,6 +17,9 @@ const ENTRY_FILES = [
     'components/occasions/OccasionPage.tsx',
     'components/qrWedding/QrWeddingPage.tsx',
 ];
+// Loaded on demand with its own messages (see CreateEventWizardMessages); its namespaces are not
+// shipped with public pages, and i18n/createWizardMessages.test.ts checks them instead.
+const LAZY_BOUNDARIES = new Set([path.join(ROOT, 'components/event/create/wizard/CreateEventDialog.tsx')]);
 
 function resolveImport(specifier: string): string | null {
     if (!specifier.startsWith('@/')) return null;
@@ -34,7 +37,7 @@ function collectClientNamespaces(): Set<string> {
     const namespaces = new Set<string>();
 
     const walk = (file: string) => {
-        if (seen.has(file)) return;
+        if (seen.has(file) || LAZY_BOUNDARIES.has(file)) return;
         seen.add(file);
         const source = readFileSync(file, 'utf8');
         for (const match of source.matchAll(/useTranslations\('([^']+)'\)/g)) namespaces.add(match[1]);
@@ -80,9 +83,12 @@ describe('pickPublicMessages', () => {
             'LanguageSwitcher',
             'Modules',
             'NewsletterForm',
+            'PageErrorState',
             'PartnerCard',
+            'SaveMyDateStorefront',
             'SiteNotice',
         ]);
+        expect(Object.keys(picked.PageErrorState as object)).toEqual(['retry']);
         expect(Object.keys(picked.LandingPage as object).sort()).toEqual([
             'featureDetails',
             'features',

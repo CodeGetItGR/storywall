@@ -23,7 +23,7 @@ export function CoupleProfilesSimpleSection({ section, contrast, ctx }: CouplePr
                 {/* First partner */}
                 <SimpleProfile section={section} path="partnerA" partner={data.partnerA} contrast={contrast} ctx={ctx} />
                 {/* Decoration */}
-                <FamilyDecoration decoration={data.decoration} ctx={ctx} />
+                <FamilyDecoration sectionId={section.id} decoration={data.decoration} ctx={ctx} />
                 {/* Second partner */}
                 <SimpleProfile section={section} path="partnerB" partner={data.partnerB} contrast={contrast} ctx={ctx} />
             </div>

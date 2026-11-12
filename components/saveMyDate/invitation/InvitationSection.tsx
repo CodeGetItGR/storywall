@@ -1,4 +1,7 @@
+import { SectionEffectLayer } from '@/components/saveMyDate/invitation/effects/SectionEffectLayer';
+import { SectionTransition } from '@/components/saveMyDate/invitation/effects/SectionTransition';
 import { InvitationElements } from '@/components/saveMyDate/invitation/InvitationElements';
+import { PhotoTextTint } from '@/components/saveMyDate/invitation/PhotoTextTint';
 import { ContactSection } from '@/components/saveMyDate/invitation/sections/contact/ContactSection';
 import { CoupleContactSection } from '@/components/saveMyDate/invitation/sections/contact/CoupleContactSection';
 import { CountdownSection } from '@/components/saveMyDate/invitation/sections/countdown/CountdownSection';
@@ -17,9 +20,18 @@ import { ParentsSimpleSection } from '@/components/saveMyDate/invitation/section
 import { PhotoPeopleSection } from '@/components/saveMyDate/invitation/sections/family/PhotoPeopleSection';
 import { FaqSection } from '@/components/saveMyDate/invitation/sections/faq/FaqSection';
 import { FooterSection } from '@/components/saveMyDate/invitation/sections/FooterSection';
+import { AccommodationSection } from '@/components/saveMyDate/invitation/sections/info/AccommodationSection';
+import { GiftSection } from '@/components/saveMyDate/invitation/sections/info/GiftSection';
+import { LocationsSection } from '@/components/saveMyDate/invitation/sections/info/LocationsSection';
+import { ProgramIconsSection } from '@/components/saveMyDate/invitation/sections/info/ProgramIconsSection';
+import { ProgramSection } from '@/components/saveMyDate/invitation/sections/info/ProgramSection';
+import { RsvpSection } from '@/components/saveMyDate/invitation/sections/info/RsvpSection';
 import { InvitationTextSection } from '@/components/saveMyDate/invitation/sections/InvitationTextSection';
+import { GallerySection } from '@/components/saveMyDate/invitation/sections/media/GallerySection';
+import { PhotoSection } from '@/components/saveMyDate/invitation/sections/media/PhotoSection';
 import { TopSection } from '@/components/saveMyDate/invitation/sections/TopSection';
-import { type RenderContext, sectionShell, type TextContrast } from '@/lib/invitation/render';
+import { isEmptyForGuests } from '@/lib/invitation/gallery';
+import { type RenderContext, sectionPhotoTint, sectionShell, type TextContrast } from '@/lib/invitation/render';
 import type { InvitationSection as Section, SectionType } from '@/lib/invitation/sections';
 
 type InvitationSectionProps = {
@@ -53,15 +65,34 @@ const BUILT_SECTION_TYPES: ReadonlySet<SectionType> = new Set([
     'coupleProfiles',
     'coupleProfilesSimple',
     'ourStoryProposal',
+    'program',
+    'programIcons',
+    'locations',
+    'accommodation',
+    'gift',
+    'rsvp',
+    'photo',
+    'gallery',
 ]);
 
 export function InvitationSection({ section, index, ctx }: InvitationSectionProps) {
-    if (!BUILT_SECTION_TYPES.has(section.type)) return null;
+    if (!BUILT_SECTION_TYPES.has(section.type) || isEmptyForGuests(section, ctx)) return null;
     const shell = sectionShell(section, index, ctx);
+    const photoTint = sectionPhotoTint(section, index, ctx);
 
     return (
         <section className={shell.className} style={shell.style} data-section-id={section.id}>
+            {/* Background effect */}
+            {shell.effect && <SectionEffectLayer effect={shell.effect} backgroundStyle={shell.effectBackground.style} hasThemeImage={shell.effectBackground.hasThemeImage} />}
+
+            {/* Photo tint */}
+            {photoTint && <PhotoTextTint photos={photoTint.photos} textColor={photoTint.textColor} />}
+
+            {/* Content */}
             <SectionContent section={section} contrast={shell.contrast} ctx={ctx} />
+
+            {/* Transition art */}
+            {shell.transition && <SectionTransition art={shell.transition} />}
         </section>
     );
 }
@@ -111,6 +142,22 @@ function SectionContent({ section, contrast, ctx }: SectionContentProps) {
             return <CoupleProfilesSimpleSection section={section} contrast={contrast} ctx={ctx} />;
         case 'ourStoryProposal':
             return <OurStoryProposalSection section={section} contrast={contrast} ctx={ctx} />;
+        case 'program':
+            return <ProgramSection section={section} contrast={contrast} ctx={ctx} />;
+        case 'programIcons':
+            return <ProgramIconsSection section={section} contrast={contrast} ctx={ctx} />;
+        case 'locations':
+            return <LocationsSection section={section} contrast={contrast} ctx={ctx} />;
+        case 'accommodation':
+            return <AccommodationSection section={section} contrast={contrast} ctx={ctx} />;
+        case 'gift':
+            return <GiftSection section={section} contrast={contrast} ctx={ctx} />;
+        case 'rsvp':
+            return <RsvpSection section={section} contrast={contrast} ctx={ctx} />;
+        case 'photo':
+            return <PhotoSection section={section} contrast={contrast} ctx={ctx} />;
+        case 'gallery':
+            return <GallerySection section={section} contrast={contrast} ctx={ctx} />;
         case 'photoFrame':
             return (
                 <div className="section-inner">

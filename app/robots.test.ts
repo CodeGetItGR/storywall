@@ -17,6 +17,17 @@ describe('robots', () => {
         }
     });
 
+    it('lets crawlers reach the invitation catalogue and theme pages', () => {
+        vi.stubEnv('NEXT_PUBLIC_APP_ENV', 'production');
+        const rules = robots().rules;
+        const groups = Array.isArray(rules) ? rules : [rules];
+        const paths = ['/invitations', '/invitations/olive', '/el/prosklitiria', '/el/prosklitiria/olive'];
+        for (const group of groups) {
+            const disallowed = [group.disallow ?? []].flat();
+            for (const path of paths) expect(disallowed.filter((prefix) => path.startsWith(prefix)), path).toEqual([]);
+        }
+    });
+
     it('keeps crawlers out of campaign short addresses but lets link previews follow them', () => {
         vi.stubEnv('NEXT_PUBLIC_APP_ENV', 'production');
         const rules = robots().rules;

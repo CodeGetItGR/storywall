@@ -1,0 +1,301 @@
+import type { Meta, StoryObj } from '@storybook/nextjs-vite';
+import { expect, fireEvent, fn, userEvent, waitFor, within } from 'storybook/test';
+
+import { withAppContext } from '@/.storybook/appContext';
+import { copyFor } from '@/.storybook/copy';
+import {
+    conflictHandlers,
+    draftHandlers,
+    eventStepHandlers,
+    failingSaveHandlers,
+    publishHandlers,
+    storyDraft,
+    storyDraftOnEvent,
+    withEditorScreen,
+    withFirstEditorVisit,
+} from '@/.storybook/editor';
+import { storyUser } from '@/.storybook/fixtures';
+import { waitForOpen } from '@/.storybook/waitForOpen';
+import { InvitationEditor } from '@/components/saveMyDate/editor/InvitationEditor';
+
+const meta = {
+    title: 'SaveMyDate/Editor/InvitationEditor',
+    component: InvitationEditor,
+    decorators: [withEditorScreen, withAppContext],
+    parameters: { layout: 'fullscreen' },
+    args: { draft: storyDraft(), onReload: fn() },
+    beforeEach({ msw }) {
+        msw.use(...draftHandlers());
+    },
+} satisfies Meta<typeof InvitationEditor>;
+
+export default meta;
+type Story = StoryObj<typeof meta>;
+
+// The colour input of the docked settings panel on a wide screen, or of the open sheet on a phone.
+function textColorInput(label: string) {
+    const inputs = within(document.body).getAllByLabelText(label);
+    return inputs.find((input) => input.checkVisibility()) ?? inputs[0];
+}
+
+type EditorCopy = ReturnType<typeof copyFor>['InvitationEditor'];
+
+// Waits as long as waitForOpen: a busy runner can take more than the default second.
+const SLOW = { timeout: 10_000 };
+
+// Changes the text colour and waits until the editor has the change, so a click straight after has something to save.
+async function changeTextColor(canvasElement: HTMLElement, copy: EditorCopy) {
+    fireEvent.input(textColorInput(copy.textColor), { target: { value: '#7a1f3d' } });
+    await waitFor(() => expect(within(canvasElement).getByRole('button', { name: copy.undo })).toBeEnabled(), SLOW);
+}
+
+// A section's tools show once it is tapped, as on a phone.
+async function tapSection(canvasElement: HTMLElement, name: string) {
+    const section = within(canvasElement).getByRole('group', { name });
+    fireEvent.pointerDown(section);
+    await waitFor(() => expect(section).toHaveAttribute('data-active', 'true'));
+    return section;
+}
+
+export const Default: Story = {};
+
+// A phone opens the settings as a sheet.
+export const SettingsSheet: Story = {
+    tags: ['visual-mobile-only'],
+    globals: { viewport: { value: 'mobile' } },
+    play: async ({ canvasElement, globals }) => {
+        await userEvent.click(within(canvasElement).getByRole('button', { name: copyFor(globals).InvitationEditor.settings }));
+        await waitForOpen('dialog');
+    },
+};
+
+// A changed colour can be undone; the save status says it isn't saved yet.
+export const Edited: Story = {
+    play: async ({ canvasElement, globals }) => {
+        const copy = copyFor(globals).InvitationEditor;
+        const canvas = within(canvasElement);
+        await changeTextColor(canvasElement, copy);
+        await expect(canvas.getByText(copy.unsaved)).toBeInTheDocument();
+    },
+};
+
+export const Preview: Story = {
+    play: async ({ canvasElement, globals }) => {
+        await userEvent.click(within(canvasElement).getByRole('button', { name: copyFor(globals).InvitationEditor.preview }));
+        await waitForOpen('dialog');
+    },
+};
+
+// Signed out, publishing saves, then asks the visitor to sign in.
+export const PublishSignedOut: Story = {
+    parameters: { app: { user: null } },
+    play: async ({ canvasElement, globals }) => {
+        const copy = copyFor(globals).InvitationEditor;
+        await userEvent.click(within(canvasElement).getByRole('button', { name: copy.publish }));
+        const dialog = within(await waitForOpen('dialog'));
+        // The dialog fades in.
+        await waitFor(() => expect(dialog.getByText(copy.signInTitle)).toBeVisible(), SLOW);
+        await expect(dialog.getByRole('link', { name: copy.signIn })).toHaveAttribute(
+            'href',
+            '/login?next=%2Fsave-my-date%2Feditor%2Fdraft-1%3Fpublish%3D1',
+        );
+    },
+};
+
+// A draft on no event, and the host has a wedding: they choose it or make a new one.
+export const PublishChooseEvent: Story = {
+    beforeEach({ msw }) {
+        msw.use(...eventStepHandlers({ withEvent: true }));
+    },
+    play: async ({ canvasElement, globals }) => {
+        const copy = copyFor(globals).InvitationEditor;
+        await userEvent.click(within(canvasElement).getByRole('button', { name: copy.publish }));
+        const sheet = within(await waitForOpen('dialog'));
+        await expect(await sheet.findByRole('button', { name: /Eleni & Nikos/ }, SLOW)).toBeVisible();
+        await expect(sheet.getByRole('button', { name: copy.newEvent })).toBeVisible();
+    },
+};
+
+// No event to choose: the new event's plan step opens, asking only for what the invitation doesn't say.
+export const PublishNewEvent: Story = {
+    beforeEach({ msw }) {
+        msw.use(...eventStepHandlers());
+    },
+    play: async ({ canvasElement, globals }) => {
+        const copy = copyFor(globals).InvitationEditor;
+        await userEvent.click(within(canvasElement).getByRole('button', { name: copy.publish }));
+        const sheet = within(await waitForOpen('dialog'));
+        await expect(await sheet.findByText(copy.choosePlan, {}, SLOW)).toBeVisible();
+        await expect(await sheet.findByText('Premium', {}, SLOW)).toBeVisible();
+        await expect(sheet.getByRole('button', { name: copy.continueToPayment })).toBeDisabled();
+    },
+};
+
+// The first publish asks for the link, then says it is published.
+export const FirstPublish: Story = {
+    args: { draft: storyDraftOnEvent() },
+    beforeEach({ msw }) {
+        msw.use(...publishHandlers());
+    },
+    play: async ({ canvasElement, globals }) => {
+        const copy = copyFor(globals).InvitationEditor;
+        await userEvent.click(within(canvasElement).getByRole('button', { name: copy.publish }));
+        const sheet = within(await waitForOpen('dialog'));
+        await userEvent.type(sheet.getByLabelText(copy.publishLink), 'maria-nikos');
+        await expect(await sheet.findByText(copy.slugAvailable, {}, SLOW)).toBeVisible();
+        await userEvent.click(sheet.getByRole('button', { name: copy.publish }));
+        await expect(await within(canvasElement).findByText(copy.published, {}, SLOW)).toBeVisible();
+    },
+};
+
+// Published before: Publish publishes the changes straight away.
+export const Republish: Story = {
+    args: { draft: storyDraftOnEvent() },
+    beforeEach({ msw }) {
+        msw.use(...publishHandlers({ publishedAt: 'maria-nikos' }));
+    },
+    play: async ({ canvasElement, globals }) => {
+        const copy = copyFor(globals).InvitationEditor;
+        await userEvent.click(within(canvasElement).getByRole('button', { name: copy.publish }));
+        await expect(await within(canvasElement).findByText(copy.republished, {}, SLOW)).toBeVisible();
+    },
+};
+
+// The event's plan has no Save my date, so the editor offers the plan.
+export const PlanMissing: Story = {
+    args: { draft: storyDraftOnEvent() },
+    beforeEach({ msw }) {
+        msw.use(...publishHandlers({ publishedAt: 'maria-nikos', refusal: 5012 }));
+    },
+    play: async ({ canvasElement, globals }) => {
+        const copy = copyFor(globals).InvitationEditor;
+        await userEvent.click(within(canvasElement).getByRole('button', { name: copy.publish }));
+        const dialog = within(await waitForOpen('dialog'));
+        await waitFor(() => expect(dialog.getByText(copy.planMissingTitle)).toBeVisible(), SLOW);
+    },
+};
+
+// The first visit opens the tour by itself.
+export const Tour: Story = {
+    tags: ['visual-desktop-only'],
+    decorators: [withFirstEditorVisit],
+    play: async ({ globals }) => {
+        const copy = copyFor(globals).InvitationEditor;
+        await expect(within(await waitForOpen('dialog')).getByText(copy.tour.welcomeTitle)).toBeVisible();
+    },
+};
+
+// On a phone the tour lights the part a step talks about, with the card along the bottom.
+export const TourOnPhone: Story = {
+    tags: ['visual-mobile-only'],
+    globals: { viewport: { value: 'mobile' } },
+    decorators: [withFirstEditorVisit],
+    play: async ({ globals }) => {
+        const copy = copyFor(globals).InvitationEditor;
+        const card = within(await waitForOpen('dialog'));
+        await userEvent.click(card.getByRole('button', { name: copy.tour.next }));
+        await expect(await within(document.body).findByRole('dialog', { name: copy.tour.textTitle }, SLOW)).toBeVisible();
+    },
+};
+
+// The draft was saved on another device, so the editor stops and offers the newer copy.
+export const Conflict: Story = {
+    beforeEach({ msw }) {
+        msw.use(...conflictHandlers());
+    },
+    play: async ({ canvasElement, globals }) => {
+        const copy = copyFor(globals).InvitationEditor;
+        await changeTextColor(canvasElement, copy);
+        await userEvent.click(within(canvasElement).getByRole('button', { name: copy.publish }));
+        await waitForOpen('dialog');
+    },
+};
+
+// Saving keeps failing, so back asks before leaving.
+export const SaveFailed: Story = {
+    beforeEach({ msw }) {
+        msw.use(...failingSaveHandlers());
+    },
+    play: async ({ canvasElement, globals }) => {
+        const copy = copyFor(globals).InvitationEditor;
+        const canvas = within(canvasElement);
+        await changeTextColor(canvasElement, copy);
+        await userEvent.click(canvas.getByRole('button', { name: copy.back }));
+        await waitForOpen('dialog');
+        await expect(canvas.getByText(copy.notSaved)).toBeInTheDocument();
+    },
+};
+
+// The "+" under a section lists the sections this event may still add.
+export const AddSection: Story = {
+    play: async ({ canvasElement, globals }) => {
+        const copy = copyFor(globals).InvitationEditor;
+        // The first "+" sits above the top section, the second under it.
+        const [, underTop] = within(canvasElement).getAllByRole('button', { name: copy.sections.add });
+        await userEvent.click(underTop);
+        const sheet = await waitForOpen('dialog');
+        await userEvent.click(within(sheet).getByRole('button', { name: copy.sectionNames.photo }));
+        await waitFor(() => expect(within(canvasElement).getAllByRole('group', { name: copy.sectionNames.photo })).toHaveLength(2));
+        await expect(within(canvasElement).getByRole('button', { name: copy.undo })).toBeEnabled();
+    },
+};
+
+// The click scrolls the canvas, and fonts and images loading afterwards move it a few pixels more, by a different
+// amount each run. Once the save, fonts and images have settled, the section goes to the middle of the canvas.
+async function centerWhenSettled(canvasElement: HTMLElement, section: HTMLElement, saved: string) {
+    await expect(await within(canvasElement).findByText(saved, {}, SLOW)).toBeInTheDocument();
+    await waitFor(() => {
+        expect(document.fonts.status).toBe('loaded');
+        expect([...document.images].every((image) => image.complete)).toBe(true);
+    }, SLOW);
+    section.scrollIntoView({ block: 'center', behavior: 'instant' });
+}
+
+// A hidden section stays on the canvas, faded, so it can be shown again.
+export const HiddenSection: Story = {
+    play: async ({ canvasElement, globals }) => {
+        const copy = copyFor(globals).InvitationEditor;
+        const section = await tapSection(canvasElement, copy.sectionNames.dressCode);
+        await userEvent.click(within(section).getByRole('button', { name: copy.sections.hide }));
+        await expect(within(section).getByText(copy.sections.hidden)).toBeVisible();
+        await centerWhenSettled(canvasElement, section, copy.saved);
+    },
+};
+
+// Deleting asks first.
+export const DeleteSection: Story = {
+    play: async ({ canvasElement, globals }) => {
+        const copy = copyFor(globals).InvitationEditor;
+        const section = await tapSection(canvasElement, copy.sectionNames.dressCode);
+        await userEvent.click(within(section).getByRole('button', { name: copy.sections.options }));
+        await userEvent.click(within(await waitForOpen('menu')).getByRole('menuitem', { name: copy.sections.delete }));
+        await waitForOpen('dialog');
+    },
+};
+
+// A section's height bar drags it taller, in one undo step.
+export const SectionHeight: Story = {
+    tags: ['visual-desktop-only'],
+    play: async ({ canvasElement, globals }) => {
+        const copy = copyFor(globals).InvitationEditor;
+        const section = await tapSection(canvasElement, copy.sectionNames.dressCode);
+        const bar = within(section).getByRole('slider', { name: copy.handles.sectionHeight });
+        const rect = bar.getBoundingClientRect();
+        const x = rect.left + rect.width / 2;
+        const y = rect.top + rect.height / 2;
+        fireEvent.pointerDown(bar, { pointerId: 1, clientX: x, clientY: y });
+        fireEvent.pointerMove(bar, { pointerId: 1, clientX: x, clientY: y + 80 });
+        fireEvent.pointerUp(bar, { pointerId: 1, clientX: x, clientY: y + 80 });
+        await waitFor(() => expect(within(canvasElement).getByRole('button', { name: copy.undo })).toBeEnabled());
+    },
+};
+
+// An admin also gets the footer's height, image and decoration sizes and the custom section arrows.
+export const Admin: Story = {
+    decorators: [withAppContext],
+    parameters: { app: { user: { ...storyUser, role: 'ADMIN' } } },
+    play: async ({ canvasElement, globals }) => {
+        const copy = copyFor(globals).InvitationEditor.handles;
+        await expect(within(canvasElement).getByText(copy.twoColumns)).toBeInTheDocument();
+    },
+};

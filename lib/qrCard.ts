@@ -35,51 +35,70 @@ export const QR_CARD_CUT_WIDTH_MM = 0.2;
 
 export type QrCardCut = { x1: number; y1: number; x2: number; y2: number };
 
-// An A4 sheet of cards at true size, in millimetres from the sheet's top left. The sheet turns to
-// whichever way holds more cards (portrait on a tie); the grid sits centred.
+// An A4 sheet of cards at true size, in millimetres from the sheet's top left. A turned card lies
+// sideways, so its cell is the card's height wide and its width tall. The grid sits centred.
 export type QrCardSheet = {
     widthMm: number;
     heightMm: number;
     cardWidthMm: number;
     cardHeightMm: number;
+    turned: boolean;
+    cellWidthMm: number;
+    cellHeightMm: number;
     columns: number;
     rows: number;
     cards: { x: number; y: number }[];
     cuts: QrCardCut[];
 };
 
-export function qrCardSheet(size: QrCardSize): QrCardSheet {
+export type QrCardOrientation = 'portrait' | 'landscape';
+export const QR_CARD_ORIENTATIONS: QrCardOrientation[] = ['portrait', 'landscape'];
+
+function layOutSheet(size: QrCardSize, orientation: QrCardOrientation, turned: boolean): QrCardSheet {
     const { widthMm: cardWidthMm, heightMm: cardHeightMm } = QR_CARD_SIZES[size];
-    const fit = (widthMm: number, heightMm: number) => ({
-        widthMm,
-        heightMm,
-        columns: Math.floor(widthMm / cardWidthMm),
-        rows: Math.floor(heightMm / cardHeightMm),
-    });
-    const portrait = fit(A4_SHORT_MM, A4_LONG_MM);
-    const landscape = fit(A4_LONG_MM, A4_SHORT_MM);
-    const page = landscape.columns * landscape.rows > portrait.columns * portrait.rows ? landscape : portrait;
-    const { widthMm, heightMm, columns, rows } = page;
-    const left = (widthMm - columns * cardWidthMm) / 2;
-    const top = (heightMm - rows * cardHeightMm) / 2;
-    const right = left + columns * cardWidthMm;
-    const bottom = top + rows * cardHeightMm;
+    const [widthMm, heightMm] = orientation === 'portrait' ? [A4_SHORT_MM, A4_LONG_MM] : [A4_LONG_MM, A4_SHORT_MM];
+    const [cellWidthMm, cellHeightMm] = turned ? [cardHeightMm, cardWidthMm] : [cardWidthMm, cardHeightMm];
+    const columns = Math.floor(widthMm / cellWidthMm);
+    const rows = Math.floor(heightMm / cellHeightMm);
+    const left = (widthMm - columns * cellWidthMm) / 2;
+    const top = (heightMm - rows * cellHeightMm) / 2;
+    const right = left + columns * cellWidthMm;
+    const bottom = top + rows * cellHeightMm;
 
     const cards = Array.from({ length: rows * columns }, (_, index) => ({
-        x: left + (index % columns) * cardWidthMm,
-        y: top + Math.floor(index / columns) * cardHeightMm,
+        x: left + (index % columns) * cellWidthMm,
+        y: top + Math.floor(index / columns) * cellHeightMm,
     }));
     const cuts: QrCardCut[] = [
         ...Array.from({ length: columns - 1 }, (_, index) => {
-            const x = left + (index + 1) * cardWidthMm;
+            const x = left + (index + 1) * cellWidthMm;
             return { x1: x, y1: top, x2: x, y2: bottom };
         }),
         ...Array.from({ length: rows - 1 }, (_, index) => {
-            const y = top + (index + 1) * cardHeightMm;
+            const y = top + (index + 1) * cellHeightMm;
             return { x1: left, y1: y, x2: right, y2: y };
         }),
     ];
-    return { widthMm, heightMm, cardWidthMm, cardHeightMm, columns, rows, cards, cuts };
+    return { widthMm, heightMm, cardWidthMm, cardHeightMm, turned, cellWidthMm, cellHeightMm, columns, rows, cards, cuts };
+}
+
+// The upright sheet: it turns to whichever way holds more cards (portrait on a tie).
+export function qrCardSheet(size: QrCardSize): QrCardSheet {
+    const portrait = layOutSheet(size, 'portrait', false);
+    const landscape = layOutSheet(size, 'landscape', false);
+    return landscape.cards.length > portrait.cards.length ? landscape : portrait;
+}
+
+// The sheet for paper already set to one orientation: the cards turn sideways when that holds more.
+export function qrCardOrientedSheet(size: QrCardSize, orientation: QrCardOrientation): QrCardSheet {
+    const upright = layOutSheet(size, orientation, false);
+    const turned = layOutSheet(size, orientation, true);
+    return turned.cards.length > upright.cards.length ? turned : upright;
+}
+
+// Android's print dialog sets the paper and orientation itself, whatever the page asks for.
+export function isAndroidBrowser(): boolean {
+    return /android/i.test(navigator.userAgent);
 }
 
 export const QR_CARD_TITLE_MAX = 40;
