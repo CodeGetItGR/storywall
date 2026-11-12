@@ -20,6 +20,8 @@ export type InvitationDraftDto = {
     design: unknown;
     // Image id to URL, for the images the design and document point at.
     imageUrls: Record<string, string>;
+    // The ids in imageUrls that are the theme's own, not the draft's uploads.
+    themeImageIds?: string[];
     expiresAt: string | null;
     updatedAt: string;
     token: string | null;
@@ -62,6 +64,8 @@ export type EditableDraft = {
     document: InvitationDocument;
     theme: ThemeDesign;
     media: MediaResolver;
+    // The theme's own images among the draft's: those a switch to another theme leaves behind.
+    themeImageIds: ReadonlySet<string>;
 };
 
 // Throws when the stored document or theme isn't in the format the renderer draws.
@@ -77,6 +81,7 @@ export function readEditableDraft(dto: InvitationDraftDto): EditableDraft {
         document: upgradeInvitationDocument(dto.document),
         theme: themeDesignSchema.parse(dto.design),
         media: (mediaId) => imageUrls[mediaId],
+        themeImageIds: new Set(dto.themeImageIds ?? []),
     };
 }
 

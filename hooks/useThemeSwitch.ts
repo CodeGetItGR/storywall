@@ -60,16 +60,17 @@ export function useThemeSwitch({ store, eventType, current, addTheme }: ThemeSwi
             if (slug === current.slug) return;
             setStep({ kind: 'loading', slug });
             try {
-                const [target, from] = await Promise.all([fetchTheme(slug), fetchTheme(current.slug).catch(() => null)]);
+                const target = await fetchTheme(slug);
                 const preview = readThemePreview(target);
-                // Without the current theme's list of images, sample photos can't be told from the host's.
-                const oldImages = themeImageIds(from?.assetUrls);
-                const plan = planThemeSwitch(store.getState().document, { ...preview, imageIds: themeImageIds(target.assetUrls) }, oldImages);
+                const imageIds = themeImageIds(target.assetUrls);
+                // The current theme's images come with it, so a theme taken off the list still leaves its sample photos behind.
+                const plan = planThemeSwitch(store.getState().document, { ...preview, imageIds }, current.imageIds);
                 const theme: DraftTheme = {
                     slug: target.slug,
                     name: target.name,
                     theme: preview.theme,
                     media: preview.media,
+                    imageIds,
                     design: target.design,
                     assetUrls: target.assetUrls,
                 };
@@ -78,7 +79,7 @@ export function useThemeSwitch({ store, eventType, current, addTheme }: ThemeSwi
                 setStep((now) => (now.kind === 'loading' && now.slug === slug ? { kind: 'failed', slug } : now));
             }
         },
-        [current.slug, fetchTheme, store],
+        [current.imageIds, current.slug, fetchTheme, store],
     );
 
     const confirm = useCallback(() => {

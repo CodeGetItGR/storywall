@@ -12,7 +12,7 @@ import { draftTokenHeaders } from '@/lib/invitation/draftTokens';
 import type { InvitationEditorStore } from '@/lib/invitation/editorStore';
 
 // A theme the host switched to (or back to) in the editor, for the save that switches the draft.
-export type SavedTheme = { slug: string; name: string; design?: unknown; assetUrls?: Record<string, string> };
+export type SavedTheme = { slug: string; name: string; imageIds: ReadonlySet<string>; design?: unknown; assetUrls?: Record<string, string> };
 
 // What a save stores: the document and the theme it is in.
 type DraftSnapshot = { document: InvitationDocument; themeSlug: string };
@@ -84,6 +84,7 @@ export function useDraftAutosave(
                         themeName: theme.name,
                         design: theme.design ?? loadedDesigns[snapshot.themeSlug] ?? old.design,
                         imageUrls: { ...old.imageUrls, ...theme.assetUrls },
+                        themeImageIds: [...theme.imageIds],
                     };
                 });
             },

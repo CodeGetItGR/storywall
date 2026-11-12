@@ -180,6 +180,20 @@ describe('Invitation editor: changing the design', { timeout: 20_000 }, () => {
         expect(backend.stored()).toMatchObject({ themeSlug: 'olive' });
     });
 
+    it("leaves a retired design's sample photos behind, and keeps the host's own", async () => {
+        // Olive is off the list: its own page is gone, but the draft still names its images.
+        backend.server.use(http.get(`${TEST_API}/api/invitation-themes/olive`, () => HttpResponse.json({ status: 404 }, { status: 404 })));
+        backend.themeImagesAre(['m-g1']);
+        await openEditor();
+        const dialog = await chooseLinen();
+        fireEvent.click(within(dialog).getByRole('button', { name: 'Change design' }));
+        await save();
+
+        const sent = JSON.stringify(backend.saves.at(-1)?.document);
+        expect(sent).not.toContain('"m-g1"');
+        expect(sent).toContain('"m-photo"');
+    });
+
     it('shows a message when the design fails to load, and the list stays', async () => {
         backend.server.use(http.get(`${TEST_API}/api/invitation-themes/linen`, () => HttpResponse.json({ status: 500 }, { status: 500 })));
         await openEditor();

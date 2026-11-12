@@ -215,6 +215,10 @@ export function createDraftServer() {
         refuseUploads(status: number, errorCode: number) {
             uploadRefusal = { status, errorCode };
         },
+        // The stored draft says which of its images are its theme's own.
+        themeImagesAre(ids: string[]) {
+            stored = { ...stored, themeImageIds: ids };
+        },
         // Someone else saved the draft: the stored copy moves on without us.
         saveElsewhere(document: InvitationDocument) {
             stored = { ...stored, revision: stored.revision + 1, document };

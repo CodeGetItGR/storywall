@@ -13,6 +13,8 @@ export type DraftTheme = {
     theme: ThemeDesign;
     // The theme's own images.
     media: MediaResolver;
+    // The ids of those images: what a host's draft leaves behind when it moves to another theme.
+    imageIds: ReadonlySet<string>;
     // What the backend sent, for the draft's cached copy once a save switches to it. Left out for
     // the theme the draft was loaded with.
     design?: unknown;
@@ -29,7 +31,15 @@ export function useDraftThemes(draft: EditableDraft, themeSlug: string) {
     // draft, and the editor must not read that back as the theme it started from.
     const [initial] = useState<{ slug: string; themes: Themes }>(() => ({
         slug: draft.themeSlug,
-        themes: { [draft.themeSlug]: { slug: draft.themeSlug, name: draft.themeName, theme: draft.theme, media: draft.media } },
+        themes: {
+            [draft.themeSlug]: {
+                slug: draft.themeSlug,
+                name: draft.themeName,
+                theme: draft.theme,
+                media: draft.media,
+                imageIds: draft.themeImageIds,
+            },
+        },
     }));
     const [themes, setThemes] = useState<Themes>(initial.themes);
     // The same themes for saves, which read them outside render.
