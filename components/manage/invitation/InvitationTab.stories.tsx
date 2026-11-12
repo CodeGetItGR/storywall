@@ -12,6 +12,8 @@ const invitation = (state: Partial<EventOnlineInvitation> = {}): EventOnlineInvi
     liveUntil: 'Jun 15, 2027',
     publicUrl: 'https://invite.storywall.gr/maria-nikos',
     planMissing: false,
+    locked: false,
+    addOnHref: null,
     canExtend: true,
     editHref: '/save-my-date/editor/draft-1',
     planHref: '/events/evt-story/manage?tab=plan',
@@ -71,14 +73,54 @@ export const NotPublished: Story = {
     },
 };
 
-// The event's plan doesn't include the invitation.
+// Published, then the plan stopped including the invitation: the invitation stays, with a line pointing to the plan.
 export const PlanMissing: Story = {
-    args: { invitation: invitation({ status: 'draft', liveUntil: null, publicUrl: null, planMissing: true, canExtend: false }) },
+    args: { invitation: invitation({ status: 'offline', liveUntil: null, publicUrl: null, planMissing: true, canExtend: false }) },
     play: async ({ canvasElement, globals }) => {
         const copy = copyFor(globals).InvitationEditor;
         const canvas = within(canvasElement);
         await expect(canvas.getByText(copy.planMissingTitle, { exact: false })).toBeVisible();
         await expect(canvas.getByRole('link', { name: copy.seePlan })).toHaveAttribute('href', '/events/evt-story/manage?tab=plan');
+    },
+};
+
+// The plan doesn't include the invitation and none is published: the drawing and the upgrade, no theme to choose.
+export const PlanPrompt: Story = {
+    args: {
+        invitation: invitation({
+            status: 'none',
+            liveUntil: null,
+            publicUrl: null,
+            editHref: null,
+            planMissing: true,
+            locked: true,
+            canExtend: false,
+        }),
+    },
+    play: async ({ canvasElement, globals }) => {
+        const copy = copyFor(globals);
+        const canvas = within(canvasElement);
+        await expect(canvas.getByRole('img', { name: copy.ManagePage.invitation.artAlt })).toBeVisible();
+        await expect(canvas.getByRole('heading', { name: copy.InvitationEditor.planMissingTitle })).toBeVisible();
+        await expect(canvas.getByText(copy.ManagePage.invitation.upgradeBody)).toBeVisible();
+        await expect(canvas.getByRole('link', { name: copy.ManagePage.invitation.upgradePlan })).toHaveAttribute(
+            'href',
+            '/events/evt-story/manage?tab=plan',
+        );
+        await expect(canvas.queryByRole('link', { name: copy.ManagePage.invitation.chooseTheme })).not.toBeInTheDocument();
+    },
+};
+
+// A draft started before the plan check: it waits behind the same prompt, Edit hidden.
+export const PlanPromptWithDraft: Story = {
+    args: {
+        invitation: invitation({ status: 'draft', liveUntil: null, publicUrl: null, planMissing: true, locked: true, canExtend: false }),
+    },
+    play: async ({ canvasElement, globals }) => {
+        const copy = copyFor(globals).ManagePage;
+        const canvas = within(canvasElement);
+        await expect(canvas.getByRole('link', { name: copy.invitation.upgradePlan })).toBeVisible();
+        await expect(canvas.queryByRole('link', { name: copy.invitation.edit })).not.toBeInTheDocument();
     },
 };
 
