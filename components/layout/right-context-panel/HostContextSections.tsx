@@ -31,8 +31,6 @@ export function HostContextSections({ panel, showMembersUsage = true }: { panel:
         rsvpSummary,
         showMediaSummary,
         mediaSummary,
-        showGalleryQr,
-        galleryQrLink,
         showInvitationsQr,
         invitationsQrCount,
         showWishbookSummary,
@@ -70,14 +68,8 @@ export function HostContextSections({ panel, showMembersUsage = true }: { panel:
             {/* Media summary */}
             {showMediaSummary && mediaSummary && <MediaSummarySection eventId={activeEvent.id} summary={mediaSummary} />}
 
-            {/* QR links (gallery upload + share/join) */}
-            <QrLinksSection
-                eventId={activeEvent.id}
-                showGallery={showGalleryQr}
-                galleryQrLink={galleryQrLink}
-                showInvitations={showInvitationsQr}
-                invitationsQrCount={invitationsQrCount}
-            />
+            {/* Share links */}
+            <QrLinksSection eventId={activeEvent.id} showInvitations={showInvitationsQr} invitationsQrCount={invitationsQrCount} />
 
             {/* Wishbook summary */}
             {showWishbookSummary && (
