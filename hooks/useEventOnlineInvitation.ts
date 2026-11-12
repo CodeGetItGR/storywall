@@ -36,6 +36,9 @@ export function useEventOnlineInvitation(event: EventDetailResponseDto, { enable
     const status: OnlineInvitationStatus = !draft ? 'none' : !published ? 'draft' : published.online ? 'live' : 'offline';
     const liveUntil = published?.online && published.onlineUntil ? formatDate(locale, published.onlineUntil, { dateStyle: 'medium' }) : null;
     const planMissing = !isModuleAvailable(event.modules, SAVE_MY_DATE_MODULE_KEY);
+    // Without the invitation in the plan, nothing is started or edited until it's added: an unpublished draft
+    // waits, untouched, behind the upgrade prompt. A published one stays, so its link and renewal remain.
+    const locked = planMissing && (status === 'none' || status === 'draft');
 
     // A theme picked from the catalogue starts a draft that goes straight on this event.
     const chooseTheme = useCallback(() => rememberStartIntent({ eventId: event.id, eventType: event.eventType }), [event.eventType, event.id]);
@@ -47,6 +50,9 @@ export function useEventOnlineInvitation(event: EventDetailResponseDto, { enable
         liveUntil,
         publicUrl: published ? invitationPublicUrl(SITE_URL, published.slug) : null,
         planMissing,
+        locked,
+        // Buying the invitation on its own (KAN-82). Null until it's sold; the prompt then offers it next to the upgrade.
+        addOnHref: null as string | null,
         // Renewing goes through the event's plan, while the time online runs out or after it ran out.
         canExtend: !planMissing && (status === 'offline' || liveUntil !== null),
         editHref: draft ? routes.saveMyDateEditor(draft.id) : null,
