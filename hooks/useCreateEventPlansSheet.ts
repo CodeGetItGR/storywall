@@ -6,7 +6,7 @@ import { useCallback, useMemo, useState } from 'react';
 
 import { useMarketingPlanOptions } from '@/hooks/useMarketingPlanOptions';
 import { useModuleCopy } from '@/hooks/useModuleCopy';
-import { type CompareLine, compareLine } from '@/lib/createEventPlanChoice';
+import { type CompareLine, compareLine, joinFeatureNames } from '@/lib/createEventPlanChoice';
 import { leaveWizardEntry, pushWizardEntry } from '@/lib/createEventWizardHistory';
 import { CREATE_EVENT_SHEET_PARAM, PLANS_SHEET, withWizardParams } from '@/lib/createEventWizardUrl';
 import { pickedLandingDuration } from '@/lib/landingPricing';
@@ -14,8 +14,6 @@ import { useCreateEventForm } from '@/providers/createEvent/CreateEventFormConte
 
 // line: the feature line for a full plan, null for a lite one.
 export type PlansSheetRow = { code: string; name: string; summary: string; line: string | null; price: string; months: number };
-
-const FEATURE_SEPARATOR = ', ';
 
 // The compare sheet: open while the URL has sheet=plans (its own history entry, so Back closes it),
 // a pick that only counts once "Choose" is tapped, and its rows as plain values.
@@ -36,7 +34,7 @@ export function useCreateEventPlansSheet() {
     // and the reused "Everything in {plan}".
     const lineText = useCallback(
         (line: CompareLine): string => {
-            const names = (keys: string[]) => keys.map((key) => moduleCopy(key).name).join(FEATURE_SEPARATOR);
+            const names = (keys: string[]) => joinFeatureNames(keys.map((key) => moduleCopy(key).name));
             if (line.kind === 'own') return line.more ? t('andMore', { features: names(line.keys) }) : names(line.keys);
             if (line.kind === 'plus') return t('everythingInPlus', { plan: line.previousName, features: names(line.keys) });
             return tPricing('everythingIn', { plan: line.previousName });

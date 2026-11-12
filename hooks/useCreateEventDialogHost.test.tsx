@@ -3,11 +3,13 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { useCreateEventDialogHost } from '@/hooks/useCreateEventDialogHost';
 import { writeCreateEventWizardDraft } from '@/lib/createEventWizardDraft';
+import { routes } from '@/lib/routes';
 
 const params = vi.hoisted(() => ({ current: new URLSearchParams() }));
-const auth = vi.hoisted(() => ({ current: { user: null as null | { role: string } } }));
+const auth = vi.hoisted(() => ({ current: { isBootstrapping: false, user: null as null | { role: string } } }));
 const flag = vi.hoisted(() => ({ on: true }));
-vi.mock('next/navigation', () => ({ useSearchParams: () => params.current }));
+const router = vi.hoisted(() => ({ replace: vi.fn() }));
+vi.mock('next/navigation', () => ({ useSearchParams: () => params.current, useRouter: () => router }));
 vi.mock('@/hooks/useAuth', () => ({ useAuth: () => auth.current }));
 vi.mock('@/providers/CreateWizardFlagProvider', () => ({ useCreateWizardEnabled: () => flag.on }));
 
@@ -22,8 +24,9 @@ function link(href: string) {
 beforeEach(() => {
     window.history.replaceState(null, '', '/el');
     params.current = new URLSearchParams();
-    auth.current = { user: null };
+    auth.current = { isBootstrapping: false, user: null };
     flag.on = true;
+    router.replace.mockReset();
 });
 
 afterEach(() => {
@@ -83,10 +86,30 @@ describe('useCreateEventDialogHost', () => {
         unmount();
 
         flag.on = true;
-        auth.current = { user: { role: 'ADMIN' } };
+        auth.current = { isBootstrapping: false, user: { role: 'ADMIN' } };
         params.current = new URLSearchParams('create=1');
         const { result } = renderHook(() => useCreateEventDialogHost());
         expect(result.current.isOpen).toBe(false);
+    });
+
+    it('sends an admin who opens a create=1 link to the console, as /events/new does', () => {
+        auth.current = { isBootstrapping: false, user: { role: 'ADMIN' } };
+        params.current = new URLSearchParams('create=1');
+        renderHook(() => useCreateEventDialogHost());
+        expect(router.replace).toHaveBeenCalledWith(routes.admin);
+    });
+
+    it('leaves an admin on the page without create=1, while the session loads, or with the flag off', () => {
+        auth.current = { isBootstrapping: false, user: { role: 'ADMIN' } };
+        const { unmount } = renderHook(() => useCreateEventDialogHost());
+        unmount();
+        params.current = new URLSearchParams('create=1');
+        auth.current = { isBootstrapping: true, user: null };
+        renderHook(() => useCreateEventDialogHost()).unmount();
+        auth.current = { isBootstrapping: false, user: { role: 'ADMIN' } };
+        flag.on = false;
+        renderHook(() => useCreateEventDialogHost());
+        expect(router.replace).not.toHaveBeenCalled();
     });
 
     it('stays shut with the flag off, even on create=1, and leaves the URL alone', () => {

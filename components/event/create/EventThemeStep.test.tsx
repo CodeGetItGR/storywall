@@ -53,7 +53,8 @@ describe('EventThemeStep', () => {
         state({ title: '  Anna  ' });
         render(<EventThemeStep />);
 
-        expect(screen.getAllByText('Anna')).toHaveLength(2);
+        // One per card, plus the plain page preview inside the "No theme" square.
+        expect(screen.getAllByText('Anna')).toHaveLength(3);
         expect(screen.getByRole('radio', { name: 'Swan' })).toBeInTheDocument();
     });
 

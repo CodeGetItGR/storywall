@@ -22,6 +22,7 @@ export function testAuth({
         isAuthenticated: Boolean(user),
         isBootstrapping,
         isSessionUnavailable: false,
+        isRefreshingSession: false,
         register: vi.fn(),
         login: vi.fn(),
         oauth: vi.fn(),

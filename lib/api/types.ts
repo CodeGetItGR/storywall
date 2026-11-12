@@ -1019,6 +1019,23 @@ export interface AdminProvisionEventRequestDto {
     // Module settings saved with the event, in the same request (max 50). One refused setting
     // (400, 409) and no event is created. A vendors setting turns vendors on for this event.
     moduleConfigs?: AdminProvisionModuleConfig[];
+    // Added 2026-11-11: schedule items after the main session, in order (max 20); the plan must
+    // include the schedule. One refused item (e.g. 409 session limit) and no event is created.
+    schedule?: AdminProvisionScheduleItem[];
+    // Added 2026-11-11: the gift account, set for the primary host; the plan must include the
+    // wishlist. An invalid IBAN (400) and no event is created.
+    giftAccount?: EventGiftAccountRequestDto;
+}
+
+export interface AdminProvisionScheduleItem {
+    title: string;
+    description?: string;
+    startAt?: string;
+    endAt?: string;
+    locationName?: string;
+    mapsUrl?: string;
+    // The reception venue of a wedding or baptism; at most one.
+    isSecondary?: boolean;
 }
 
 // One setting as PUT .../modules/{moduleKey}/config/{configKey} takes it: extra, enabled or value, exactly one.
