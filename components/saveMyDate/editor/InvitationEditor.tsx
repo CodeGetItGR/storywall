@@ -52,37 +52,45 @@ export function InvitationEditor({ draft, uploadedFonts, onReload, isReloading =
     const settings = <TextColorSetting value={editor.textColor} onChange={editor.setTextColor} />;
 
     return (
-        <div className="smd-editor flex h-full flex-col bg-(--smd-editor-panel)">
-            {/* Top bar */}
-            <EditorTopBar
-                status={editor.status}
-                canUndo={editor.canUndo}
-                canRedo={editor.canRedo}
-                isBusy={editor.isBusy}
-                onBack={editor.leave.back}
-                onUndo={editor.undo}
-                onRedo={editor.redo}
-                onPreview={editor.openPreview}
-                onPublish={editor.publishing.start}
-                onTour={editor.tour.start}
-            />
+        // The photo uploads reach the canvas and the section settings alike.
+        <PhotoUploadsContext.Provider value={editor.photos.slots}>
+            <div className="smd-editor flex h-full flex-col bg-(--smd-editor-panel)">
+                {/* Top bar */}
+                <EditorTopBar
+                    status={editor.status}
+                    canUndo={editor.canUndo}
+                    canRedo={editor.canRedo}
+                    isBusy={editor.isBusy}
+                    onBack={editor.leave.back}
+                    onUndo={editor.undo}
+                    onRedo={editor.redo}
+                    onPreview={editor.openPreview}
+                    onPublish={editor.publishing.start}
+                    onTour={editor.tour.start}
+                />
 
-            {/* Save problem */}
-            {editor.status === 'error' && <EditorNotice tone="error" message={t('notSaved')} actionLabel={t('retry')} onAction={editor.retrySave} />}
+                {/* Save problem */}
+                {editor.status === 'error' && (
+                    <EditorNotice tone="error" message={t('notSaved')} actionLabel={t('retry')} onAction={editor.retrySave} />
+                )}
 
-            {/* Photo problem */}
-            {editor.photos.problem && (
-                <EditorNotice tone="error" message={t(`photos.errors.${editor.photos.problem}`)} actionLabel={t('close')} onAction={editor.photos.dismissProblem} />
-            )}
+                {/* Photo problem */}
+                {editor.photos.problem && (
+                    <EditorNotice
+                        tone="error"
+                        message={t(`photos.errors.${editor.photos.problem}`)}
+                        actionLabel={t('close')}
+                        onAction={editor.photos.dismissProblem}
+                    />
+                )}
 
-            {/* Publish note */}
-            <PublishNotice notice={editor.publishing.notice} onOpen={editor.publishing.openPublished} />
+                {/* Publish note */}
+                <PublishNotice notice={editor.publishing.notice} onOpen={editor.publishing.openPublished} />
 
-            {/* Workspace */}
-            <div className="flex min-h-0 flex-1">
-                <EditorDockedPanel title={t('themeAssets')}>{assets}</EditorDockedPanel>
-                <InlineTextEditing store={editor.store} document={editor.document} theme={editor.theme} uploadedFonts={uploadedFonts}>
-                    <PhotoUploadsContext.Provider value={editor.photos.slots}>
+                {/* Workspace */}
+                <div className="flex min-h-0 flex-1">
+                    <EditorDockedPanel title={t('themeAssets')}>{assets}</EditorDockedPanel>
+                    <InlineTextEditing store={editor.store} document={editor.document} theme={editor.theme} uploadedFonts={uploadedFonts}>
                         <CanvasHandles store={editor.store} frames={editor.theme.frames}>
                             <EditorCanvas
                                 document={editor.document}
@@ -93,54 +101,54 @@ export function InvitationEditor({ draft, uploadedFonts, onReload, isReloading =
                                 sectionSettings={sectionSettings.opener}
                             />
                         </CanvasHandles>
-                    </PhotoUploadsContext.Provider>
-                </InlineTextEditing>
-                {sectionSettings.isDocked && sectionSettings.panel ? (
-                    <SectionSettings panel={sectionSettings.panel} isDocked onClose={sectionSettings.close} />
-                ) : (
-                    <EditorDockedPanel title={t('settings')}>{settings}</EditorDockedPanel>
-                )}
+                    </InlineTextEditing>
+                    {sectionSettings.isDocked && sectionSettings.panel ? (
+                        <SectionSettings panel={sectionSettings.panel} isDocked onClose={sectionSettings.close} />
+                    ) : (
+                        <EditorDockedPanel title={t('settings')}>{settings}</EditorDockedPanel>
+                    )}
+                </div>
+
+                {/* Panels on small screens */}
+                <EditorPanelBar onOpen={editor.setOpenPanel} />
+                <EditorPanelSheet open={editor.openPanel === 'assets'} title={t('themeAssets')} onClose={editor.closePanel}>
+                    {assets}
+                </EditorPanelSheet>
+                <EditorPanelSheet open={editor.openPanel === 'settings'} title={t('settings')} onClose={editor.closePanel}>
+                    {settings}
+                </EditorPanelSheet>
+
+                {/* Section settings on small screens */}
+                {!sectionSettings.isDocked && <SectionSettings panel={sectionSettings.panel} isDocked={false} onClose={sectionSettings.close} />}
+
+                {/* Preview */}
+                <EditorPreview
+                    open={editor.isPreviewOpen}
+                    onClose={editor.closePreview}
+                    document={editor.document}
+                    theme={editor.theme}
+                    media={editor.media}
+                    uploadedFonts={uploadedFonts}
+                />
+
+                {/* Publishing */}
+                <PublishSignInDialog signIn={editor.publishing.signIn} />
+                <PublishSignInDialog signIn={editor.photos.signIn} title={t('photos.signInTitle')} />
+                <PublishEventSheet step={editor.publishing.eventStep} draftId={draft.id} eventType={draft.eventType} document={editor.document} />
+                <PublishSheet sheet={editor.publishing.sheet} inviteHost={INVITE_HOST} />
+                <PublishPlanDialog
+                    prompt={editor.publishing.planPrompt}
+                    onSeePlan={editor.publishing.seePlan}
+                    onClose={editor.publishing.closePlanPrompt}
+                />
+
+                {/* Dialogs */}
+                <EditorConflictDialog open={editor.status === 'conflict'} isReloading={isReloading} onReload={onReload} />
+                <EditorLeaveDialog open={editor.leave.isConfirming} onLeave={editor.leave.leave} onStay={editor.leave.stay} />
+
+                {/* Tour */}
+                <EditorTour tour={editor.tour} />
             </div>
-
-            {/* Panels on small screens */}
-            <EditorPanelBar onOpen={editor.setOpenPanel} />
-            <EditorPanelSheet open={editor.openPanel === 'assets'} title={t('themeAssets')} onClose={editor.closePanel}>
-                {assets}
-            </EditorPanelSheet>
-            <EditorPanelSheet open={editor.openPanel === 'settings'} title={t('settings')} onClose={editor.closePanel}>
-                {settings}
-            </EditorPanelSheet>
-
-            {/* Section settings on small screens */}
-            {!sectionSettings.isDocked && <SectionSettings panel={sectionSettings.panel} isDocked={false} onClose={sectionSettings.close} />}
-
-            {/* Preview */}
-            <EditorPreview
-                open={editor.isPreviewOpen}
-                onClose={editor.closePreview}
-                document={editor.document}
-                theme={editor.theme}
-                media={editor.media}
-                uploadedFonts={uploadedFonts}
-            />
-
-            {/* Publishing */}
-            <PublishSignInDialog signIn={editor.publishing.signIn} />
-            <PublishSignInDialog signIn={editor.photos.signIn} title={t('photos.signInTitle')} />
-            <PublishEventSheet step={editor.publishing.eventStep} draftId={draft.id} eventType={draft.eventType} document={editor.document} />
-            <PublishSheet sheet={editor.publishing.sheet} inviteHost={INVITE_HOST} />
-            <PublishPlanDialog
-                prompt={editor.publishing.planPrompt}
-                onSeePlan={editor.publishing.seePlan}
-                onClose={editor.publishing.closePlanPrompt}
-            />
-
-            {/* Dialogs */}
-            <EditorConflictDialog open={editor.status === 'conflict'} isReloading={isReloading} onReload={onReload} />
-            <EditorLeaveDialog open={editor.leave.isConfirming} onLeave={editor.leave.leave} onStay={editor.leave.stay} />
-
-            {/* Tour */}
-            <EditorTour tour={editor.tour} />
-        </div>
+        </PhotoUploadsContext.Provider>
     );
 }

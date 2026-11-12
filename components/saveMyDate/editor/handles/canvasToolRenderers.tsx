@@ -3,6 +3,7 @@ import { DecorationSizeHandle } from '@/components/saveMyDate/editor/handles/Dec
 import { ElementSizeHandle } from '@/components/saveMyDate/editor/handles/ElementSizeHandle';
 import { FramePhotoTools } from '@/components/saveMyDate/editor/photos/FramePhotoTools';
 import { type FrameChoice, FrameSettingsTool } from '@/components/saveMyDate/editor/photos/FrameSettingsTool';
+import { GalleryEmptyTool } from '@/components/saveMyDate/editor/photos/gallery/GalleryEmptyTool';
 import { PhotoBandMoveTool } from '@/components/saveMyDate/editor/photos/PhotoBandMoveTool';
 import { PhotoSlotTool } from '@/components/saveMyDate/editor/photos/PhotoSlotTool';
 import { isSizedElement } from '@/lib/invitation/canvasHandles';
@@ -18,7 +19,7 @@ type CanvasToolOptions = {
 };
 
 // What the renderer draws for the editor inside the invitation, as in the old editor:
-// spacers, photo frames, moving and zooming photos and the photo cameras for everyone;
+// spacers, photo frames, moving and zooming photos, the photo cameras and an empty gallery for everyone;
 // images, decorations, frame choices and the custom section arrows for admins.
 export function canvasToolRenderers(
     mode: EditorMode,
@@ -33,6 +34,7 @@ export function canvasToolRenderers(
             return <ElementSizeHandle element={element} edit={edit} />;
         },
         photo: withPhotos ? (slot, hasPhoto) => <PhotoSlotTool slot={slot} hasPhoto={hasPhoto} /> : undefined,
+        gallery: withPhotos ? (sectionId, images) => <GalleryEmptyTool sectionId={sectionId} images={images} edit={edit} /> : undefined,
         framePhoto: (element) => <FramePhotoTools element={element} edit={edit} />,
         frameSettings: isAdmin ? (element) => <FrameSettingsTool element={element} frames={frames} edit={edit} /> : undefined,
         photoBand: (sectionId, imageY) => <PhotoBandMoveTool sectionId={sectionId} imageY={imageY} edit={edit} />,

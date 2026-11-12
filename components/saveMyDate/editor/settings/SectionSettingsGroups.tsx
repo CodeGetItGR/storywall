@@ -7,6 +7,7 @@ import { DateSettings } from '@/components/saveMyDate/editor/settings/DateSettin
 import { DressCodeSettings } from '@/components/saveMyDate/editor/settings/DressCodeSettings';
 import { EffectSettings, TransitionSettings } from '@/components/saveMyDate/editor/settings/EffectSettings';
 import { FooterSettings } from '@/components/saveMyDate/editor/settings/FooterSettings';
+import { GallerySettings } from '@/components/saveMyDate/editor/settings/GallerySettings';
 import { LinkButtonsSettings } from '@/components/saveMyDate/editor/settings/LinkButtonsSettings';
 import { LocationsSettings } from '@/components/saveMyDate/editor/settings/LocationsSettings';
 import { ProgramItemsSettings } from '@/components/saveMyDate/editor/settings/ProgramItemsSettings';
@@ -48,6 +49,10 @@ function SettingsGroupContent({ scope, group }: { scope: SettingsScope; group: S
         case 'date': {
             const date = scopeOf(scope, 'date');
             return date && <DateSettings scope={date} />;
+        }
+        case 'gallery': {
+            const gallery = scopeOf(scope, 'gallery');
+            return gallery && <GallerySettings scope={gallery} />;
         }
         case 'countdown':
             return <SectionStyleSettings scope={scope} groups={COUNTDOWN_FIELDS} />;

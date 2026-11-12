@@ -13,13 +13,18 @@ type GallerySectionProps = {
 
 export function GallerySection({ section, contrast, ctx }: GallerySectionProps) {
     const { data } = section;
+    const images = galleryImages(data, ctx);
 
     return (
         <div className="section-inner gallery-editor">
             {/* Title */}
             <SectionText section={section} path="title" value={data.title} tag="h2" contrast={contrast} ctx={ctx} />
             {/* Photos */}
-            <GalleryPhotos images={galleryImages(data, ctx)} layout={data.layout} shape={data.shape} labels={ctx.labels} />
+            {images.length > 0 ? (
+                <GalleryPhotos images={images} layout={data.layout} shape={data.shape} labels={ctx.labels} />
+            ) : (
+                ctx.canvasTools?.gallery?.(section.id, data.images)
+            )}
             {/* Elements */}
             <InvitationElements elements={section.elements} contrast={contrast} ctx={ctx} />
         </div>

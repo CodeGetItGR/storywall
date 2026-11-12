@@ -31,7 +31,7 @@ function PhotoSlotStory({ section, uploading, upload, canPick }: PhotoSlotStoryP
     const [slots] = useState<PhotoUploadSlots>(() => {
         const uploads = createPhotoUploadStore();
         if (uploading) uploads.getState().set(uploading.key, { percent: uploading.percent });
-        return { uploads, upload, canPick };
+        return { uploads, upload, canPick, report: () => {} };
     });
 
     return (
