@@ -9,6 +9,7 @@ import { canvasToolRenderers } from '@/components/saveMyDate/editor/handles/canv
 import { TextSpacingHandles } from '@/components/saveMyDate/editor/handles/TextSpacingHandles';
 import { TextEditingContext } from '@/components/saveMyDate/editor/text/TextEditingContext';
 import { useEditorMode } from '@/hooks/useEditorMode';
+import { usePhotoUploadsContext } from '@/hooks/usePhotoUploadsContext';
 import type { InvitationEditorStore } from '@/lib/invitation/editorStore';
 
 type CanvasHandlesProps = {
@@ -21,10 +22,11 @@ type CanvasHandlesProps = {
 // editor store, so it is undone and saved like any other change.
 export function CanvasHandles({ store, children }: CanvasHandlesProps) {
     const mode = useEditorMode();
+    const withPhotos = usePhotoUploadsContext() !== null;
     const value = useMemo<CanvasHandlesValue>(() => {
         const { edit } = store.getState();
-        return { mode, edit, tools: canvasToolRenderers(mode, edit) };
-    }, [mode, store]);
+        return { mode, edit, tools: canvasToolRenderers(mode, edit, withPhotos) };
+    }, [mode, store, withPhotos]);
     const text = useContext(TextEditingContext);
 
     return (

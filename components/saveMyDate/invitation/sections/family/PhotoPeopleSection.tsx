@@ -26,7 +26,7 @@ export function PhotoPeopleSection({ section, contrast, ctx }: PhotoPeopleSectio
                 <div className="family-godparents-list">
                     {list.people.map((person) => (
                         <div key={person.id} className="family-godparent">
-                            <FamilyPhoto photo={person.photo} name={person.name} ctx={ctx} />
+                            <FamilyPhoto photo={person.photo} name={person.name} sectionId={section.id} path={`${list.path}.${person.id}.photo`} ctx={ctx} />
                             <SectionText section={section} path={`${list.path}.${person.id}.name`} value={person.name} tag="h2" contrast={contrast} ctx={ctx} />
                         </div>
                     ))}
