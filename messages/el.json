@@ -569,7 +569,7 @@
         "metaDescription": "Συνδεθείτε στον λογαριασμό σας στο StoryWall.",
         "noAccount": "Δεν έχετε λογαριασμό;",
         "createAccountLink": "Δημιουργήστε έναν",
-        "orContinueWith": "Ή συνεχίστε με"
+        "orWithEmail": "Ή σύνδεση με email"
     },
     "RegisterPage": {
         "title": "Δημιουργία λογαριασμού",

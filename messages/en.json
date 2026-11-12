@@ -514,7 +514,7 @@
         "metaDescription": "Sign in to your StoryWall account.",
         "noAccount": "Don't have an account?",
         "createAccountLink": "Create one",
-        "orContinueWith": "Or continue with",
+        "orWithEmail": "Or sign in with email",
         "forgotPassword": "Forgot password?"
     },
     "RegisterPage": {
