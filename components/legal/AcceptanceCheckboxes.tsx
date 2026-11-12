@@ -8,18 +8,15 @@ import { useLegalDocLinks } from '@/hooks/useLegalDocLinks';
 // The two boxes the acceptance gate shows again: the documents, and the 18+
 // confirmation (Terms §3). A new account ticks SignupAcceptanceCheckbox instead.
 // 'all' names the Terms, the Community Guidelines and the Privacy Policy; 'terms'
-// leaves out the Guidelines, for an account that only owes the Terms. A QR-link
-// upload, with no account, asks for 16+ instead (minimumAge).
+// leaves out the Guidelines, for an account that only owes the Terms.
 export function AcceptanceCheckboxes({
     documents = 'all',
-    minimumAge = 18,
     accepted,
     adultConfirmed,
     onAcceptedChangeAction,
     onAdultConfirmedChangeAction,
 }: {
     documents?: 'all' | 'terms';
-    minimumAge?: 16 | 18;
     accepted: boolean;
     adultConfirmed: boolean;
     onAcceptedChangeAction: (event: ChangeEvent<HTMLInputElement>) => void;
@@ -58,7 +55,7 @@ export function AcceptanceCheckboxes({
                     className="mt-0.5 size-4 shrink-0 accent-primary"
                 />
                 <label htmlFor={adultId} className="cursor-pointer text-sm text-ink">
-                    {minimumAge === 16 ? t('age16') : t('adult')}
+                    {t('adult')}
                 </label>
             </div>
         </div>

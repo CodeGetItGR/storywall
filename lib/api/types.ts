@@ -3202,6 +3202,10 @@ export interface QrLinkResolutionDto {
     inviteToken?: string;
     requiresAuth?: boolean;
     requiresGuestKey?: boolean;
+    // On a join link: the event's upload code, while it can upload. On an upload or guest code: the join
+    // link's invite token, while it works. Lets one scan offer both (KAN-208).
+    uploadToken?: string;
+    joinInviteToken?: string;
 }
 
 // POST /api/qr/{token}/wishes: a wish left through a GUEST code, with no account. See
