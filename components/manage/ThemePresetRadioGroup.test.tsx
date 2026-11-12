@@ -98,6 +98,30 @@ describe('ThemePresetRadioGroup fonts and title colour', () => {
         expect(container.querySelector('style')).toBeNull();
     });
 
+    it('previews the event title inside the "No theme" square, as the plain page shows it', () => {
+        render(
+            <ThemePresetRadioGroup
+                options={[NONE, preset('a')]}
+                labelledBy="heading"
+                disabled={false}
+                previewTitle="Anna's baptism"
+                onSelectAction={vi.fn()}
+            />,
+        );
+        const titles = screen.getAllByText("Anna's baptism");
+        // "No theme": the square and the row under it; the themed card: only the row.
+        expect(titles).toHaveLength(3);
+        const inSquare = titles.filter((title) => title.classList.contains('alegreya-light'));
+        expect(inSquare).toHaveLength(1);
+        expect(inSquare[0].closest('[role="radio"]')).toBe(screen.getByRole('radio', { name: 'No theme' }));
+        expect(inSquare[0].closest('[aria-hidden="true"]')).not.toBeNull();
+    });
+
+    it('leaves the "No theme" square empty without an event title', () => {
+        renderGroup([NONE]);
+        expect(screen.getByRole('radio', { name: 'No theme' }).querySelector('.alegreya-light')).toBeNull();
+    });
+
     it('is still a radio named by its label on a themed card', () => {
         renderGroup([preset('a', { headingFont: SCRIPT, titleColor: '#7A2E3B' })]);
         expect(screen.getByRole('radio', { name: 'Preset a' })).toBeInTheDocument();

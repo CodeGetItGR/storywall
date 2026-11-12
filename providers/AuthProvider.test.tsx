@@ -1,6 +1,6 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { act, renderHook, waitFor } from '@testing-library/react';
-import type { ReactNode } from 'react';
+import { type ReactNode, Suspense, use, useState } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { AuthSessionDto, UserResponseDto } from '@/lib/api/types';
@@ -115,6 +115,39 @@ describe('AuthProvider', () => {
         await act(() => result.current.oauth('GOOGLE', { idToken: 'id-token-1' }));
 
         expect(mocks.refresh).toHaveBeenCalledOnce();
+    });
+
+    it('reports the refresh after a sign-in as pending until the router has re-rendered', async () => {
+        // Like Next's router: refresh() puts a pending page into router state, and the transition
+        // it runs in stays pending until that page arrives.
+        let suspendRouter: (page: Promise<void>) => void = () => {};
+        function RouterState() {
+            const [page, setPage] = useState<Promise<void> | null>(null);
+            suspendRouter = setPage;
+            if (page) use(page);
+            return null;
+        }
+        let arrive: () => void = () => {};
+        mocks.refresh.mockImplementation(() => suspendRouter(new Promise<void>((resolve) => (arrive = resolve))));
+        const wrapper = ({ children }: { children: ReactNode }) => (
+            <QueryClientProvider client={new QueryClient()}>
+                <AuthProvider>
+                    <Suspense fallback={null}>
+                        <RouterState />
+                    </Suspense>
+                    {children}
+                </AuthProvider>
+            </QueryClientProvider>
+        );
+        const { result } = renderHook(() => useAuth(), { wrapper });
+        await waitFor(() => expect(result.current.isBootstrapping).toBe(false));
+        expect(result.current.isRefreshingSession).toBe(false);
+
+        await act(() => result.current.login({ email: 'host@example.test', password: 'test-password' }));
+        expect(result.current.isRefreshingSession).toBe(true);
+
+        await act(async () => arrive());
+        expect(result.current.isRefreshingSession).toBe(false);
     });
 
     it("drops the router's cached pages on logout", async () => {

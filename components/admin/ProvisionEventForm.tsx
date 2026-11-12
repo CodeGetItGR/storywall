@@ -5,6 +5,8 @@ import type { ChangeEvent, MouseEvent } from 'react';
 
 import { AdminDurationSelect } from '@/components/admin/AdminDurationSelect';
 import { AdminField, adminInputClass } from '@/components/admin/AdminField';
+import { ProvisionEventGiftAccount } from '@/components/admin/ProvisionEventGiftAccount';
+import { ProvisionEventSchedule } from '@/components/admin/ProvisionEventSchedule';
 import { ProvisionEventTheme } from '@/components/admin/ProvisionEventTheme';
 import { ProvisionVendorSettings } from '@/components/admin/ProvisionVendorSettings';
 import { useCreateEventFieldLabels } from '@/hooks/useCreateEventFieldLabels';
@@ -18,6 +20,7 @@ import { cn } from '@/lib/utils';
 export function ProvisionEventForm({ form }: { form: ProvisionEventFormState }) {
     const t = useTranslations('AdminPage.accounts.provision');
     const tAdmin = useTranslations('AdminPage');
+    const tSettings = useTranslations('ManagePage.settings.fields');
     const localizedText = useLocalizedText();
     const selectedPlan = form.selectedPlan;
     const fieldLabels = useCreateEventFieldLabels(form.selectedEventType as EventTypeConvention);
@@ -33,6 +36,14 @@ export function ProvisionEventForm({ form }: { form: ProvisionEventFormState }) 
 
     function handleTitleChange(event: ChangeEvent<HTMLInputElement>) {
         form.setTitle(event.target.value);
+    }
+
+    function handleSubtitleChange(event: ChangeEvent<HTMLInputElement>) {
+        form.setSubtitle(event.target.value);
+    }
+
+    function handleEndChange(event: ChangeEvent<HTMLInputElement>) {
+        form.setEndAt(event.target.value);
     }
 
     function handleDescriptionChange(event: ChangeEvent<HTMLTextAreaElement>) {
@@ -145,6 +156,16 @@ export function ProvisionEventForm({ form }: { form: ProvisionEventFormState }) 
                     />
                     {form.fieldError('title') ? <span className="text-xs text-status-danger">{form.fieldError('title')}</span> : null}
                 </AdminField>
+                <AdminField label={tSettings('subtitle')} optional>
+                    <input
+                        value={form.subtitle}
+                        maxLength={form.subtitleMaxLength}
+                        onChange={handleSubtitleChange}
+                        className={adminInputClass()}
+                        aria-invalid={Boolean(form.fieldError('subtitle'))}
+                    />
+                    {form.fieldError('subtitle') ? <span className="text-xs text-status-danger">{form.fieldError('subtitle')}</span> : null}
+                </AdminField>
                 <AdminField label={t('description')} optional>
                     <textarea
                         rows={3}
@@ -168,6 +189,17 @@ export function ProvisionEventForm({ form }: { form: ProvisionEventFormState }) 
                     />
                 </AdminField>
                 {form.scheduleError ? <p className="text-xs text-status-danger">{form.scheduleError}</p> : null}
+                <AdminField label={tSettings('endAt')} optional>
+                    <input
+                        type="datetime-local"
+                        value={form.endAt}
+                        min={form.endAtMin}
+                        onChange={handleEndChange}
+                        className={adminInputClass()}
+                        aria-invalid={Boolean(form.endAtError)}
+                    />
+                    {form.endAtError ? <span className="text-xs text-status-danger">{form.endAtError}</span> : null}
+                </AdminField>
                 {form.planHasRsvp ? (
                     <AdminField label={t('rsvpDeadline')} optional>
                         <input
@@ -216,6 +248,12 @@ export function ProvisionEventForm({ form }: { form: ProvisionEventFormState }) 
                     <input type="url" value={form.mapsUrl} onChange={handleMapsUrlChange} className={adminInputClass()} />
                 </AdminField>
             </section>
+
+            {/* Schedule */}
+            {form.planHasSchedule ? <ProvisionEventSchedule schedule={form.schedule} /> : null}
+
+            {/* Gift account */}
+            {form.planHasGiftAccount ? <ProvisionEventGiftAccount giftAccount={form.giftAccount} /> : null}
 
             {/* Theme */}
             {form.isThemeAvailable ? <ProvisionEventTheme form={form} /> : null}

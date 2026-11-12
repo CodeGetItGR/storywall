@@ -4459,7 +4459,15 @@
                 "vendorSettings": "Ρυθμίσεις επαγγελματιών",
                 "vendorSettingsChanged": "{count, plural, one {# αλλαγή} other {# αλλαγές}}",
                 "vendorSettingsLoading": "Φόρτωση ρυθμίσεων πλάνου…",
-                "vendorSettingsTurnOn": "Αυτό ενεργοποιεί τους επαγγελματίες μόνο για αυτή την εκδήλωση. Το πλάνο δεν αλλάζει."
+                "vendorSettingsTurnOn": "Αυτό ενεργοποιεί τους επαγγελματίες μόνο για αυτή την εκδήλωση. Το πλάνο δεν αλλάζει.",
+                "scheduleSection": "Πρόγραμμα",
+                "addSession": "Προσθήκη ενότητας",
+                "editSession": "Επεξεργασία ενότητας",
+                "sessionSave": "Αποθήκευση",
+                "sessionRemove": "Αφαίρεση",
+                "sessionCancel": "Ακύρωση",
+                "receptionVenue": "Χώρος δεξίωσης",
+                "giftSection": "Λογαριασμός δώρου"
             },
             "email": {
                 "title": "Email",

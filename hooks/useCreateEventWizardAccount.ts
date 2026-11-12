@@ -15,10 +15,12 @@ import { useCreateEventForm } from '@/providers/createEvent/CreateEventFormConte
 // the page (the draft brings the host back here).
 export function useCreateEventWizardAccount() {
     const router = useRouter();
-    const { user, isBootstrapping } = useAuth();
+    const { user, isBootstrapping, isRefreshingSession } = useAuth();
     const { step, goToStep } = useCreateEventForm();
     const accountView = useCreateEventWizardAccountView();
-    const destination = isBootstrapping ? null : accountDestination(user ? { emailVerified: user.emailVerified, role: user.role } : null);
+    // Not until the page has re-rendered for the new session (see isRefreshingSession).
+    const destination =
+        isBootstrapping || isRefreshingSession ? null : accountDestination(user ? { emailVerified: user.emailVerified, role: user.role } : null);
     const { view, show } = accountView;
 
     useEffect(() => {
@@ -33,5 +35,9 @@ export function useCreateEventWizardAccount() {
         if (localeCookieChanged()) window.location.reload();
     }, []);
 
-    return { ...accountView, onSignedIn };
+    // Signed in while a sign-up or sign-in screen still shows: the step is about to move on, so its
+    // button stays busy and can't send the form twice.
+    const isFinishingSignIn = user !== null;
+
+    return { ...accountView, onSignedIn, isFinishingSignIn };
 }

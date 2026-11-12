@@ -10,11 +10,13 @@ import { useWelcomeEmailPreview } from '@/hooks/useAdminEmails';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useAppConfig } from '@/hooks/useAppConfig';
 import { useThemePresetsForType } from '@/hooks/useEventTheme';
+import { useProvisionGiftAccount } from '@/hooks/useProvisionGiftAccount';
+import { useProvisionSchedule } from '@/hooks/useProvisionSchedule';
 import { useProvisionVendorSettings } from '@/hooks/useProvisionVendorSettings';
 import { eligibleProvisioningPlans, type ProvisionHost } from '@/lib/adminAccountProvisioning';
 import { getFieldErrors } from '@/lib/api/errors';
 import type { AdminWelcomePreviewRequestDto, EventResponseDto, EventTypeConvention, EventVisibility } from '@/lib/api/types';
-import { getInitialSessionTitleKey } from '@/lib/createEventCatalog';
+import { getCreateEventCatalogEntry, getInitialSessionTitleKey } from '@/lib/createEventCatalog';
 import { effectiveThemePresetId } from '@/lib/createEventSteps';
 import { datetimeLocalValueToIso, getScheduleDatetimeLocalBounds, isDatetimeLocalBefore } from '@/lib/datetime';
 import { getCurrentTimezone, getSupportedTimezones } from '@/lib/timezones';
@@ -44,7 +46,9 @@ export function useProvisionEventForm(host: ProvisionHost, options: ProvisionEve
     const [eventType, setEventType] = useState<EventTypeConvention | ''>(options.eventType ?? '');
     const [planTierCode, setPlanTierCode] = useState('');
     const [title, setTitle] = useState('');
+    const [subtitle, setSubtitle] = useState('');
     const [startAt, setStartAt] = useState('');
+    const [endAt, setEndAt] = useState('');
     const [timezone, setTimezone] = useState(getCurrentTimezone);
     const [locationName, setLocationName] = useState('');
     const [locationAddress, setLocationAddress] = useState('');
@@ -72,6 +76,10 @@ export function useProvisionEventForm(host: ProvisionHost, options: ProvisionEve
     // since a plan can't list a module its type doesn't support.
     const planHasTheme = selectedPlan?.moduleKeys.includes('theme') ?? false;
     const planHasRsvp = selectedPlan?.moduleKeys.includes('rsvp') ?? false;
+    const planHasSchedule = selectedPlan?.moduleKeys.includes('schedule') ?? false;
+    const planHasGiftAccount = selectedPlan?.moduleKeys.includes('wishlist') ?? false;
+    const schedule = useProvisionSchedule(Boolean(getCreateEventCatalogEntry(selectedEventType as EventTypeConvention)?.secondarySessionTitleKey));
+    const giftAccount = useProvisionGiftAccount();
     const themePresetsQuery = useThemePresetsForType(planHasTheme ? selectedEventType : null);
     const themePresets = planHasTheme ? themePresetsQuery.data : undefined;
     const isThemeAvailable = planHasTheme && (themePresetsQuery.isLoading || (themePresets?.length ?? 0) > 0);
@@ -79,8 +87,9 @@ export function useProvisionEventForm(host: ProvisionHost, options: ProvisionEve
     const selectedThemePreset = themePresets?.find((preset) => preset.id === selectedThemePresetId) ?? null;
     const timezoneOptions = useMemo(() => getSupportedTimezones(), []);
     const isTimezoneValid = timezoneOptions.includes(timezone);
-    const { startAtMin, startAtMax } = getScheduleDatetimeLocalBounds({ startAt, endAt: '' });
+    const { startAtMin, startAtMax, endAtMin } = getScheduleDatetimeLocalBounds({ startAt, endAt });
     const scheduleError = startAt && isDatetimeLocalBefore(startAt, startAtMin) ? tCreate('validation.startInPast') : null;
+    const endAtError = startAt && endAt && !isDatetimeLocalBefore(startAt, endAt) ? tCreate('validation.endBeforeStart') : null;
     const rsvpDeadlineError =
         planHasRsvp && rsvpDeadline && startAt && !isDatetimeLocalBefore(rsvpDeadline, startAt) ? t('rsvpDeadlineAfterStart') : null;
     const timezoneError = timezone && !isTimezoneValid ? tCreate('validation.invalidTimezone') : null;
@@ -92,7 +101,9 @@ export function useProvisionEventForm(host: ProvisionHost, options: ProvisionEve
         startAt &&
         isTimezoneValid &&
         !scheduleError &&
+        !endAtError &&
         !rsvpDeadlineError &&
+        (!planHasGiftAccount || giftAccount.isValid) &&
         locationName.trim() &&
         locationAddress.trim() &&
         vendorSettings.errorKeys.length === 0,
@@ -134,6 +145,9 @@ export function useProvisionEventForm(host: ProvisionHost, options: ProvisionEve
 
         const startAtIso = datetimeLocalValueToIso(startAt);
         if (!startAtIso) return;
+        const endAtIso = endAt ? (datetimeLocalValueToIso(endAt) ?? undefined) : undefined;
+        const scheduleItems = planHasSchedule ? schedule.toRequest() : [];
+        const giftAccountRequest = planHasGiftAccount ? giftAccount.toRequest() : undefined;
         const rsvpDeadlineIso = planHasRsvp && rsvpDeadline ? (datetimeLocalValueToIso(rsvpDeadline) ?? undefined) : undefined;
 
         const initialSessionTitleKey = getInitialSessionTitleKey(selectedEventType);
@@ -145,12 +159,14 @@ export function useProvisionEventForm(host: ProvisionHost, options: ProvisionEve
                 notifyHost,
                 event: {
                     title: title.trim(),
+                    subtitle: subtitle.trim() || undefined,
                     description: description.trim() || undefined,
                     eventType: selectedEventType,
                     planTierCode: selectedPlan.code,
                     coverageOptionId: duration.optionId || undefined,
                     visibility,
                     startAt: startAtIso,
+                    endAt: endAtIso,
                     timezone,
                     locationName: locationName.trim(),
                     locationAddress: locationAddress.trim(),
@@ -161,6 +177,8 @@ export function useProvisionEventForm(host: ProvisionHost, options: ProvisionEve
                     themePresetId: selectedThemePresetId ?? undefined,
                 },
                 ...(vendorSettings.moduleConfigs.length > 0 ? { moduleConfigs: vendorSettings.moduleConfigs } : {}),
+                ...(scheduleItems.length > 0 ? { schedule: scheduleItems } : {}),
+                ...(giftAccountRequest ? { giftAccount: giftAccountRequest } : {}),
             });
             // A failure here is the caller's to show; the event itself was created.
             await options.onProvisioned?.(created).catch(() => undefined);
@@ -173,7 +191,9 @@ export function useProvisionEventForm(host: ProvisionHost, options: ProvisionEve
     function provisionAnother() {
         setStep('event');
         setTitle('');
+        setSubtitle('');
         setStartAt('');
+        setEndAt('');
         setLocationName('');
         setLocationAddress('');
         setMapsUrl('');
@@ -182,6 +202,8 @@ export function useProvisionEventForm(host: ProvisionHost, options: ProvisionEve
         setThemePresetId(null);
         setNotifyHost(true);
         vendorSettings.reset();
+        schedule.reset();
+        giftAccount.reset();
         provisionEvent.reset();
     }
 
@@ -202,8 +224,17 @@ export function useProvisionEventForm(host: ProvisionHost, options: ProvisionEve
         vendorSettings,
         title,
         setTitle,
+        subtitle,
+        setSubtitle,
         startAt,
         setStartAt,
+        endAt,
+        setEndAt,
+        endAtError,
+        planHasSchedule,
+        schedule,
+        planHasGiftAccount,
+        giftAccount,
         timezone,
         setTimezone,
         timezoneOptions,
@@ -231,6 +262,8 @@ export function useProvisionEventForm(host: ProvisionHost, options: ProvisionEve
         setThemePresetId,
         startAtMin,
         startAtMax,
+        endAtMin,
+        subtitleMaxLength: appConfig?.contentLimits.eventSubtitleMaxLength,
         scheduleError,
         fieldErrors,
         fieldError,

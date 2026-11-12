@@ -10,7 +10,8 @@ import type { AuthSessionDto } from '@/lib/api/types';
 import { rememberCodeSentAt } from '@/lib/emailCode';
 
 // Email sign-up inside the wizard. The backend mails a 6-digit code instead of a link.
-export function AccountSignUp({ onSignedIn }: { onSignedIn: () => void }) {
+// isFinishing: signed up, waiting for the code screen; the button stays busy.
+export function AccountSignUp({ onSignedIn, isFinishing }: { onSignedIn: () => void; isFinishing: boolean }) {
     const t = useTranslations('RegisterPage');
     const form = useRegisterForm({
         inviteToken: null,
@@ -34,7 +35,14 @@ export function AccountSignUp({ onSignedIn }: { onSignedIn: () => void }) {
             {/* Form */}
             <RegisterEmailForm
                 form={form}
-                submitButton={<CreateEventWizardButton type="submit" label={t('submit')} pending={form.isSubmitting} disabled={form.isSubmitting} />}
+                submitButton={
+                    <CreateEventWizardButton
+                        type="submit"
+                        label={t('submit')}
+                        pending={form.isSubmitting || isFinishing}
+                        disabled={form.isSubmitting || isFinishing}
+                    />
+                }
             />
         </div>
     );
