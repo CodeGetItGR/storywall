@@ -647,7 +647,8 @@
         "choices": {
             "title": "What would you like to do?",
             "join": "Join the event",
-            "open": "Open the event"
+            "open": "Open the event",
+            "eventHint": "See what guests share"
         },
         "guestCode": {
             "uploadButton": "Upload photos",
