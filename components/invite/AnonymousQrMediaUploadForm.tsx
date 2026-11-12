@@ -8,6 +8,7 @@ import React, { useCallback, useState } from 'react';
 import { ProtectedImage } from '@/components/common/ProtectedImage';
 import { IncidentPausedNote } from '@/components/incident/IncidentPausedNote';
 import { SignupAcceptanceCheckbox } from '@/components/legal/SignupAcceptanceCheckbox';
+import { QrSentArt } from '@/components/qrGuest/QrSentArt';
 import { FormFieldLabel } from '@/components/ui/FormFieldLabel';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useAppConfig } from '@/hooks/useAppConfig';
@@ -57,6 +58,13 @@ export function AnonymousQrMediaUploadForm({ token, member = null }: AnonymousQr
 
     const handleUploaderNameChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
         setUploaderName(e.target.value);
+    }, []);
+
+    // Back to an empty form for the next set. The name stays; the box is ticked again, as on every upload.
+    const handleUploadMore = useCallback(() => {
+        setAcceptedDocuments(false);
+        setSubmitError(null);
+        setDone(false);
     }, []);
 
     const handleAcceptedChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -159,7 +167,20 @@ export function AnonymousQrMediaUploadForm({ token, member = null }: AnonymousQr
     }
 
     if (done) {
-        return <p className="text-center text-sm text-ink-muted">{t('anonymousUpload.success')}</p>;
+        return (
+            /* Sent */
+            <div className="flex flex-col items-center gap-4 py-8 text-center">
+                <QrSentArt kind="upload" />
+                <p className="text-base font-semibold text-ink">{t('anonymousUpload.success')}</p>
+                <button
+                    type="button"
+                    onClick={handleUploadMore}
+                    className="inline-flex min-h-10 items-center rounded-full bg-surface-muted px-5 text-sm font-semibold text-ink transition-opacity hover:opacity-80"
+                >
+                    {t('anonymousUpload.uploadMore')}
+                </button>
+            </div>
+        );
     }
 
     return (
