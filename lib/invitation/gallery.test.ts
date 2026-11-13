@@ -80,6 +80,12 @@ describe('isEmptyForGuests', () => {
         expect(isEmptyForGuests({ ...photo, data: { imageY: 50 } }, editing)).toBe(false);
     });
 
+    it('keeps an empty gallery in the editor, which shows a box to add photos', () => {
+        const editing = { ...ctx, canvasTools: { gallery: () => null } };
+
+        expect(isEmptyForGuests({ ...gallery, data: { ...gallery.data, images: [] } }, editing)).toBe(false);
+    });
+
     describe('a frame section', () => {
         const section = SAMPLE_SECTIONS.photoFrame;
         const withFrame = (frameId: string) => ({

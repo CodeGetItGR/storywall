@@ -76,9 +76,11 @@ export function usePhotoUploads({ draftId, store, addUploaded, claim }: PhotoUpl
     }, [isAuthenticated]);
 
     const dismissProblem = useCallback(() => setProblem(null), []);
+    // A problem found before any upload starts, such as a full gallery.
+    const report = useCallback((found: PhotoProblem) => setProblem(found), []);
     const closeSignIn = useCallback(() => setIsSignInOpen(false), []);
 
-    const slots = useMemo(() => ({ uploads, upload, canPick }), [canPick, upload, uploads]);
+    const slots = useMemo(() => ({ uploads, upload, canPick, report }), [canPick, report, upload, uploads]);
 
     return {
         slots,

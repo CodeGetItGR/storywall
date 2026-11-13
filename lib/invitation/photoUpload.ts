@@ -12,8 +12,8 @@ export const PHOTO_MAX_BYTES = 10 * 1024 * 1024;
 export const PHOTO_COMPRESSION = { maxSizeMB: 1.5, maxWidthOrHeight: 2560, initialQuality: 0.85, useWebWorker: true } as const;
 
 // Why a photo isn't on the page: a file the server would refuse, a failed upload,
-// or a draft (100) or an account (300) with no room left.
-export type PhotoProblem = 'type' | 'size' | 'failed' | 'full';
+// a draft (100) or an account (300) with no room left, or a gallery that holds 10 already.
+export type PhotoProblem = 'type' | 'size' | 'failed' | 'full' | 'galleryFull';
 
 const NO_ROOM_CODES = new Set([5213, 5215]);
 

@@ -10333,7 +10333,8 @@
                 "type": "Only JPG, PNG and WebP are allowed.",
                 "size": "The file is over 10 MB.",
                 "failed": "The photo didn't upload. Try again.",
-                "full": "You've reached the photo limit."
+                "full": "You've reached the photo limit.",
+                "galleryFull": "The gallery already has 10 photos."
             },
             "move": "Move photo",
             "zoomOut": "Zoom out",
@@ -10359,6 +10360,33 @@
                 "mask-reveal": "Mask Reveal",
                 "parallax-soft": "Parallax Soft",
                 "pop-elegant": "Pop Elegant"
+            },
+            "gallery": {
+                "title": "Photos",
+                "add": "Add photos",
+                "count": "{count}/10 photos",
+                "delete": "Delete photo",
+                "reorder": "Drag to reorder",
+                "photoAlt": "Photo {n}",
+                "layout": "Layout",
+                "shape": "Shape",
+                "dragInstructions": "Press space to pick up a photo. Use the arrow keys to move it, space to drop it, or escape to cancel.",
+                "picked": "Picked up photo {n}.",
+                "over": "Photo {n} is at place {position} of {count}.",
+                "dropped": "Dropped photo {n} at place {position} of {count}.",
+                "cancelled": "Photo {n} is back where it was.",
+                "layouts": {
+                    "grid": "Grid",
+                    "masonry": "Mosaic",
+                    "carousel": "Slideshow",
+                    "featured": "One large"
+                },
+                "shapes": {
+                    "round": "Circle",
+                    "square": "Square",
+                    "rectangle": "Rectangle",
+                    "roundedSquare": "Rounded"
+                }
             }
         },
         "sectionSettings": {
