@@ -45,6 +45,7 @@ const MOVED = {
     code: { x: 47, y: 90, size: 50, panel: true, radius: 2 },
     lines: { ...L.lines, y: 40, height: 40 },
     fields: [],
+    logo: null,
 };
 // The smallest code the backend allows.
 const SMALLEST = { ...L, code: { ...L.code, x: 37.5, y: 55, size: 30 } };
@@ -55,6 +56,7 @@ describe('QrCardSvg scans with a layout', () => {
         { name: 'the smallest code, at A6 export size', layout: SMALLEST, width: 1240 },
         { name: 'the panel off on a white card', layout: { ...L, code: { ...L.code, panel: false } }, width: 840 },
         { name: 'the default layout at A5 export size', layout: L, width: 1748 },
+        { name: 'a logo right under the code', layout: { ...L, logo: { x: 30, y: 104, width: 45, color: null } }, width: 840 },
     ])('$name', ({ layout, width }) => {
         for (const url of [SHORT_URL, LONG_URL]) {
             for (const centerLogo of [true, false]) {

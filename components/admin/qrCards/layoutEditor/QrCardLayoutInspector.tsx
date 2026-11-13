@@ -6,6 +6,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import { AdminSwitch } from '@/components/admin/AdminSwitch';
 import { QrCardLayoutAddBar } from '@/components/admin/qrCards/layoutEditor/QrCardLayoutAddBar';
 import { QrCardLayoutFieldPanel } from '@/components/admin/qrCards/layoutEditor/QrCardLayoutFieldPanel';
+import { QrCardLayoutLogoPanel } from '@/components/admin/qrCards/layoutEditor/QrCardLayoutLogoPanel';
 import { QrCardLayoutRange } from '@/components/admin/qrCards/layoutEditor/QrCardLayoutRange';
 import { QrCardLayoutSegmented } from '@/components/admin/qrCards/layoutEditor/QrCardLayoutSegmented';
 import { QrCardLineWordingPanel } from '@/components/admin/qrCards/layoutEditor/QrCardLineWordingPanel';
@@ -18,7 +19,7 @@ import type { QrCardLookState } from '@/hooks/useQrCardLook';
 import { useQrCardLookCopy } from '@/hooks/useQrCardLookCopy';
 import { formatMm } from '@/lib/adminQrCards';
 import type { QrCardTextAlign } from '@/lib/api/types';
-import { elementName, elementRect, QR_CARD_LAYOUT_LIMITS } from '@/lib/qrCardLayout';
+import { elementName, elementRect, QR_CARD_LAYOUT_LIMITS, type QrCardElement } from '@/lib/qrCardLayout';
 
 const ALIGN_ICONS = {
     left: <AlignLeft className="h-4 w-4" aria-hidden="true" />,
@@ -26,6 +27,8 @@ const ALIGN_ICONS = {
     right: <AlignRight className="h-4 w-4" aria-hidden="true" />,
 };
 const ALIGNMENTS: QrCardTextAlign[] = ['left', 'center', 'right'];
+// The remove button's label by element; any added field says removeField.
+const REMOVE_LABELS: Partial<Record<QrCardElement, 'removeTitle' | 'removeLogo'>> = { title: 'removeTitle', logo: 'removeLogo' };
 
 // The side panel: adding text, then what the selected element can change, or the card itself while
 // nothing is selected.
@@ -132,18 +135,21 @@ export function QrCardLayoutInspector({ editor, look }: { editor: QrCardLayoutEd
                         </>
                     )}
 
+                    {/* Logo */}
+                    {selected === 'logo' && layout.logo && <QrCardLayoutLogoPanel editor={editor} logo={layout.logo} />}
+
                     {/* Field */}
                     {selectedField && <QrCardLayoutFieldPanel editor={editor} field={selectedField} alignOptions={alignOptions} />}
 
                     {/* Remove */}
-                    {(selected === 'title' || selectedField) && (
+                    {(selected === 'title' || selected === 'logo' || selectedField) && (
                         <button
                             type="button"
                             onClick={editor.removeSelected}
                             className="inline-flex h-8 items-center gap-1.5 rounded-md px-2.5 text-xs font-semibold text-status-danger hover:bg-status-danger/10"
                         >
                             <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
-                            {selected === 'title' ? t('removeTitle') : t('removeField')}
+                            {t(REMOVE_LABELS[selected] ?? 'removeField')}
                         </button>
                     )}
                 </div>
