@@ -3,16 +3,18 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { ArrowRight, ImagePlus, Loader2, Video, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 
 import { ProtectedImage } from '@/components/common/ProtectedImage';
 import { IncidentPausedNote } from '@/components/incident/IncidentPausedNote';
-import { AcceptanceCheckboxes } from '@/components/legal/AcceptanceCheckboxes';
+import { SignupAcceptanceCheckbox } from '@/components/legal/SignupAcceptanceCheckbox';
+import { QrSentArt } from '@/components/qrGuest/QrSentArt';
 import { FormFieldLabel } from '@/components/ui/FormFieldLabel';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useAppConfig } from '@/hooks/useAppConfig';
 import { communityGuidelinesQueryKey, useCommunityGuidelinesVersion } from '@/hooks/useCommunityGuidelinesVersion';
 import { useFilePreviews } from '@/hooks/useFilePreviews';
+import { useUploadMediaBatch } from '@/hooks/useMedia';
 import { useUploadQrMediaBatch } from '@/hooks/useQrMediaUpload';
 import { termsVersionQueryKey, useTermsVersion } from '@/hooks/useTermsVersion';
 import { useUploadAccept } from '@/hooks/useUploadAccept';
@@ -24,14 +26,20 @@ import { cn } from '@/lib/utils';
 
 interface AnonymousQrMediaUploadFormProps {
     token: string;
+    // A signed-in member of the event uploads as themselves: their name, their account's acceptance.
+    member?: { eventId: string; displayName: string } | null;
+    // Told when the sent screen shows or hides, so the page can drop its own header there.
+    onSentChange?: (sent: boolean) => void;
 }
 
-export function AnonymousQrMediaUploadForm({ token }: AnonymousQrMediaUploadFormProps) {
+export function AnonymousQrMediaUploadForm({ token, member = null, onSentChange }: AnonymousQrMediaUploadFormProps) {
     const t = useTranslations('QrCodePage');
     const tAlt = useTranslations('ImageAlt');
     const uploadAccept = useUploadAccept();
     const toErrorMessage = useApiErrorMessage();
-    const uploadBatch = useUploadQrMediaBatch();
+    const qrUploadBatch = useUploadQrMediaBatch();
+    const memberUploadBatch = useUploadMediaBatch();
+    const uploadBatch = member ? memberUploadBatch : qrUploadBatch;
     const queryClient = useQueryClient();
     const termsVersion = useTermsVersion();
     const guidelinesVersion = useCommunityGuidelinesVersion();
@@ -39,9 +47,10 @@ export function AnonymousQrMediaUploadForm({ token }: AnonymousQrMediaUploadForm
     const { imageBytes, videoBytes } = getUploadLimits(appConfig?.media);
 
     const [uploaderName, setUploaderName] = useState('');
-    // No account here, so the 16+ confirmation and the acceptance are asked on every upload (legal todo #3).
+    // No account here, so the 16+ confirmation and the acceptance are asked on every upload (legal todo #3),
+    // in one box as at sign-up. A member already gave both with their account.
     const [acceptedDocuments, setAcceptedDocuments] = useState(false);
-    const [ageConfirmed, setAgeConfirmed] = useState(false);
+    const isAccepted = Boolean(member) || acceptedDocuments;
     const [files, setFiles] = useState<File[]>([]);
     const [submitError, setSubmitError] = useState<string | null>(null);
     const [done, setDone] = useState(false);
@@ -49,16 +58,23 @@ export function AnonymousQrMediaUploadForm({ token }: AnonymousQrMediaUploadForm
     const [isBusy, setIsBusy] = useState(false);
     const previews = useFilePreviews(files);
 
+    useEffect(() => {
+        onSentChange?.(done);
+    }, [done, onSentChange]);
+
     const handleUploaderNameChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
         setUploaderName(e.target.value);
     }, []);
 
-    const handleAcceptedChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-        setAcceptedDocuments(e.target.checked);
+    // Back to an empty form for the next set. The name stays; the box is ticked again, as on every upload.
+    const handleUploadMore = useCallback(() => {
+        setAcceptedDocuments(false);
+        setSubmitError(null);
+        setDone(false);
     }, []);
 
-    const handleAgeConfirmedChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-        setAgeConfirmed(e.target.checked);
+    const handleAcceptedChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+        setAcceptedDocuments(e.target.checked);
     }, []);
 
     // A file over its own cap is refused here rather than sent to be refused.
@@ -111,21 +127,23 @@ export function AnonymousQrMediaUploadForm({ token }: AnonymousQrMediaUploadForm
 
     async function handleSubmit(e: React.SubmitEvent<HTMLFormElement>) {
         e.preventDefault();
-        if (files.length === 0 || !acceptedDocuments || !ageConfirmed) return;
-        if (!termsVersion.data || !guidelinesVersion.data) {
+        if (files.length === 0 || !isAccepted) return;
+        if (!member && (!termsVersion.data || !guidelinesVersion.data)) {
             setSubmitError(t('anonymousUpload.acceptanceUnavailable'));
             return;
         }
 
         setSubmitError(null);
         try {
-            const result = await uploadBatch.mutateAsync({
-                token,
-                files,
-                uploaderName: uploaderName.trim() || undefined,
-                acceptance: { termsVersion: termsVersion.data, guidelinesVersion: guidelinesVersion.data },
-                onBusy: setIsBusy,
-            });
+            const result = member
+                ? await memberUploadBatch.mutateAsync({ eventId: member.eventId, files, onBusy: setIsBusy })
+                : await qrUploadBatch.mutateAsync({
+                      token,
+                      files,
+                      uploaderName: uploaderName.trim() || undefined,
+                      acceptance: { termsVersion: termsVersion.data!, guidelinesVersion: guidelinesVersion.data! },
+                      onBusy: setIsBusy,
+                  });
             // The batch answers 200 whatever happened to each file. Keep the refused ones to try again.
             if (result.failed.length > 0) {
                 const refused = new Set(result.failed.map((failure) => failure.filename));
@@ -155,19 +173,34 @@ export function AnonymousQrMediaUploadForm({ token }: AnonymousQrMediaUploadForm
     }
 
     if (done) {
-        return <p className="text-center text-sm text-ink-muted">{t('anonymousUpload.success')}</p>;
+        return (
+            /* Sent */
+            <div className="flex flex-col items-center gap-4 py-8 text-center">
+                <QrSentArt kind="upload" />
+                <p className="text-base font-semibold text-ink">{t('anonymousUpload.success')}</p>
+                <button
+                    type="button"
+                    onClick={handleUploadMore}
+                    className="inline-flex min-h-10 items-center rounded-full bg-surface-muted px-5 text-sm font-semibold text-ink transition-opacity hover:opacity-80"
+                >
+                    {t('anonymousUpload.uploadMore')}
+                </button>
+            </div>
+        );
     }
 
     return (
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-            <FormFieldLabel label={t('anonymousUpload.nameLabel')} optional>
+            {/* Name: a member's own, read-only */}
+            <FormFieldLabel label={t('anonymousUpload.nameLabel')} optional={!member}>
                 <input
                     type="text"
                     maxLength={100}
-                    value={uploaderName}
+                    value={member ? member.displayName : uploaderName}
                     onChange={handleUploaderNameChange}
+                    readOnly={Boolean(member)}
                     placeholder={t('anonymousUpload.namePlaceholder')}
-                    className="w-full rounded-xl bg-surface-muted px-4 py-3 text-sm text-ink transition outline-none placeholder:text-ink-faint focus:ring-2 focus:ring-primary/30"
+                    className="w-full rounded-xl bg-surface-muted px-4 py-3 text-sm text-ink transition outline-none placeholder:text-ink-faint read-only:text-ink-muted focus:ring-2 focus:ring-primary/30"
                 />
             </FormFieldLabel>
 
@@ -214,7 +247,14 @@ export function AnonymousQrMediaUploadForm({ token }: AnonymousQrMediaUploadForm
                                         <Video className="absolute bottom-1 left-1 h-3.5 w-3.5 text-white drop-shadow" aria-hidden="true" />
                                     </>
                                 ) : (
-                                    <ProtectedImage src={preview.url} alt={tAlt('photoPreview')} fill className="object-cover" sizes="80px" unoptimized />
+                                    <ProtectedImage
+                                        src={preview.url}
+                                        alt={tAlt('photoPreview')}
+                                        fill
+                                        className="object-cover"
+                                        sizes="80px"
+                                        unoptimized
+                                    />
                                 )}
                                 <button
                                     type="button"
@@ -230,13 +270,8 @@ export function AnonymousQrMediaUploadForm({ token }: AnonymousQrMediaUploadForm
                 )}
             </FormFieldLabel>
 
-            <AcceptanceCheckboxes
-                minimumAge={16}
-                accepted={acceptedDocuments}
-                adultConfirmed={ageConfirmed}
-                onAcceptedChangeAction={handleAcceptedChange}
-                onAdultConfirmedChangeAction={handleAgeConfirmedChange}
-            />
+            {/* Acceptance: guests only */}
+            {!member && <SignupAcceptanceCheckbox minimumAge={16} checked={acceptedDocuments} onChangeAction={handleAcceptedChange} />}
 
             {/* Status */}
             {isBusy ? (
@@ -253,7 +288,7 @@ export function AnonymousQrMediaUploadForm({ token }: AnonymousQrMediaUploadForm
 
             <button
                 type="submit"
-                disabled={INCIDENT_MODE || uploadBatch.isPending || files.length === 0 || !acceptedDocuments || !ageConfirmed}
+                disabled={INCIDENT_MODE || uploadBatch.isPending || files.length === 0 || !isAccepted}
                 className="flex w-full items-center justify-center gap-2 rounded-full py-3 text-sm font-semibold text-white transition-opacity bg-gradient-brand hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
             >
                 {uploadBatch.isPending ? (

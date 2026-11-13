@@ -18,7 +18,7 @@ export function BabySection({ section, contrast, ctx }: BabySectionProps) {
         <div className="section-inner">
             {/* Baby */}
             <div className="family-block family-baby">
-                <FamilyPhoto photo={data.babyPhoto} name={data.babyName} ctx={ctx} />
+                <FamilyPhoto photo={data.babyPhoto} name={data.babyName} sectionId={section.id} path="babyPhoto" ctx={ctx} />
                 <SectionText section={section} path="babyName" value={data.babyName} tag="h2" contrast={contrast} ctx={ctx} />
                 <SectionText section={section} path="babyMessage" value={data.babyMessage} tag="p" contrast={contrast} ctx={ctx} />
             </div>
