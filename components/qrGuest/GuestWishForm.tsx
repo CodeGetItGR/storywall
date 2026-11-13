@@ -2,6 +2,7 @@
 
 import { Loader2, Send } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import { useEffect } from 'react';
 
 import { IncidentPausedNote } from '@/components/incident/IncidentPausedNote';
 import { SignupAcceptanceCheckbox } from '@/components/legal/SignupAcceptanceCheckbox';
@@ -11,11 +12,17 @@ import { GUEST_WISH_NAME_MAX_LENGTH, useGuestWishForm } from '@/hooks/useGuestWi
 
 interface GuestWishFormProps {
     token: string;
+    // Told when the sent screen shows or hides, so the page can drop its own header there.
+    onSentChange?: (sent: boolean) => void;
 }
 
-export function GuestWishForm({ token }: GuestWishFormProps) {
+export function GuestWishForm({ token, onSentChange }: GuestWishFormProps) {
     const t = useTranslations('QrCodePage');
     const form = useGuestWishForm(token);
+
+    useEffect(() => {
+        onSentChange?.(form.sent);
+    }, [form.sent, onSentChange]);
 
     if (form.sent) {
         return (
