@@ -17,15 +17,15 @@ export function QrLandingScreen({ landing }: { landing: ReturnType<typeof useQrL
         <>
             {/* Header: back arrow at the left, the form's label centred. Hidden on the sent screen. */}
             {label && !landing.isSent ? (
-                <div className="relative mb-4 flex min-h-9 items-center justify-center">
+                <div className="relative mb-8 flex min-h-11 items-center justify-center">
                     {landing.canGoBack ? (
                         <button
                             type="button"
                             onClick={landing.back}
                             aria-label={t('guestCode.back')}
-                            className="absolute left-0 inline-flex h-9 w-9 items-center justify-center rounded-full bg-surface-muted text-ink transition-opacity hover:opacity-80"
+                            className="absolute left-0 inline-flex h-11 w-11 items-center justify-center rounded-full bg-surface-muted text-ink transition-opacity hover:opacity-80"
                         >
-                            <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+                            <ArrowLeft className="h-5 w-5" aria-hidden="true" />
                         </button>
                     ) : null}
                     <div className="text-xs font-semibold tracking-wide text-ink-muted uppercase">{label}</div>
