@@ -10595,7 +10595,8 @@
     "PublishedInvitation": {
         "metaTitle": "Invitation",
         "notFound": "We couldn't find this invitation.",
-        "expired": "This invitation is no longer available."
+        "expired": "This invitation is no longer available.",
+        "shareImageAlt": "Invitation: {names}"
     },
     "Inviart": {
         "heading": "Invitations and more by INVIART",

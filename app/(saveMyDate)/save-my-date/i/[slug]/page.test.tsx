@@ -41,7 +41,15 @@ vi.mock('next/navigation', () => ({ notFound }));
 import Page, { generateMetadata } from './page';
 
 const fetchMock = vi.fn();
-const invitation = { slug: 'maria-and-nikos', design: SAMPLE_THEME, document: SAMPLE_DOCUMENT, imageUrls: {} };
+const SAMPLE_INVITATION = { slug: 'maria-and-nikos', design: SAMPLE_THEME, document: SAMPLE_DOCUMENT, imageUrls: {}, updatedAt: '2026-11-10T09:00:00Z' };
+let invitation: typeof SAMPLE_INVITATION = SAMPLE_INVITATION;
+
+// The sample with text in its top section, the way the real themes write the couple's names.
+function withTopText(...texts: string[]): typeof SAMPLE_INVITATION {
+    const elements = texts.map((text, index) => ({ id: `e-top-${index}`, kind: 'text' as const, role: 'title' as const, text, style: {} }));
+    const sections = SAMPLE_DOCUMENT.sections.map((section) => (section.type === 'top' ? { ...section, elements } : section));
+    return { ...SAMPLE_INVITATION, document: { ...SAMPLE_DOCUMENT, sections } };
+}
 
 // The public invitation answers `invitationStatus`, its RSVP route `rsvp`; the font catalogue answers an empty list.
 function backend(invitationStatus: number, rsvp: () => Response = () => new Response(null, { status: 204 })) {
@@ -73,6 +81,7 @@ beforeEach(() => {
     stubIntersectionObserver();
     fetchMock.mockReset();
     notFound.mockClear();
+    invitation = SAMPLE_INVITATION;
     vi.stubGlobal('fetch', fetchMock);
 });
 
@@ -113,14 +122,51 @@ describe('Published invitation page', () => {
         expect(screen.getByRole('button', { name: en.PageErrorState.retry })).toBeInTheDocument();
     });
 
-    it('never indexes or follows, and titles the tab after what it shows', async () => {
-        backend(200);
-        expect(await generateMetadata(visit())).toEqual({ title: en.PublishedInvitation.metaTitle, robots: { index: false, follow: false } });
+    it('never indexes or follows, and titles a missing or expired link after its message', async () => {
+        backend(404);
+        expect(await generateMetadata(visit('gone'))).toEqual({ title: en.PublishedInvitation.notFound, robots: { index: false, follow: false } });
         backend(410);
         expect(await generateMetadata(visit('expired-one'))).toEqual({
             title: en.PublishedInvitation.expired,
             robots: { index: false, follow: false },
         });
+    });
+
+    it("gives a live link its own preview: the top section's names, the date and place, and a picture that doesn't expire", async () => {
+        invitation = withTopText('Άγγελος', '&', 'Αλεξάνδρα');
+        backend(200);
+        const image = {
+            url: 'https://www.storywall.gr/save-my-date/i/maria-and-nikos/share-image?v=mwagluo0',
+            width: 1200,
+            height: 630,
+            alt: 'Πρόσκληση: Άγγελος & Αλεξάνδρα',
+            type: 'image/jpeg',
+        };
+        const title = 'Άγγελος & Αλεξάνδρα';
+        const description = 'Κυριακή 12 Ιουλίου 2026 · 18:00 · Ιερός Ναός Αγίου Νικολάου';
+        expect(await generateMetadata(visit())).toEqual({
+            title,
+            description,
+            openGraph: { type: 'website', title, description, images: [image] },
+            twitter: { card: 'summary_large_image', title, description, images: [image] },
+            robots: { index: false, follow: false },
+        });
+    });
+
+    it("falls back to the plain title in the invitation's language, and drops the description with no date or place", async () => {
+        invitation = {
+            ...invitation,
+            document: {
+                ...SAMPLE_DOCUMENT,
+                sections: SAMPLE_DOCUMENT.sections.filter((section) => section.type !== 'date' && section.type !== 'locations'),
+            },
+        };
+        backend(200);
+        const metadata = await generateMetadata(visit());
+        expect(metadata.title).toBe(el.PublishedInvitation.metaTitle);
+        expect(metadata.description).toBeNull();
+        expect(metadata.openGraph).toMatchObject({ title: el.PublishedInvitation.metaTitle, description: undefined });
+        expect(metadata.openGraph?.images).toEqual([expect.objectContaining({ alt: el.PublishedInvitation.metaTitle })]);
     });
 
     it('is not there on the production site before launch', async () => {

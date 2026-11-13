@@ -17,6 +17,14 @@ export function publishedInvitationPath(slug: string): string {
     return `${PUBLISHED_INVITATION_PATH_PREFIX}/${slug}`;
 }
 
+// The invitation's link preview picture. `version` (the latest publish) changes the link when the host
+// republishes, so messaging apps that keep a picture by its link fetch the new one.
+export function publishedInvitationShareImagePath(slug: string, version?: string): string {
+    const path = `${publishedInvitationPath(slug)}/share-image`;
+    const stamp = version ? Date.parse(version) : Number.NaN;
+    return Number.isNaN(stamp) ? path : `${path}?v=${stamp.toString(36)}`;
+}
+
 // Any host whose first label is `invite`, with or without a port: invite.storywall.gr,
 // invite.staging.storywall.gr, invite.localhost:3000.
 export function isInviteHost(host: string): boolean {

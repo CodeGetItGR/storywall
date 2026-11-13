@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { inviteHostRoute, isInvitationSlug, isInviteHost, mainSiteUrl, publishedInvitationPath } from '@/lib/invitation/inviteHost';
+import { inviteHostRoute, isInvitationSlug, isInviteHost, mainSiteUrl, publishedInvitationPath, publishedInvitationShareImagePath } from '@/lib/invitation/inviteHost';
 
 describe('isInvitationSlug', () => {
     it('takes the links the backend gives out', () => {
@@ -59,5 +59,19 @@ describe('mainSiteUrl', () => {
     it('drops the invite label on staging and locally', () => {
         expect(mainSiteUrl(new URL('https://invite.staging.storywall.gr/'), 'https://www.storywall.gr').href).toBe('https://staging.storywall.gr/');
         expect(mainSiteUrl(new URL('http://invite.localhost:3200/x'), 'https://www.storywall.gr').href).toBe('http://localhost:3200/x');
+    });
+});
+
+describe('publishedInvitationShareImagePath', () => {
+    it('sits under the invitation page and changes with each publish', () => {
+        expect(publishedInvitationShareImagePath('maria-and-nikos')).toBe('/save-my-date/i/maria-and-nikos/share-image');
+        const first = publishedInvitationShareImagePath('maria-and-nikos', '2026-11-10T09:00:00Z');
+        const second = publishedInvitationShareImagePath('maria-and-nikos', '2026-11-10T09:05:00Z');
+        expect(first).toMatch(/^\/save-my-date\/i\/maria-and-nikos\/share-image\?v=[a-z0-9]+$/);
+        expect(second).not.toBe(first);
+    });
+
+    it('leaves the version out when the publish time is unreadable', () => {
+        expect(publishedInvitationShareImagePath('maria-and-nikos', 'soon')).toBe('/save-my-date/i/maria-and-nikos/share-image');
     });
 });
