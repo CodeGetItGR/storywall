@@ -4,6 +4,7 @@ import { ArrowRight, Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { AppLink } from '@/components/ui/AppLink';
+import { CodeInput } from '@/components/ui/CodeInput';
 import type { GiftClaim } from '@/hooks/useGiftClaim';
 import { GIFT_PIN_LENGTH } from '@/lib/gift';
 
@@ -43,16 +44,7 @@ export function GiftClaimForm({ claim }: { claim: GiftClaim }) {
             {claim.showPin && (
                 <label className="flex flex-col gap-1.5">
                     <span className="text-xs font-semibold tracking-wide text-ink-muted uppercase">{t('pinLabel')}</span>
-                    <input
-                        type="text"
-                        inputMode="numeric"
-                        autoComplete="one-time-code"
-                        maxLength={GIFT_PIN_LENGTH}
-                        value={claim.pin}
-                        onChange={claim.handlePinChange}
-                        disabled={claim.isClaiming}
-                        className="rounded-xl bg-surface-muted px-4 py-3 text-center font-mono text-xl tracking-[0.4em] text-ink outline-none focus:ring-2 focus:ring-primary/30"
-                    />
+                    <CodeInput length={GIFT_PIN_LENGTH} value={claim.pin} onChange={claim.handlePinChange} disabled={claim.isClaiming} />
                     {claim.attemptsLeft !== null && (
                         <span className="text-xs text-ink-muted">{t('attemptsLeft', { count: claim.attemptsLeft })}</span>
                     )}

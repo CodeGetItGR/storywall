@@ -1,5 +1,4 @@
 import { act, renderHook } from '@testing-library/react';
-import type { ChangeEvent } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { useAccountDeletionFlow } from '@/hooks/useAccountDeletionFlow';
@@ -46,7 +45,7 @@ function apiError(errorCode: number, status = 400, details?: unknown) {
 }
 
 function otpChange(value: string) {
-    return { target: { value } } as ChangeEvent<HTMLInputElement>;
+    return value;
 }
 
 describe('useAccountDeletionFlow', () => {

@@ -3,7 +3,7 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { type ChangeEvent, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useAppConfig } from '@/hooks/useAppConfig';
@@ -11,6 +11,7 @@ import { eventKeys } from '@/hooks/useEvent';
 import { useRequestEventDeletion, useRequestEventDeletionOtp } from '@/hooks/useEventDeletion';
 import { ERROR_CODES, getErrorCode, getRetryAfterSeconds, isRateLimitedError } from '@/lib/api/errors';
 import { DEFAULT_EVENT_DELETION } from '@/lib/appConfigDefaults';
+import { onlyDigits } from '@/lib/emailCode';
 import { routes } from '@/lib/routes';
 
 const OTP_RESEND_COOLDOWN_SECONDS = 60;
@@ -63,8 +64,8 @@ export function useEventDeletionFlow(eventId: string) {
         setConfirmOpen(false);
     }
 
-    function handleOtpChange(event: ChangeEvent<HTMLInputElement>) {
-        setOtpCode(event.target.value.replace(/\D/g, '').slice(0, codeDigits));
+    function handleOtpChange(value: string) {
+        setOtpCode(onlyDigits(value, codeDigits));
         setOtpInvalid(false);
         setDeleteError(null);
     }
