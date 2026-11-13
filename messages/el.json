@@ -5172,7 +5172,6 @@
                 "slug": "Slug",
                 "seoTitle": "Τίτλος SEO",
                 "seoDescription": "Περιγραφή meta",
-                "sortOrder": "Σειρά",
                 "counter": "{count}/{max}",
                 "nameInvalid": "Γράψτε 1 έως 120 χαρακτήρες.",
                 "slugInvalid": "Χρησιμοποιήστε πεζά λατινικά, ψηφία και παύλες.",
