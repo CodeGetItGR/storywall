@@ -40,10 +40,6 @@ export const FourDigits: Story = {
     args: { length: 4, value: '7' },
 };
 
-export const Invalid: Story = {
-    args: { value: '123456', invalid: true },
-};
-
 export const Disabled: Story = {
     args: { value: '123', disabled: true },
 };
