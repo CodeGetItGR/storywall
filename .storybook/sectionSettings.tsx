@@ -16,7 +16,7 @@ export type SectionSettingsStoryArgs = {
 };
 
 // The settings of one sample section, with changes kept, as the editor shows them.
-function useStoryPanel(sectionId: string, isAdmin: boolean) {
+export function useStoryPanel(sectionId: string, isAdmin: boolean) {
     const [draft] = useState(storyDraft);
     const [document, setDocument] = useState(draft.document);
     const [uploaded, setUploaded] = useState<Record<string, string>>({});

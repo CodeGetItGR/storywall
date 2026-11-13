@@ -5,10 +5,27 @@
     --smd-editor-panel: #232327;
     --smd-editor-panel-line: rgb(255 255 255 / 0.1);
     --smd-editor-text: #e7e7ea;
+    /* A picked choice and an item's title. */
+    --smd-editor-strong: #ffffff;
     --smd-editor-muted: #918d99;
     --smd-editor-control: #303238;
     --smd-editor-canvas: radial-gradient(circle at top, #303238 0, #242529 48%, #1d1e21 100%);
     /* The old editor's colours for a picked section and its delete action. */
     --smd-editor-accent: #78b6a4;
     --smd-editor-danger: #e6968c;
+}
+
+/* The same tokens in the app's light colours, for the panel sheet on phones.
+   The sheet is portalled out of .smd-editor, so it would get none of the above. */
+.smd-editor-sheet {
+    --smd-editor-bar: var(--background);
+    --smd-editor-line: var(--line-strong);
+    --smd-editor-panel: var(--background);
+    --smd-editor-panel-line: var(--line-strong);
+    --smd-editor-text: var(--ink);
+    --smd-editor-strong: var(--ink);
+    --smd-editor-muted: var(--ink-muted);
+    --smd-editor-control: var(--surface-muted);
+    --smd-editor-accent: var(--status-teal);
+    --smd-editor-danger: var(--status-danger);
 }
