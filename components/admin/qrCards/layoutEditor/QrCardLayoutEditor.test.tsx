@@ -156,6 +156,30 @@ describe('QrCardLayoutEditor', () => {
         expect(layout.fields).toEqual([expect.objectContaining({ kind: 'fixed', text: { en: 'Thank you', el: 'Ευχαριστούμε' } })]);
     });
 
+    it('adds the logo once, colours it, and saves it', async () => {
+        renderEditor();
+        fireEvent.click(screen.getByRole('button', { name: 'addLogo' }));
+        expect(screen.getByRole('button', { name: /^elements\.logo/ })).toBeInTheDocument();
+        expect(screen.queryByRole('button', { name: 'addLogo' })).not.toBeInTheDocument();
+        expect(screen.getByRole('radio', { name: 'logoColorOptions.original' })).toBeChecked();
+
+        // One colour starts as the card's text colour.
+        fireEvent.click(screen.getByRole('radio', { name: 'logoColorOptions.one' }));
+        fireEvent.change(screen.getByLabelText('color'), { target: { value: '#ffffff' } });
+
+        fireEvent.click(screen.getByRole('button', { name: 'save' }));
+        await vi.waitFor(() => expect(patch.mutateAsync).toHaveBeenCalled());
+        expect(patch.mutateAsync.mock.calls[0][0].input.layout.logo).toEqual({ x: 30, y: 129.7, width: 45, color: '#FFFFFF' });
+    });
+
+    it('removes the logo', () => {
+        renderEditor();
+        fireEvent.click(screen.getByRole('button', { name: 'addLogo' }));
+        fireEvent.click(screen.getByRole('button', { name: 'removeLogo' }));
+        expect(screen.queryByRole('button', { name: /^elements\.logo/ })).not.toBeInTheDocument();
+        expect(screen.getByRole('button', { name: 'addLogo' })).toBeInTheDocument();
+    });
+
     it('asks before discarding changes', () => {
         const { onClose } = renderEditor();
         fireEvent.focus(screen.getByRole('button', { name: /^elements\.title/ }));

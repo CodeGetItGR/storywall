@@ -1108,6 +1108,16 @@ export interface QrCardLayoutDto {
         text?: Partial<Record<QrCardWordingKey, LocalizedText>> | null;
     };
     fields?: QrCardTextFieldDto[]; // up to 5; absent on layouts saved before KAN-103
+    logo?: QrCardLogoDto | null; // null or absent = no logo
+}
+
+// The full StoryWall logo (icon and wordmark) at a fixed shape: its height is width × 32 / 140.
+// color: null = the brand colours, #RRGGBB = the whole logo in that one colour.
+export interface QrCardLogoDto {
+    x: number;
+    y: number;
+    width: number;
+    color: string | null;
 }
 
 // The scan lines a design can word: one per thing a code opens (QrCardPage.lines), and the gift card's.

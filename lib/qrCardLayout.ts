@@ -1,13 +1,22 @@
-import type { LocalizedText, QrCardFieldKind, QrCardLayoutDto, QrCardTextAlign, QrCardTextFieldDto, QrCardWordingKey } from '@/lib/api/types';
+import type {
+    LocalizedText,
+    QrCardFieldKind,
+    QrCardLayoutDto,
+    QrCardLogoDto,
+    QrCardTextAlign,
+    QrCardTextFieldDto,
+    QrCardWordingKey,
+} from '@/lib/api/types';
 
-// Where a card's title, code, lines and added text fields sit, in A6 millimetres. Mirrors the backend's
-// QrCardLayoutValidator; the server stays the authority. Boxes may overlap: the code draws on top, then
-// the fields in order.
+// Where a card's title, code, lines, added text fields and logo sit, in A6 millimetres. Mirrors the backend's
+// QrCardLayoutValidator; the server stays the authority. Boxes may overlap: the code draws on top, under it
+// the logo, then the fields in order.
 export type QrCardTextField = QrCardTextFieldDto;
-export type QrCardLayout = Omit<QrCardLayoutDto, 'fields'> & { fields: QrCardTextField[] };
+export type QrCardLogo = QrCardLogoDto;
+export type QrCardLayout = Omit<QrCardLayoutDto, 'fields' | 'logo'> & { fields: QrCardTextField[]; logo: QrCardLogo | null };
 export type QrCardTitleBox = NonNullable<QrCardLayout['title']>;
 // An added field is selected as `field:<id>`.
-export type QrCardElement = 'title' | 'code' | 'lines' | `field:${string}`;
+export type QrCardElement = 'title' | 'code' | 'lines' | 'logo' | `field:${string}`;
 
 export type Rect = { x: number; y: number; width: number; height: number };
 export type Point = { x: number; y: number };
@@ -34,7 +43,16 @@ export const QR_CARD_LAYOUT_LIMITS = {
     radius: { min: 0, max: 8 },
     fields: 5,
     fieldText: 60,
+    logoWidth: { min: 20, max: 89 },
 } as const;
+
+// The logo's width over its height: the icon, a gap and the wordmark side by side (see lib/qrCardLogoArt).
+// Mirrors the backend's LogoBox.LOGO_ASPECT.
+export const QR_CARD_LOGO_ASPECT = 140 / 32;
+
+export function logoHeight(width: number): number {
+    return width / QR_CARD_LOGO_ASPECT;
+}
 
 export const DEFAULT_QR_CARD_TITLE: QrCardTitleBox = { x: 8, y: 10, width: 89, height: 26, maxSize: 9, align: 'center' };
 
@@ -44,6 +62,7 @@ export const DEFAULT_QR_CARD_LAYOUT: QrCardLayout = {
     code: { x: 20.5, y: 40, size: 64, panel: true, radius: 4 },
     lines: { x: 8, y: 107, width: 89, height: 33, textSize: 5, align: 'center' },
     fields: [],
+    logo: null,
 };
 
 const SAFE = QR_CARD_SAFE_AREA;
@@ -52,7 +71,7 @@ const LIMITS = QR_CARD_LAYOUT_LIMITS;
 // A stored layout, or the default when there is none. Layouts saved before KAN-103 have no fields.
 export function qrCardLayoutOf(layout: QrCardLayoutDto | null | undefined): QrCardLayout {
     if (!layout) return DEFAULT_QR_CARD_LAYOUT;
-    return { title: layout.title ?? null, code: layout.code, lines: layout.lines, fields: layout.fields ?? [] };
+    return { title: layout.title ?? null, code: layout.code, lines: layout.lines, fields: layout.fields ?? [], logo: layout.logo ?? null };
 }
 
 export function fieldElement(id: string): QrCardElement {
@@ -70,7 +89,13 @@ export function findField(layout: QrCardLayout, element: QrCardElement): QrCardT
 
 // Every element on the card, bottom to top: the order they draw and stack in.
 export function qrCardElements(layout: QrCardLayout): QrCardElement[] {
-    return [...(layout.title ? (['title'] as const) : []), 'lines', ...layout.fields.map((field) => fieldElement(field.id)), 'code'];
+    return [
+        ...(layout.title ? (['title'] as const) : []),
+        'lines',
+        ...layout.fields.map((field) => fieldElement(field.id)),
+        ...(layout.logo ? (['logo'] as const) : []),
+        'code',
+    ];
 }
 
 // The editor's hit targets: the selected element last, so it stays grabbable under the code.
@@ -87,10 +112,22 @@ function clamp(value: number, min: number, max: number): number {
     return Math.min(max, Math.max(min, value));
 }
 
+// Clamped, then rounded to 0.1 mm without leaving the range: the logo's height isn't a whole tenth, so
+// rounding its top up could push its bottom past the safe area.
+function roundWithin(value: number, min: number, max: number): number {
+    const rounded = roundMm(clamp(value, min, max));
+    return rounded > max + EPSILON ? Math.floor(max * 10 + EPSILON) / 10 : rounded;
+}
+
 export function elementRect(layout: QrCardLayout, element: QrCardElement): Rect {
     if (element === 'code') {
         const { x, y, size } = layout.code;
         return { x, y, width: size, height: size };
+    }
+    if (element === 'logo') {
+        if (!layout.logo) return { x: 0, y: 0, width: 0, height: 0 };
+        const { x, y, width } = layout.logo;
+        return { x, y, width, height: logoHeight(width) };
     }
     const box = element === 'title' ? layout.title : element === 'lines' ? layout.lines : findField(layout, element);
     if (!box) return { x: 0, y: 0, width: 0, height: 0 };
@@ -137,6 +174,7 @@ export function isValidQrCardLayout(layout: QrCardLayout): boolean {
     if (!within(lines.textSize, LIMITS.linesTextSize)) return false;
     if (!within(code.size, LIMITS.codeSize) || !within(code.radius, LIMITS.radius)) return false;
     if (fields.length > LIMITS.fields) return false;
+    if (layout.logo && !within(layout.logo.width, LIMITS.logoWidth)) return false;
     return fields.every(
         (field) =>
             field.width >= LIMITS.textMinWidth - EPSILON &&
@@ -149,6 +187,7 @@ export function isValidQrCardLayout(layout: QrCardLayout): boolean {
 function withRect(layout: QrCardLayout, element: QrCardElement, rect: Rect): QrCardLayout {
     const { x, y, width, height } = rect;
     if (element === 'code') return { ...layout, code: { ...layout.code, x, y, size: width } };
+    if (element === 'logo') return layout.logo ? { ...layout, logo: { ...layout.logo, x, y, width } } : layout;
     if (element === 'title') return layout.title ? { ...layout, title: { ...layout.title, x, y, width, height } } : layout;
     if (element === 'lines') return { ...layout, lines: { ...layout.lines, x, y, width, height } };
     const id = fieldIdOf(element);
@@ -158,14 +197,14 @@ function withRect(layout: QrCardLayout, element: QrCardElement, rect: Rect): QrC
 // Moves an element's top-left toward a point, kept inside the safe area. Other boxes don't block it.
 export function moveElementTo(layout: QrCardLayout, element: QrCardElement, to: Point): QrCardLayout {
     const start = elementRect(layout, element);
-    const x = roundMm(clamp(to.x, SAFE.left, SAFE.right - start.width));
-    const y = roundMm(clamp(to.y, SAFE.top, SAFE.bottom - start.height));
+    const x = roundWithin(to.x, SAFE.left, SAFE.right - start.width);
+    const y = roundWithin(to.y, SAFE.top, SAFE.bottom - start.height);
     return withRect(layout, element, { ...start, x, y });
 }
 
-// The handles each element offers: the code stays square, so only its corners.
+// The handles each element offers: the code stays square and the logo keeps its shape, so only their corners.
 export function handlesFor(element: QrCardElement): QrCardHandle[] {
-    return element === 'code' ? ['nw', 'ne', 'sw', 'se'] : ['nw', 'n', 'ne', 'e', 'se', 's', 'sw', 'w'];
+    return element === 'code' || element === 'logo' ? ['nw', 'ne', 'sw', 'se'] : ['nw', 'n', 'ne', 'e', 'se', 's', 'sw', 'w'];
 }
 
 export function handlePoint(rect: Rect, handle: QrCardHandle): Point {
@@ -190,18 +229,21 @@ function resizedRect(element: QrCardElement, handle: QrCardHandle, start: Rect, 
     let { x, y, width, height } = start;
     const right = x + width;
     const bottom = y + height;
-    if (element === 'code') {
+    if (element === 'code' || element === 'logo') {
+        // Width over height: the code is square, the logo keeps its own shape.
+        const aspect = element === 'code' ? 1 : QR_CARD_LOGO_ASPECT;
+        const limits = element === 'code' ? LIMITS.codeSize : LIMITS.logoWidth;
         const sx = handle.includes('e') ? 1 : -1;
         const sy = handle.includes('s') ? 1 : -1;
-        // One change for both sides: the larger drag, signed for the handle's direction.
-        const grow = Math.abs(dx) >= Math.abs(dy) ? dx * sx : dy * sy;
+        // One change for both sides: the larger drag, signed for the handle's direction, as a change in width.
+        const grow = Math.abs(dx) >= Math.abs(dy * aspect) ? dx * sx : dy * sy * aspect;
         const roomX = sx > 0 ? SAFE.right - x : right - SAFE.left;
-        const roomY = sy > 0 ? SAFE.bottom - y : bottom - SAFE.top;
-        const size = roundMm(clamp(width + grow, LIMITS.codeSize.min, Math.min(LIMITS.codeSize.max, roomX, roomY)));
+        const roomY = (sy > 0 ? SAFE.bottom - y : bottom - SAFE.top) * aspect;
+        const size = roundWithin(width + grow, limits.min, Math.min(limits.max, roomX, roomY));
         x = sx > 0 ? x : right - size;
-        y = sy > 0 ? y : bottom - size;
-        width = size;
-        height = size;
+        y = sy > 0 ? y : bottom - size / aspect;
+        // The logo's height follows its width, so it isn't rounded; its top keeps it inside the safe area.
+        return { x: roundMm(x), y: roundWithin(y, SAFE.top, SAFE.bottom - size / aspect), width: size, height: size / aspect };
     } else {
         const minHeight = minHeightOf(element);
         if (handle.includes('e')) width = clamp(width + dx, LIMITS.textMinWidth, SAFE.right - x);
@@ -280,6 +322,26 @@ export function setCodeOptions(layout: QrCardLayout, options: { panel?: boolean;
     return { ...layout, code: { ...layout.code, radius, panel: options.panel ?? layout.code.panel } };
 }
 
+// The logo's colour: null for the brand colours, or one #RRGGBB for all of it.
+export function setLogoColor(layout: QrCardLayout, color: string | null): QrCardLayout {
+    return layout.logo ? { ...layout, logo: { ...layout.logo, color } } : layout;
+}
+
+// A new logo, 45 mm wide and centred, in the highest free band, in the brand colours. With no free band it sits
+// at the bottom of the safe area: the middle would hide it under the code.
+const NEW_LOGO_WIDTH = 45;
+
+export function addLogo(layout: QrCardLayout): QrCardLayout {
+    if (layout.logo) return layout;
+    const height = logoHeight(NEW_LOGO_WIDTH);
+    const y = roundWithin(freeBandY(layout, Math.ceil(height), SAFE.bottom - height), SAFE.top, SAFE.bottom - height);
+    return { ...layout, logo: { x: roundMm(CENTER_X - NEW_LOGO_WIDTH / 2), y, width: NEW_LOGO_WIDTH, color: null } };
+}
+
+export function removeLogo(layout: QrCardLayout): QrCardLayout {
+    return { ...layout, logo: null };
+}
+
 // Removes the title, or puts it back at its default spot.
 export function setTitleShown(layout: QrCardLayout, shown: boolean): QrCardLayout {
     if (shown === (layout.title !== null)) return layout;
@@ -301,14 +363,14 @@ export function updateField(layout: QrCardLayout, id: string, change: QrCardFiel
 // A new field across the card's middle, in the template's text colour. Its words start blank.
 const NEW_FIELD_HEIGHT = 12;
 
-// The highest full-width band clear of every element, or across the middle when none is.
-function freeFieldY(layout: QrCardLayout): number {
+// The highest full-width band of this height clear of every element, or `fallback` when none is.
+function freeBandY(layout: QrCardLayout, height: number, fallback = CENTER_Y - height / 2): number {
     const rects = qrCardElements(layout).map((element) => elementRect(layout, element));
-    for (let y = SAFE.top; y <= SAFE.bottom - NEW_FIELD_HEIGHT; y++) {
-        const band = { x: SAFE.left, y, width: SAFE.right - SAFE.left, height: NEW_FIELD_HEIGHT };
+    for (let y = SAFE.top; y <= SAFE.bottom - height; y++) {
+        const band = { x: SAFE.left, y, width: SAFE.right - SAFE.left, height };
         if (!rects.some((rect) => rectsOverlap(band, rect))) return y;
     }
-    return CENTER_Y - NEW_FIELD_HEIGHT / 2;
+    return fallback;
 }
 
 export function addField(layout: QrCardLayout, { id, kind, color }: { id: string; kind: QrCardFieldKind; color: string }): QrCardLayout {
@@ -318,7 +380,7 @@ export function addField(layout: QrCardLayout, { id, kind, color }: { id: string
         id,
         kind,
         x: SAFE.left,
-        y: freeFieldY(layout),
+        y: freeBandY(layout, NEW_FIELD_HEIGHT),
         width: SAFE.right - SAFE.left,
         height: NEW_FIELD_HEIGHT,
         textSize: 6,
@@ -355,9 +417,12 @@ export function sameQrCardLayout(a: QrCardLayout, b: QrCardLayout): boolean {
 }
 
 // How the editor names an element: a field by its kind and its number among fields of that kind.
-export function elementName(layout: QrCardLayout, element: QrCardElement): { key: 'title' | 'code' | 'lines' | QrCardFieldKind; number: number } {
+export function elementName(
+    layout: QrCardLayout,
+    element: QrCardElement,
+): { key: 'title' | 'code' | 'lines' | 'logo' | QrCardFieldKind; number: number } {
     const field = findField(layout, element);
-    if (!field) return { key: element as 'title' | 'code' | 'lines', number: 0 };
+    if (!field) return { key: element as 'title' | 'code' | 'lines' | 'logo', number: 0 };
     const sameKind = layout.fields.filter((other) => other.kind === field.kind);
     return { key: field.kind, number: sameKind.indexOf(field) + 1 };
 }
