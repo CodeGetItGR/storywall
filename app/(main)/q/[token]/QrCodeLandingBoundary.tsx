@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import { InviteLayout } from '@/components/invite/InviteLayout';
 import { InviteTerminalState } from '@/components/invite/InviteTerminalState';
 import { QrLandingState } from '@/components/invite/QrLandingState';
+import { QrLandingPromo } from '@/components/qrLanding/QrLandingPromo';
 import { QrLandingScreen } from '@/components/qrLanding/QrLandingScreen';
 import { useQrLanding } from '@/hooks/useQrLanding';
 import { getQrTerminalCopyKey } from '@/lib/qrLinks';
@@ -45,6 +46,8 @@ export default function QrCodeLandingBoundary({ token }: { token: string }) {
                         eventSubtitle={activeResolution.eventSubtitle}
                         scroll="page"
                         heroTone="plain"
+                        compactHero={landing.view === 'chooser'}
+                        bottom={landing.view === 'chooser' ? <QrLandingPromo /> : null}
                     >
                         <QrLandingScreen landing={landing} />
                     </InviteLayout>
