@@ -206,6 +206,21 @@ export function campaignDailyRows(daily: readonly CampaignDayDto[], previousDail
     return daily.map((day, index) => ({ date: day.date, current: day.visitors, previous: previousDaily[index]?.visitors ?? null }));
 }
 
+// The days the daily chart labels: the first, the last and evenly spaced days between, picked
+// from the number of days alone so the labels never depend on how wide the text measures.
+export const CHART_MAX_LABELS = 8;
+
+export function chartLabelDates(dates: readonly string[], max: number = CHART_MAX_LABELS): string[] {
+    if (dates.length <= max) return [...dates];
+    const step = Math.ceil((dates.length - 1) / (max - 1));
+    const picked = dates.filter((_, index) => index % step === 0);
+    const last = dates[dates.length - 1];
+    // A spaced day too close to the last one would crowd it; the last day wins.
+    if ((dates.length - 1) % step !== 0 && (dates.length - 1) % step <= step / 2) picked.pop();
+    if (picked[picked.length - 1] !== last) picked.push(last);
+    return picked;
+}
+
 export type CampaignPlatformLine = { link: CampaignLinkDto; counts: CampaignCountsDto; label: CampaignLinkLabelParts };
 
 // One platform of a campaign: its links added up, its verdict against the campaign's other platforms,
