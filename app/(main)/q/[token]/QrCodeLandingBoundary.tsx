@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import { InviteLayout } from '@/components/invite/InviteLayout';
 import { InviteTerminalState } from '@/components/invite/InviteTerminalState';
 import { QrLandingState } from '@/components/invite/QrLandingState';
+import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { QrLandingPromo } from '@/components/qrLanding/QrLandingPromo';
 import { QrLandingScreen } from '@/components/qrLanding/QrLandingScreen';
 import { useQrLanding } from '@/hooks/useQrLanding';
@@ -48,6 +49,7 @@ export default function QrCodeLandingBoundary({ token }: { token: string }) {
                         heroTone="plain"
                         compactHero={landing.view === 'chooser'}
                         bottom={landing.view === 'chooser' ? <QrLandingPromo /> : null}
+                        corner={<LanguageSwitcher variant="auth" className="rounded-full bg-background/85 px-1 shadow-xs backdrop-blur-sm" />}
                     >
                         <QrLandingScreen landing={landing} />
                     </InviteLayout>

@@ -6623,6 +6623,14 @@
             }
         }
     },
+    "FeedQuickActions": {
+        "invitation": "Πρόσκληση",
+        "photos": "Φωτογραφίες",
+        "rsvpReport": "RSVP",
+        "share": "Κοινοποίηση",
+        "shareCopied": "Αντιγράφηκε",
+        "vendors": "Πάροχοι"
+    },
     "FeedQuickAccessBar": {
         "ariaLabel": "Γρήγορη πρόσβαση",
         "eyebrow": "Γρήγορη επισκέπτη",

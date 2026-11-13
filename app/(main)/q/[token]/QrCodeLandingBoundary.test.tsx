@@ -14,7 +14,7 @@ const mocks = vi.hoisted(() => ({
 }));
 
 vi.mock('next-intl', () => ({ useTranslations: () => (key: string) => key }));
-vi.mock('next/navigation', () => ({ useRouter: () => ({ replace: mocks.replace }) }));
+vi.mock('next/navigation', () => ({ useRouter: () => ({ replace: mocks.replace }), useSearchParams: () => new URLSearchParams() }));
 vi.mock('next/image', () => ({ default: ({ alt }: { alt: string }) => <span>{`img:${alt}`}</span> }));
 vi.mock('@/components/ui/AppLink', () => ({
     AppLink: ({ href, children }: { href: string; children: ReactNode }) => <a href={href}>{children}</a>,

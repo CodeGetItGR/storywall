@@ -1268,6 +1268,10 @@ export interface EventDetailResponseDto {
     partnerBranding: PartnerBrandingDto | null;
     // Hosts only: an admin linked a partner and no host has answered yet.
     partnerBrandingPrompt: PartnerBrandingNoticeDto | null;
+    // The link name of the event's online invitation while guests can open it; null otherwise. Missing from an older backend.
+    invitationSlug?: string | null;
+    // Members only: the event's upload code while it takes photos, so the feed can open the upload page. Null otherwise.
+    uploadToken?: string | null;
 }
 
 // --- Partner feed branding (collaborator-feed-branding-design.md, 2026-10-08) ---
@@ -3177,7 +3181,8 @@ export interface QrLinkStatsDto {
 export interface QrLinkResolutionDto {
     status: QrLinkStatus;
     targetType: QrTargetType;
-    // [] unless the code is ACTIVE: GUEST lists UPLOAD and/or WISH, MEDIA_UPLOAD lists UPLOAD.
+    // [] unless the code is ACTIVE: GUEST lists UPLOAD and/or WISH, MEDIA_UPLOAD lists UPLOAD, EVENT_JOIN lists WISH
+    // while the wishbook is in the plan.
     guestActions?: QrGuestAction[];
     eventId?: string;
     eventTitle?: string;
@@ -3196,6 +3201,9 @@ export interface QrLinkResolutionDto {
     // link's invite token, while it works. Lets one scan offer both (KAN-208).
     uploadToken?: string;
     joinInviteToken?: string;
+    // The token a wish from this scan goes through, without an account: the code's own, or the event's join
+    // code's. Missing when the event takes no wishes, and from a backend older than this field.
+    wishToken?: string;
 }
 
 // POST /api/qr/{token}/wishes: a wish left through a GUEST code, with no account. See
