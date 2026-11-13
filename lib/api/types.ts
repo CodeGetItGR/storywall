@@ -4557,12 +4557,16 @@ export interface GiftClaimPreviewDto {
     giverDisplayName: string;
     recipientLabel: string;
     emailBound: boolean;
+    // Signed in: whether this account's email is the recipient's. Null for a visitor with no account.
+    callerIsRecipient: boolean | null;
     state: GiftClaimState;
 }
 
 // POST /api/gift-claims/{token}/claim. COMPLETED: the caller owns the event now.
 // CLAIMED: co-host now, owner at ownershipTransfersAt (null while a withdrawal is under review).
 export interface GiftClaimResponseDto {
+    // The claimed event, which the caller hosts now.
+    eventId: string;
     status: 'COMPLETED' | 'CLAIMED';
     ownershipTransfersAt: string | null;
 }

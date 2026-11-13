@@ -2192,10 +2192,12 @@
         "invitationCountdown": "Opening the invitation in {seconds, plural, one {# second} other {# seconds}}.",
         "celebration": {
             "heading": "Your event is live",
-            "line": "Share it with your guests so they can start posting.",
-            "openEvent": "Open event",
-            "inviteGuests": "Invite guests"
+            "line": "Share it with your guests so they can start posting."
         }
+    },
+    "EventCelebration": {
+        "openEvent": "Open event",
+        "inviteGuests": "Invite guests"
     },
     "PartnerPortalPage": {
         "totals": {
@@ -8070,7 +8072,6 @@
         "claim": {
             "coverAlt": "Event cover",
             "heading": "A gift from {giver} for {recipient}.",
-            "emailBound": "Sign in with the email it was sent to, or use the card's PIN.",
             "signIn": "Sign in to claim",
             "register": "Create account",
             "guest": "Guest accounts can't claim gifts. Sign in with a full account.",
@@ -8100,10 +8101,9 @@
             },
             "outcome": {
                 "title": "Gift claimed",
-                "completed": "{title} is yours now.",
+                "completed": "The event is yours now.",
                 "claimed": "You are a host now. The event becomes yours on {date}.",
-                "claimedSoon": "You are a host now. The event becomes yours soon.",
-                "open": "Go to my events"
+                "claimedSoon": "You are a host now. The event becomes yours soon."
             }
         }
     },

@@ -2,8 +2,8 @@
 
 import { useTranslations } from 'next-intl';
 
+import { GiftClaimCelebration } from '@/components/giftMode/GiftClaimCelebration';
 import { GiftClaimForm } from '@/components/giftMode/GiftClaimForm';
-import { GiftClaimOutcome } from '@/components/giftMode/GiftClaimOutcome';
 import { InviteLayout } from '@/components/invite/InviteLayout';
 import { InviteOnboardingState } from '@/components/invite/InviteOnboardingState';
 import { InviteTerminalState } from '@/components/invite/InviteTerminalState';
@@ -14,7 +14,7 @@ export function GiftClaimScreen({ token }: { token: string }) {
     const claim = useGiftClaim(token);
     const preview = claim.preview;
 
-    if (claim.outcome && preview) return <GiftClaimOutcome outcome={claim.outcome} eventTitle={preview.eventTitle} />;
+    if (claim.outcome) return <GiftClaimCelebration outcome={claim.outcome} />;
 
     const blocked = claim.block ?? (!claim.isLoading && !preview ? 'invalid' : null);
 
@@ -33,12 +33,9 @@ export function GiftClaimScreen({ token }: { token: string }) {
                         eventSubtitle={preview.eventSubtitle}
                     >
                         {/* Gift */}
-                        <div className="mb-7 space-y-2">
-                            <p className="text-lg font-semibold text-balance text-ink">
-                                {t('heading', { giver: preview.giverDisplayName, recipient: preview.recipientLabel })}
-                            </p>
-                            {preview.emailBound && <p className="text-sm text-ink-muted">{t('emailBound')}</p>}
-                        </div>
+                        <p className="mb-7 text-lg font-semibold text-balance text-ink">
+                            {t('heading', { giver: preview.giverDisplayName, recipient: preview.recipientLabel })}
+                        </p>
 
                         {/* Claim */}
                         <GiftClaimForm claim={claim} />
