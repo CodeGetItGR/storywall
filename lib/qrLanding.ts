@@ -34,7 +34,10 @@ export function qrLandingPlan(resolution: QrLinkResolutionDto | null | undefined
     const ownToken = resolution.targetType === 'MEDIA_UPLOAD' || (resolution.guestActions ?? []).includes('UPLOAD');
     const joinInviteToken = (resolution.targetType === 'EVENT_JOIN' ? resolution.inviteToken : resolution.joinInviteToken) ?? null;
     const uploadToken = resolution.targetType === 'EVENT_JOIN' ? (resolution.uploadToken ?? null) : ownToken ? 'self' : null;
-    const wishToken = resolution.targetType === 'GUEST' && (resolution.guestActions ?? []).includes('WISH') ? 'self' : null;
+    // Every plan with a wishbook takes wishes without an account (the backend names the token). A backend older
+    // than wishToken still lets a lite event's guest code take them.
+    const wishToken =
+        resolution.wishToken ?? (resolution.targetType === 'GUEST' && (resolution.guestActions ?? []).includes('WISH') ? 'self' : null);
 
     const choices: QrLandingChoice[] = [];
     if (visitor.isMember) choices.push('open');

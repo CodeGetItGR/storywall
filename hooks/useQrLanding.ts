@@ -1,6 +1,6 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { useAuth } from '@/hooks/useAuth';
@@ -38,9 +38,11 @@ export function useQrLanding(token: string) {
         if (redirectPath) router.replace(redirectPath);
     }, [redirectPath, router]);
 
-    const [chosen, setChosen] = useState<QrLandingForm | null>(null);
+    // The feed's Photos action opens the upload form straight away (?choice=upload).
+    const requested = useSearchParams().get('choice') === 'upload' && plan.choices.includes('upload') ? 'upload' : null;
+    const [chosen, setChosen] = useState<QrLandingView | null>(null);
     const startView: QrLandingView | null = start === 'upload' || start === 'wish' || start === 'chooser' ? start : null;
-    const view: QrLandingView | null = chosen ?? startView;
+    const view: QrLandingView | null = chosen ?? requested ?? startView;
 
     // The form's sent screen stands on its own, without the back arrow and section label above it.
     const [isSent, setIsSent] = useState(false);
@@ -49,7 +51,7 @@ export function useQrLanding(token: string) {
         if (choice === 'upload' || choice === 'wish') setChosen(choice);
     }, []);
     const back = useCallback(() => {
-        setChosen(null);
+        setChosen('chooser');
         setIsSent(false);
     }, []);
 
@@ -64,7 +66,7 @@ export function useQrLanding(token: string) {
         back,
         isSent,
         setIsSent,
-        canGoBack: startView === 'chooser' && chosen !== null,
+        canGoBack: startView === 'chooser' && view !== 'chooser',
         uploadToken: resolveQrLandingToken(plan.uploadToken, token),
         wishToken: resolveQrLandingToken(plan.wishToken, token),
         // A member uploads as themselves: no name to type, no boxes to tick.

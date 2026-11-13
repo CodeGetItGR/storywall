@@ -6501,6 +6501,14 @@
             }
         }
     },
+    "FeedQuickActions": {
+        "invitation": "Invitation",
+        "photos": "Photos",
+        "rsvpReport": "RSVP",
+        "share": "Share",
+        "shareCopied": "Copied",
+        "vendors": "Vendors"
+    },
     "FeedQuickAccessBar": {
         "ariaLabel": "Quick access",
         "eyebrow": "Quick access",

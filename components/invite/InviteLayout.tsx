@@ -29,6 +29,8 @@ interface InviteLayoutProps {
     compactHero?: boolean;
     // Shown at the foot of the body, after some space, with the footer logo right under it.
     bottom?: ReactNode;
+    // Floats over the hero's top-right corner (the QR page's language switcher).
+    corner?: ReactNode;
     children: ReactNode;
 }
 
@@ -43,6 +45,7 @@ export function InviteLayout({
     heroTone = 'muted',
     compactHero = false,
     bottom,
+    corner,
     children,
 }: InviteLayoutProps) {
     const { hero, handleIllustrationError } = useInviteHero(theme, coverImageSrc);
@@ -51,10 +54,13 @@ export function InviteLayout({
         // One stacked column at every size: the hero on top, the actions below. Wider screens centre it.
         <div
             className={cn(
-                'mx-auto flex h-full w-full max-w-xl flex-col bg-background md:px-6 md:pt-6',
+                'relative mx-auto flex h-full w-full max-w-xl flex-col bg-background md:px-6 md:pt-6',
                 scroll === 'page' ? 'overflow-y-auto' : 'overflow-hidden',
             )}
         >
+            {/* Corner */}
+            {corner ? <div className="absolute top-3 right-3 z-10 md:top-9 md:right-9">{corner}</div> : null}
+
             {hero.kind === 'illustration' && (
                 // Illustration mode: the art sits clean on the theme colour and the title goes below it
                 // in dark ink. The cover-photo overlay (dark gradient, white title) would only muddy it.

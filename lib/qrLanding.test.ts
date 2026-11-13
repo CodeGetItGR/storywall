@@ -32,6 +32,17 @@ describe('qrLandingPlan', () => {
         expect(plan.wishToken).toBe('self');
     });
 
+    it('offers a wish on a full plan through the token the backend names', () => {
+        const plan = qrLandingPlan(resolution({ inviteToken: 'inv', uploadToken: 'up', guestActions: ['WISH'], wishToken: 'join' }), guest);
+        expect(plan).toEqual({ choices: ['join', 'upload', 'wish'], joinInviteToken: 'inv', uploadToken: 'up', wishToken: 'join' });
+    });
+
+    it('offers a wish on an upload code through the join code', () => {
+        const plan = qrLandingPlan(resolution({ targetType: 'MEDIA_UPLOAD', guestActions: ['UPLOAD'], joinInviteToken: 'inv', wishToken: 'join' }), guest);
+        expect(plan.choices).toEqual(['join', 'upload', 'wish']);
+        expect(plan.wishToken).toBe('join');
+    });
+
     it('gives a member Open the event in place of Join', () => {
         expect(qrLandingPlan(resolution({ inviteToken: 'inv', uploadToken: 'up' }), member).choices).toEqual(['open', 'upload']);
     });

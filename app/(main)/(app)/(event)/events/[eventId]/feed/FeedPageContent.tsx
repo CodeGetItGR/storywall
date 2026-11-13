@@ -19,12 +19,12 @@ import { PartnerBrandingPromptModal } from '@/components/feed/partner/PartnerBra
 import { PartnerFeedCard } from '@/components/feed/partner/PartnerFeedCard';
 import { PostModal } from '@/components/feed/PostModal';
 import { PublishQueueCards } from '@/components/feed/PublishQueueCards';
+import { FeedQuickActions } from '@/components/feed/quickActions/FeedQuickActions';
 import { RsvpPrompt } from '@/components/feed/RsvpPrompt';
 import { StoriesRow } from '@/components/feed/StoriesRow';
 import { InstallAppBanner } from '@/components/pwa/InstallAppBanner';
 import { StoryModal } from '@/components/story/StoryModal';
 import { AppLink } from '@/components/ui/AppLink';
-import { VendorQuickActions } from '@/components/vendors/feed/VendorQuickActions';
 import { VendorProfilePrompt } from '@/components/vendors/VendorProfilePrompt';
 import { eventKeys } from '@/hooks/useEvent';
 import { useFeedItems } from '@/hooks/useFeedItems';
@@ -116,9 +116,6 @@ export function FeedPageContent() {
                 <EventInfoSection event={event} />
             </section>
 
-            {/* Vendor tools */}
-            <VendorQuickActions eventId={eventId} isHost={isHost} />
-
             {/* Stories */}
             {moduleFlags.stories && (
                 <section id="stories" className={cn('top-0 bg-event/90 backdrop-blur-sm')}>
@@ -144,6 +141,8 @@ export function FeedPageContent() {
                         })}
                     >
                         <ComposerCard />
+                        {/* Quick actions, with a vendor's own tools first */}
+                        <FeedQuickActions event={event} isHost={isHost} />
                         <PublishQueueCards />
                         {/* Guest offer */}
                         <GuestOfferCard eventId={eventId} isHost={isHost} />
@@ -165,6 +164,12 @@ export function FeedPageContent() {
                             <div ref={loadMoreRef} className="h-1" />
                             {isFetchingNextPage && <p className="py-2 text-center text-sm text-ink-muted">{loadingMoreLabel}</p>}
                         </div>
+                    </div>
+                )}
+                {/* Quick actions and vendor tools, when the plan has no posts */}
+                {!moduleFlags.posts && (
+                    <div className="pb-24 md:pb-10">
+                        <FeedQuickActions event={event} isHost={isHost} />
                     </div>
                 )}
             </section>
