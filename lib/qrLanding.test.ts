@@ -41,8 +41,7 @@ describe('qrLandingPlan', () => {
         expect(plan.choices).toEqual(['open', 'upload', 'wishbook']);
     });
 
-    it('offers nothing for a personal invitation or a closed code', () => {
-        expect(qrLandingPlan(resolution({ targetType: 'INVITATION', inviteToken: 'inv' }), guest).choices).toEqual([]);
+    it('offers nothing for a closed code', () => {
         expect(qrLandingPlan(resolution({ status: 'REVOKED', inviteToken: 'inv' }), guest).choices).toEqual([]);
         expect(qrLandingPlan(null, guest).choices).toEqual([]);
     });

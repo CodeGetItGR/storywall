@@ -9,7 +9,6 @@ import { useMyEvents } from '@/hooks/useMyEvents';
 import { useQrLinkResolution } from '@/hooks/useQrLinks';
 import { isModuleAvailable } from '@/lib/eventLifecycle';
 import { type QrLandingChoice, qrLandingChoiceHref, type QrLandingForm, qrLandingPlan, qrLandingStart, resolveQrLandingToken } from '@/lib/qrLanding';
-import { getQrRedirectPath } from '@/lib/qrLinks';
 
 export type QrLandingView = 'chooser' | QrLandingForm;
 
@@ -32,11 +31,8 @@ export function useQrLanding(token: string) {
     const plan = useMemo(() => qrLandingPlan(resolution, { isMember: Boolean(membership), hasWishbook }), [resolution, membership, hasWishbook]);
     const start = qrLandingStart(plan);
 
-    // A personal invitation keeps opening the invite page, and a single choice on another page is followed.
-    const redirectPath = isVisitorLoading
-        ? null
-        : (getQrRedirectPath(resolution?.targetType === 'INVITATION' ? resolution : null) ??
-          (start && start !== 'chooser' ? qrLandingChoiceHref(start, plan, eventId) : null));
+    // A single choice on another page is followed.
+    const redirectPath = isVisitorLoading || !start || start === 'chooser' ? null : qrLandingChoiceHref(start, plan, eventId);
 
     useEffect(() => {
         if (redirectPath) router.replace(redirectPath);

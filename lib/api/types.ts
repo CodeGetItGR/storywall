@@ -3123,23 +3123,13 @@ export interface CostSummaryResponseDto {
 
 // GUEST: the one code a lite event (a plan without posts) gets; only the system makes it. Its scan lists guestActions.
 // See guestwall-be docs/fe-guides/lite-tiers-fe-integration.md §3.
-export type QrTargetType = 'EVENT_JOIN' | 'MEDIA_UPLOAD' | 'INVITATION' | 'GUEST';
+export type QrTargetType = 'EVENT_JOIN' | 'MEDIA_UPLOAD' | 'GUEST';
 // What a scanner can do without an account, in display order.
 export type QrGuestAction = 'UPLOAD' | 'WISH';
 export type QrLinkStatus = 'ACTIVE' | 'REVOKED' | 'EXPIRED' | 'TARGET_UNAVAILABLE';
 
-export interface QrLinkRequestDto {
-    targetType: QrTargetType;
-    targetId?: string;
-    maxGuests?: number;
-    label?: string;
-    metadata?: Record<string, unknown>;
-    expiresAt?: string;
-}
-
 export interface QrLinkPatchDto {
     targetType?: QrTargetType;
-    targetId?: string;
     maxGuests?: number;
     label?: string;
     metadata?: Record<string, unknown>;
