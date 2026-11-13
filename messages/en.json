@@ -645,7 +645,6 @@
         "defaultHeroImageAlt": "Event cover photo",
         "mediaUploadEyebrow": "Share your photos",
         "choices": {
-            "title": "What would you like to do?",
             "join": "Join the event",
             "open": "Open the event",
             "eventHint": "See what guests share"

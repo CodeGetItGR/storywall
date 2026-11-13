@@ -47,9 +47,6 @@ export function QrLandingChoices({ plan, eventId, onChoose }: QrLandingChoicesPr
 
     return (
         <div className="flex flex-col gap-1">
-            {/* Title */}
-            <h2 className="mb-1 text-center text-sm text-ink-muted">{t('choices.title')}</h2>
-
             {/* Choices */}
             <div className="flex flex-col divide-y divide-border">
                 {plan.choices.map((choice) => {
