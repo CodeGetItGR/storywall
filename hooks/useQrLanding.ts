@@ -42,10 +42,16 @@ export function useQrLanding(token: string) {
     const startView: QrLandingView | null = start === 'upload' || start === 'wish' || start === 'chooser' ? start : null;
     const view: QrLandingView | null = chosen ?? startView;
 
+    // The form's sent screen stands on its own, without the back arrow and section label above it.
+    const [isSent, setIsSent] = useState(false);
+
     const choose = useCallback((choice: QrLandingChoice) => {
         if (choice === 'upload' || choice === 'wish') setChosen(choice);
     }, []);
-    const back = useCallback(() => setChosen(null), []);
+    const back = useCallback(() => {
+        setChosen(null);
+        setIsSent(false);
+    }, []);
 
     return {
         resolution,
@@ -56,6 +62,8 @@ export function useQrLanding(token: string) {
         view,
         choose,
         back,
+        isSent,
+        setIsSent,
         canGoBack: startView === 'chooser' && chosen !== null,
         uploadToken: resolveQrLandingToken(plan.uploadToken, token),
         wishToken: resolveQrLandingToken(plan.wishToken, token),

@@ -1,4 +1,7 @@
+import type { Locale } from '@/i18n/config';
+import { getPublicLandingPath } from '@/i18n/publicLocale';
 import type { QrLinkResolutionDto } from '@/lib/api/types';
+import type { Campaign } from '@/lib/campaignVisits';
 import { routes } from '@/lib/routes';
 
 // What a scanned event code can offer (KAN-208). Join, upload and wish come from the codes themselves;
@@ -61,4 +64,17 @@ export function qrLandingStart(plan: QrLandingPlan): QrLandingChoice | 'chooser'
     if (plan.choices.length === 0) return null;
     if (plan.choices.length > 1) return 'chooser';
     return plan.choices[0];
+}
+
+// Campaign parameters, so a sign-up that starts from the QR page's banner shows up as such in the sign-up sources.
+export const QR_PROMO_CAMPAIGN: Campaign = { utmSource: 'storywall', utmMedium: 'qr', utmCampaign: 'qr-promo' };
+
+// The landing page in the visitor's language, tagged as coming from the QR page's banner.
+export function qrPromoHref(locale: Locale): string {
+    const query = new URLSearchParams({
+        utm_source: QR_PROMO_CAMPAIGN.utmSource,
+        utm_medium: QR_PROMO_CAMPAIGN.utmMedium,
+        utm_campaign: QR_PROMO_CAMPAIGN.utmCampaign,
+    }).toString();
+    return `${getPublicLandingPath(locale)}?${query}`;
 }

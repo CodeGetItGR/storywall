@@ -514,7 +514,7 @@
         "metaDescription": "Sign in to your StoryWall account.",
         "noAccount": "Don't have an account?",
         "createAccountLink": "Create one",
-        "orContinueWith": "Or continue with",
+        "orWithEmail": "Or sign in with email",
         "forgotPassword": "Forgot password?"
     },
     "RegisterPage": {
@@ -645,9 +645,9 @@
         "defaultHeroImageAlt": "Event cover photo",
         "mediaUploadEyebrow": "Share your photos",
         "choices": {
-            "title": "What would you like to do?",
             "join": "Join the event",
-            "open": "Open the event"
+            "open": "Open the event",
+            "eventHint": "See what guests share"
         },
         "guestCode": {
             "uploadButton": "Upload photos",
@@ -672,6 +672,7 @@
             "chooseFiles": "Choose files",
             "submit": "Upload",
             "success": "Thanks! Your photos are on their way.",
+            "uploadMore": "Upload more",
             "rateLimited": "This event has had a lot of uploads in the last hour. The files below weren't sent; try them again later.",
             "someFailed": "{count, plural, one {One file wasn't sent} other {# files weren't sent}}. Check the files below and try again.",
             "addMore": "Add more",
@@ -9621,7 +9622,9 @@
         "appIcon": "StoryWall app icon",
         "location": "Location",
         "guestPhoto": "Guest photo",
-        "photoBy": "Photo by {name}"
+        "photoBy": "Photo by {name}",
+        "qrUploadSent": "Photos sent",
+        "qrWishSent": "Wish sent"
     },
     "VendorPages": {
         "breadcrumb": "For business",
@@ -10314,6 +10317,31 @@
                 "size": "The file is over 10 MB.",
                 "failed": "The photo didn't upload. Try again.",
                 "full": "You've reached the photo limit."
+            },
+            "move": "Move photo",
+            "zoomOut": "Zoom out",
+            "zoomIn": "Zoom in",
+            "frame": "Frame",
+            "chooseFrame": "Choose a frame",
+            "noFrames": "Add frames to the theme.",
+            "frameEffect": "Frame effect",
+            "frameEffects": {
+                "none": "No effect",
+                "fade-in": "Fade In",
+                "fade-up": "Fade Up",
+                "fade-down": "Fade Down",
+                "zoom-in-soft": "Zoom In Soft",
+                "zoom-out-soft": "Zoom Out Soft",
+                "slide-left": "Slide Left",
+                "slide-right": "Slide Right",
+                "float": "Float",
+                "gentle-pulse": "Gentle Pulse",
+                "soft-rotate-in": "Soft Rotate In",
+                "swing-soft": "Swing Soft",
+                "blur-reveal": "Blur Reveal",
+                "mask-reveal": "Mask Reveal",
+                "parallax-soft": "Parallax Soft",
+                "pop-elegant": "Pop Elegant"
             }
         },
         "sectionSettings": {

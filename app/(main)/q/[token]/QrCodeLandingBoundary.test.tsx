@@ -54,7 +54,7 @@ describe('QrCodeLandingBoundary', () => {
         expect(screen.getByText('upload-form:up:guest')).toBeInTheDocument();
 
         fireEvent.click(screen.getByRole('button', { name: 'guestCode.back' }));
-        expect(screen.getByText('choices.title')).toBeInTheDocument();
+        expect(screen.getByRole('link', { name: /choices.join/ })).toBeInTheDocument();
     });
 
     it('offers join and upload on an old printed upload code, uploading on that code', () => {
