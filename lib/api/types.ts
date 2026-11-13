@@ -4648,6 +4648,9 @@ export type AdminAuditAction =
     | 'INVITATION_THEME_IMAGE_DELETED'
     | 'INVITATION_FONT_PAIRING_CREATED'
     | 'INVITATION_FONT_PAIRING_UPDATED'
+    | 'INVITATION_TEXT_CREATED'
+    | 'INVITATION_TEXT_UPDATED'
+    | 'INVITATION_TEXT_DELETED'
     | 'QR_CARD_TEMPLATE_DUPLICATED'
     | 'INVIART_COLLECTION_CHANGED'
     | 'SHOP_STORE_CREATED'
@@ -5023,27 +5026,35 @@ export interface AdminQrCardTemplatePatchDto {
     layout?: QrCardLayoutDto; // a full layout replaces the stored one
 }
 
-// /api/admin/theme-fonts
+// Which list a font belongs to: the wall's theme presets and QR cards, or Save my date. Set on create, never changes.
+export type ThemeFontLibrary = 'WALL' | 'INVITATION';
+
+// /api/admin/theme-fonts?library=
 export interface AdminThemeFontDto {
     id: string;
     key: string;
     familyName: string;
     fallback: 'serif' | 'sans-serif';
+    library: ThemeFontLibrary;
     archived: boolean;
     url: string | null; // null until a file is uploaded; such a font can't be put on a preset
     presetCount: number;
+    // Save my date fonts only: the event types the editor offers it to, sorted. Empty means every type.
+    invitationEventTypes: string[];
 }
 
 export interface AdminThemeFontRequestDto {
     key: string;
     familyName: string;
     fallback: 'serif' | 'sans-serif';
+    library?: ThemeFontLibrary; // WALL when left out
 }
 
 export interface AdminThemeFontPatchDto {
     familyName?: string;
     fallback?: 'serif' | 'sans-serif';
     archived?: boolean;
+    invitationEventTypes?: string[]; // Save my date fonts only
 }
 
 // Why an admin closed an event when no rule was broken (admin-event-management-fe-integration.md §7).

@@ -18,12 +18,21 @@ function wrapper({ children }: { children: ReactNode }) {
 }
 
 describe('useSaveMyDateAdminNav', () => {
-    it('lists Themes under Catalog and marks the open section', () => {
+    it('lists every screen under Catalog and marks the open section', () => {
         nav.pathname = '/admin/save-my-date/themes';
         const { result } = renderHook(useSaveMyDateAdminNav, { wrapper });
-        expect(result.current.groups.map((group) => [group.label, group.items.map((item) => item.label)])).toEqual([['Catalog', ['Themes']]]);
+        expect(result.current.groups.map((group) => [group.label, group.items.map((item) => item.label)])).toEqual([
+            ['Catalog', ['Themes', 'Fonts', 'Font pairings', 'Texts']],
+        ]);
         expect(result.current.groups[0].items[0]).toMatchObject({ href: '/admin/save-my-date/themes', active: true });
         expect(result.current.activeLabel).toBe('Themes');
+    });
+
+    it('marks the fonts screen, and not the pairings, on /fonts', () => {
+        nav.pathname = '/admin/save-my-date/fonts';
+        const { result } = renderHook(useSaveMyDateAdminNav, { wrapper });
+        expect(result.current.groups[0].items.filter((item) => item.active).map((item) => item.href)).toEqual(['/admin/save-my-date/fonts']);
+        expect(result.current.activeLabel).toBe('Fonts');
     });
 
     it('marks nothing on an address outside its sections', () => {

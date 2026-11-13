@@ -3236,7 +3236,44 @@
         },
         "saveMyDate": {
             "title": "Save my date",
-            "backToAdmin": "Πίσω στη διαχείριση"
+            "backToAdmin": "Πίσω στη διαχείριση",
+            "eventTypes": "Τύποι εκδήλωσης",
+            "eventTypesAll": "Όλοι",
+            "eventTypesHint": "Αν δεν επιλέξετε κανέναν, ισχύει για όλους.",
+            "checks": {
+                "upTo100": "Γράψτε 1 έως 100 χαρακτήρες.",
+                "upTo2000": "Γράψτε 1 έως 2.000 χαρακτήρες."
+            },
+            "fonts": {
+                "title": "Γραμματοσειρές",
+                "empty": "Δεν υπάρχουν γραμματοσειρές ακόμη.",
+                "availableHint": "Εμφανίζεται στον επεξεργαστή προσκλήσεων.",
+                "archivedHint": "Οι προσκλήσεις που τη χρησιμοποιούν την κρατούν. Ο επεξεργαστής δεν την προσφέρει πια."
+            },
+            "fontPairings": {
+                "title": "Συνδυασμοί γραμματοσειρών",
+                "create": "Νέος συνδυασμός",
+                "empty": "Δεν υπάρχουν συνδυασμοί ακόμη.",
+                "fonts": {
+                    "title": "Τίτλος",
+                    "body": "Κείμενο",
+                    "button": "Κουμπιά"
+                },
+                "sameAsText": "Ίδια με το κείμενο",
+                "shown": "Εμφανές"
+            },
+            "texts": {
+                "title": "Κείμενα",
+                "create": "Νέο κείμενο",
+                "empty": "Δεν υπάρχουν κείμενα ακόμη.",
+                "label": "Ετικέτα",
+                "labelHint": "Το βλέπουν μόνο οι διαχειριστές.",
+                "body": "Κείμενο",
+                "delete": "Διαγραφή",
+                "deleteTitle": "Να διαγραφεί αυτό το κείμενο;",
+                "deleteBody": "Οι προσκλήσεις που το χρησιμοποίησαν κρατούν τη διατύπωσή τους.",
+                "deleteConfirm": "Διαγραφή κειμένου"
+            }
         },
         "tabs": {
             "appReviews": "Κριτικές",
@@ -3986,6 +4023,9 @@
                 "INVITATION_THEME_IMAGE_DELETED": "Διαγραφή εικόνας θέματος πρόσκλησης",
                 "INVITATION_FONT_PAIRING_CREATED": "Δημιουργία συνδυασμού γραμματοσειρών",
                 "INVITATION_FONT_PAIRING_UPDATED": "Αλλαγή συνδυασμού γραμματοσειρών",
+                "INVITATION_TEXT_CREATED": "Δημιουργία κειμένου πρόσκλησης",
+                "INVITATION_TEXT_UPDATED": "Αλλαγή κειμένου πρόσκλησης",
+                "INVITATION_TEXT_DELETED": "Διαγραφή κειμένου πρόσκλησης",
                 "QR_CARD_TEMPLATE_DUPLICATED": "Αντιγραφή προτύπου κάρτας QR",
                 "INVIART_COLLECTION_CHANGED": "Αλλαγή συλλογής INVIART",
                 "SHOP_STORE_CREATED": "Σύνδεση καταστήματος Shopify",

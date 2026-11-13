@@ -3,6 +3,7 @@ import { act, renderHook, waitFor } from '@testing-library/react';
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { adminInvitationThemeKeys } from '@/hooks/useAdminInvitationThemes';
 import { adminQrCardTemplateKeys } from '@/hooks/useAdminQrCardTemplates';
 import { adminThemeFontKeys, useAdminThemeFonts, useCreateThemeFont, usePatchThemeFont, useUploadThemeFontFile } from '@/hooks/useAdminThemeFonts';
 import { adminThemePresetKeys } from '@/hooks/useAdminThemePresets';
@@ -38,6 +39,16 @@ describe('useAdminThemeFonts', () => {
         const { result } = renderHook(() => useAdminThemeFonts(), { wrapper: wrapperFor(client) });
         await waitFor(() => expect(result.current.data).toEqual([FONT]));
         expect(api.get).toHaveBeenCalledWith(endpoints.admin.themeFonts.list);
+        expect(client.getQueryData(adminThemeFontKeys.list('WALL'))).toEqual([FONT]);
+    });
+
+    it("lists Save my date's fonts apart from the wall's", async () => {
+        api.get.mockResolvedValue([FONT]);
+        const { result } = renderHook(() => useAdminThemeFonts('INVITATION'), { wrapper: wrapperFor(client) });
+        await waitFor(() => expect(result.current.data).toEqual([FONT]));
+        expect(api.get).toHaveBeenCalledWith('/api/admin/theme-fonts?library=INVITATION');
+        expect(client.getQueryData(adminThemeFontKeys.list('INVITATION'))).toEqual([FONT]);
+        expect(client.getQueryData(adminThemeFontKeys.list('WALL'))).toBeUndefined();
     });
 });
 
@@ -53,6 +64,8 @@ describe('admin theme font mutations', () => {
         expect(invalidate).toHaveBeenCalledWith({ queryKey: adminThemeFontKeys.all });
         expect(invalidate).toHaveBeenCalledWith({ queryKey: adminThemePresetKeys.all });
         expect(invalidate).toHaveBeenCalledWith({ queryKey: adminQrCardTemplateKeys.all });
+        // The invitation renderer's font files: a Save my date font changed.
+        expect(invalidate).toHaveBeenCalledWith({ queryKey: adminInvitationThemeKeys.fonts });
     });
 
     it('patches one font', async () => {

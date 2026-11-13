@@ -9,6 +9,7 @@ import type {
     PartnerApplicationStatus,
     RsvpReportType,
     SignupChannel,
+    ThemeFontLibrary,
     VendorContactStatus,
 } from '@/lib/api/types';
 
@@ -502,6 +503,14 @@ export const endpoints = {
             byId: (id: string) => `/api/admin/theme-presets/${id}`,
             illustration: (id: string) => `/api/admin/theme-presets/${id}/illustration`,
         },
+        invitationFontPairings: {
+            list: '/api/admin/invitation-typography-presets',
+            byId: (id: string) => `/api/admin/invitation-typography-presets/${id}`,
+        },
+        invitationTexts: {
+            list: '/api/admin/invitation-texts',
+            byId: (id: string) => `/api/admin/invitation-texts/${id}`,
+        },
         invitationThemes: {
             list: '/api/admin/invitation-themes',
             byId: (id: string) => `/api/admin/invitation-themes/${id}`,
@@ -515,6 +524,8 @@ export const endpoints = {
         },
         themeFonts: {
             list: '/api/admin/theme-fonts',
+            // The wall's list is the default; Save my date's needs its library named.
+            listIn: (library: ThemeFontLibrary) => (library === 'WALL' ? '/api/admin/theme-fonts' : `/api/admin/theme-fonts?library=${library}`),
             byId: (id: string) => `/api/admin/theme-fonts/${id}`,
             file: (id: string) => `/api/admin/theme-fonts/${id}/file`,
         },
