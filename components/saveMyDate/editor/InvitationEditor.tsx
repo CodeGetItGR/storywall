@@ -83,7 +83,7 @@ export function InvitationEditor({ draft, uploadedFonts, onReload, isReloading =
                 <EditorDockedPanel title={t('themeAssets')}>{assets}</EditorDockedPanel>
                 <InlineTextEditing store={editor.store} document={editor.document} theme={editor.theme} uploadedFonts={uploadedFonts}>
                     <PhotoUploadsContext.Provider value={editor.photos.slots}>
-                        <CanvasHandles store={editor.store}>
+                        <CanvasHandles store={editor.store} frames={editor.theme.frames}>
                             <EditorCanvas
                                 document={editor.document}
                                 theme={editor.theme}

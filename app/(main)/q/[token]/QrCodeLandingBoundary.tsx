@@ -1,30 +1,19 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { useEffect } from 'react';
 
-import { AnonymousQrMediaUploadForm } from '@/components/invite/AnonymousQrMediaUploadForm';
 import { InviteLayout } from '@/components/invite/InviteLayout';
 import { InviteTerminalState } from '@/components/invite/InviteTerminalState';
 import { QrLandingState } from '@/components/invite/QrLandingState';
-import { GuestCodeScreen } from '@/components/qrGuest/GuestCodeScreen';
-import { useQrLinkResolution } from '@/hooks/useQrLinks';
-import { getQrRedirectPath, getQrTerminalCopyKey } from '@/lib/qrLinks';
+import { QrLandingPromo } from '@/components/qrLanding/QrLandingPromo';
+import { QrLandingScreen } from '@/components/qrLanding/QrLandingScreen';
+import { useQrLanding } from '@/hooks/useQrLanding';
+import { getQrTerminalCopyKey } from '@/lib/qrLinks';
 
 export default function QrCodeLandingBoundary({ token }: { token: string }) {
     const t = useTranslations('QrCodePage');
-    const router = useRouter();
-
-    const { data: resolution, isLoading, error } = useQrLinkResolution(token);
-    const coverMedia = resolution?.status === 'ACTIVE' ? (resolution.coverMedia ?? null) : null;
-
-    const isRedirecting = resolution?.status === 'ACTIVE' && (resolution.targetType === 'INVITATION' || resolution.targetType === 'EVENT_JOIN');
-
-    useEffect(() => {
-        const redirectPath = getQrRedirectPath(resolution);
-        if (redirectPath) router.replace(redirectPath);
-    }, [resolution, router]);
+    const landing = useQrLanding(token);
+    const { resolution, error } = landing;
 
     function renderTerminalState() {
         if (error || !resolution || resolution.status !== 'ACTIVE') {
@@ -32,48 +21,35 @@ export default function QrCodeLandingBoundary({ token }: { token: string }) {
             return <InviteTerminalState title={t(`${copyKey}.title`)} description={t(`${copyKey}.description`)} />;
         }
 
-        if ((resolution.targetType === 'EVENT_JOIN' || resolution.targetType === 'INVITATION') && !resolution.inviteToken) {
-            return <InviteTerminalState title={t('unavailable.title')} description={t('unavailable.description')} />;
-        }
-
-        if (resolution.targetType === 'GUEST' && !resolution.guestActions?.length) {
+        // An active code with nothing to offer this visitor: a join link without its invitation, a guest code with no actions.
+        if (resolution.targetType !== 'INVITATION' && landing.plan.choices.length === 0) {
             return <InviteTerminalState title={t('unavailable.title')} description={t('unavailable.description')} />;
         }
 
         return null;
     }
 
-    const terminalState = renderTerminalState();
-    const activeResolution = !terminalState && !isRedirecting && resolution?.status === 'ACTIVE' ? resolution : null;
-    const isMediaUpload = activeResolution?.targetType === 'MEDIA_UPLOAD';
-    const isGuestCode = activeResolution?.targetType === 'GUEST';
+    const terminalState = landing.isLoading ? null : renderTerminalState();
+    const activeResolution = !terminalState && landing.view && resolution?.status === 'ACTIVE' ? resolution : null;
 
     return (
         <QrLandingState
-            isLoading={isLoading || isRedirecting}
+            isLoading={landing.isLoading}
             terminalState={terminalState}
             content={
-                activeResolution && (isMediaUpload || isGuestCode) ? (
+                activeResolution ? (
                     <InviteLayout
-                        coverImageSrc={coverMedia?.mediaUrl}
+                        coverImageSrc={activeResolution.coverMedia?.mediaUrl}
                         coverImageAlt={t('defaultHeroImageAlt')}
                         theme={activeResolution.theme}
                         eventTitle={activeResolution.eventTitle ?? t('fallbackTitle')}
                         eventSubtitle={activeResolution.eventSubtitle}
                         scroll="page"
+                        heroTone="plain"
+                        compactHero={landing.view === 'chooser'}
+                        bottom={landing.view === 'chooser' ? <QrLandingPromo /> : null}
                     >
-                        {isMediaUpload ? (
-                            <>
-                                {/* Upload */}
-                                <div className="mb-4 flex items-center gap-2 text-xs font-semibold tracking-wide text-ink-muted uppercase">
-                                    {t('mediaUploadEyebrow')}
-                                </div>
-                                <AnonymousQrMediaUploadForm token={token} />
-                            </>
-                        ) : (
-                            // Guest code
-                            <GuestCodeScreen token={token} actions={activeResolution.guestActions ?? []} />
-                        )}
+                        <QrLandingScreen landing={landing} />
                     </InviteLayout>
                 ) : null
             }

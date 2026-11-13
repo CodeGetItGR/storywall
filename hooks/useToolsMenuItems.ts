@@ -164,7 +164,6 @@ export function useHostMenuItems(): ToolMenuItem[] {
 
     const hostAdminDefinitions: { key: string; href: string; icon: LucideIcon; hidden?: boolean }[] = [
         { key: 'manage', href: routes.events.manage(activeEvent.id), icon: LayoutDashboard },
-        { key: 'galleryQr', href: routes.events.tools.galleryQr(activeEvent.id), icon: QrCode, hidden: isDeleted || isLite || !galleryQrEnabled },
         { key: 'invitationsQr', href: routes.events.invitationsQr(activeEvent.id), icon: Ticket, hidden: isDeleted || isDraft || isLite },
         { key: 'vendors', href: routes.events.manageVendors(activeEvent.id), icon: Store, hidden: isDeleted || isDraft || !vendorsOn },
         { key: 'announcement', href: routes.events.tools.announcement(activeEvent.id), icon: Megaphone, hidden: isDeleted || isDraft || !postsOn },
@@ -178,6 +177,7 @@ export function useHostMenuItems(): ToolMenuItem[] {
             href: item.href,
             icon: item.icon,
             label: t(`${item.key}.label`),
-            description: t(`${item.key}.description`),
+            // Share links' one code also uploads when the plan has photo uploads (KAN-208).
+            description: item.key === 'invitationsQr' && galleryQrEnabled ? t('invitationsQr.descriptionWithUpload') : t(`${item.key}.description`),
         }));
 }
