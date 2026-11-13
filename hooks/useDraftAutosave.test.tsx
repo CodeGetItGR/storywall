@@ -29,7 +29,7 @@ function renderAutosave() {
     const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
     const draft = backend.stored();
     queryClient.setQueryData(invitationDraftKeys.detail(draft.id), draft);
-    const store = createInvitationEditorStore(draft.document);
+    const store = createInvitationEditorStore(draft.document, draft.themeSlug);
     const wrapper = ({ children }: { children: ReactNode }) => <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
     const hook = renderHook(() => useDraftAutosave(store, draft.id, draft.revision), { wrapper });
     return { queryClient, store, ...hook };
@@ -121,7 +121,7 @@ describe('useDraftAutosave', () => {
     it('saves an edit made before the autosave started', async () => {
         const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
         const draft = backend.stored();
-        const store = createInvitationEditorStore(draft.document);
+        const store = createInvitationEditorStore(draft.document, draft.themeSlug);
         const wrapper = ({ children }: { children: ReactNode }) => <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
         // Layout effects run before the hook's own effect starts the autosave.
         const { result } = renderHook(
