@@ -49,50 +49,62 @@ export function TextToolbar({ toolbar, anchor, canAdd, onDelete, toolbarRef, onK
             data-docked={docked || undefined}
             style={docked ? { bottom: keyboardInset } : undefined}
             className={cn(
-                'smd-editor fixed z-30 flex items-center gap-1 overflow-x-auto rounded-[14px] border border-(--smd-editor-line) bg-(--smd-editor-bar) p-1.5 text-(--smd-editor-text) shadow-[0_12px_32px_rgba(0,0,0,0.42)] backdrop-blur-md',
+                'smd-editor fixed z-30 flex flex-col gap-1 rounded-[14px] border border-(--smd-editor-line) bg-(--smd-editor-bar) p-1.5 text-(--smd-editor-text) shadow-[0_12px_32px_rgba(0,0,0,0.42)] backdrop-blur-md',
                 docked ? 'inset-x-2 mb-[max(0.5rem,env(safe-area-inset-bottom))]' : 'top-0 left-0 max-w-[calc(100vw-16px)]',
             )}
         >
-            {/* Font and size */}
-            <TextFontPicker value={toolbar.font} label={toolbar.fontLabel} options={toolbar.fonts} onChange={toolbar.setFont} />
-            <TextToolbarSelect label={t('fontSize')} value={toolbar.size ? String(toolbar.size) : ''} onChange={toolbar.setSize}>
-                {toolbar.sizes.map((size) => (
-                    <option key={size} value={size}>
-                        {size}
-                    </option>
-                ))}
-            </TextToolbarSelect>
+            {/* Follows the event */}
+            {toolbar.followsEvent && (
+                <p className="max-w-90 px-1.5 pt-0.5 text-[12px] leading-snug text-(--smd-editor-muted)">{t('sectionSettings.followEventHint')}</p>
+            )}
 
-            {/* Colour */}
-            <TextColorPicker value={toolbar.color} swatches={toolbar.swatches} onPick={toolbar.pickColor} />
-            <Divider />
+            {/* Tools */}
+            <div className="-m-1.5 flex items-center gap-1 overflow-x-auto p-1.5">
+                {/* Font and size */}
+                <TextFontPicker value={toolbar.font} label={toolbar.fontLabel} options={toolbar.fonts} onChange={toolbar.setFont} />
+                <TextToolbarSelect label={t('fontSize')} value={toolbar.size ? String(toolbar.size) : ''} onChange={toolbar.setSize}>
+                    {toolbar.sizes.map((size) => (
+                        <option key={size} value={size}>
+                            {size}
+                        </option>
+                    ))}
+                </TextToolbarSelect>
 
-            {/* Weight and slant */}
-            <TextToolbarButton label={t('bold')} pressed={toolbar.bold} onClick={toolbar.toggleBold}>
-                <Bold aria-hidden="true" />
-            </TextToolbarButton>
-            <TextToolbarButton label={t('italic')} pressed={toolbar.italic} onClick={toolbar.toggleItalic}>
-                <Italic aria-hidden="true" />
-            </TextToolbarButton>
-            <Divider />
+                {/* Colour */}
+                <TextColorPicker value={toolbar.color} swatches={toolbar.swatches} onPick={toolbar.pickColor} />
+                <Divider />
 
-            {/* Alignment and line spacing */}
-            <TextAlignButtons value={toolbar.align} onChange={toolbar.setAlign} />
-            <TextToolbarSelect label={t('lineHeight')} value={toolbar.lineHeight ? String(toolbar.lineHeight) : ''} onChange={toolbar.setLineHeight}>
-                <option value="">{t('lineHeightDefault')}</option>
-                {LINE_HEIGHTS.map((height) => (
-                    <option key={height} value={height}>
-                        {height}
-                    </option>
-                ))}
-            </TextToolbarSelect>
-            <Divider />
+                {/* Weight and slant */}
+                <TextToolbarButton label={t('bold')} pressed={toolbar.bold} onClick={toolbar.toggleBold}>
+                    <Bold aria-hidden="true" />
+                </TextToolbarButton>
+                <TextToolbarButton label={t('italic')} pressed={toolbar.italic} onClick={toolbar.toggleItalic}>
+                    <Italic aria-hidden="true" />
+                </TextToolbarButton>
+                <Divider />
 
-            {/* Add and delete */}
-            <TextAddMenu disabled={!canAdd} onAdd={toolbar.add} />
-            <TextToolbarButton label={t('deleteText')} onClick={onDelete} className="text-rose-300">
-                <Trash2 aria-hidden="true" />
-            </TextToolbarButton>
+                {/* Alignment and line spacing */}
+                <TextAlignButtons value={toolbar.align} onChange={toolbar.setAlign} />
+                <TextToolbarSelect
+                    label={t('lineHeight')}
+                    value={toolbar.lineHeight ? String(toolbar.lineHeight) : ''}
+                    onChange={toolbar.setLineHeight}
+                >
+                    <option value="">{t('lineHeightDefault')}</option>
+                    {LINE_HEIGHTS.map((height) => (
+                        <option key={height} value={height}>
+                            {height}
+                        </option>
+                    ))}
+                </TextToolbarSelect>
+                <Divider />
+
+                {/* Add and delete */}
+                <TextAddMenu disabled={!canAdd} onAdd={toolbar.add} />
+                <TextToolbarButton label={t('deleteText')} onClick={onDelete} className="text-rose-300">
+                    <Trash2 aria-hidden="true" />
+                </TextToolbarButton>
+            </div>
         </div>
     );
 }

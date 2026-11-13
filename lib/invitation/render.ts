@@ -40,6 +40,9 @@ export type RenderContext = {
     // Sends an RSVP reply. Without one (the preview) the form shows its
     // success state and nothing is saved.
     sendRsvp?: RsvpSender;
+    // The event's guest link, for the RSVP section's "Join the event" button (KAN-84). Only while the event's plan has
+    // the wall and the link is active.
+    joinUrl?: string;
     // The editor draws every text so it can be typed in; guests get plain text.
     renderText?: TextRenderer;
     // The editor's handles and arrows inside the invitation.
@@ -113,7 +116,7 @@ export function themeCssVars(ctx: RenderContext): CSSProperties {
 
 export function resolveImage(ref: ImageRef | undefined, ctx: RenderContext): string | undefined {
     if (!ref) return undefined;
-    if (ref.source === 'media') return ctx.media(ref.mediaId);
+    if (ref.source === 'media' || ref.source === 'event') return ctx.media(ref.mediaId);
     const asset = ctx.theme.elements.find((element) => element.id === ref.assetId);
     return asset ? ctx.media(asset.image.mediaId) : undefined;
 }

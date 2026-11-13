@@ -122,6 +122,7 @@ export function InvitationEditor({ draft, uploadedFonts, onReload, isReloading =
                 theme={editor.theme}
                 media={editor.media}
                 uploadedFonts={uploadedFonts}
+                joinUrl={editor.joinUrl}
             />
 
             {/* Publishing */}

@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 import {
+    eventLinkSchema,
     idSchema,
     imageRefSchema,
     linkSchema,
@@ -54,6 +55,8 @@ export const photoFrameFieldsSchema = z
         imageWidth: z.number().min(0).max(20_000),
         imageHeight: z.number().min(0).max(20_000),
         animation: z.enum(FRAME_ANIMATIONS),
+        // The cover photo of the event, in the top section's first frame.
+        link: eventLinkSchema.optional(),
     })
     .strict();
 

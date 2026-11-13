@@ -27,6 +27,18 @@ async function openSheet() {
 
 export const DateSection: Story = {};
 
+// A date that follows the event: the switch comes first, and turning it off keeps the invitation's own copy.
+export const FollowingTheEvent: Story = {
+    args: { followsEvent: true },
+    play: async ({ globals }) => {
+        const sheet = await openSheet();
+        const toggle = sheet.getByRole('switch', { name: copyFor(globals).InvitationEditor.sectionSettings.followEvent });
+        await expect(toggle).toBeChecked();
+        await userEvent.click(toggle);
+        await expect(toggle).not.toBeChecked();
+    },
+};
+
 export const Countdown: Story = { args: { sectionId: 's-countdown' } };
 
 export const Faq: Story = { args: { sectionId: 's-faq' } };

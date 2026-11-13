@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { elementSchema } from '@/lib/invitation/elements';
 import {
     colorSchema,
+    eventLinkSchema,
     fontSchema,
     idSchema,
     imageRefSchema,
@@ -321,6 +322,11 @@ export type SectionType = keyof typeof SECTION_DATA_SCHEMAS;
 
 export const SECTION_TYPES = Object.keys(SECTION_DATA_SCHEMAS) as SectionType[];
 
+// Sections whose fields can follow the invitation's event.
+export const LINKABLE_SECTION_TYPES: ReadonlySet<SectionType> = new Set([
+    'top', 'coupleNames', 'baby', 'date', 'rsvp', 'program', 'programIcons', 'locations', 'photo',
+]);
+
 // Sections that may appear more than once in one invitation.
 export const MULTI_INSTANCE_SECTION_TYPES: ReadonlySet<SectionType> = new Set(['blank', 'photo', 'photoFrame']);
 
@@ -336,6 +342,8 @@ function sectionSchemaFor<T extends SectionType>(type: T) {
             textStyles: z.record(z.string().max(200), textStyleSchema),
             elements: z.array(elementSchema).max(100),
             style: sectionStyleSchema,
+            // Only on LINKABLE_SECTION_TYPES.
+            link: eventLinkSchema.optional(),
         })
         .strict();
 }
@@ -365,6 +373,9 @@ export const sectionSchema = sectionUnion.superRefine((section, ctx) => {
     }
     if (breaks > 1) {
         ctx.addIssue({ code: 'custom', path: ['elements'], message: 'Only one column break per section' });
+    }
+    if (section.link && !LINKABLE_SECTION_TYPES.has(section.type)) {
+        ctx.addIssue({ code: 'custom', path: ['link'], message: 'This section cannot follow the event' });
     }
 }) as unknown as z.ZodType<InvitationSection>;
 

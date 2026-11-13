@@ -6,14 +6,16 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { BackgroundSettings } from '@/components/saveMyDate/editor/settings/BackgroundSettings';
 import { DressCodeSettings } from '@/components/saveMyDate/editor/settings/DressCodeSettings';
+import { FollowEventSettings } from '@/components/saveMyDate/editor/settings/FollowEventSettings';
 import { SettingsTextField } from '@/components/saveMyDate/editor/settings/SettingsTextField';
 import { StyleFields } from '@/components/saveMyDate/editor/settings/StyleFields';
 import type { SectionOf, SettingsScope } from '@/hooks/useSectionSettingsPanel';
 import type { InvitationDocument } from '@/lib/invitation/document';
 import { readEditableDraft } from '@/lib/invitation/drafts';
+import type { InvitationEventData } from '@/lib/invitation/eventLinks';
 import { sampleDraftDto } from '@/lib/invitation/sampleDraft';
 import type { InvitationSection } from '@/lib/invitation/sections';
-import type { DocumentRecipe } from '@/lib/invitation/sectionSettings';
+import { type DocumentRecipe, settingsGroups } from '@/lib/invitation/sectionSettings';
 import { COUNTDOWN_FIELDS } from '@/lib/invitation/sectionStyleFields';
 import en from '@/messages/en.json';
 
@@ -31,7 +33,12 @@ type HostBackgrounds = InvitationSection['style']['hostBackgrounds'];
 // The theme has art for its top and content backgrounds.
 function scopeFor<T extends InvitationSection['type']>(
     type: T,
-    { isAdmin = false, hostBackgrounds }: { isAdmin?: boolean; hostBackgrounds?: HostBackgrounds } = {},
+    {
+        isAdmin = false,
+        hostBackgrounds,
+        following,
+        event = null,
+    }: { isAdmin?: boolean; hostBackgrounds?: HostBackgrounds; following?: boolean; event?: InvitationEventData | null } = {},
 ) {
     const draft = readEditableDraft(sampleDraftDto());
     const theme = produce(draft.theme, (design) => {
@@ -40,6 +47,7 @@ function scopeFor<T extends InvitationSection['type']>(
     let document: InvitationDocument = produce(draft.document, (next) => {
         const target = next.sections.find((item) => item.type === type)!;
         if (hostBackgrounds) target.style.hostBackgrounds = hostBackgrounds;
+        if (following !== undefined) target.link = { source: 'event', enabled: following };
     });
     const edit = vi.fn((recipe: DocumentRecipe) => {
         document = produce(document, recipe);
@@ -55,6 +63,8 @@ function scopeFor<T extends InvitationSection['type']>(
         fonts: [],
         draftId: draft.id,
         addUploaded: vi.fn(),
+        event,
+        eventSamples: null,
     };
     return { scope, edit, edited: () => document.sections.find((item) => item.id === section.id) as SectionOf<T> };
 }
@@ -146,6 +156,50 @@ describe('BackgroundSettings', () => {
         expect(within(choices).getAllByRole('radio')).toHaveLength(1);
         expect(within(choices).getByRole('img', { name: 'Background 2' })).toBeInTheDocument();
         expect(screen.queryByRole('switch')).not.toBeInTheDocument();
+    });
+});
+
+describe('FollowEventSettings', () => {
+    const event: InvitationEventData = {
+        eventType: 'WEDDING',
+        title: 'Maria & Nikos',
+        timezone: 'Europe/Athens',
+        startAt: '2027-07-12T15:30:00Z',
+        rsvp: null,
+        cover: null,
+        location: { name: null, address: null, mapsUrl: null },
+        sessions: null,
+        joinUrl: null,
+    };
+
+    it('is offered to hosts on a section linked to its event, first, and never to admins or unlinked sections', () => {
+        const linked = scopeFor('date', { following: true }).scope;
+        expect(settingsGroups(linked.section, 'host', linked.theme)[0]).toBe('follow');
+        expect(settingsGroups(linked.section, 'admin', linked.theme)).not.toContain('follow');
+        const unlinked = scopeFor('date').scope;
+        expect(settingsGroups(unlinked.section, 'host', unlinked.theme)).not.toContain('follow');
+    });
+
+    it('says what following means, and stops following when switched off', () => {
+        const { scope, edited } = scopeFor('date', { following: true, event });
+        renderIn(<FollowEventSettings scope={scope} />);
+        expect(screen.getByText(en.InvitationEditor.sectionSettings.followEventHint)).toBeInTheDocument();
+        const toggle = screen.getByRole('switch', { name: 'Follow the event' });
+        expect(toggle).toBeChecked();
+
+        fireEvent.click(toggle);
+        expect(edited().link).toEqual({ source: 'event', enabled: false });
+    });
+
+    it("follows again when switched on, and shows the event's date at once", () => {
+        const { scope, edited } = scopeFor('date', { following: false, event });
+        renderIn(<FollowEventSettings scope={scope} />);
+        const toggle = screen.getByRole('switch', { name: 'Follow the event' });
+        expect(toggle).not.toBeChecked();
+
+        fireEvent.click(toggle);
+        expect(edited().link).toEqual({ source: 'event', enabled: true });
+        expect(edited().data.iso).toBe('2027-07-12T18:30');
     });
 });
 

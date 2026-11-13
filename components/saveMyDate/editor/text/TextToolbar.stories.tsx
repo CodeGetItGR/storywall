@@ -27,6 +27,7 @@ const toolbar: TextToolbarState = {
     setAlign: fn(),
     pickColor: fn(),
     add: fn(),
+    followsEvent: false,
 };
 
 const meta = {
@@ -79,4 +80,12 @@ export const Styled: Story = {
 export const CannotAdd: Story = {
     tags: ['visual-desktop-only'],
     args: { canAdd: false },
+};
+
+// A text that comes from the event, such as the date: editing it makes it the invitation's own.
+export const FollowsTheEvent: Story = {
+    args: { toolbar: { ...toolbar, followsEvent: true } },
+    play: async ({ canvasElement, globals }) => {
+        await expect(within(canvasElement).getByText(copyFor(globals).InvitationEditor.sectionSettings.followEventHint)).toBeVisible();
+    },
 };

@@ -128,13 +128,14 @@ type SectionStoryProps = {
     before?: InvitationSection[];
     theme?: ThemeDesign;
     sendRsvp?: RsvpSender;
+    joinUrl?: string;
 };
 
 // One section drawn by the real renderer. Its fixed labels follow the toolbar's
 // language; its host-written texts are sample data and stay as they are.
-export function SectionStory({ section, before, theme = STORY_THEME, sendRsvp }: SectionStoryProps) {
+export function SectionStory({ section, before, theme = STORY_THEME, sendRsvp, joinUrl }: SectionStoryProps) {
     const locale = useLocale();
     const lead = before ?? [section.type === 'date' ? hiddenBlank : hiddenDate(locale)];
 
-    return <InvitationRenderer document={storyDocument([...lead, section])} theme={theme} media={storyInvitationMedia} sendRsvp={sendRsvp} />;
+    return <InvitationRenderer document={storyDocument([...lead, section])} theme={theme} media={storyInvitationMedia} sendRsvp={sendRsvp} joinUrl={joinUrl} />;
 }

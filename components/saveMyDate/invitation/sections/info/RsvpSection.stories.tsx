@@ -32,6 +32,19 @@ type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {};
 
+// The event's plan has the wall: guests can join the event from here, before and after they reply.
+export const WithJoinButton: Story = {
+    args: { joinUrl: 'https://storywall.gr/q/story-token', sendRsvp: fn(async (): Promise<RsvpOutcome> => ({ ok: true })) },
+    play: async ({ canvasElement, globals }) => {
+        const labels = labelsFor(globals);
+        await expect(within(canvasElement).getByRole('link', { name: labels.joinEvent })).toHaveAttribute('href', 'https://storywall.gr/q/story-token');
+        await fillIn(canvasElement, globals);
+        await submit(canvasElement, globals);
+        await within(canvasElement).findByText(labels.rsvpThanks);
+        await expect(within(canvasElement).getByRole('link', { name: labels.joinEvent })).toBeVisible();
+    },
+};
+
 export const Sending: Story = {
     args: { sendRsvp: fn(() => new Promise<RsvpOutcome>(() => {})) },
     play: async ({ canvasElement, globals }) => {

@@ -1,6 +1,7 @@
 import type { Draft } from 'immer';
 
 import type { InvitationDocument } from '@/lib/invitation/document';
+import { followState } from '@/lib/invitation/eventLinks';
 import { hostBackgroundSlots } from '@/lib/invitation/sectionBackgrounds';
 import type { EditorMode } from '@/lib/invitation/sectionRules';
 import type { InvitationSection, SectionType } from '@/lib/invitation/sections';
@@ -15,6 +16,7 @@ export type DocumentRecipe = (draft: DocumentDraft) => void;
 export type SectionData<T extends SectionType> = Extract<InvitationSection, { type: T }>['data'];
 
 export type SettingsGroup =
+    | 'follow'
     | 'date'
     | 'countdown'
     | 'faq'
@@ -53,6 +55,8 @@ export function settingsGroups(section: InvitationSection, mode: EditorMode, the
     const isAdmin = mode === 'admin';
     if (section.type === 'footer') return isAdmin ? ['footer', 'effect'] : [];
     const groups: SettingsGroup[] = [...(TYPE_GROUPS[section.type] ?? [])];
+    // Hosts choose whether a section follows its event (KAN-84); a theme has no event.
+    if (!isAdmin && followState(section).available) groups.unshift('follow');
     if (section.elements.some((element) => element.kind === 'link')) groups.push('buttons');
     if (isAdmin || hostBackgroundSlots(section, theme).length > 0) groups.push('background');
     if (isAdmin) groups.push('effect');

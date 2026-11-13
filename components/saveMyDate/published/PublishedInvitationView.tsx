@@ -16,8 +16,17 @@ type PublishedInvitationViewProps = {
 export function PublishedInvitationView({ state, labels, uploadedFonts, sendRsvp }: PublishedInvitationViewProps) {
     switch (state.kind) {
         case 'found': {
-            const { document, theme, media } = state.invitation;
-            return <InvitationRenderer document={document} theme={theme} media={media} uploadedFonts={uploadedFonts} sendRsvp={sendRsvp} />;
+            const { document, theme, media, joinUrl } = state.invitation;
+            return (
+                <InvitationRenderer
+                    document={document}
+                    theme={theme}
+                    media={media}
+                    uploadedFonts={uploadedFonts}
+                    sendRsvp={sendRsvp}
+                    joinUrl={joinUrl}
+                />
+            );
         }
         case 'not-found':
             return <PublishedInvitationNotice title={labels.notFound} />;

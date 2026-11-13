@@ -23,6 +23,12 @@ export function RsvpSection({ section, contrast, ctx }: RsvpSectionProps) {
                 <SectionText section={section} path="deadline" value={data.deadline} tag="p" contrast={contrast} ctx={ctx} />
                 {/* Form */}
                 <RsvpForm labels={ctx.labels} send={ctx.sendRsvp} />
+                {/* Join: under the form and its thank-you card alike */}
+                {ctx.joinUrl && (
+                    <a className="theme-btn rsvp-btn rsvp-join" href={ctx.joinUrl}>
+                        {ctx.labels.joinEvent}
+                    </a>
+                )}
             </div>
             {/* Elements */}
             <InvitationElements elements={section.elements} contrast={contrast} ctx={ctx} />
