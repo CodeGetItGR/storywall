@@ -8,24 +8,28 @@ import { GuestWishForm } from '@/components/qrGuest/GuestWishForm';
 import { QrLandingChoices } from '@/components/qrLanding/QrLandingChoices';
 import type { useQrLanding } from '@/hooks/useQrLanding';
 
-const EYEBROW_CLASS = 'mb-4 flex items-center gap-2 text-xs font-semibold tracking-wide text-ink-muted uppercase';
-
 // The body of a scanned event code's page: the choices, or the form one of them opened.
 export function QrLandingScreen({ landing }: { landing: ReturnType<typeof useQrLanding> }) {
     const t = useTranslations('QrCodePage');
+    const label = landing.view === 'upload' ? t('mediaUploadEyebrow') : landing.view === 'wish' ? t('guestCode.wishEyebrow') : null;
 
     return (
         <>
-            {/* Back */}
-            {landing.canGoBack ? (
-                <button
-                    type="button"
-                    onClick={landing.back}
-                    className="mb-4 inline-flex items-center gap-1 text-sm font-semibold text-ink-muted hover:text-ink"
-                >
-                    <ArrowLeft className="h-4 w-4" aria-hidden="true" />
-                    {t('guestCode.back')}
-                </button>
+            {/* Header: back arrow at the left, the form's label centred. Hidden on the sent screen. */}
+            {label && !landing.isSent ? (
+                <div className="relative mb-4 flex min-h-9 items-center justify-center">
+                    {landing.canGoBack ? (
+                        <button
+                            type="button"
+                            onClick={landing.back}
+                            aria-label={t('guestCode.back')}
+                            className="absolute left-0 inline-flex h-9 w-9 items-center justify-center rounded-full bg-surface-muted text-ink transition-opacity hover:opacity-80"
+                        >
+                            <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+                        </button>
+                    ) : null}
+                    <div className="text-xs font-semibold tracking-wide text-ink-muted uppercase">{label}</div>
+                </div>
             ) : null}
 
             {/* Choices */}
@@ -33,19 +37,11 @@ export function QrLandingScreen({ landing }: { landing: ReturnType<typeof useQrL
 
             {/* Upload */}
             {landing.view === 'upload' && landing.uploadToken ? (
-                <>
-                    <div className={EYEBROW_CLASS}>{t('mediaUploadEyebrow')}</div>
-                    <AnonymousQrMediaUploadForm token={landing.uploadToken} member={landing.member} />
-                </>
+                <AnonymousQrMediaUploadForm token={landing.uploadToken} member={landing.member} onSentChange={landing.setIsSent} />
             ) : null}
 
             {/* Wish */}
-            {landing.view === 'wish' && landing.wishToken ? (
-                <>
-                    <div className={EYEBROW_CLASS}>{t('guestCode.wishEyebrow')}</div>
-                    <GuestWishForm token={landing.wishToken} />
-                </>
-            ) : null}
+            {landing.view === 'wish' && landing.wishToken ? <GuestWishForm token={landing.wishToken} onSentChange={landing.setIsSent} /> : null}
         </>
     );
 }

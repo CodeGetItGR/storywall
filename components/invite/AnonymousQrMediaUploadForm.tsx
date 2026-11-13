@@ -3,7 +3,7 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { ArrowRight, ImagePlus, Loader2, Video, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 
 import { ProtectedImage } from '@/components/common/ProtectedImage';
 import { IncidentPausedNote } from '@/components/incident/IncidentPausedNote';
@@ -28,9 +28,11 @@ interface AnonymousQrMediaUploadFormProps {
     token: string;
     // A signed-in member of the event uploads as themselves: their name, their account's acceptance.
     member?: { eventId: string; displayName: string } | null;
+    // Told when the sent screen shows or hides, so the page can drop its own header there.
+    onSentChange?: (sent: boolean) => void;
 }
 
-export function AnonymousQrMediaUploadForm({ token, member = null }: AnonymousQrMediaUploadFormProps) {
+export function AnonymousQrMediaUploadForm({ token, member = null, onSentChange }: AnonymousQrMediaUploadFormProps) {
     const t = useTranslations('QrCodePage');
     const tAlt = useTranslations('ImageAlt');
     const uploadAccept = useUploadAccept();
@@ -55,6 +57,10 @@ export function AnonymousQrMediaUploadForm({ token, member = null }: AnonymousQr
     const [isDragActive, setIsDragActive] = useState(false);
     const [isBusy, setIsBusy] = useState(false);
     const previews = useFilePreviews(files);
+
+    useEffect(() => {
+        onSentChange?.(done);
+    }, [done, onSentChange]);
 
     const handleUploaderNameChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
         setUploaderName(e.target.value);
