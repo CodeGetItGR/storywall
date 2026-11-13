@@ -14,7 +14,7 @@ export function QrCardLayoutLogoPanel({ editor, logo }: { editor: QrCardLayoutEd
     const t = useTranslations('AdminPage.qrCards.layout');
 
     return (
-        <div className="flex items-end justify-between gap-2">
+        <div className="space-y-2">
             {/* Mode */}
             <QrCardLayoutSegmented
                 name="logo-color"
