@@ -33,3 +33,9 @@ export function campaignShowsOver(
 export function plansHref(locale: Locale): string {
     return `${getPublicLandingPath(locale)}#pricing`;
 }
+
+// A scanned QR code's page shows the campaign in its own banner at the foot (KAN-208), so the bar
+// leaves it out there.
+export function campaignBarHiddenOn(pathname: string): boolean {
+    return pathname === '/q' || pathname.startsWith('/q/');
+}
