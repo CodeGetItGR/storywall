@@ -79,12 +79,6 @@ describe('QrCodeLandingBoundary', () => {
         expect(mocks.replace).toHaveBeenCalledWith(routes.inviteToken('inv'));
     });
 
-    it('keeps sending a personal invitation to the invite page', () => {
-        resolve({ status: 'ACTIVE', targetType: 'INVITATION', inviteToken: 'inv' });
-        render(<QrCodeLandingBoundary token="t" />);
-        expect(mocks.replace).toHaveBeenCalledWith(routes.inviteToken('inv'));
-    });
-
     it('offers upload and wish on a lite guest code', () => {
         resolve({ status: 'ACTIVE', targetType: 'GUEST', guestActions: ['UPLOAD', 'WISH'] });
         render(<QrCodeLandingBoundary token="t" />);

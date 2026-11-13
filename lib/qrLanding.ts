@@ -26,10 +26,9 @@ export interface QrLandingVisitor {
 
 const NO_PLAN: QrLandingPlan = { choices: [], joinInviteToken: null, uploadToken: null, wishToken: null };
 
-// The choices one active event code offers this visitor, in display order. A personal invitation is not
-// an event code: it keeps opening the invite page, so it gets no plan.
+// The choices one active event code offers this visitor, in display order.
 export function qrLandingPlan(resolution: QrLinkResolutionDto | null | undefined, visitor: QrLandingVisitor): QrLandingPlan {
-    if (resolution?.status !== 'ACTIVE' || resolution.targetType === 'INVITATION') return NO_PLAN;
+    if (resolution?.status !== 'ACTIVE') return NO_PLAN;
 
     // An upload code uploads even from a backend too old to list its actions.
     const ownToken = resolution.targetType === 'MEDIA_UPLOAD' || (resolution.guestActions ?? []).includes('UPLOAD');

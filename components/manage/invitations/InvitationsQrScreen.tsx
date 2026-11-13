@@ -2,7 +2,6 @@
 
 import { QrCode } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useCallback, useState } from 'react';
 
 import { ShareLanguageNote } from '@/components/manage/invitations/ShareLanguageNote';
 import { ShareLinkPanel } from '@/components/manage/invitations/ShareLinkPanel';
@@ -33,7 +32,6 @@ export function InvitationsQrScreen() {
     const isPrimaryHost = useIsPrimaryHost();
     const { data: upgradeOptions = [], isLoading: upgradesLoading } = useUpgradeOptions(eventId, isHost && isPrimaryHost);
     const { data: appConfig } = useAppConfig();
-    const [limitNotice, setLimitNotice] = useState<string | null>(null);
 
     const isWritable = isEventWritable(activeEvent?.status);
     const canWrite = isHost && isWritable;
@@ -46,8 +44,6 @@ export function InvitationsQrScreen() {
     // The gallery upload code isn't listed: scanning the join code offers uploading too (KAN-208).
     // The guest code lives on a lite event's home. Both are left out of this list and its count.
     const shareQrLinks = qrLinks.filter(isInvitationQrLink);
-
-    const handleClampNotice = useCallback((message: string) => setLimitNotice(message), []);
 
     return (
         <ModulePageShell
@@ -87,12 +83,6 @@ export function InvitationsQrScreen() {
                         <p className="mb-3 rounded-2xl bg-surface-muted px-4 py-3 text-sm leading-relaxed text-ink-muted">{t('qr.readOnly')}</p>
                     )}
 
-                    {limitNotice && (
-                        <p className="mb-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-relaxed text-amber-900">
-                            {limitNotice}
-                        </p>
-                    )}
-
                     {/* Share links */}
                     <div className="flex flex-col divide-y divide-border [&>*]:py-8 [&>*:first-child]:pt-0">
                         {shareQrLinks.map((qrLink) => {
@@ -104,7 +94,6 @@ export function InvitationsQrScreen() {
                                     qrLink={qrLink}
                                     stats={stats}
                                     canWrite={canWrite}
-                                    onClampNoticeAction={handleClampNotice}
                                 />
                             );
                         })}

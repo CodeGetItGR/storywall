@@ -64,7 +64,6 @@ export type ApiErrorMessageKey =
     | 'coHostNeedsAccount'
     | 'memberHostRoleNotAllowed'
     | 'qrLinkMaxGuestsNotAllowed'
-    | 'qrLinkTargetInvalid'
     | 'bugReportTooShort'
     | 'feedbackPageUrlInvalid'
     | 'uploadFilesRequired'
@@ -134,7 +133,6 @@ export type ApiErrorMessageKey =
     | 'eventHostAlreadyCoHost'
     | 'eventHostLastHost'
     | 'eventHostAlreadyPrimary'
-    | 'inviteCodeTaken'
     | 'coHostAlreadyMember'
     | 'memberIsHost'
     | 'reactionTypeCodeTaken'
@@ -569,7 +567,6 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.EVENT_HOST_ALREADY_CO_HOST]: 'eventHostAlreadyCoHost',
     [ERROR_CODES.EVENT_HOST_LAST_HOST]: 'eventHostLastHost',
     [ERROR_CODES.EVENT_HOST_ALREADY_PRIMARY]: 'eventHostAlreadyPrimary',
-    [ERROR_CODES.INVITE_CODE_TAKEN]: 'inviteCodeTaken',
     [ERROR_CODES.CO_HOST_ALREADY_MEMBER]: 'coHostAlreadyMember',
     [ERROR_CODES.MEMBER_IS_HOST]: 'memberIsHost',
     [ERROR_CODES.REACTION_TYPE_CODE_TAKEN]: 'reactionTypeCodeTaken',
@@ -597,7 +594,6 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.CO_HOST_NEEDS_ACCOUNT]: 'coHostNeedsAccount',
     [ERROR_CODES.MEMBER_HOST_ROLE_NOT_ALLOWED]: 'memberHostRoleNotAllowed',
     [ERROR_CODES.QR_LINK_MAX_GUESTS_NOT_ALLOWED]: 'qrLinkMaxGuestsNotAllowed',
-    [ERROR_CODES.QR_LINK_TARGET_INVALID]: 'qrLinkTargetInvalid',
     [ERROR_CODES.BUG_REPORT_TOO_SHORT]: 'bugReportTooShort',
     [ERROR_CODES.FEEDBACK_PAGE_URL_INVALID]: 'feedbackPageUrlInvalid',
     [ERROR_CODES.UPLOAD_FILES_REQUIRED]: 'uploadFilesRequired',

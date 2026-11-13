@@ -22,7 +22,7 @@ export default function QrCodeLandingBoundary({ token }: { token: string }) {
         }
 
         // An active code with nothing to offer this visitor: a join link without its invitation, a guest code with no actions.
-        if (resolution.targetType !== 'INVITATION' && landing.plan.choices.length === 0) {
+        if (landing.plan.choices.length === 0) {
             return <InviteTerminalState title={t('unavailable.title')} description={t('unavailable.description')} />;
         }
 

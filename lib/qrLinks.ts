@@ -2,7 +2,6 @@ import { ApiError } from '@/lib/api/client';
 import { ERROR_CODES, getErrorCode } from '@/lib/api/errors';
 import type { EventModuleResponseDto, GalleryModuleConfiguration, QrLinkResolutionDto, QrLinkResponseDto } from '@/lib/api/types';
 import { readableModuleKeys } from '@/lib/eventLifecycle';
-import { routes } from '@/lib/routes';
 
 export type QrTerminalCopyKey = 'unknown' | 'revoked' | 'expired' | 'unavailable';
 
@@ -15,16 +14,6 @@ export function getQrTerminalCopyKey(resolution?: QrLinkResolutionDto | null, er
     if (resolution?.status === 'EXPIRED') return 'expired';
     if (resolution?.status === 'TARGET_UNAVAILABLE') return 'unavailable';
     return 'unknown';
-}
-
-// Where a scanned link that leads to an invitation sends the visitor, or null
-// when the QR page renders something itself. Both the shared join link and a
-// personal invitation open the invite page: it shows the event, then lets a
-// newcomer sign up, a returning guest sign in, or a signed-in visitor accept.
-export function getQrRedirectPath(resolution: QrLinkResolutionDto | null | undefined): string | null {
-    if (resolution?.status !== 'ACTIVE' || !resolution.inviteToken) return null;
-    if (resolution.targetType === 'INVITATION' || resolution.targetType === 'EVENT_JOIN') return routes.inviteToken(resolution.inviteToken);
-    return null;
 }
 
 // The event's gallery upload QR code — whichever MEDIA_UPLOAD link hasn't been
@@ -46,10 +35,10 @@ export function findGuestQrLink(qrLinks: QrLinkResponseDto[]): QrLinkResponseDto
     return qrLinks.find((link) => link.targetType === 'GUEST' && link.status !== 'REVOKED') ?? null;
 }
 
-// A link that brings a guest into the event: the join link or a personal invitation. The gallery upload code
-// and a lite event's guest code aren't invitations, even on an upgraded event that keeps its guest code.
+// A link that brings a guest into the event: the join link. The gallery upload code and a lite event's
+// guest code aren't invitations, even on an upgraded event that keeps its guest code.
 export function isInvitationQrLink(qrLink: QrLinkResponseDto): boolean {
-    return qrLink.targetType !== 'MEDIA_UPLOAD' && qrLink.targetType !== 'GUEST';
+    return qrLink.targetType === 'EVENT_JOIN';
 }
 
 export function hasGalleryQrLink(qrLinks: QrLinkResponseDto[]): boolean {
