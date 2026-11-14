@@ -49,6 +49,26 @@ export function qrLandingPlan(resolution: QrLinkResolutionDto | null | undefined
     return { choices, joinInviteToken, uploadToken, wishToken };
 }
 
+// The choice that opens the event gets the big card with the feed preview (KAN-213); the rest are rows below it.
+export function splitQrLandingChoices(choices: QrLandingChoice[]): { event: 'join' | 'open' | null; rest: QrLandingChoice[] } {
+    const event = choices.find((choice): choice is 'join' | 'open' => choice === 'join' || choice === 'open') ?? null;
+    return { event, rest: choices.filter((choice) => choice !== event) };
+}
+
+// The sample pictures around the event's own cover in the join card's preview. General celebration shots,
+// so they suit a wedding, a baptism or a birthday alike.
+export const QR_JOIN_PREVIEW_IMAGES = {
+    photos: ['/landing/friends-and-family-celebrating-at-sunset.webp', '/landing/guests-dancing-at-an-elegant-vip-social-party-at-night.webp'],
+    post: '/landing/guests-mingling-with-champagne-at-an-elegant-vip-social-party.webp',
+    author: '/landing/guest-avatar-2.webp',
+    stories: [
+        '/landing/guest-avatar.webp',
+        '/landing/party-avatar.webp',
+        '/landing/guest-avatar-2.webp',
+        '/landing/close-up-selfie-of-stylish-guests-and-influencers-celebrating-at.webp',
+    ],
+} as const;
+
 // The scanned token stands in for 'self', so the plan stays a pure function of the resolution.
 export function resolveQrLandingToken(planToken: string | null, scannedToken: string): string | null {
     return planToken === 'self' ? scannedToken : planToken;

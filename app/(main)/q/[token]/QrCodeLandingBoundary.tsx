@@ -32,6 +32,8 @@ export default function QrCodeLandingBoundary({ token }: { token: string }) {
 
     const terminalState = landing.isLoading ? null : renderTerminalState();
     const activeResolution = !terminalState && landing.view && resolution?.status === 'ACTIVE' ? resolution : null;
+    // The choices show the cover inside the join card's preview (KAN-213), so the page itself opens on the logo.
+    const isChooser = landing.view === 'chooser';
 
     return (
         <QrLandingState
@@ -40,15 +42,15 @@ export default function QrCodeLandingBoundary({ token }: { token: string }) {
             content={
                 activeResolution ? (
                     <InviteLayout
-                        coverImageSrc={activeResolution.coverMedia?.mediaUrl}
+                        coverImageSrc={isChooser ? null : activeResolution.coverMedia?.mediaUrl}
                         coverImageAlt={t('defaultHeroImageAlt')}
-                        theme={activeResolution.theme}
+                        theme={isChooser ? null : activeResolution.theme}
                         eventTitle={activeResolution.eventTitle ?? t('fallbackTitle')}
                         eventSubtitle={activeResolution.eventSubtitle}
                         scroll="page"
                         heroTone="plain"
-                        compactHero={landing.view === 'chooser'}
-                        bottom={landing.view === 'chooser' ? <QrLandingPromo /> : null}
+                        compactHero={isChooser}
+                        bottom={isChooser ? <QrLandingPromo /> : null}
                         corner={<LanguageSwitcher variant="auth" className="rounded-full bg-background/85 px-1 shadow-xs backdrop-blur-sm" />}
                     >
                         <QrLandingScreen landing={landing} />

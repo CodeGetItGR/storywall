@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import type { QrLinkResolutionDto } from '@/lib/api/types';
-import { qrLandingChoiceHref, qrLandingPlan, qrLandingStart, resolveQrLandingToken } from '@/lib/qrLanding';
+import { qrLandingChoiceHref, qrLandingPlan, qrLandingStart, resolveQrLandingToken, splitQrLandingChoices } from '@/lib/qrLanding';
 import { routes } from '@/lib/routes';
 
 const guest = { isMember: false, hasWishbook: false };
@@ -86,5 +86,17 @@ describe('resolveQrLandingToken', () => {
         expect(resolveQrLandingToken('self', 'scanned')).toBe('scanned');
         expect(resolveQrLandingToken('up', 'scanned')).toBe('up');
         expect(resolveQrLandingToken(null, 'scanned')).toBeNull();
+    });
+});
+
+// KAN-213: the event choice becomes the join card; the rest stay as rows below it.
+describe('splitQrLandingChoices', () => {
+    it('takes join or open out of the rows', () => {
+        expect(splitQrLandingChoices(['join', 'upload', 'wish'])).toEqual({ event: 'join', rest: ['upload', 'wish'] });
+        expect(splitQrLandingChoices(['open', 'upload', 'wishbook'])).toEqual({ event: 'open', rest: ['upload', 'wishbook'] });
+    });
+
+    it('leaves every choice as a row when there is no event choice', () => {
+        expect(splitQrLandingChoices(['upload', 'wish'])).toEqual({ event: null, rest: ['upload', 'wish'] });
     });
 });

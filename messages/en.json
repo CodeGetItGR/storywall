@@ -648,7 +648,19 @@
         "choices": {
             "join": "Join the event",
             "open": "Open the event",
-            "eventHint": "See what guests share"
+            "eventHint": "See what guests share",
+            "joinLine": "See everyone's photos, share yours and join in on the day.",
+            "freeAccount": "Free account, in a few seconds",
+            "noAccount": "Without an account",
+            "uploadLine": "They go to the gallery",
+            "wishLine": "A message for the wishbook",
+            "moreOptions": "More options"
+        },
+        "preview": {
+            "feed": "The event feed",
+            "photo": "A guest's photo",
+            "wish": "A wish from a guest",
+            "song": "A song request"
         },
         "guestCode": {
             "uploadButton": "Upload photos",

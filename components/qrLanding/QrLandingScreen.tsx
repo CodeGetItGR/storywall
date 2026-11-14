@@ -33,7 +33,16 @@ export function QrLandingScreen({ landing }: { landing: ReturnType<typeof useQrL
             ) : null}
 
             {/* Choices */}
-            {landing.view === 'chooser' ? <QrLandingChoices plan={landing.plan} eventId={landing.eventId} onChoose={landing.choose} /> : null}
+            {landing.view === 'chooser' ? (
+                <QrLandingChoices
+                    plan={landing.plan}
+                    eventId={landing.eventId}
+                    onChoose={landing.choose}
+                    coverSrc={landing.resolution?.coverMedia?.mediaUrl ?? null}
+                    eventTitle={landing.resolution?.eventTitle ?? t('fallbackTitle')}
+                    isSignedIn={landing.isSignedIn}
+                />
+            ) : null}
 
             {/* Upload */}
             {landing.view === 'upload' && landing.uploadToken ? (
