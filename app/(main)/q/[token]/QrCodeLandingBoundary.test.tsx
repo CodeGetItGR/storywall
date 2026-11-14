@@ -8,13 +8,20 @@ import { routes } from '@/lib/routes';
 const mocks = vi.hoisted(() => ({
     resolution: vi.fn(),
     replace: vi.fn(),
+    push: vi.fn(),
+    back: vi.fn(),
+    inAppPrevious: false,
+    search: '',
     auth: { isAuthenticated: false, isBootstrapping: false },
     memberships: [] as { eventId: string; displayName: string }[],
     modules: [] as { moduleKey: string; isAvailable: boolean }[],
 }));
 
 vi.mock('next-intl', () => ({ useTranslations: () => (key: string) => key }));
-vi.mock('next/navigation', () => ({ useRouter: () => ({ replace: mocks.replace }), useSearchParams: () => new URLSearchParams() }));
+vi.mock('next/navigation', () => ({ useRouter: () => ({ replace: mocks.replace, push: mocks.push, back: mocks.back }),
+    useSearchParams: () => new URLSearchParams(mocks.search),
+}));
+vi.mock('@/lib/inAppHistory', () => ({ hasInAppPrevious: () => mocks.inAppPrevious }));
 vi.mock('next/image', () => ({ default: ({ alt }: { alt: string }) => <span>{`img:${alt}`}</span> }));
 vi.mock('@/components/ui/AppLink', () => ({
     AppLink: ({ href, children }: { href: string; children: ReactNode }) => <a href={href}>{children}</a>,
@@ -39,6 +46,10 @@ describe('QrCodeLandingBoundary', () => {
     beforeEach(() => {
         mocks.resolution.mockReset();
         mocks.replace.mockReset();
+        mocks.push.mockReset();
+        mocks.back.mockReset();
+        mocks.inAppPrevious = false;
+        mocks.search = '';
         mocks.auth = { isAuthenticated: false, isBootstrapping: false };
         mocks.memberships = [];
         mocks.modules = [];
@@ -110,5 +121,30 @@ describe('QrCodeLandingBoundary', () => {
         resolve({ status: 'REVOKED', targetType: 'GUEST', guestActions: ['WISH'] });
         render(<QrCodeLandingBoundary token="t" />);
         expect(screen.getByText('revoked.title')).toBeInTheDocument();
+    });
+
+    it('goes back to the feed from the upload form the feed opened', () => {
+        mocks.inAppPrevious = true;
+        mocks.auth = { isAuthenticated: true, isBootstrapping: false };
+        mocks.memberships = [{ eventId: 'e1', displayName: 'Maria' }];
+        mocks.search = 'choice=upload';
+        resolve({ status: 'ACTIVE', targetType: 'MEDIA_UPLOAD', inviteToken: 'inv', uploadToken: 'up' });
+        render(<QrCodeLandingBoundary token="up" />);
+
+        fireEvent.click(screen.getByRole('button', { name: 'guestCode.back' }));
+        expect(mocks.back).toHaveBeenCalled();
+        expect(mocks.push).not.toHaveBeenCalled();
+        expect(screen.getByText('upload-form:up:Maria')).toBeInTheDocument();
+    });
+
+    it('opens the feed when there is no in-app page to go back to', () => {
+        mocks.auth = { isAuthenticated: true, isBootstrapping: false };
+        mocks.memberships = [{ eventId: 'e1', displayName: 'Maria' }];
+        mocks.search = 'choice=upload';
+        resolve({ status: 'ACTIVE', targetType: 'MEDIA_UPLOAD', uploadToken: 'up' });
+        render(<QrCodeLandingBoundary token="up" />);
+
+        fireEvent.click(screen.getByRole('button', { name: 'guestCode.back' }));
+        expect(mocks.push).toHaveBeenCalledWith(routes.events.feed('e1'));
     });
 });
