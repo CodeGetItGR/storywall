@@ -87,8 +87,8 @@ CLAUDE.md does not allow adding any user-facing string without the owner's expli
 
 Numbers, times, dates and emoji are formatted data, not copy. The tooltip header ("23:00 · 214") and the peak rows ("Sat 23:00 … 214") use only formatted values.
 
-- [ ] **Step 1:** Show the table in popups and record the approved wording here.
-- [ ] **Step 2:** Do not start Task 10 until every row is approved.
+- [x] **Step 1:** Show the table in popups and record the approved wording here. **Approved as written by the owner on 2026-11-14, every row, both locales.**
+- [x] **Step 2:** Do not start Task 10 until every row is approved.
 
 ---
 
