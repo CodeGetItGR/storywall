@@ -36,3 +36,13 @@ export function guestOfferView(
     if (campaign) return { mode: 'campaign', percent: campaign.percent, campaignEndsAt: campaign.endsAt };
     return { mode: 'claim', percent: offer.discountPercent, campaignEndsAt: null };
 }
+
+// Set on this device once a guest has had the full card in front of them: later visits start with the strip.
+export function guestOfferSeenKey(eventId: string): string {
+    return `sw.guestOfferSeen.${eventId}`;
+}
+
+// Whether the card is open or a strip in this visit (this tab), so going back to the feed keeps it as it was.
+export function guestOfferOpenKey(eventId: string): string {
+    return `sw.guestOfferOpen.${eventId}`;
+}
