@@ -268,6 +268,9 @@ export function AnonymousQrMediaUploadForm({ token, member = null, onSentChange 
                         ))}
                     </div>
                 )}
+
+                {/* Where uploads go */}
+                <p className="mt-2 text-xs text-ink-faint">{t('anonymousUpload.galleryOnlyNote')}</p>
             </FormFieldLabel>
 
             {/* Acceptance: guests only */}
