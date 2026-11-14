@@ -648,7 +648,8 @@
         "choices": {
             "join": "Join the event",
             "open": "Open the event",
-            "eventHint": "See what guests share"
+            "eventHint": "See what guests share",
+            "uploadHint": "They go to the gallery, not the feed."
         },
         "guestCode": {
             "uploadButton": "Upload photos",
@@ -683,6 +684,7 @@
             "acceptanceUnavailable": "The Terms of Use or Community Guidelines couldn't be loaded. Refresh the page and try again.",
             "filesTooLarge": "Photos can be up to {imageSize} and videos up to {videoSize}. Larger files were left out.",
             "uploadBusy": "The server is busy. Your upload will retry shortly…",
+            "uploadSlow": "Slow connection. This may take a little longer, keep this page open.",
             "galleryOnlyNote": "Photos and videos you upload here go to the gallery, not the feed."
         },
         "unknown": {
@@ -6741,6 +6743,7 @@
         "selectionLimited": "Only supported photos and videos are accepted, with at most {count} per upload.",
         "filesTooLarge": "Photos can be up to {imageSize} and videos up to {videoSize}. Larger files were left out.",
         "uploadBusy": "The server is busy. Your upload will retry shortly…",
+        "uploadSlow": "Slow connection. This may take a little longer, keep this page open.",
         "viewerLabel": "Media viewer",
         "closeViewer": "Close media viewer",
         "previousMedia": "Previous",
@@ -7943,7 +7946,8 @@
         "songFailed": "Couldn't add the song. Try again.",
         "retry": "Retry",
         "dismiss": "Dismiss",
-        "uploadBusy": "The server is busy. Retrying shortly…"
+        "uploadBusy": "The server is busy. Retrying shortly…",
+        "uploadSlow": "Slow connection. This may take a little longer, keep this page open."
     },
     "EmailVerificationBanner": {
         "message": "Confirm your email address to create an event.",

@@ -35,8 +35,12 @@ export function QrLandingChoices({ plan, eventId, onChoose }: QrLandingChoicesPr
         return t('guestCode.wishButton');
     };
 
-    // Only the event rows get a line under the label.
-    const hint = (choice: QrLandingChoice) => (choice === 'join' || choice === 'open' ? t('choices.eventHint') : null);
+    // The event rows and the upload row get a line under the label.
+    const hint = (choice: QrLandingChoice) => {
+        if (choice === 'join' || choice === 'open') return t('choices.eventHint');
+        if (choice === 'upload') return t('choices.uploadHint');
+        return null;
+    };
 
     const handleChoose = useCallback(
         (event: React.MouseEvent<HTMLButtonElement>) => {
