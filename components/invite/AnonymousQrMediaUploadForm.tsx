@@ -1,7 +1,7 @@
 'use client';
 
 import { useQueryClient } from '@tanstack/react-query';
-import { ArrowRight, ImagePlus, Loader2, Video, X } from 'lucide-react';
+import { ArrowRight, ImagePlus, Images, Loader2, Video, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import React, { useCallback, useEffect, useState } from 'react';
 
@@ -16,6 +16,7 @@ import { communityGuidelinesQueryKey, useCommunityGuidelinesVersion } from '@/ho
 import { useFilePreviews } from '@/hooks/useFilePreviews';
 import { useUploadMediaBatch } from '@/hooks/useMedia';
 import { useUploadQrMediaBatch } from '@/hooks/useQrMediaUpload';
+import { useSlowUpload } from '@/hooks/useSlowUpload';
 import { termsVersionQueryKey, useTermsVersion } from '@/hooks/useTermsVersion';
 import { useUploadAccept } from '@/hooks/useUploadAccept';
 import { isGuidelinesVersionMismatchError, isTermsVersionMismatchError } from '@/lib/api/errors';
@@ -40,6 +41,7 @@ export function AnonymousQrMediaUploadForm({ token, member = null, onSentChange 
     const qrUploadBatch = useUploadQrMediaBatch();
     const memberUploadBatch = useUploadMediaBatch();
     const uploadBatch = member ? memberUploadBatch : qrUploadBatch;
+    const isSlow = useSlowUpload(uploadBatch.isPending);
     const queryClient = useQueryClient();
     const termsVersion = useTermsVersion();
     const guidelinesVersion = useCommunityGuidelinesVersion();
@@ -191,6 +193,12 @@ export function AnonymousQrMediaUploadForm({ token, member = null, onSentChange 
 
     return (
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+            {/* Where uploads go */}
+            <p className="flex items-start gap-2 rounded-xl bg-primary/10 px-3 py-2.5 text-sm leading-snug text-ink">
+                <Images className="mt-0.5 h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
+                <span>{t('anonymousUpload.galleryOnlyNote')}</span>
+            </p>
+
             {/* Name: a member's own, read-only */}
             <FormFieldLabel label={t('anonymousUpload.nameLabel')} optional={!member}>
                 <input
@@ -268,9 +276,6 @@ export function AnonymousQrMediaUploadForm({ token, member = null, onSentChange 
                         ))}
                     </div>
                 )}
-
-                {/* Where uploads go */}
-                <p className="mt-2 text-xs text-ink-faint">{t('anonymousUpload.galleryOnlyNote')}</p>
             </FormFieldLabel>
 
             {/* Acceptance: guests only */}
@@ -280,6 +285,10 @@ export function AnonymousQrMediaUploadForm({ token, member = null, onSentChange 
             {isBusy ? (
                 <p role="status" className="-mt-1 text-center text-xs text-ink-muted">
                     {t('anonymousUpload.uploadBusy')}
+                </p>
+            ) : isSlow ? (
+                <p role="status" className="-mt-1 text-center text-xs text-ink-muted">
+                    {t('anonymousUpload.uploadSlow')}
                 </p>
             ) : (
                 submitError && (
