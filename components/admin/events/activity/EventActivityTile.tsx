@@ -21,7 +21,10 @@ export function EventActivityTile({
         <div className="min-w-0 rounded-xl bg-card px-4 py-3.5" title={title}>
             {/* Label */}
             <div className="flex items-center gap-2 text-xs text-ink-muted">
-                <span className="inline-flex h-[26px] w-[26px] shrink-0 items-center justify-center rounded-lg" style={{ backgroundColor: `${tint}1f`, color: tint }}>
+                <span
+                    className="inline-flex h-[26px] w-[26px] shrink-0 items-center justify-center rounded-lg"
+                    style={{ backgroundColor: `${tint}1f`, color: tint }}
+                >
                     <Icon aria-hidden="true" className="h-[15px] w-[15px]" />
                 </span>
                 <span className="truncate">{label}</span>

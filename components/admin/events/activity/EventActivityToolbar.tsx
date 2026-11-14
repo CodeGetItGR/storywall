@@ -7,7 +7,15 @@ import { formatDate } from '@/lib/datetime';
 import { cn } from '@/lib/utils';
 
 // When the numbers were counted, and a way to count again.
-export function EventActivityToolbar({ updatedAt, refreshing, onRefreshAction }: { updatedAt: number; refreshing: boolean; onRefreshAction: () => void }) {
+export function EventActivityToolbar({
+    updatedAt,
+    refreshing,
+    onRefreshAction,
+}: {
+    updatedAt: number;
+    refreshing: boolean;
+    onRefreshAction: () => void;
+}) {
     const t = useTranslations('AdminPage.events.activity');
     const locale = useLocale();
     return (
@@ -15,7 +23,13 @@ export function EventActivityToolbar({ updatedAt, refreshing, onRefreshAction }:
             {/* Updated */}
             <span>{t('updatedAt', { time: formatDate(locale, updatedAt, { hour: '2-digit', minute: '2-digit' }) })}</span>
             {/* Refresh */}
-            <button type="button" onClick={onRefreshAction} aria-label={t('refresh')} title={t('refresh')} className="rounded-md p-1.5 hover:bg-card hover:text-ink">
+            <button
+                type="button"
+                onClick={onRefreshAction}
+                aria-label={t('refresh')}
+                title={t('refresh')}
+                className="rounded-md p-1.5 hover:bg-card hover:text-ink"
+            >
                 <RefreshCw aria-hidden="true" className={cn('h-3.5 w-3.5', refreshing && 'animate-spin')} />
             </button>
         </div>
