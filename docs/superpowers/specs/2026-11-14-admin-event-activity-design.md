@@ -38,7 +38,7 @@ The approved mockup (v2), top to bottom:
    - Wishes (wishbook module).
    - Playlist: songs suggested, with the vote count as subline (playlist module).
    - Quiz answers (quiz module).
-   - RSVP: attending, with maybe / declined as subline (RSVP module).
+   - RSVP: attending, with declined as subline (RSVP module; `AttendanceStatus` has only ATTENDING and DECLINED).
    - Removed: the total, with a per-type subline. Shown only when the total is above 0.
 5. **Per hour**: a stacked column chart for one day (00:00 to 23:59 in the event's time zone), with one stack per type: posts, stories, gallery, wishes. Each column shows its total above it. Hovering or tapping a column shows a breakdown by type. The day's peak column is drawn at full strength with a bold label; the other columns are slightly muted. A day picker (previous / next arrows and the day's label) steps only through days that had activity. It opens on the event's start day, or on the busiest day when the start day had no activity. Hours with no activity before the first and after the last active hour of the day are trimmed, so a wedding shows roughly 16:00 to 04:00 rather than 24 mostly empty columns. Hours with no activity inside that range stay, at zero.
 6. **Busiest hours of the day** (left) and **Peak moments** (right), side by side on desktop and stacked on mobile.
@@ -75,7 +75,7 @@ The approved mockup (v2), top to bottom:
     "wishes": 74,                                   // null when the module is off
     "playlist": { "suggestions": 58, "votes": 410 }, // null when the module is off
     "quizAnswers": 230,                             // null when the module is off
-    "rsvp": { "attending": 120, "maybe": 10, "declined": 6 } // null when the module is off
+    "rsvp": { "attending": 120, "declined": 6 }     // null when the module is off
   },
   "removed": { "posts": 8, "stories": 3, "galleryUploads": 0, "comments": 0, "wishes": 0 },
   "hours": [
@@ -87,10 +87,10 @@ The approved mockup (v2), top to bottom:
 
 ### Definitions
 
-- **Members**: `EventMember` rows of the event. **Contributed**: distinct members who authored at least one non-removed post, story, gallery upload, comment, reaction or wish.
+- **Members**: live `EventMember` rows of the event (not deleted, not reply-only RSVP guests). **Contributed**: distinct members who authored at least one non-removed post, story, gallery upload, comment, reaction or wish.
 - **Posts**: `Post` rows with `deletedAt IS NULL`. **Post media**: the `PostMedia` rows on those posts.
 - **Stories**: `Story` rows with `deletedAt IS NULL`, expired ones included (an expired story still happened). **Story views**: the `StoryView` rows on those stories.
-- **Gallery uploads**: `Media` rows in the `GUEST` collection that are not linked from a `PostMedia` row or a `Story`, with `deletedAt IS NULL`. **Via QR**: the subset with no `uploaderMember`. **Professional uploads**: the same rule applied to the `PRO` collection.
+- **Gallery uploads**: `Media` rows in the `GUEST` collection that are not linked from a `PostMedia` row or a `Story`, with `deletedAt IS NULL` and a status other than `FAILED`. **Via QR**: the subset with no `uploaderMember`. **Professional uploads**: the same rule applied to the `PRO` collection.
 - **Comments**: `Comment` rows with `deletedAt IS NULL` on non-removed posts. **Reactions**: `Reaction` rows on non-removed posts, grouped by `ReactionType.code`.
 - **Wishes**: `WishbookEntry` rows with `deletedAt IS NULL`. **Playlist**: `PlaylistSuggestion` and `PlaylistVote` counts. **Quiz answers**: `QuizAnswer` count. **RSVP**: `Rsvp` rows grouped by status.
 - **Removed**: the same types counted with `deletedAt IS NOT NULL`.
