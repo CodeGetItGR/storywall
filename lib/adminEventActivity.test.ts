@@ -8,6 +8,8 @@ import {
     hourlyForDay,
     hourOfDayHeatmap,
     localDay,
+    reactionsSummary,
+    removedKinds,
     removedTotal,
     shiftDay,
     topPeaks,
@@ -113,6 +115,26 @@ describe('contributedShare and removedTotal', () => {
     });
     it('adds every removed kind', () => {
         expect(removedTotal({ posts: 1, stories: 2, galleryUploads: 3, comments: 4, wishes: 5 })).toBe(15);
+    });
+    it('lists only the removed kinds above zero, in a fixed order', () => {
+        expect(removedKinds({ posts: 2, stories: 0, galleryUploads: 1, comments: 0, wishes: 3 })).toEqual(['posts', 'galleryUploads', 'wishes']);
+        expect(removedKinds({ posts: 0, stories: 0, galleryUploads: 0, comments: 0, wishes: 0 })).toEqual([]);
+    });
+});
+
+describe('reactionsSummary', () => {
+    it('joins each reaction with its count, falling back to the code', () => {
+        const summary = reactionsSummary(
+            [
+                { code: 'HEART', emoji: '❤️', count: 1200 },
+                { code: 'CLAP', emoji: null, count: 3 },
+            ],
+            (value) => `#${value}`,
+        );
+        expect(summary).toBe('❤️ #1200  CLAP #3');
+    });
+    it('is empty with no reactions', () => {
+        expect(reactionsSummary([], String)).toBe('');
     });
 });
 

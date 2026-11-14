@@ -138,6 +138,19 @@ export function contributedShare(members: AdminEventActivityDto['members']): num
     return members.total === 0 ? null : members.contributed / members.total;
 }
 
+export type RemovedKind = keyof AdminEventActivityDto['removed'];
+const REMOVED_KINDS: RemovedKind[] = ['posts', 'stories', 'galleryUploads', 'comments', 'wishes'];
+
+// The removed kinds that have something to show, in a fixed order.
+export function removedKinds(removed: AdminEventActivityDto['removed']): RemovedKind[] {
+    return REMOVED_KINDS.filter((kind) => removed[kind] > 0);
+}
+
+// Each reaction with its count ("❤️ 12  👏 3"), using the code when there is no emoji.
+export function reactionsSummary(reactions: AdminEventActivityDto['totals']['reactionsByType'], formatCount: (value: number) => string): string {
+    return reactions.map((reaction) => `${reaction.emoji ?? reaction.code} ${formatCount(reaction.count)}`).join('  ');
+}
+
 export function removedTotal(removed: AdminEventActivityDto['removed']): number {
     return removed.posts + removed.stories + removed.galleryUploads + removed.comments + removed.wishes;
 }
