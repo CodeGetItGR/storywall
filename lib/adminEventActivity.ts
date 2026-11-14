@@ -29,6 +29,15 @@ const addInto = (target: KindCounts, source: KindCounts) => {
     for (const kind of ACTIVITY_KINDS) target[kind] += source[kind];
 };
 
+// The kind drawn on top of a stacked column: the last kind in the stack order with a count. Recharts
+// draws nothing for a zero segment, so the rounded top and the column total belong to this kind.
+export function topKind(counts: KindCounts): ActivityKind | null {
+    for (let index = ACTIVITY_KINDS.length - 1; index >= 0; index--) {
+        if (counts[ACTIVITY_KINDS[index]] > 0) return ACTIVITY_KINDS[index];
+    }
+    return null;
+}
+
 const dayOf = (hour: string) => hour.slice(0, 10);
 const hourOf = (hour: string) => Number(hour.slice(11, 13));
 export const hourLabel = (hour: number) => `${String(hour).padStart(2, '0')}:00`;

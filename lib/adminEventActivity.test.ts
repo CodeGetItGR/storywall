@@ -12,6 +12,7 @@ import {
     removedKinds,
     removedTotal,
     shiftDay,
+    topKind,
     topPeaks,
     wallClockDate,
 } from '@/lib/adminEventActivity';
@@ -119,6 +120,16 @@ describe('contributedShare and removedTotal', () => {
     it('lists only the removed kinds above zero, in a fixed order', () => {
         expect(removedKinds({ posts: 2, stories: 0, galleryUploads: 1, comments: 0, wishes: 3 })).toEqual(['posts', 'galleryUploads', 'wishes']);
         expect(removedKinds({ posts: 0, stories: 0, galleryUploads: 0, comments: 0, wishes: 0 })).toEqual([]);
+    });
+});
+
+describe('topKind', () => {
+    it('is the last kind in the stack with a count', () => {
+        expect(topKind({ posts: 3, stories: 1, gallery: 2, wishes: 0 })).toBe('gallery');
+        expect(topKind({ posts: 3, stories: 0, gallery: 0, wishes: 1 })).toBe('wishes');
+    });
+    it('is null for an empty column', () => {
+        expect(topKind({ posts: 0, stories: 0, gallery: 0, wishes: 0 })).toBeNull();
     });
 });
 
