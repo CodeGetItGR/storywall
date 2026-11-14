@@ -60,12 +60,13 @@ export function splitQrLandingChoices(choices: QrLandingChoice[]): { event: 'joi
 export const QR_JOIN_PREVIEW_IMAGES = {
     photos: ['/landing/friends-and-family-celebrating-at-sunset.webp', '/landing/guests-dancing-at-an-elegant-vip-social-party-at-night.webp'],
     post: '/landing/guests-mingling-with-champagne-at-an-elegant-vip-social-party.webp',
-    author: '/landing/guest-avatar-2.webp',
+    author: '/landing/wedding/wedding-marquee-avatar-maria.webp',
+    // In the order of the story names (preview.story1..4): Eleni, Nikos, Sofia, Giorgos.
     stories: [
-        '/landing/guest-avatar.webp',
-        '/landing/party-avatar.webp',
-        '/landing/guest-avatar-2.webp',
-        '/landing/close-up-selfie-of-stylish-guests-and-influencers-celebrating-at.webp',
+        '/landing/wedding/wedding-marquee-avatar-eleni.webp',
+        '/landing/wedding/wedding-marquee-avatar-nikos.webp',
+        '/landing/wedding/wedding-marquee-avatar-sofia.webp',
+        '/landing/wedding/wedding-marquee-avatar-giorgos.webp',
     ],
 } as const;
 
@@ -76,6 +77,9 @@ export const QR_JOIN_PREVIEW_COUNTDOWN = [
     { value: 54, unit: 'minutes' },
     { value: 37, unit: 'seconds' },
 ] as const;
+
+// The sample song's vote counts on the preview's song card.
+export const QR_JOIN_PREVIEW_SONG_VOTES = { up: 12, down: 0 } as const;
 
 // The scanned token stands in for 'self', so the plan stays a pure function of the resolution.
 export function resolveQrLandingToken(planToken: string | null, scannedToken: string): string | null {

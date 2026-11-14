@@ -1,8 +1,8 @@
-import { Heart, Music, ThumbsUp } from 'lucide-react';
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 
 import { QrMiniFeed } from '@/components/qrLanding/QrMiniFeed';
+import { QrPreviewSongCard, QrPreviewWishCard } from '@/components/qrLanding/QrPreviewCards';
 import { QR_JOIN_PREVIEW_IMAGES } from '@/lib/qrLanding';
 
 const FLOAT_CLASS = 'absolute overflow-hidden rounded-xl bg-background shadow-[0_10px_20px_-12px_rgba(40,20,10,0.55)]';
@@ -29,25 +29,18 @@ export function QrJoinPreview({ coverSrc, title }: { coverSrc: string | null; ti
                 </div>
             </div>
 
-            {/* Wish */}
-            <div role="img" aria-label={t('preview.wish')} className={`${FLOAT_CLASS} top-[30px] -right-2 z-30 flex w-24 rotate-[6deg] flex-col gap-1.5 p-2.5`}>
-                <span className="flex items-center justify-between">
-                    <span className="text-[9px] leading-none font-semibold text-ink">{t('preview.wishAuthor')}</span>
-                    <Heart className="h-3 w-3 fill-accent-pink text-accent-pink" aria-hidden="true" />
-                </span>
-                <span className="text-[8px] leading-tight text-ink-muted">{t('preview.wishText')}</span>
+            {/* Wish: the wishbook's card at full size, scaled down */}
+            <div role="img" aria-label={t('preview.wish')} className="absolute top-[44px] -right-3 z-30 h-[56px] w-[120px] rotate-[5deg]">
+                <div className="origin-top-left scale-[0.4]">
+                    <QrPreviewWishCard />
+                </div>
             </div>
 
-            {/* Song */}
-            <div role="img" aria-label={t('preview.song')} className={`${FLOAT_CLASS} top-[132px] -right-2 z-30 flex w-[100px] -rotate-[4deg] items-center gap-1.5 p-2`}>
-                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-gradient-brand text-white">
-                    <Music className="h-3.5 w-3.5" aria-hidden="true" />
-                </span>
-                <span className="flex min-w-0 flex-1 flex-col gap-0.5 leading-tight">
-                    <span className="text-[9px] font-semibold text-ink">{t('preview.songTitle')}</span>
-                    <span className="text-[7px] text-ink-muted">{t('preview.songArtist')}</span>
-                </span>
-                <ThumbsUp className="h-3 w-3 shrink-0 text-ink-muted" aria-hidden="true" />
+            {/* Song: the playlist's card at full size, scaled down */}
+            <div role="img" aria-label={t('preview.song')} className="absolute top-[134px] -right-3 z-30 h-[46px] w-[120px] -rotate-[4deg]">
+                <div className="origin-top-left scale-[0.4]">
+                    <QrPreviewSongCard />
+                </div>
             </div>
         </div>
     );
