@@ -157,6 +157,7 @@
         "copy": "Copy",
         "copied": "Copied",
         "close": "Close",
+        "showLess": "Show less",
         "claimFailed": "Your code could not be created. Try again."
     },
     "PostCard": {
