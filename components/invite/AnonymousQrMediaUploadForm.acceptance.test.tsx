@@ -53,6 +53,15 @@ describe('AnonymousQrMediaUploadForm acceptance', () => {
         expect(submit).toBeEnabled();
     });
 
+    // QR uploads go to the gallery only, so guests and members are told they won't be in the feed.
+    it('says the files go to the gallery, not the feed', () => {
+        render(<AnonymousQrMediaUploadForm token="t" />);
+        expect(screen.getByText('anonymousUpload.galleryOnlyNote')).toBeInTheDocument();
+        cleanup();
+        render(<AnonymousQrMediaUploadForm token="t" member={{ eventId: 'e1', displayName: 'Maria' }} />);
+        expect(screen.getByText('anonymousUpload.galleryOnlyNote')).toBeInTheDocument();
+    });
+
     // KAN-208: a signed-in member uploads as themselves, with no box to tick.
     it('lets a member upload under their own name with no box', async () => {
         memberMutateAsync.mockResolvedValue({ created: [], failed: [] });

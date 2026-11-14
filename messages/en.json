@@ -682,7 +682,8 @@
             "acceptanceChanged": "The Terms of Use or Community Guidelines were just updated. Please review them and tick the box again.",
             "acceptanceUnavailable": "The Terms of Use or Community Guidelines couldn't be loaded. Refresh the page and try again.",
             "filesTooLarge": "Photos can be up to {imageSize} and videos up to {videoSize}. Larger files were left out.",
-            "uploadBusy": "The server is busy. Your upload will retry shortly…"
+            "uploadBusy": "The server is busy. Your upload will retry shortly…",
+            "galleryOnlyNote": "Photos and videos you upload here go to the gallery, not the feed."
         },
         "unknown": {
             "title": "Code not found",
