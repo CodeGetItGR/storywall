@@ -3,7 +3,7 @@
 import { useTranslations } from 'next-intl';
 
 import { useFunnelFormat } from '@/hooks/useFunnelFormat';
-import { ACTIVITY_KINDS, type ActivityKind, hourLabel } from '@/lib/adminEventActivity';
+import { ACTIVITY_KINDS, type ActivityKind, heatColor, hourLabel } from '@/lib/adminEventActivity';
 import { cn } from '@/lib/utils';
 
 const AXIS = [0, 6, 12, 18, 23];
@@ -13,7 +13,7 @@ const ROW = 'grid grid-cols-[4.5rem_repeat(24,minmax(0,1fr))] items-center gap-[
 export function EventActivityHeatmap({ heatmap }: { heatmap: Record<ActivityKind, number[]> }) {
     const t = useTranslations('AdminPage.events.activity');
     const { count } = useFunnelFormat();
-    const max = Math.max(1, ...ACTIVITY_KINDS.flatMap((kind) => heatmap[kind]));
+    const max = Math.max(...ACTIVITY_KINDS.flatMap((kind) => heatmap[kind]));
 
     return (
         <section className="min-w-0 space-y-3">
@@ -32,8 +32,8 @@ export function EventActivityHeatmap({ heatmap }: { heatmap: Record<ActivityKind
                                     role="img"
                                     aria-label={label}
                                     title={label}
-                                    className="h-4 rounded-[3px] bg-canvas"
-                                    style={value > 0 ? { backgroundColor: `rgba(42, 120, 214, ${0.12 + (value / max) * 0.88})` } : undefined}
+                                    className="h-4 rounded-[3px] bg-border"
+                                    style={value > 0 ? { backgroundColor: heatColor(value, max) } : undefined}
                                 />
                             );
                         })}

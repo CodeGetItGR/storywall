@@ -30,7 +30,7 @@ export function EventDetailPage({ eventId, onBackAction }: { eventId: string; on
                 <>
                     {/* Tabs */}
                     <EventDetailTabs eventId={eventId} tab={tab} />
-                    {tab === 'activity' ? <EventActivityTab key={eventId} eventId={eventId} /> : <EventDetail event={eventQuery.data} />}
+                    {tab === 'activity' ? <EventActivityTab eventId={eventId} /> : <EventDetail event={eventQuery.data} />}
                 </>
             )}
         </div>

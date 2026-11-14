@@ -17,10 +17,8 @@ import { useTranslations } from 'next-intl';
 
 import { EventActivityTile } from '@/components/admin/events/activity/EventActivityTile';
 import { useFunnelFormat } from '@/hooks/useFunnelFormat';
-import { ACTIVITY_COLORS, reactionsSummary, removedKinds, removedTotal } from '@/lib/adminEventActivity';
+import { ACTIVITY_COLORS, reactionsSummary, removedKinds, removedTotal, TILE_TINTS } from '@/lib/adminEventActivity';
 import type { AdminEventActivityDto } from '@/lib/api/types';
-
-const NEUTRAL = '#5f6b7a';
 
 // Every count in one grid. Module tiles appear only when the response carries them; the
 // professional and removed tiles only when there is something to show.
@@ -62,39 +60,47 @@ export function EventActivityTiles({ totals, removed }: { totals: AdminEventActi
             )}
             <EventActivityTile
                 icon={Heart}
-                tint="#d4537e"
+                tint={TILE_TINTS.reactions}
                 label={t('tiles.reactions')}
                 value={count(totals.reactions)}
                 detail={reactions}
                 title={reactions}
             />
-            <EventActivityTile icon={MessageCircle} tint={NEUTRAL} label={t('tiles.comments')} value={count(totals.comments)} />
+            <EventActivityTile icon={MessageCircle} tint={TILE_TINTS.neutral} label={t('tiles.comments')} value={count(totals.comments)} />
             {/* Modules */}
             {totals.playlist && (
                 <EventActivityTile
                     icon={ListMusic}
-                    tint="#6250d6"
+                    tint={TILE_TINTS.modules}
                     label={t('tiles.playlist')}
                     value={count(totals.playlist.suggestions)}
                     detail={t('tiles.votes', { count: totals.playlist.votes })}
                 />
             )}
             {totals.quizAnswers !== null && (
-                <EventActivityTile icon={CircleHelp} tint="#6250d6" label={t('tiles.quiz')} value={count(totals.quizAnswers)} />
+                <EventActivityTile icon={CircleHelp} tint={TILE_TINTS.modules} label={t('tiles.quiz')} value={count(totals.quizAnswers)} />
             )}
             {totals.rsvp && (
                 <EventActivityTile
                     icon={CalendarCheck}
-                    tint={NEUTRAL}
+                    tint={TILE_TINTS.neutral}
                     label={t('tiles.rsvp')}
                     value={count(totals.rsvp.attending)}
                     detail={t('tiles.declined', { count: count(totals.rsvp.declined) })}
                 />
             )}
-            {totals.proUploads > 0 && <EventActivityTile icon={Briefcase} tint={NEUTRAL} label={t('tiles.pro')} value={count(totals.proUploads)} />}
+            {totals.proUploads > 0 && (
+                <EventActivityTile icon={Briefcase} tint={TILE_TINTS.neutral} label={t('tiles.pro')} value={count(totals.proUploads)} />
+            )}
             {/* Removed */}
             {removedCount > 0 && (
-                <EventActivityTile icon={Trash2} tint={NEUTRAL} label={t('tiles.removed')} value={count(removedCount)} detail={removedParts} />
+                <EventActivityTile
+                    icon={Trash2}
+                    tint={TILE_TINTS.neutral}
+                    label={t('tiles.removed')}
+                    value={count(removedCount)}
+                    detail={removedParts}
+                />
             )}
         </div>
     );

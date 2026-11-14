@@ -7,7 +7,7 @@ import { EventActivityBarShape } from '@/components/admin/events/activity/EventA
 import { EventActivityColumnTotal } from '@/components/admin/events/activity/EventActivityColumnTotal';
 import { EventActivityTooltip } from '@/components/admin/events/activity/EventActivityTooltip';
 import { useFunnelFormat } from '@/hooks/useFunnelFormat';
-import { ACTIVITY_COLORS, ACTIVITY_KINDS, type DayColumn, wallClockDate } from '@/lib/adminEventActivity';
+import { ACTIVITY_COLORS, ACTIVITY_KINDS, CHART_CURSOR, type DayColumn, wallClockDate } from '@/lib/adminEventActivity';
 import { formatDate } from '@/lib/datetime';
 
 type LabelledDay = DayColumn & { label: string };
@@ -48,7 +48,7 @@ export function EventActivityDaily({ columns }: { columns: DayColumn[] }) {
                             tickLine={false}
                             axisLine={false}
                         />
-                        <Tooltip cursor={{ fill: 'var(--canvas)' }} content={<EventActivityTooltip title={columnTitle} />} />
+                        <Tooltip cursor={CHART_CURSOR} content={<EventActivityTooltip title={columnTitle} />} />
                         {ACTIVITY_KINDS.map((kind) => (
                             <Bar
                                 key={kind}

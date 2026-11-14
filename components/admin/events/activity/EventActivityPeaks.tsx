@@ -31,7 +31,13 @@ export function EventActivityPeaks({ peaks }: { peaks: Peak[] }) {
                             {index + 1}
                         </span>
                         <span className="flex-1 text-ink">
-                            {formatDate(locale, wallClockDate(peak.hour), { weekday: 'short', hour: '2-digit', minute: '2-digit', timeZone: 'UTC' })}
+                            {formatDate(locale, wallClockDate(peak.hour), {
+                                weekday: 'short',
+                                hour: '2-digit',
+                                minute: '2-digit',
+                                hourCycle: 'h23',
+                                timeZone: 'UTC',
+                            })}
                         </span>
                         <span className="font-semibold text-ink tabular-nums">{count(peak.total)}</span>
                     </li>

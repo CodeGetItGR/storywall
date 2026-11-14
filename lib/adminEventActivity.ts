@@ -15,6 +15,17 @@ export const ACTIVITY_COLORS: Record<ActivityKind, string> = {
     wishes: '#eda100',
 };
 
+// Tile icon tints for the counts that are not chart series.
+export const TILE_TINTS = { reactions: '#d4537e', modules: '#6250d6', neutral: '#5f6b7a' } as const;
+
+// The hover band behind a chart column; visible on the admin canvas.
+export const CHART_CURSOR = { fill: 'var(--border)', fillOpacity: 0.6 };
+
+// One blue ramp for the heatmap: the busiest cell at full strength, a faint tint for the quietest.
+export function heatColor(value: number, max: number): string {
+    return `rgba(42, 120, 214, ${0.12 + (value / Math.max(1, max)) * 0.88})`;
+}
+
 export const DAILY_MAX_DAYS = 60;
 export const EARLIER_DAY = 'earlier';
 
@@ -29,8 +40,8 @@ const addInto = (target: KindCounts, source: KindCounts) => {
     for (const kind of ACTIVITY_KINDS) target[kind] += source[kind];
 };
 
-// The kind drawn on top of a stacked column: the last kind in the stack order with a count. Recharts
-// draws nothing for a zero segment, so the rounded top and the column total belong to this kind.
+// The kind drawn on top of a stacked column: the last kind in the stack order with a count. A zero
+// segment has no height, so the rounded top and the column total belong to this kind.
 export function topKind(counts: KindCounts): ActivityKind | null {
     for (let index = ACTIVITY_KINDS.length - 1; index >= 0; index--) {
         if (counts[ACTIVITY_KINDS[index]] > 0) return ACTIVITY_KINDS[index];

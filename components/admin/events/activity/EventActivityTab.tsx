@@ -21,7 +21,7 @@ export function EventActivityTab({ eventId }: { eventId: string }) {
             {/* Toolbar */}
             {(query.data || query.error) && (
                 <EventActivityToolbar
-                    updatedAt={query.dataUpdatedAt || query.errorUpdatedAt}
+                    updatedAt={query.dataUpdatedAt > 0 ? query.dataUpdatedAt : null}
                     refreshing={query.isFetching}
                     onRefreshAction={refresh}
                 />
@@ -29,7 +29,7 @@ export function EventActivityTab({ eventId }: { eventId: string }) {
             {/* Content */}
             {query.isLoading && <EventActivitySkeleton />}
             {Boolean(query.error) && <p className="py-6 text-sm text-status-danger">{t(`errors.${adminErrorMessageKey(query.error)}`)}</p>}
-            {query.data && <EventActivityContent key={eventId} activity={query.data} />}
+            {query.data && <EventActivityContent activity={query.data} />}
         </div>
     );
 }

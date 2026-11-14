@@ -5,6 +5,7 @@ import {
     contributedShare,
     dailySeries,
     defaultDay,
+    heatColor,
     hourlyForDay,
     hourOfDayHeatmap,
     localDay,
@@ -168,5 +169,15 @@ describe('edge cases', () => {
     it('turns a wall-clock hour into the same UTC time', () => {
         expect(wallClockDate('2026-06-14T23:00').toISOString()).toBe('2026-06-14T23:00:00.000Z');
         expect(wallClockDate('2026-06-14').toISOString()).toBe('2026-06-14T00:00:00.000Z');
+    });
+});
+
+describe('topKind and heatColor', () => {
+    it('falls back to posts when only posts have a count', () => {
+        expect(topKind({ posts: 3, stories: 0, gallery: 0, wishes: 0 })).toBe('posts');
+    });
+    it('draws the busiest cell at full strength', () => {
+        expect(heatColor(10, 10)).toBe('rgba(42, 120, 214, 1)');
+        expect(heatColor(0, 0)).toBe('rgba(42, 120, 214, 0.12)');
     });
 });

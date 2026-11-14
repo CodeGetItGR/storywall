@@ -5,8 +5,10 @@ import { type ActivityKind, topKind } from '@/lib/adminEventActivity';
 type Column = Record<ActivityKind, number> & { total: number };
 
 // A column's total, drawn above the top of its stack. Every series carries this label, and only the
-// series on top of the column draws it, since recharts skips zero segments. When a peak is given,
-// its total is bold.
+// series on top of the column draws it: a zero segment has no height, so the topmost non-zero one
+// does. Recharts keeps zero-height rects when a custom shape is set (EventActivityBarShape), which
+// keeps LabelList's index aligned with `columns`. Drop the custom shape and these totals shift.
+// When a peak is given, its total is bold.
 export function EventActivityColumnTotal({
     viewBox,
     index,

@@ -12,7 +12,7 @@ export function EventActivityToolbar({
     refreshing,
     onRefreshAction,
 }: {
-    updatedAt: number;
+    updatedAt: number | null;
     refreshing: boolean;
     onRefreshAction: () => void;
 }) {
@@ -21,7 +21,9 @@ export function EventActivityToolbar({
     return (
         <div className="flex items-center justify-end gap-2 text-xs text-ink-faint">
             {/* Updated */}
-            <span>{t('updatedAt', { time: formatDate(locale, updatedAt, { hour: '2-digit', minute: '2-digit' }) })}</span>
+            {updatedAt !== null && (
+                <span>{t('updatedAt', { time: formatDate(locale, updatedAt, { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }) })}</span>
+            )}
             {/* Refresh */}
             <button
                 type="button"

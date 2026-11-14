@@ -9,7 +9,7 @@ import { EventActivityColumnTotal } from '@/components/admin/events/activity/Eve
 import { EventActivityLegend } from '@/components/admin/events/activity/EventActivityLegend';
 import { EventActivityTooltip } from '@/components/admin/events/activity/EventActivityTooltip';
 import { useFunnelFormat } from '@/hooks/useFunnelFormat';
-import { ACTIVITY_COLORS, ACTIVITY_KINDS, type HourColumn } from '@/lib/adminEventActivity';
+import { ACTIVITY_COLORS, ACTIVITY_KINDS, CHART_CURSOR, type HourColumn } from '@/lib/adminEventActivity';
 
 const columnTitle = (row: object) => (row as HourColumn).label;
 
@@ -48,7 +48,7 @@ export function EventActivityHourly({ columns, picker }: { columns: HourColumn[]
                             tickLine={false}
                             axisLine={false}
                         />
-                        <Tooltip cursor={{ fill: 'var(--canvas)' }} content={<EventActivityTooltip title={columnTitle} />} />
+                        <Tooltip cursor={CHART_CURSOR} content={<EventActivityTooltip title={columnTitle} />} />
                         {ACTIVITY_KINDS.map((kind) => (
                             <Bar
                                 key={kind}
