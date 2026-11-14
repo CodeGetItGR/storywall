@@ -28,7 +28,11 @@ export function useEventActivityView(activity: AdminEventActivityDto) {
         hasActivity: activity.hours.length > 0,
         previousDay,
         nextDay,
-        goToPreviousDay: () => previousDay && setPickedDay(previousDay),
-        goToNextDay: () => nextDay && setPickedDay(nextDay),
+        goToPreviousDay: () => {
+            if (previousDay) setPickedDay(previousDay);
+        },
+        goToNextDay: () => {
+            if (nextDay) setPickedDay(nextDay);
+        },
     };
 }

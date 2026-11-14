@@ -11,6 +11,7 @@ import {
     removedTotal,
     shiftDay,
     topPeaks,
+    wallClockDate,
 } from '@/lib/adminEventActivity';
 import type { AdminEventActivityHour } from '@/lib/api/types';
 
@@ -112,5 +113,27 @@ describe('contributedShare and removedTotal', () => {
     });
     it('adds every removed kind', () => {
         expect(removedTotal({ posts: 1, stories: 2, galleryUploads: 3, comments: 4, wishes: 5 })).toBe(15);
+    });
+});
+
+describe('edge cases', () => {
+    const tied = [h('2026-06-15T10:00', 5), h('2026-06-14T10:00', 5)];
+    it('picks the earlier day and hour on a tie', () => {
+        expect(defaultDay(tied, null, 'Europe/Athens')).toBe('2026-06-14');
+        expect(topPeaks(tied, 2).map((p) => p.hour)).toEqual(['2026-06-14T10:00', '2026-06-15T10:00']);
+    });
+    it('keeps the day series continuous across a year end', () => {
+        const days = dailySeries([h('2025-12-30T10:00', 1), h('2026-01-02T10:00', 1)]);
+        expect(days.map((d) => d.day)).toEqual(['2025-12-30', '2025-12-31', '2026-01-01', '2026-01-02']);
+    });
+    it('handles a single hour', () => {
+        expect(hourlyForDay([h('2026-06-14T21:00', 2)], '2026-06-14').map((c) => c.hour)).toEqual([21]);
+    });
+    it('reads the local day in the event time zone', () => {
+        expect(localDay('2026-12-31T22:30:00Z', 'Europe/Athens')).toBe('2027-01-01');
+    });
+    it('turns a wall-clock hour into the same UTC time', () => {
+        expect(wallClockDate('2026-06-14T23:00').toISOString()).toBe('2026-06-14T23:00:00.000Z');
+        expect(wallClockDate('2026-06-14').toISOString()).toBe('2026-06-14T00:00:00.000Z');
     });
 });

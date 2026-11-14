@@ -168,6 +168,8 @@ export function useAdminEventActivity(eventId: string) {
     return useQuery({
         queryKey: adminEventKeys.activity(eventId),
         queryFn: () => api.get<AdminEventActivityDto>(endpoints.admin.events.activity(eventId)),
+        // Show the last counts at once, but always recount when the tab opens.
+        staleTime: 0,
         retry: false,
     });
 }
