@@ -31,6 +31,7 @@ export function EventActivityContent({ activity }: { activity: AdminEventActivit
                     {/* Per hour */}
                     <EventActivityHourly
                         columns={view.hourly}
+                        kinds={view.kinds}
                         picker={
                             <EventActivityDayPicker
                                 day={view.day}
@@ -43,11 +44,11 @@ export function EventActivityContent({ activity }: { activity: AdminEventActivit
                     />
                     {/* Busiest hours and peaks */}
                     <div className="grid gap-8 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
-                        <EventActivityHeatmap heatmap={view.heatmap} />
+                        <EventActivityHeatmap heatmap={view.heatmap} kinds={view.kinds} />
                         <EventActivityPeaks peaks={view.peaks} />
                     </div>
                     {/* Per day */}
-                    <EventActivityDaily columns={view.daily} />
+                    <EventActivityDaily columns={view.daily} kinds={view.kinds} />
                 </>
             )}
         </div>

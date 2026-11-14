@@ -9,13 +9,13 @@ import { EventActivityColumnTotal } from '@/components/admin/events/activity/Eve
 import { EventActivityLegend } from '@/components/admin/events/activity/EventActivityLegend';
 import { EventActivityTooltip } from '@/components/admin/events/activity/EventActivityTooltip';
 import { useFunnelFormat } from '@/hooks/useFunnelFormat';
-import { ACTIVITY_COLORS, ACTIVITY_KINDS, CHART_CURSOR, type HourColumn } from '@/lib/adminEventActivity';
+import { ACTIVITY_COLORS, type ActivityKind, CHART_CURSOR, type HourColumn } from '@/lib/adminEventActivity';
 
 const columnTitle = (row: object) => (row as HourColumn).label;
 
 // One day, hour by hour, stacked by kind, with each hour's total above its column. The busiest hour
 // is drawn at full strength with a bold total; the rest are a touch quieter.
-export function EventActivityHourly({ columns, picker }: { columns: HourColumn[]; picker: ReactNode }) {
+export function EventActivityHourly({ columns, kinds, picker }: { columns: HourColumn[]; kinds: ActivityKind[]; picker: ReactNode }) {
     const t = useTranslations('AdminPage.events.activity');
     const { count } = useFunnelFormat();
     const peak = Math.max(0, ...columns.map((column) => column.total));
@@ -28,7 +28,7 @@ export function EventActivityHourly({ columns, picker }: { columns: HourColumn[]
                 {picker}
             </div>
             {/* Legend */}
-            <EventActivityLegend />
+            <EventActivityLegend kinds={kinds} />
             {/* Chart */}
             <div role="img" aria-label={t('hourly.title')} className="h-56 min-w-0">
                 <ResponsiveContainer width="100%" height="100%">
@@ -48,8 +48,8 @@ export function EventActivityHourly({ columns, picker }: { columns: HourColumn[]
                             tickLine={false}
                             axisLine={false}
                         />
-                        <Tooltip cursor={CHART_CURSOR} content={<EventActivityTooltip title={columnTitle} />} />
-                        {ACTIVITY_KINDS.map((kind) => (
+                        <Tooltip cursor={CHART_CURSOR} content={<EventActivityTooltip title={columnTitle} kinds={kinds} />} />
+                        {kinds.map((kind) => (
                             <Bar
                                 key={kind}
                                 dataKey={kind}

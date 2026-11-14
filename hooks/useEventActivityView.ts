@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react';
 
-import { activeDays, dailySeries, defaultDay, hourlyForDay, hourOfDayHeatmap, shiftDay, topPeaks } from '@/lib/adminEventActivity';
+import { activeDays, chartedKinds, dailySeries, defaultDay, hourlyForDay, hourOfDayHeatmap, shiftDay, topPeaks } from '@/lib/adminEventActivity';
 import type { AdminEventActivityDto } from '@/lib/api/types';
 
 // Everything the Activity tab draws, derived once from the response, plus the day picker.
@@ -19,7 +19,10 @@ export function useEventActivityView(activity: AdminEventActivityDto) {
     const previousDay = day ? shiftDay(days, day, -1) : null;
     const nextDay = day ? shiftDay(days, day, 1) : null;
 
+    const kinds = useMemo(() => chartedKinds(activity.totals), [activity.totals]);
+
     return {
+        kinds,
         day,
         hourly: useMemo(() => (day ? hourlyForDay(activity.hours, day) : []), [activity.hours, day]),
         daily: useMemo(() => dailySeries(activity.hours), [activity.hours]),

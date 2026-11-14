@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
     activeDays,
+    chartedKinds,
     contributedShare,
     dailySeries,
     defaultDay,
@@ -179,5 +180,13 @@ describe('topKind and heatColor', () => {
     it('draws the busiest cell at full strength', () => {
         expect(heatColor(10, 10)).toBe('rgba(42, 120, 214, 1)');
         expect(heatColor(0, 0)).toBe('rgba(42, 120, 214, 0.12)');
+    });
+});
+
+describe('chartedKinds', () => {
+    it('leaves wishes out when the wishbook is off', () => {
+        const totals = { wishes: null } as Parameters<typeof chartedKinds>[0];
+        expect(chartedKinds(totals)).toEqual(['posts', 'stories', 'gallery']);
+        expect(chartedKinds({ ...totals, wishes: 0 })).toEqual(['posts', 'stories', 'gallery', 'wishes']);
     });
 });

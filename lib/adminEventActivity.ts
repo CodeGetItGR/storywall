@@ -42,6 +42,11 @@ const addInto = (target: KindCounts, source: KindCounts) => {
 
 // The kind drawn on top of a stacked column: the last kind in the stack order with a count. A zero
 // segment has no height, so the rounded top and the column total belong to this kind.
+// The series the charts draw: wishes only when the event has the wishbook.
+export function chartedKinds(totals: AdminEventActivityDto['totals']): ActivityKind[] {
+    return totals.wishes === null ? ACTIVITY_KINDS.filter((kind) => kind !== 'wishes') : [...ACTIVITY_KINDS];
+}
+
 export function topKind(counts: KindCounts): ActivityKind | null {
     for (let index = ACTIVITY_KINDS.length - 1; index >= 0; index--) {
         if (counts[ACTIVITY_KINDS[index]] > 0) return ACTIVITY_KINDS[index];
