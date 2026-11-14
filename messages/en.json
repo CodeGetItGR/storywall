@@ -660,7 +660,21 @@
             "feed": "The event feed",
             "photo": "A guest's photo",
             "wish": "A wish from a guest",
-            "song": "A song request"
+            "song": "A song request",
+            "days": "D",
+            "hours": "H",
+            "minutes": "M",
+            "seconds": "S",
+            "story1": "Eleni",
+            "story2": "Nikos",
+            "story3": "Sofia",
+            "story4": "Giorgos",
+            "postAuthor": "Maria K.",
+            "postText": "What a night! 🎉",
+            "wishAuthor": "Eleni",
+            "wishText": "So happy to celebrate with you! ❤️",
+            "songTitle": "September",
+            "songArtist": "Earth, Wind & Fire"
         },
         "guestCode": {
             "uploadButton": "Upload photos",

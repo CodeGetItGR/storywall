@@ -1,22 +1,19 @@
-import { CalendarDays, Heart, House, Mail, MapPin, Menu, MessageCircle, Music, Settings, Share2 } from 'lucide-react';
+import { Heart, House, Mail, Menu, MessageCircle, Music, Settings, Share2 } from 'lucide-react';
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 
 import { Logo } from '@/components/common/Logo';
 import { ProtectedImage } from '@/components/common/ProtectedImage';
-import { QR_JOIN_PREVIEW_IMAGES } from '@/lib/qrLanding';
-
-// A grey line standing in for text, so the preview reads as the app without words in one language or occasion.
-export function TextLine({ width, className = 'bg-ink/12' }: { width: string; className?: string }) {
-    return <span className={`block h-3 rounded-full ${className}`} style={{ width }} />;
-}
+import { QR_JOIN_PREVIEW_COUNTDOWN, QR_JOIN_PREVIEW_IMAGES } from '@/lib/qrLanding';
 
 const TAB_ICONS = [House, Music, Mail, Share2, Settings, Menu];
+const STORY_NAMES = ['story1', 'story2', 'story3', 'story4'] as const;
 
 // The event feed as a phone shows it, drawn at full phone width (390px) and scaled down by the frame around it.
 // The banner is the event's own cover and name; the stories and the post are samples.
 export function QrMiniFeed({ coverSrc, title }: { coverSrc: string | null; title: string }) {
     const t = useTranslations('QrCodePage');
+    const tComposer = useTranslations('ComposerCard');
 
     return (
         <div className="relative h-[762px] w-[390px] overflow-hidden bg-background pt-6">
@@ -24,10 +21,10 @@ export function QrMiniFeed({ coverSrc, title }: { coverSrc: string | null; title
             <div className="flex items-center justify-between px-4 pb-3">
                 <Logo iconClassName="h-9 w-auto" wordmarkClassName="h-7 w-auto" className="gap-2" />
                 <div className="flex gap-3">
-                    {[0, 1, 2, 3].map((slot) => (
-                        <span key={slot} className="flex flex-col items-center gap-1.5">
-                            <TextLine width="30px" className="h-5 bg-ink/80" />
-                            <TextLine width="12px" className="h-2 bg-ink/25" />
+                    {QR_JOIN_PREVIEW_COUNTDOWN.map(({ value, unit }) => (
+                        <span key={unit} className="flex flex-col items-center leading-none">
+                            <span className="text-[22px] font-bold text-ink">{value}</span>
+                            <span className="pt-1 text-[11px] font-semibold text-ink-muted">{t(`preview.${unit}`)}</span>
                         </span>
                     ))}
                 </div>
@@ -42,22 +39,11 @@ export function QrMiniFeed({ coverSrc, title }: { coverSrc: string | null; title
                 <p className="absolute right-6 bottom-5 left-6 truncate font-editorial text-[30px] text-white">{title}</p>
             </div>
 
-            {/* Date and place */}
-            <div className="flex items-center justify-between px-4 pt-4 text-ink-muted">
-                <span className="flex items-center gap-2">
-                    <CalendarDays className="h-5 w-5" aria-hidden="true" />
-                    <TextLine width="110px" className="bg-ink/30" />
-                </span>
-                <span className="flex items-center gap-2">
-                    <MapPin className="h-5 w-5" aria-hidden="true" />
-                    <TextLine width="130px" className="bg-ink/30" />
-                </span>
-            </div>
 
             {/* Stories */}
             <div className="flex gap-4 px-4 pt-6">
-                {QR_JOIN_PREVIEW_IMAGES.stories.map((src) => (
-                    <span key={src} className="flex flex-col items-center gap-2">
+                {QR_JOIN_PREVIEW_IMAGES.stories.map((src, index) => (
+                    <span key={src} className="flex w-[66px] flex-col items-center gap-2">
                         <span className="block rounded-full bg-gradient-brand p-[3px]">
                             <Image
                                 src={src}
@@ -68,7 +54,7 @@ export function QrMiniFeed({ coverSrc, title }: { coverSrc: string | null; title
                                 className="h-[60px] w-[60px] rounded-full border-[3px] border-background object-cover"
                             />
                         </span>
-                        <TextLine width="44px" className="bg-ink/20" />
+                        <span className="w-full truncate text-center text-[13px] text-ink">{t(`preview.${STORY_NAMES[index]}`)}</span>
                     </span>
                 ))}
             </div>
@@ -77,7 +63,7 @@ export function QrMiniFeed({ coverSrc, title }: { coverSrc: string | null; title
             <div className="mx-3 mt-6 flex items-center gap-3 rounded-full border border-border p-2">
                 <span className="h-10 w-10 rounded-full bg-primary" />
                 <span className="flex h-10 flex-1 items-center rounded-full bg-surface-muted px-4">
-                    <TextLine width="70%" className="bg-ink/15" />
+                    <span className="truncate text-[15px] text-ink-muted">{tComposer('placeholder')}</span>
                 </span>
             </div>
 
@@ -92,15 +78,9 @@ export function QrMiniFeed({ coverSrc, title }: { coverSrc: string | null; title
                         sizes="16px"
                         className="h-11 w-11 rounded-full object-cover"
                     />
-                    <span className="flex flex-col gap-2">
-                        <TextLine width="120px" className="bg-ink/70" />
-                        <TextLine width="60px" className="bg-ink/20" />
-                    </span>
+                    <span className="text-[16px] font-semibold text-ink">{t('preview.postAuthor')}</span>
                 </div>
-                <div className="flex flex-col gap-2.5 px-4 py-4">
-                    <TextLine width="90%" className="bg-ink/35" />
-                    <TextLine width="55%" className="bg-ink/35" />
-                </div>
+                <p className="px-4 py-4 text-[16px] text-ink">{t('preview.postText')}</p>
                 <div className="relative h-[260px]">
                     <Image src={QR_JOIN_PREVIEW_IMAGES.post} alt={t('preview.photo')} fill sizes="120px" className="object-cover" />
                 </div>

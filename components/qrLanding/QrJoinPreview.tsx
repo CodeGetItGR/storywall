@@ -2,7 +2,7 @@ import { Heart, Music, ThumbsUp } from 'lucide-react';
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 
-import { QrMiniFeed, TextLine } from '@/components/qrLanding/QrMiniFeed';
+import { QrMiniFeed } from '@/components/qrLanding/QrMiniFeed';
 import { QR_JOIN_PREVIEW_IMAGES } from '@/lib/qrLanding';
 
 const FLOAT_CLASS = 'absolute overflow-hidden rounded-xl bg-background shadow-[0_10px_20px_-12px_rgba(40,20,10,0.55)]';
@@ -32,22 +32,20 @@ export function QrJoinPreview({ coverSrc, title }: { coverSrc: string | null; ti
             {/* Wish */}
             <div role="img" aria-label={t('preview.wish')} className={`${FLOAT_CLASS} top-[30px] -right-2 z-30 flex w-24 rotate-[6deg] flex-col gap-1.5 p-2.5`}>
                 <span className="flex items-center justify-between">
-                    <TextLine width="45%" className="h-1.5 bg-ink/70" />
+                    <span className="text-[9px] leading-none font-semibold text-ink">{t('preview.wishAuthor')}</span>
                     <Heart className="h-3 w-3 fill-accent-pink text-accent-pink" aria-hidden="true" />
                 </span>
-                <TextLine width="35%" className="h-1 bg-ink/20" />
-                <TextLine width="95%" className="mt-1 h-1 bg-ink/35" />
-                <TextLine width="70%" className="h-1 bg-ink/35" />
+                <span className="text-[8px] leading-tight text-ink-muted">{t('preview.wishText')}</span>
             </div>
 
             {/* Song */}
-            <div role="img" aria-label={t('preview.song')} className={`${FLOAT_CLASS} top-[132px] -right-1.5 z-30 flex w-[92px] -rotate-[4deg] items-center gap-2 p-2.5`}>
+            <div role="img" aria-label={t('preview.song')} className={`${FLOAT_CLASS} top-[132px] -right-2 z-30 flex w-[100px] -rotate-[4deg] items-center gap-1.5 p-2`}>
                 <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-gradient-brand text-white">
                     <Music className="h-3.5 w-3.5" aria-hidden="true" />
                 </span>
-                <span className="flex min-w-0 flex-1 flex-col gap-1.5">
-                    <TextLine width="80%" className="h-1.5 bg-ink/70" />
-                    <TextLine width="55%" className="h-1 bg-ink/25" />
+                <span className="flex min-w-0 flex-1 flex-col gap-0.5 leading-tight">
+                    <span className="text-[9px] font-semibold text-ink">{t('preview.songTitle')}</span>
+                    <span className="text-[7px] text-ink-muted">{t('preview.songArtist')}</span>
                 </span>
                 <ThumbsUp className="h-3 w-3 shrink-0 text-ink-muted" aria-hidden="true" />
             </div>

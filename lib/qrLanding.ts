@@ -69,6 +69,14 @@ export const QR_JOIN_PREVIEW_IMAGES = {
     ],
 } as const;
 
+// The phone preview's countdown: fixed sample numbers, with their unit keys under QrCodePage.preview.
+export const QR_JOIN_PREVIEW_COUNTDOWN = [
+    { value: 265, unit: 'days' },
+    { value: 17, unit: 'hours' },
+    { value: 54, unit: 'minutes' },
+    { value: 37, unit: 'seconds' },
+] as const;
+
 // The scanned token stands in for 'self', so the plan stays a pure function of the resolution.
 export function resolveQrLandingToken(planToken: string | null, scannedToken: string): string | null {
     return planToken === 'self' ? scannedToken : planToken;

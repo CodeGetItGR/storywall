@@ -782,7 +782,21 @@
             "feed": "Η ροή της εκδήλωσης",
             "photo": "Φωτογραφία καλεσμένου",
             "wish": "Ευχή καλεσμένου",
-            "song": "Πρόταση τραγουδιού"
+            "song": "Πρόταση τραγουδιού",
+            "days": "Η",
+            "hours": "Ω",
+            "minutes": "Λ",
+            "seconds": "Δ",
+            "story1": "Ελένη",
+            "story2": "Νίκος",
+            "story3": "Σοφία",
+            "story4": "Γιώργος",
+            "postAuthor": "Μαρία Κ.",
+            "postText": "Τι βραδιά! 🎉",
+            "wishAuthor": "Ελένη",
+            "wishText": "Τόσο χαρούμενοι που γιορτάζουμε μαζί σας! ❤️",
+            "songTitle": "September",
+            "songArtist": "Earth, Wind & Fire"
         },
         "guestCode": {
             "uploadButton": "Ανεβάστε φωτογραφίες",
