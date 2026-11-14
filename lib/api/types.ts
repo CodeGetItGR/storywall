@@ -5075,6 +5075,41 @@ export interface AdminEventSummaryDto {
     deletedAt: string | null;
 }
 
+// GET /api/admin/events/{eventId}/activity — anonymous counts; hour is local "yyyy-MM-ddTHH:00" in `timezone`.
+export interface AdminEventActivityDto {
+    timezone: string;
+    eventStartAt: string | null;
+    eventEndAt: string | null;
+    generatedAt: string;
+    members: { total: number; contributed: number };
+    totals: {
+        posts: number;
+        postMedia: number;
+        stories: number;
+        storyViews: number;
+        galleryUploads: number;
+        galleryViaQr: number;
+        proUploads: number;
+        comments: number;
+        reactions: number;
+        reactionsByType: { code: string; emoji: string | null; count: number }[];
+        wishes: number | null;
+        playlist: { suggestions: number; votes: number } | null;
+        quizAnswers: number | null;
+        rsvp: { attending: number; declined: number } | null;
+    };
+    removed: { posts: number; stories: number; galleryUploads: number; comments: number; wishes: number };
+    hours: AdminEventActivityHour[];
+}
+
+export interface AdminEventActivityHour {
+    hour: string;
+    posts: number;
+    stories: number;
+    gallery: number;
+    wishes: number;
+}
+
 export type AdminEventModuleSource = 'PLAN' | 'ADDON' | 'ADMIN_GRANT' | 'NONE';
 
 // GET /api/admin/events/{id}; every grant and revoke answers with it, already updated.
