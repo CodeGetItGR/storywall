@@ -7,6 +7,7 @@ import { endpoints } from '@/lib/api/endpoints';
 import { ERROR_CODES, getErrorCode } from '@/lib/api/errors';
 import type { Page } from '@/lib/api/pagination';
 import type {
+    AdminEventActivityDto,
     AdminEventCloseRequestDto,
     AdminEventDetailDto,
     AdminEventSummaryDto,
@@ -24,6 +25,7 @@ export const adminEventKeys = {
     list: (filters: AdminEventFilters, page: number, size: number) => ['admin', 'events', 'list', filters, page, size] as const,
     detail: (eventId: string) => ['admin', 'events', 'detail', eventId] as const,
     vendors: (eventId: string) => ['admin', 'events', 'detail', eventId, 'vendors'] as const,
+    activity: (eventId: string) => ['admin', 'events', 'detail', eventId, 'activity'] as const,
 };
 
 // Rows carry hosts' names and emails: nothing is kept once the screen showing them is gone.
@@ -158,5 +160,14 @@ export function useRemoveAdminEventAddon(eventId: string) {
             void queryClient.invalidateQueries({ queryKey: adminEventKeys.all });
             void queryClient.invalidateQueries({ queryKey: ['events', eventId, 'billing'] });
         },
+    });
+}
+
+// GET /api/admin/events/{eventId}/activity — anonymous counts, counted live on each request.
+export function useAdminEventActivity(eventId: string) {
+    return useQuery({
+        queryKey: adminEventKeys.activity(eventId),
+        queryFn: () => api.get<AdminEventActivityDto>(endpoints.admin.events.activity(eventId)),
+        retry: false,
     });
 }
