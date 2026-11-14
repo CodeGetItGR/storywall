@@ -40,6 +40,8 @@ describe('GuestOfferCard', () => {
     beforeEach(() => {
         offer = null;
         campaign = null;
+        window.localStorage.clear();
+        window.sessionStorage.clear();
         vi.clearAllMocks();
     });
 
@@ -134,5 +136,75 @@ describe('GuestOfferCard', () => {
         fireEvent.click(screen.getByRole('button', { name: 'close' }));
 
         expect(close).toHaveBeenCalledOnce();
+    });
+
+    describe('strip', () => {
+        const seenBefore = () => window.localStorage.setItem('sw.guestOfferSeen.e1', '1');
+
+        it('opens on the first visit and remembers it was seen', () => {
+            offer = { discountPercent: 15, code: null, endsAt: null };
+            render(<GuestOfferCard eventId="e1" isHost={false} />);
+
+            expect(screen.getByRole('button', { name: /claim/ })).toBeInTheDocument();
+            expect(window.localStorage.getItem('sw.guestOfferSeen.e1')).toBe('1');
+        });
+
+        it('starts as a strip on a later visit and opens with a tap', () => {
+            seenBefore();
+            offer = { discountPercent: 15, code: null, endsAt: null };
+            render(<GuestOfferCard eventId="e1" isHost={false} />);
+
+            expect(screen.queryByRole('button', { name: /claim/ })).not.toBeInTheDocument();
+            expect(screen.getByText('percentOff:15')).toBeInTheDocument();
+            expect(screen.getByText('line')).toBeInTheDocument();
+
+            fireEvent.click(screen.getByRole('button', { name: /title/, expanded: false }));
+
+            expect(screen.getByRole('button', { name: /claim/ })).toBeInTheDocument();
+        });
+
+        it('shrinks back to the strip and stays that way for the visit', () => {
+            offer = { discountPercent: 15, code: null, endsAt: null };
+            render(<GuestOfferCard eventId="e1" isHost={false} />);
+
+            fireEvent.click(screen.getByRole('button', { name: 'showLess' }));
+            expect(screen.queryByRole('button', { name: /claim/ })).not.toBeInTheDocument();
+
+            cleanup();
+            render(<GuestOfferCard eventId="e1" isHost={false} />);
+            expect(screen.queryByRole('button', { name: /claim/ })).not.toBeInTheDocument();
+        });
+
+        it('keeps an opened card open when the guest comes back in the same visit', () => {
+            seenBefore();
+            offer = { discountPercent: 15, code: null, endsAt: null };
+            render(<GuestOfferCard eventId="e1" isHost={false} />);
+            fireEvent.click(screen.getByRole('button', { name: /title/, expanded: false }));
+
+            cleanup();
+            render(<GuestOfferCard eventId="e1" isHost={false} />);
+            expect(screen.getByRole('button', { name: /claim/ })).toBeInTheDocument();
+        });
+
+        it('shows a claimed code that can be copied from the strip', () => {
+            seenBefore();
+            offer = { discountPercent: 10, code: 'GS-7KQ4M2XR9P', endsAt: null };
+            render(<GuestOfferCard eventId="e1" isHost={false} />);
+
+            expect(screen.getByText('GS-7KQ4M2XR9P')).toBeInTheDocument();
+            fireEvent.click(screen.getByRole('button', { name: 'copy' }));
+
+            expect(copyCode).toHaveBeenCalledOnce();
+        });
+
+        it('closes from the strip', () => {
+            seenBefore();
+            offer = { discountPercent: 10, code: null, endsAt: null };
+            render(<GuestOfferCard eventId="e1" isHost={false} />);
+
+            fireEvent.click(screen.getByRole('button', { name: 'close' }));
+
+            expect(close).toHaveBeenCalledOnce();
+        });
     });
 });

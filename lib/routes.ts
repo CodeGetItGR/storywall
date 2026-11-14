@@ -131,6 +131,8 @@ export const routes = {
     // Public.
     contact: '/contact',
     inviteToken: (token: string) => `/invite/${token}`,
+    // The page a scanned event code opens. choice opens one of its forms straight away.
+    qrCode: (token: string, params: { choice?: 'upload' } = {}) => withQuery(`/q/${token}`, params),
     // Public: where a gift card's QR leads.
     giftClaim: (token: string) => `/gift/${token}`,
     auth: {

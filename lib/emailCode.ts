@@ -16,8 +16,9 @@ export function emailCodeError(error: unknown): EmailCodeError | null {
     return null;
 }
 
-export function onlyDigits(value: string): string {
-    return value.replace(/\D/g, '').slice(0, EMAIL_CODE_LENGTH);
+// The digits of a typed or pasted code, cut to its length.
+export function onlyDigits(value: string, length: number = EMAIL_CODE_LENGTH): string {
+    return value.replace(/\D/g, '').slice(0, length);
 }
 
 export function resendSecondsLeft(sentAt: number | null, now: number): number {

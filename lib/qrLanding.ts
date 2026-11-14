@@ -26,16 +26,18 @@ export interface QrLandingVisitor {
 
 const NO_PLAN: QrLandingPlan = { choices: [], joinInviteToken: null, uploadToken: null, wishToken: null };
 
-// The choices one active event code offers this visitor, in display order. A personal invitation is not
-// an event code: it keeps opening the invite page, so it gets no plan.
+// The choices one active event code offers this visitor, in display order.
 export function qrLandingPlan(resolution: QrLinkResolutionDto | null | undefined, visitor: QrLandingVisitor): QrLandingPlan {
-    if (resolution?.status !== 'ACTIVE' || resolution.targetType === 'INVITATION') return NO_PLAN;
+    if (resolution?.status !== 'ACTIVE') return NO_PLAN;
 
     // An upload code uploads even from a backend too old to list its actions.
     const ownToken = resolution.targetType === 'MEDIA_UPLOAD' || (resolution.guestActions ?? []).includes('UPLOAD');
     const joinInviteToken = (resolution.targetType === 'EVENT_JOIN' ? resolution.inviteToken : resolution.joinInviteToken) ?? null;
     const uploadToken = resolution.targetType === 'EVENT_JOIN' ? (resolution.uploadToken ?? null) : ownToken ? 'self' : null;
-    const wishToken = resolution.targetType === 'GUEST' && (resolution.guestActions ?? []).includes('WISH') ? 'self' : null;
+    // Every plan with a wishbook takes wishes without an account (the backend names the token). A backend older
+    // than wishToken still lets a lite event's guest code take them.
+    const wishToken =
+        resolution.wishToken ?? (resolution.targetType === 'GUEST' && (resolution.guestActions ?? []).includes('WISH') ? 'self' : null);
 
     const choices: QrLandingChoice[] = [];
     if (visitor.isMember) choices.push('open');
