@@ -7,9 +7,12 @@ import { PLAIN_FEATURES_QR_CARD_STYLE, PLAIN_QR_CARD_STYLE } from '@/lib/qrCard'
 import type { QrCardFeature, QrCardFeatureTexts } from '@/lib/qrCardFeatures';
 
 const TEXTS: QrCardFeatureTexts = {
-    labels: { posts: 'Posts', stories: 'Stories', wishes: 'Wishes', reactions: 'Reactions', music: 'Music' },
+    labels: { posts: 'Posts', stories: 'Stories', wishes: 'Wishes', reactions: 'Reactions', music: 'Music', games: 'Games', gifts: 'Gifts', schedule: 'Schedule' },
     wish: 'So happy to celebrate with you!',
     songs: ['September', 'Dancing Queen', 'Perfect'],
+    game: { question: "Who said 'I love you' first?", answers: ['Him', 'Her'] },
+    gift: { title: 'For our honeymoon', copy: 'Copy' },
+    schedule: ['Ceremony', 'Welcome drinks'],
 };
 
 function markup(features: QrCardFeature[], style = PLAIN_FEATURES_QR_CARD_STYLE) {
@@ -38,6 +41,17 @@ describe('QrCardSvg tiles', () => {
         expect(html).toContain('>Stories<');
         expect(html).toContain('>Music<');
         expect(html).not.toContain('>Wishes<');
+    });
+
+    it('draws the backup tiles with their sample text', () => {
+        const html = markup(['games', 'gifts', 'schedule']);
+        expect(count(html, /data-qr-feature="/g)).toBe(3);
+        expect(html).toContain('>Games<');
+        expect(html).toContain('>Gifts<');
+        expect(html).toContain('>Schedule<');
+        expect(html).toContain('68%');
+        expect(html).toContain('GR16 0110');
+        expect(html).toContain('>Ceremony<');
     });
 
     it('draws nothing for no features', () => {

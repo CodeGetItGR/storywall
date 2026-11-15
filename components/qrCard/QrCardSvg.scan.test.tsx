@@ -69,9 +69,12 @@ describe('QrCardSvg scans with a layout', () => {
 });
 
 const TEXTS: QrCardFeatureTexts = {
-    labels: { posts: 'Posts', stories: 'Stories', wishes: 'Wishes', reactions: 'Reactions', music: 'Music' },
+    labels: { posts: 'Posts', stories: 'Stories', wishes: 'Wishes', reactions: 'Reactions', music: 'Music', games: 'Games', gifts: 'Gifts', schedule: 'Schedule' },
     wish: 'So happy to celebrate with you!',
     songs: ['September', 'Dancing Queen', 'Perfect'],
+    game: { question: "Who said 'I love you' first?", answers: ['Him', 'Her'] },
+    gift: { title: 'For our honeymoon', copy: 'Copy' },
+    schedule: ['Ceremony', 'Welcome drinks'],
 };
 
 // The card with pictures has a 46 mm code. A real /q/ link reads at the lower render too; the long link's

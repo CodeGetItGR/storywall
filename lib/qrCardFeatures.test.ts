@@ -31,6 +31,17 @@ describe('qrCardFeatures', () => {
         expect(qrCardFeatures([])).toEqual([]);
     });
 
+    it('fills free places with Games, Gifts and Schedule, in that order', () => {
+        expect(qrCardFeatures(plan('schedule', 'wishlist', 'he_or_she', 'gallery', 'wishbook'))).toEqual(['posts', 'wishes', 'games', 'gifts', 'schedule']);
+        expect(qrCardFeatures(plan('quiz_polls'))).toEqual(['games']);
+    });
+
+    it('stops at five, so backups only show when main tiles leave room', () => {
+        expect(qrCardFeatures(plan('posts', 'stories', 'wishbook', 'schedule', 'wishlist'))).toEqual(['posts', 'stories', 'wishes', 'reactions', 'gifts']);
+        expect(qrCardFeatures(plan('posts', 'stories', 'wishbook', 'playlist', 'quiz_polls', 'wishlist', 'schedule'))).toHaveLength(5);
+        expect(qrCardFeatures(plan('posts', 'stories', 'wishbook', 'playlist', 'quiz_polls'))).not.toContain('games');
+    });
+
     it('samples the main five for admin previews', () => {
         expect(QR_CARD_SAMPLE_FEATURES).toEqual(['posts', 'stories', 'wishes', 'reactions', 'music']);
     });
