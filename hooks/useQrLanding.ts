@@ -71,6 +71,7 @@ export function useQrLanding(token: string) {
         isLoading: resolutionQuery.isLoading || (isActive && isVisitorLoading) || Boolean(redirectPath),
         plan,
         eventId,
+        isSignedIn: isAuthenticated,
         view,
         choose,
         back,

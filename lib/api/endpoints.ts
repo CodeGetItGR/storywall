@@ -683,6 +683,7 @@ export const endpoints = {
             collaborationRedemptionVoid: (eventId: string) => `/api/admin/events/${eventId}/collaboration-redemption/void`,
             partnerBranding: (eventId: string) => `/api/admin/events/${eventId}/partner-branding`,
             vendors: (eventId: string) => `/api/admin/events/${eventId}/vendors`,
+            activity: (eventId: string) => `/api/admin/events/${eventId}/activity`,
         },
     },
 

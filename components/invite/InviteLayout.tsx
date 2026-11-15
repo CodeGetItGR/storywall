@@ -25,7 +25,7 @@ interface InviteLayoutProps {
     scroll?: 'body' | 'page';
     // 'plain' keeps the logo hero (no cover, no illustration) on the page's own white, for the QR choice page.
     heroTone?: 'muted' | 'plain';
-    // A cover or illustration about 5% shorter, to leave room below (the QR choice page).
+    // A shorter hero, to leave room below (the QR choice page): a cover or illustration about 5% shorter, the plain logo hero shorter still.
     compactHero?: boolean;
     // Shown at the foot of the body, after some space, with the footer logo right under it.
     bottom?: ReactNode;
@@ -120,8 +120,10 @@ export function InviteLayout({
                 // Logo mode: no illustration and no cover, so the app logo stands in, with the title below it.
                 <div
                     className={cn(
-                        'flex w-full shrink-0 flex-col items-center justify-center gap-6 px-6 text-center md:rounded-3xl',
-                        heroTone === 'plain' ? 'h-56 bg-background md:h-64' : 'h-64 bg-surface-muted md:h-80',
+                        'flex w-full shrink-0 flex-col items-center justify-center px-6 text-center md:rounded-3xl',
+                        heroTone !== 'plain' && 'h-64 gap-6 bg-surface-muted md:h-80',
+                        // The QR choice page keeps it short, so the join card starts on the first screen (KAN-213).
+                        heroTone === 'plain' && (compactHero ? 'h-44 gap-4 bg-background md:h-52' : 'h-56 gap-6 bg-background md:h-64'),
                     )}
                 >
                     <Logo direction="col" iconClassName="h-12 w-auto" wordmarkClassName="h-6 w-auto" />

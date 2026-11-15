@@ -772,7 +772,32 @@
             "join": "Συμμετοχή στην εκδήλωση",
             "open": "Άνοιγμα εκδήλωσης",
             "eventHint": "Δείτε τι μοιράζονται οι καλεσμένοι",
-            "uploadHint": "Προστίθενται στη συλλογή, όχι στη ροή."
+            "joinLine": "Δείτε τις φωτογραφίες όλων, μοιραστείτε τις δικές σας και πάρτε μέρος στη μέρα.",
+            "freeAccount": "Δωρεάν λογαριασμός, σε λίγα δευτερόλεπτα",
+            "noAccount": "Χωρίς λογαριασμό",
+            "uploadLine": "Τις λαμβάνουν οι διοργανωτές στο άλμπουμ τους",
+            "wishLine": "Ένα μήνυμα στο βιβλίο ευχών",
+            "moreOptions": "Περισσότερες επιλογές"
+        },
+        "preview": {
+            "feed": "Η ροή της εκδήλωσης",
+            "photo": "Φωτογραφία καλεσμένου",
+            "wish": "Ευχή καλεσμένου",
+            "song": "Πρόταση τραγουδιού",
+            "days": "Η",
+            "hours": "Ω",
+            "minutes": "Λ",
+            "seconds": "Δ",
+            "story1": "Ελένη",
+            "story2": "Νίκος",
+            "story3": "Σοφία",
+            "story4": "Γιώργος",
+            "postAuthor": "Μαρία Κ.",
+            "postText": "Τι βραδιά! 🎉",
+            "wishAuthor": "Ελένη",
+            "wishText": "Τόσο χαρούμενοι που γιορτάζουμε μαζί σας! ❤️",
+            "songTitle": "September",
+            "songArtist": "Earth, Wind & Fire"
         },
         "guestCode": {
             "uploadButton": "Ανεβάστε φωτογραφίες",
@@ -4242,6 +4267,65 @@
                 "illegalHint": "Αναφέρετε τον νόμο ή τη νομική διάταξη.",
                 "note": "Εσωτερική σημείωση",
                 "noteHint": "Τη βλέπουν μόνο οι διαχειριστές."
+            },
+            "activity": {
+                "tabs": {
+                    "settings": "Ρυθμίσεις",
+                    "activity": "Δραστηριότητα",
+                    "label": "Ενότητες εκδήλωσης"
+                },
+                "updatedAt": "Ενημέρωση {time}",
+                "refresh": "Ανανέωση",
+                "loading": "Φόρτωση δραστηριότητας",
+                "members": "{contributed} από {total} μέλη συμμετείχαν · {share}",
+                "tiles": {
+                    "posts": "Αναρτήσεις",
+                    "postMedia": "{count, plural, one {# φωτογραφία ή βίντεο} other {# φωτογραφίες και βίντεο}}",
+                    "stories": "Ιστορίες",
+                    "storyViews": "{count, plural, one {# προβολή} other {# προβολές}}",
+                    "gallery": "Γκαλερί",
+                    "viaQr": "{count} μέσω QR",
+                    "pro": "Ανεβάσματα επαγγελματιών",
+                    "reactions": "Αντιδράσεις",
+                    "comments": "Σχόλια",
+                    "wishes": "Ευχές",
+                    "playlist": "Προτάσεις τραγουδιών",
+                    "votes": "{count, plural, one {# ψήφος} other {# ψήφοι}}",
+                    "quiz": "Απαντήσεις κουίζ",
+                    "rsvp": "Θα παρευρεθούν",
+                    "declined": "{count} δεν θα παρευρεθούν",
+                    "removed": "Αφαιρέθηκαν"
+                },
+                "removed": {
+                    "posts": "{count, plural, one {# ανάρτηση} other {# αναρτήσεις}}",
+                    "stories": "{count, plural, one {# ιστορία} other {# ιστορίες}}",
+                    "galleryUploads": "{count, plural, one {# ανέβασμα στη γκαλερί} other {# ανεβάσματα στη γκαλερί}}",
+                    "comments": "{count, plural, one {# σχόλιο} other {# σχόλια}}",
+                    "wishes": "{count, plural, one {# ευχή} other {# ευχές}}"
+                },
+                "series": {
+                    "posts": "Αναρτήσεις",
+                    "stories": "Ιστορίες",
+                    "gallery": "Γκαλερί",
+                    "wishes": "Ευχές"
+                },
+                "hourly": {
+                    "title": "Ανά ώρα",
+                    "previous": "Προηγούμενη ημέρα",
+                    "next": "Επόμενη ημέρα"
+                },
+                "heatmap": {
+                    "title": "Πιο πολυσύχναστες ώρες της ημέρας",
+                    "cell": "{kind} στις {hour}: {count}"
+                },
+                "peaks": {
+                    "title": "Κορυφαίες στιγμές"
+                },
+                "daily": {
+                    "title": "Ανά ημέρα",
+                    "earlier": "Νωρίτερα"
+                },
+                "empty": "Δεν υπάρχει δραστηριότητα ακόμα."
             }
         },
         "accounts": {

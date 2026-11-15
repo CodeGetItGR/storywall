@@ -6,11 +6,13 @@ import { useTranslations } from 'next-intl';
 import { AnonymousQrMediaUploadForm } from '@/components/invite/AnonymousQrMediaUploadForm';
 import { GuestWishForm } from '@/components/qrGuest/GuestWishForm';
 import { QrLandingChoices } from '@/components/qrLanding/QrLandingChoices';
+import { useQrEventDetails } from '@/hooks/useQrEventDetails';
 import type { useQrLanding } from '@/hooks/useQrLanding';
 
 // The body of a scanned event code's page: the choices, or the form one of them opened.
 export function QrLandingScreen({ landing }: { landing: ReturnType<typeof useQrLanding> }) {
     const t = useTranslations('QrCodePage');
+    const details = useQrEventDetails(landing.view === 'chooser' ? landing.plan.joinInviteToken : null);
     const label = landing.view === 'upload' ? t('mediaUploadEyebrow') : landing.view === 'wish' ? t('guestCode.wishEyebrow') : null;
 
     return (
@@ -33,7 +35,17 @@ export function QrLandingScreen({ landing }: { landing: ReturnType<typeof useQrL
             ) : null}
 
             {/* Choices */}
-            {landing.view === 'chooser' ? <QrLandingChoices plan={landing.plan} eventId={landing.eventId} onChoose={landing.choose} /> : null}
+            {landing.view === 'chooser' ? (
+                <QrLandingChoices
+                    plan={landing.plan}
+                    eventId={landing.eventId}
+                    onChoose={landing.choose}
+                    coverSrc={landing.resolution?.coverMedia?.mediaUrl ?? null}
+                    eventTitle={landing.resolution?.eventTitle ?? t('fallbackTitle')}
+                    isSignedIn={landing.isSignedIn}
+                    details={details}
+                />
+            ) : null}
 
             {/* Upload */}
             {landing.view === 'upload' && landing.uploadToken ? (

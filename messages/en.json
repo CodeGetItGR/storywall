@@ -649,7 +649,32 @@
             "join": "Join the event",
             "open": "Open the event",
             "eventHint": "See what guests share",
-            "uploadHint": "They go to the gallery, not the feed."
+            "joinLine": "See everyone's photos, share yours and join in on the day.",
+            "freeAccount": "Free account, in a few seconds",
+            "noAccount": "Without an account",
+            "uploadLine": "The hosts get them in their photo album",
+            "wishLine": "A message for the wishbook",
+            "moreOptions": "More options"
+        },
+        "preview": {
+            "feed": "The event feed",
+            "photo": "A guest's photo",
+            "wish": "A wish from a guest",
+            "song": "A song request",
+            "days": "D",
+            "hours": "H",
+            "minutes": "M",
+            "seconds": "S",
+            "story1": "Eleni",
+            "story2": "Nikos",
+            "story3": "Sofia",
+            "story4": "Giorgos",
+            "postAuthor": "Maria K.",
+            "postText": "What a night! 🎉",
+            "wishAuthor": "Eleni",
+            "wishText": "So happy to celebrate with you! ❤️",
+            "songTitle": "September",
+            "songArtist": "Earth, Wind & Fire"
         },
         "guestCode": {
             "uploadButton": "Upload photos",
@@ -4119,6 +4144,65 @@
                 "illegalHint": "Name the law or legal provision.",
                 "note": "Internal note",
                 "noteHint": "Only admins see this."
+            },
+            "activity": {
+                "tabs": {
+                    "settings": "Settings",
+                    "activity": "Activity",
+                    "label": "Event sections"
+                },
+                "updatedAt": "Updated {time}",
+                "refresh": "Refresh",
+                "loading": "Loading activity",
+                "members": "{contributed} of {total} members contributed · {share}",
+                "tiles": {
+                    "posts": "Posts",
+                    "postMedia": "{count, plural, one {# photo or video} other {# photos and videos}}",
+                    "stories": "Stories",
+                    "storyViews": "{count, plural, one {# view} other {# views}}",
+                    "gallery": "Gallery",
+                    "viaQr": "{count} via QR",
+                    "pro": "Professional uploads",
+                    "reactions": "Reactions",
+                    "comments": "Comments",
+                    "wishes": "Wishes",
+                    "playlist": "Songs suggested",
+                    "votes": "{count, plural, one {# vote} other {# votes}}",
+                    "quiz": "Quiz answers",
+                    "rsvp": "Attending",
+                    "declined": "{count} not attending",
+                    "removed": "Removed"
+                },
+                "removed": {
+                    "posts": "{count, plural, one {# post} other {# posts}}",
+                    "stories": "{count, plural, one {# story} other {# stories}}",
+                    "galleryUploads": "{count, plural, one {# gallery upload} other {# gallery uploads}}",
+                    "comments": "{count, plural, one {# comment} other {# comments}}",
+                    "wishes": "{count, plural, one {# wish} other {# wishes}}"
+                },
+                "series": {
+                    "posts": "Posts",
+                    "stories": "Stories",
+                    "gallery": "Gallery",
+                    "wishes": "Wishes"
+                },
+                "hourly": {
+                    "title": "Per hour",
+                    "previous": "Previous day",
+                    "next": "Next day"
+                },
+                "heatmap": {
+                    "title": "Busiest hours of the day",
+                    "cell": "{kind} at {hour}: {count}"
+                },
+                "peaks": {
+                    "title": "Peak moments"
+                },
+                "daily": {
+                    "title": "Per day",
+                    "earlier": "Earlier"
+                },
+                "empty": "No activity yet."
             }
         },
         "accounts": {
