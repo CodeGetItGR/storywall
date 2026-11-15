@@ -59,6 +59,7 @@ export function ScheduleEditorForm({
     secondaryPrefillTitle,
 }: ScheduleEditorFormProps) {
     const t = useTranslations('SchedulePage');
+    const tAddress = useTranslations('CreateEventPage');
     const toErrorMessage = useApiErrorMessage();
     const { data: appConfig } = useAppConfig();
     const limits = useContentLimits();
@@ -72,6 +73,7 @@ export function ScheduleEditorForm({
     const initialEndAt = editingSession?.endAt ? toDatetimeLocalValue(editingSession.endAt) : '';
     const initialLocationName = editingSession?.locationName ?? '';
     const initialMapsUrl = editingSession?.mapsUrl ?? '';
+    const initialLocationAddress = editingSession?.locationAddress ?? '';
     const initialRsvpEnabled = editingSession?.rsvpEnabled ?? false;
 
     // Mirrors the event-level schedule lock (SettingsTab's eventHasStarted): once a
@@ -92,6 +94,7 @@ export function ScheduleEditorForm({
     const [endAt, setEndAt] = useState(initialEndAt);
     const [locationName, setLocationName] = useState(initialLocationName);
     const [mapsUrl, setMapsUrl] = useState(initialMapsUrl);
+    const [locationAddress, setLocationAddress] = useState(initialLocationAddress);
     const [rsvpEnabled, setRsvpEnabled] = useState(initialRsvpEnabled);
     const [submitError, setSubmitError] = useState<string | null>(null);
     const [saved, setSaved] = useState(false);
@@ -110,6 +113,7 @@ export function ScheduleEditorForm({
     const trimmedDescription = description.trim();
     const trimmedLocationName = locationName.trim();
     const trimmedMapsUrl = mapsUrl.trim();
+    const trimmedLocationAddress = locationAddress.trim();
     const hasChanges = editingSession
         ? trimmedTitle !== initialTitle.trim() ||
           trimmedDescription !== initialDescription.trim() ||
@@ -117,8 +121,11 @@ export function ScheduleEditorForm({
           (!isMainSession && endAt !== initialEndAt) ||
           trimmedLocationName !== initialLocationName.trim() ||
           trimmedMapsUrl !== initialMapsUrl.trim() ||
+          trimmedLocationAddress !== initialLocationAddress.trim() ||
           rsvpEnabled !== initialRsvpEnabled
-        : Boolean(trimmedTitle || trimmedDescription || startAt || endAt || trimmedLocationName || trimmedMapsUrl || rsvpEnabled);
+        : Boolean(
+              trimmedTitle || trimmedDescription || startAt || endAt || trimmedLocationName || trimmedMapsUrl || trimmedLocationAddress || rsvpEnabled,
+          );
 
     function handleTitleChange(event: ChangeEvent<HTMLInputElement>) {
         setTitle(event.target.value);
@@ -144,6 +151,10 @@ export function ScheduleEditorForm({
         setMapsUrl(event.target.value);
     }
 
+    function handleLocationAddressChange(event: ChangeEvent<HTMLInputElement>) {
+        setLocationAddress(event.target.value);
+    }
+
     function resetToInitialValues() {
         setTitle(initialTitle);
         setDescription(initialDescription);
@@ -151,6 +162,7 @@ export function ScheduleEditorForm({
         setEndAt(initialEndAt);
         setLocationName(initialLocationName);
         setMapsUrl(initialMapsUrl);
+        setLocationAddress(initialLocationAddress);
         setRsvpEnabled(initialRsvpEnabled);
         setSubmitError(null);
         setSaved(false);
@@ -194,6 +206,8 @@ export function ScheduleEditorForm({
                 }
                 if (trimmedLocationName !== initialLocationName.trim()) payload.locationName = trimmedLocationName;
                 if (trimmedMapsUrl !== initialMapsUrl.trim()) payload.mapsUrl = trimmedMapsUrl || null;
+                // The backend reads a missing address as "unchanged", so an emptied one is sent as "".
+                if (trimmedLocationAddress !== initialLocationAddress.trim()) payload.locationAddress = trimmedLocationAddress;
                 if (rsvpEnabled !== initialRsvpEnabled) payload.rsvpEnabled = rsvpEnabled;
 
                 await updateSession.mutateAsync(payload);
@@ -209,6 +223,7 @@ export function ScheduleEditorForm({
                 if (endAt) payload.endAt = new Date(endAt).toISOString();
                 if (trimmedLocationName) payload.locationName = trimmedLocationName;
                 if (trimmedMapsUrl) payload.mapsUrl = trimmedMapsUrl;
+                if (trimmedLocationAddress) payload.locationAddress = trimmedLocationAddress;
                 if (createAsSecondary) payload.isSecondary = true;
                 if (rsvpEnabled) payload.rsvpEnabled = true;
 
@@ -354,6 +369,23 @@ export function ScheduleEditorForm({
                             />
                         </FormFieldLabel>
                     </div>
+
+                    {/* Address */}
+                    <FormFieldLabel
+                        label={tAddress('fields.locationAddress')}
+                        optional
+                        className="grid gap-1.5"
+                        labelClassName="text-xs font-semibold uppercase tracking-wide text-ink-muted"
+                    >
+                        <input
+                            type="text"
+                            maxLength={limits.locationAddressMaxLength}
+                            value={locationAddress}
+                            onChange={handleLocationAddressChange}
+                            className="w-full rounded-2xl border border-border/70 bg-background px-4 py-3 text-sm text-ink transition outline-none placeholder:text-ink-faint focus:border-primary/40 focus:ring-4 focus:ring-primary/10"
+                            placeholder={tAddress('placeholders.locationAddress')}
+                        />
+                    </FormFieldLabel>
 
                     {/* Guest RSVP */}
                     {rsvpReadable && (

@@ -3702,6 +3702,7 @@ export interface EventSessionRequestDto {
     endAt?: string;
     locationName?: string;
     mapsUrl?: string;
+    locationAddress?: string;
     displayOrder: number;
     isSecondary?: boolean; // defaults to false; at most one non-deleted session per event
     rsvpEnabled?: boolean; // defaults to false; guests may answer for this session only when true
@@ -3717,6 +3718,8 @@ export interface EventSessionResponseDto {
     endAt: string | null;
     locationName: string | null;
     mapsUrl: string | null;
+    // The main session's mirrors the event's own address.
+    locationAddress: string | null;
     displayOrder: number;
     isMain: boolean; // system-managed, read-only — set only via initialSessionTitle at event creation
     isSecondary: boolean;
@@ -3734,6 +3737,7 @@ export interface EventSessionPatchDto {
     clearEndAt?: boolean;
     locationName?: string;
     mapsUrl?: string | null;
+    locationAddress?: string;
     displayOrder?: number;
     isSecondary?: boolean;
     rsvpEnabled?: boolean;
