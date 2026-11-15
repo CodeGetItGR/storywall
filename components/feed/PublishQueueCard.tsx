@@ -4,6 +4,7 @@ import { Check, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useEffect } from 'react';
 
+import { useSlowUpload } from '@/hooks/useSlowUpload';
 import type { PublishJob } from '@/providers/publishQueue/PublishQueueContext';
 
 const SUCCESS_DISMISS_DELAY_MS = 4000;
@@ -26,6 +27,8 @@ interface PublishQueueCardProps {
 
 export function PublishQueueCard({ job, onRetry, onDismiss }: PublishQueueCardProps) {
     const t = useTranslations('PublishQueue');
+    // Songs send no files, so only posts and stories can be slow to upload.
+    const isSlow = useSlowUpload(job.status === 'pending' && job.kind !== 'song');
 
     useEffect(() => {
         if (job.status !== 'success') return;
@@ -48,7 +51,15 @@ export function PublishQueueCard({ job, onRetry, onDismiss }: PublishQueueCardPr
             {job.status === 'pending' && (
                 <>
                     <span className="h-4 w-4 shrink-0 animate-spin rounded-full border-2 border-primary/30 border-t-primary" aria-hidden="true" />
-                    <span className="min-w-0 flex-1 truncate text-ink">{job.busy ? t('uploadBusy') : labels.pending}</span>
+                    <span className="flex min-w-0 flex-1 flex-col">
+                        <span className="truncate text-ink">{job.busy ? t('uploadBusy') : labels.pending}</span>
+                        {/* Slow connection */}
+                        {isSlow && !job.busy && (
+                            <span role="status" className="mt-0.5 text-xs leading-snug text-ink-muted">
+                                {t('uploadSlow')}
+                            </span>
+                        )}
+                    </span>
                 </>
             )}
             {job.status === 'success' && (
