@@ -29,6 +29,8 @@ export function QrCardScreen() {
                     exporter={screen.exporter}
                     url={screen.qrUrl}
                     lines={screen.lines}
+                    features={screen.features}
+                    featureTexts={screen.featureTexts}
                     label={screen.label}
                     templatesFailed={screen.templatesFailed}
                     onRetryTemplatesAction={screen.retryTemplates}
