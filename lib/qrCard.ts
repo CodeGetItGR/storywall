@@ -4,6 +4,7 @@ import { resolveLocalizedText } from '@/lib/localizedText';
 import {
     DEFAULT_QR_CARD_LAYOUT,
     DEFAULT_QR_CARD_TITLE,
+    FEATURES_QR_CARD_LAYOUT,
     type QrCardLayout,
     qrCardLayoutOf,
     type QrCardTextField,
@@ -139,7 +140,11 @@ export const PLAIN_QR_CARD_STYLE: QrCardStyle = {
     sizes: ['A6', 'A5'],
 };
 
-export function qrCardStyleOf(template: QrCardTemplateDto): QrCardStyle {
+// Plain on the event's QR page: the layout with picture tiles.
+export const PLAIN_FEATURES_QR_CARD_STYLE: QrCardStyle = { ...PLAIN_QR_CARD_STYLE, layout: FEATURES_QR_CARD_LAYOUT };
+
+// `fallback` is the layout for a template without a saved one.
+export function qrCardStyleOf(template: QrCardTemplateDto, fallback: QrCardLayout = DEFAULT_QR_CARD_LAYOUT): QrCardStyle {
     return {
         id: template.id,
         artworkUrl: template.artworkUrl,
@@ -147,7 +152,7 @@ export function qrCardStyleOf(template: QrCardTemplateDto): QrCardStyle {
         headingFont: template.headingFont,
         codeColor: template.codeColor,
         centerLogo: template.centerLogo,
-        layout: qrCardLayoutOf(template.layout),
+        layout: qrCardLayoutOf(template.layout, fallback),
         sizes: template.sizes,
     };
 }

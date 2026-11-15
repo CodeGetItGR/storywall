@@ -1,5 +1,6 @@
 import { type Ref, useId, useMemo } from 'react';
 
+import { QrCardFeatureTiles } from '@/components/qrCard/features/QrCardFeatureTiles';
 import { themeFontFamily } from '@/lib/eventTheme';
 import {
     layoutField,
@@ -17,6 +18,7 @@ import {
     type QrCardStyle,
 } from '@/lib/qrCard';
 import { qrCodePath } from '@/lib/qrCardCode';
+import type { QrCardFeature, QrCardFeatureTexts } from '@/lib/qrCardFeatures';
 
 type TextLook = { fontFamily: string; fontWeight: number; opacity?: number; letterSpacing?: string };
 
@@ -28,6 +30,7 @@ const LINE_LOOKS: Record<QrCardLineTone, TextLook> = {
 };
 
 const NO_FIELDS: Record<string, string> = {};
+const NO_FEATURES: QrCardFeature[] = [];
 
 function CardText({ text, fill, look }: { text: PlacedText; fill: string; look: TextLook }) {
     if (text.lines.length === 0) return null;
@@ -43,7 +46,8 @@ function CardText({ text, fill, look }: { text: PlacedText; fill: string; look: 
 }
 
 // One card in A6 millimetres: artwork (or white) full-bleed, then the title, the lines and the added fields,
-// and the code on top (on a white panel unless the layout turns it off), where the layout puts them.
+// the picture tiles, and the code on top (on a white panel unless the layout turns it off), where the layout
+// puts them. The tiles draw after the fields and below the code.
 // `fields` is each added field's text by id (see qrCardFieldTexts). Print and the PNG/PDF export
 // reuse this exact node at A6 or A5, so it draws with attributes only (no classes inside). The whole card
 // is one image to assistive tech, named by its <title>.
@@ -53,6 +57,8 @@ export function QrCardSvg({
     title,
     lines,
     fields = NO_FIELDS,
+    features = NO_FEATURES,
+    featureTexts,
     label,
     className,
     ref,
@@ -62,11 +68,16 @@ export function QrCardSvg({
     title: string;
     lines: QrCardLine[];
     fields?: Record<string, string>;
+    // The picture tiles to draw in the layout's tiles box, with their words. Callers without tiles leave both out.
+    features?: QrCardFeature[];
+    featureTexts?: QrCardFeatureTexts;
     label: string;
     className?: string;
     ref?: Ref<SVGSVGElement>;
 }) {
     const titleId = useId();
+    // useId's colons and guillemets aren't safe inside url(#…).
+    const ids = `qr${titleId.replace(/[^A-Za-z0-9_-]/g, '')}`;
     const { centerLogo, layout } = style;
     const code = useMemo(() => qrCodePath(url, { centerLogo }), [url, centerLogo]);
     const box = layout.code;
@@ -113,9 +124,13 @@ export function QrCardSvg({
                     look={{ fontFamily: field.font === 'heading' ? headingFamily : QR_CARD_FONT, fontWeight: field.bold ? 700 : 400 }}
                 />
             ))}
+            {/* Tiles */}
+            {layout.features && featureTexts && features.length > 0 && (
+                <QrCardFeatureTiles features={features} box={layout.features} texts={featureTexts} labelColor={style.textColor} ids={ids} />
+            )}
             {/* Code */}
             {box.panel && <rect x={box.x} y={box.y} width={box.size} height={box.size} rx={box.radius} fill="#FFFFFF" />}
-            <path d={code.d} transform={`translate(${codeX} ${codeY}) scale(${cell})`} fill={style.codeColor} />
+            <path data-qr-code="" d={code.d} transform={`translate(${codeX} ${codeY}) scale(${cell})`} fill={style.codeColor} />
             {code.logo && (
                 <image
                     href={QR_CARD_LOGO_SRC}
