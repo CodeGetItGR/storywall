@@ -80,8 +80,10 @@ describe('InvitationThemeDrawer', () => {
         await waitFor(() => expect(server.put).toHaveBeenCalledTimes(1));
         expect(server.put).toHaveBeenCalledWith(
             '/api/admin/invitation-themes/t1',
-            expect.objectContaining({ name: 'Gamos 002', slug: 'gamos-002', status: 'ACTIVE', seoDescription: 'Hello', revision: 3, sortOrder: 2 }),
+            expect.objectContaining({ name: 'Gamos 002', slug: 'gamos-002', status: 'ACTIVE', seoDescription: 'Hello', revision: 3 }),
         );
+        // The list's drag and drop owns the order, so a save leaves it as it is.
+        expect(server.put.mock.calls[0][1]).not.toHaveProperty('sortOrder');
         // Saved: nothing left to save, and the copy can be made now.
         await waitFor(() => expect(screen.getByRole('button', { name: 'Save' })).toBeDisabled());
         expect(screen.getByRole('button', { name: 'Duplicate' })).toHaveAttribute('aria-disabled', 'false');
