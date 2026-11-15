@@ -21,6 +21,8 @@ export const giftKeys = {
     // the PIN again. Outside ['events', id] so an event refetch never touches it.
     issuedCard: (eventId: string) => ['gift-cards', eventId] as const,
     claimPreview: (token: string) => ['gift-claims', token] as const,
+    // Per viewer: a signed-in caller is also told whether the card is theirs.
+    claimPreviewFor: (token: string, userId: string | null) => [...giftKeys.claimPreview(token), userId ?? 'visitor'] as const,
 };
 
 // GET /api/events/{eventId}/gift — any host. Null when the event isn't a gift (404).
@@ -76,11 +78,16 @@ export function useIssuedGiftCard(eventId: string) {
     });
 }
 
-// GET /api/gift-claims/{token} — public.
+// GET /api/gift-claims/{token} — public. Waits for the session, so a signed-in
+// visitor's first fetch already says whether the card is theirs.
 export function useGiftClaimPreview(token: string) {
+    const { isBootstrapping, user } = useAuth();
+    const userId = user?.userId ?? null;
+
     return useQuery({
-        queryKey: giftKeys.claimPreview(token),
+        queryKey: giftKeys.claimPreviewFor(token, userId),
         queryFn: () => api.get<GiftClaimPreviewDto>(endpoints.giftClaims.preview(token)),
+        enabled: !isBootstrapping,
     });
 }
 

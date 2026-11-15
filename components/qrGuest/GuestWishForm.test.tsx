@@ -61,6 +61,7 @@ describe('GuestWishForm', () => {
         submit(container);
 
         await screen.findByText('guestCode.wish.sent');
+        expect(screen.getByRole('img', { name: 'qrWishSent' })).toBeInTheDocument();
         expect(mutateAsync).toHaveBeenCalledWith({
             token: 't',
             guestName: 'Maria',

@@ -84,10 +84,10 @@ describe('useToolsMenuItems', () => {
         mocks.activeMember = { id: 'm1', isFeatured: false };
     });
 
-    it('lists every available tool for a live event', () => {
+    it('lists every available tool for a live event, leaving the wishbook to the feed', () => {
         mocks.activeEvent = event();
         const { result } = renderHook(() => useToolsMenuItems());
-        expect(result.current.map((item) => item.key)).toEqual(['rsvp', 'schedule', 'gallery', 'wishbook', 'gifts']);
+        expect(result.current.map((item) => item.key)).toEqual(['rsvp', 'schedule', 'gallery', 'gifts']);
     });
 
     it('keeps only gallery and wishbook for a deleted event', () => {
@@ -329,12 +329,9 @@ describe('vendor tools in the menu', () => {
         expect(keysNow()).not.toContain('rsvp');
     });
 
-    it('shows the vendor list once one vendor is listed', () => {
-        expect(keysNow()).not.toContain('vendors');
-        vendor.list = [{ id: 'v1', businessName: 'Studio X', hiddenByHost: true, optedOut: false }];
-        expect(keysNow()).not.toContain('vendors');
+    it('leaves the vendor list to the feed, even once a vendor is listed', () => {
         vendor.list = [{ id: 'v1', businessName: 'Studio X', hiddenByHost: false, optedOut: false }];
-        expect(keysNow()).toContain('vendors');
+        expect(keysNow()).not.toContain('vendors');
     });
 
     it('leaves the vendor list out for a host, who has it in the host menu', () => {

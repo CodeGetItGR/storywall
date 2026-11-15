@@ -116,6 +116,8 @@ export function useToolsMenuItems(): ToolMenuItem[] {
             .filter((tool) => !isDeleted || tool.key === 'gallery' || tool.key === 'wishbook')
             // A lite event (no feed in its plan) has only its gallery and wishbook; every other tool sends its host home.
             .filter((tool) => !isLite || tool.key === 'gallery' || tool.key === 'wishbook')
+            // The feed's quick actions hold the wishbook and vendors; a lite or deleted event has no feed, so keeps them here.
+            .filter((tool) => isLite || isDeleted || !FEED_QUICK_ACTION_TOOLS.has(tool.key))
             .map((tool) => {
                 const copyKey = tool.copyKey ?? tool.moduleKey;
                 const copy = copyKey && copyKey !== 'member_roles' ? moduleCopy(copyKey) : null;
@@ -132,6 +134,9 @@ export function useToolsMenuItems(): ToolMenuItem[] {
             })
     );
 }
+
+// Tools the feed's quick actions show instead of the menu.
+const FEED_QUICK_ACTION_TOOLS = new Set(['wishbook', 'vendors']);
 
 // Menu entries that are vendor tools, by menu key.
 const VENDOR_TOOL_KEYS: Partial<Record<string, VendorActionKey>> = {

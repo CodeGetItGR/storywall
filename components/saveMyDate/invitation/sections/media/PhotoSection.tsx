@@ -21,6 +21,8 @@ export function PhotoSection({ section, contrast, ctx }: PhotoSectionProps) {
             {/* Photo */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
             {src && <img src={src} alt={ctx.labels.eventPhotoAlt} style={{ objectPosition: `50% ${imageY}%` }} draggable={false} />}
+            {/* Move */}
+            {src && ctx.canvasTools?.photoBand?.(section.id, imageY)}
             {/* Camera */}
             {ctx.canvasTools?.photo?.(photoFieldSlot(section.id, 'photo'), Boolean(src))}
             {/* Elements */}

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import type { DiscountCampaignLiveDto, SiteNoticeLiveDto } from '@/lib/api/types';
-import { campaignShowsOver, discountCampaignDismissalKey, plansHref } from '@/lib/discountCampaign';
+import { campaignBarHiddenOn, campaignShowsOver, discountCampaignDismissalKey, plansHref } from '@/lib/discountCampaign';
 import { parseDismissals } from '@/lib/siteNoticeDismissals';
 
 const campaign: DiscountCampaignLiveDto = { id: 'c1', percent: 20, startsAt: '2026-11-01T00:00:00Z', endsAt: '2026-11-08T00:00:00Z' };
@@ -41,5 +41,15 @@ describe('plansHref', () => {
     it("points at the plans on the visitor's language", () => {
         expect(plansHref('en')).toBe('/#pricing');
         expect(plansHref('el')).toBe('/el#pricing');
+    });
+});
+
+describe('campaignBarHiddenOn', () => {
+    it('leaves the bar out on a scanned QR code page only', () => {
+        expect(campaignBarHiddenOn('/q/abc')).toBe(true);
+        expect(campaignBarHiddenOn('/q')).toBe(true);
+        expect(campaignBarHiddenOn('/quiz')).toBe(false);
+        expect(campaignBarHiddenOn('/')).toBe(false);
+        expect(campaignBarHiddenOn('/events/e1/feed')).toBe(false);
     });
 });
