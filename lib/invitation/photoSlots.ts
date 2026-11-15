@@ -99,15 +99,11 @@ function galleryReplaceIndex(images: readonly ImageRef[], slot: Extract<PhotoSlo
     return at >= 0 ? at : images.findIndex((item) => sameImage(item, slot.photo));
 }
 
-// True when an uploaded photo has no place left in its gallery: an added photo, or a
-// replacement whose photo was deleted meanwhile, while the gallery holds 10 already.
+// True when an added photo has no place left in its gallery, which holds 10 already.
 export function galleryHasNoRoom(document: InvitationDocument, slot: PhotoSlot): boolean {
-    if (slot.kind !== 'gallery' && slot.kind !== 'galleryAdd') return false;
+    if (slot.kind !== 'galleryAdd') return false;
     const section = document.sections.find((item) => item.id === slot.sectionId);
-    if (section?.type !== 'gallery') return false;
-    const { images } = section.data;
-    if (slot.kind === 'gallery' && galleryReplaceIndex(images, slot) >= 0) return false;
-    return images.length >= GALLERY_MAX_PHOTOS;
+    return section?.type === 'gallery' && section.data.images.length >= GALLERY_MAX_PHOTOS;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -115,8 +111,8 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 // Puts an uploaded photo in its slot. A slot that is gone by the time the upload
-// answers (deleted, or undone away) is left alone, as the old editor did; a gallery
-// photo still goes in its gallery while there is room. A frame
+// answers (deleted, or undone away) is left alone, as the old editor did, a gallery
+// photo deleted while its replacement uploads included. A frame
 // keeps the host's crop and learns the new photo's size.
 export function setSlotPhoto(slot: PhotoSlot, photo: ImageRef, size: PhotoSize): DocumentRecipe {
     return (draft) => {
@@ -133,10 +129,12 @@ export function setSlotPhoto(slot: PhotoSlot, photo: ImageRef, size: PhotoSize):
         if (slot.kind !== 'field') {
             if (section?.type !== 'gallery') return;
             const { images } = section.data;
-            const at = slot.kind === 'gallery' ? galleryReplaceIndex(images, slot) : -1;
+            if (slot.kind === 'galleryAdd') {
+                if (images.length < GALLERY_MAX_PHOTOS) images.push(photo);
+                return;
+            }
+            const at = galleryReplaceIndex(images, slot);
             if (at >= 0) images[at] = photo;
-            // An added photo, or one whose photo was deleted meanwhile, goes at the end while there is room.
-            else if (images.length < GALLERY_MAX_PHOTOS) images.push(photo);
             return;
         }
         if (!section || !isPhotoField(section.type, slot.path)) return;

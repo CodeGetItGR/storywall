@@ -87,18 +87,18 @@ describe('gallery photo slots', () => {
         expect(mediaIds(produce(withImages([photo('a'), photo('b'), photo('a')]), setSlotPhoto(slot, photo('new'), SIZE)))).toEqual(['a', 'b', 'new']);
     });
 
-    it('adds a replacement whose photo was deleted meanwhile at the end, while there is room', () => {
+    it('drops a replacement whose photo was deleted meanwhile', () => {
         const slot = { kind: 'gallery', sectionId: ID, photoId: 'media:a#0', photo: photo('a') } as const;
         const gone = withImages([photo('b')]);
         expect(galleryHasNoRoom(gone, slot)).toBe(false);
-        expect(mediaIds(produce(gone, setSlotPhoto(slot, photo('new'), SIZE)))).toEqual(['b', 'new']);
+        expect(produce(gone, setSlotPhoto(slot, photo('new'), SIZE))).toBe(gone);
     });
 
-    it('knows when an uploaded photo has no room left', () => {
+    it('knows when an added photo has no room left', () => {
         const full = withImages(Array.from({ length: GALLERY_MAX_PHOTOS }, (_, index) => photo(`p${index}`)));
         expect(galleryHasNoRoom(full, { kind: 'galleryAdd', sectionId: ID, id: 'u-1' })).toBe(true);
-        expect(galleryHasNoRoom(full, { kind: 'gallery', sectionId: ID, photoId: 'media:a#0', photo: photo('a') })).toBe(true);
-        // Replacing a photo still there needs no room.
+        // A replacement needs no room: it takes its photo's place, or is dropped with it.
+        expect(galleryHasNoRoom(full, { kind: 'gallery', sectionId: ID, photoId: 'media:a#0', photo: photo('a') })).toBe(false);
         expect(galleryHasNoRoom(full, { kind: 'gallery', sectionId: ID, photoId: 'media:p3#0', photo: photo('p3') })).toBe(false);
         expect(galleryHasNoRoom(full, { kind: 'frame', elementId: 'e-1' })).toBe(false);
     });
