@@ -4265,6 +4265,65 @@
                 "illegalHint": "Αναφέρετε τον νόμο ή τη νομική διάταξη.",
                 "note": "Εσωτερική σημείωση",
                 "noteHint": "Τη βλέπουν μόνο οι διαχειριστές."
+            },
+            "activity": {
+                "tabs": {
+                    "settings": "Ρυθμίσεις",
+                    "activity": "Δραστηριότητα",
+                    "label": "Ενότητες εκδήλωσης"
+                },
+                "updatedAt": "Ενημέρωση {time}",
+                "refresh": "Ανανέωση",
+                "loading": "Φόρτωση δραστηριότητας",
+                "members": "{contributed} από {total} μέλη συμμετείχαν · {share}",
+                "tiles": {
+                    "posts": "Αναρτήσεις",
+                    "postMedia": "{count, plural, one {# φωτογραφία ή βίντεο} other {# φωτογραφίες και βίντεο}}",
+                    "stories": "Ιστορίες",
+                    "storyViews": "{count, plural, one {# προβολή} other {# προβολές}}",
+                    "gallery": "Γκαλερί",
+                    "viaQr": "{count} μέσω QR",
+                    "pro": "Ανεβάσματα επαγγελματιών",
+                    "reactions": "Αντιδράσεις",
+                    "comments": "Σχόλια",
+                    "wishes": "Ευχές",
+                    "playlist": "Προτάσεις τραγουδιών",
+                    "votes": "{count, plural, one {# ψήφος} other {# ψήφοι}}",
+                    "quiz": "Απαντήσεις κουίζ",
+                    "rsvp": "Θα παρευρεθούν",
+                    "declined": "{count} δεν θα παρευρεθούν",
+                    "removed": "Αφαιρέθηκαν"
+                },
+                "removed": {
+                    "posts": "{count, plural, one {# ανάρτηση} other {# αναρτήσεις}}",
+                    "stories": "{count, plural, one {# ιστορία} other {# ιστορίες}}",
+                    "galleryUploads": "{count, plural, one {# ανέβασμα στη γκαλερί} other {# ανεβάσματα στη γκαλερί}}",
+                    "comments": "{count, plural, one {# σχόλιο} other {# σχόλια}}",
+                    "wishes": "{count, plural, one {# ευχή} other {# ευχές}}"
+                },
+                "series": {
+                    "posts": "Αναρτήσεις",
+                    "stories": "Ιστορίες",
+                    "gallery": "Γκαλερί",
+                    "wishes": "Ευχές"
+                },
+                "hourly": {
+                    "title": "Ανά ώρα",
+                    "previous": "Προηγούμενη ημέρα",
+                    "next": "Επόμενη ημέρα"
+                },
+                "heatmap": {
+                    "title": "Πιο πολυσύχναστες ώρες της ημέρας",
+                    "cell": "{kind} στις {hour}: {count}"
+                },
+                "peaks": {
+                    "title": "Κορυφαίες στιγμές"
+                },
+                "daily": {
+                    "title": "Ανά ημέρα",
+                    "earlier": "Νωρίτερα"
+                },
+                "empty": "Δεν υπάρχει δραστηριότητα ακόμα."
             }
         },
         "accounts": {
