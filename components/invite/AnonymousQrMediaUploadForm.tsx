@@ -1,9 +1,10 @@
 'use client';
 
 import { useQueryClient } from '@tanstack/react-query';
-import { ArrowRight, ImagePlus, Images, Loader2, Video, X } from 'lucide-react';
+import { ArrowRight, ChevronRight, Images, Loader2, UserRound, Video, X } from 'lucide-react';
+import Image from 'next/image';
 import { useTranslations } from 'next-intl';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useId, useState } from 'react';
 
 import { ProtectedImage } from '@/components/common/ProtectedImage';
 import { IncidentPausedNote } from '@/components/incident/IncidentPausedNote';
@@ -59,6 +60,8 @@ export function AnonymousQrMediaUploadForm({ token, member = null, onSentChange 
     const [isDragActive, setIsDragActive] = useState(false);
     const [isBusy, setIsBusy] = useState(false);
     const previews = useFilePreviews(files);
+    const nameHintId = useId();
+    const pickerLabel = files.length > 0 ? t('anonymousUpload.addMore') : t('anonymousUpload.chooseFiles');
 
     useEffect(() => {
         onSentChange?.(done);
@@ -192,46 +195,31 @@ export function AnonymousQrMediaUploadForm({ token, member = null, onSentChange 
     }
 
     return (
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-            {/* Where uploads go */}
-            <p className="flex items-start gap-2 rounded-xl bg-primary/10 px-3 py-2.5 text-sm leading-snug text-ink">
-                <Images className="mt-0.5 h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
-                <span>{t('anonymousUpload.galleryOnlyNote')}</span>
-            </p>
-
-            {/* Name: a member's own, read-only */}
-            <FormFieldLabel label={t('anonymousUpload.nameLabel')} optional={!member}>
-                <input
-                    type="text"
-                    maxLength={100}
-                    value={member ? member.displayName : uploaderName}
-                    onChange={handleUploaderNameChange}
-                    readOnly={Boolean(member)}
-                    placeholder={t('anonymousUpload.namePlaceholder')}
-                    className="w-full rounded-xl bg-surface-muted px-4 py-3 text-sm text-ink transition outline-none placeholder:text-ink-faint read-only:text-ink-muted focus:ring-2 focus:ring-primary/30"
-                />
-            </FormFieldLabel>
-
+        <form onSubmit={handleSubmit} className="flex flex-col gap-5">
             {/* Incident note */}
             <IncidentPausedNote />
 
-            <FormFieldLabel label={t('anonymousUpload.filesLabel')} required>
+            {/* Files: a row like the choices page, the picked files in a strip under it */}
+            <div className="border-y border-border">
                 <label
                     onDragOver={handleDragOver}
                     onDragLeave={handleDragLeave}
                     onDrop={handleDrop}
                     className={cn(
-                        'flex cursor-pointer flex-col items-center justify-center gap-1.5 rounded-xl border-2 border-dashed px-4 text-center transition-colors',
-                        files.length > 0 ? 'py-4' : 'py-10',
-                        isDragActive ? 'border-primary bg-primary/5' : 'border-ink-faint/30 bg-surface-muted hover:border-ink-faint/50',
+                        'flex w-full cursor-pointer items-center gap-4 rounded-xl px-2 py-4 transition-colors',
+                        isDragActive ? 'bg-primary/5 ring-2 ring-primary/40' : 'hover:bg-surface-muted/60',
                         INCIDENT_MODE && 'pointer-events-none opacity-60',
                     )}
                 >
-                    <ImagePlus className={cn('h-6 w-6', isDragActive ? 'text-primary' : 'text-ink-faint')} />
-                    <span className="text-sm font-medium text-ink">
-                        {files.length > 0 ? t('anonymousUpload.addMore') : t('anonymousUpload.chooseFiles')}
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center">
+                        <Image src="/icons/camera.svg" alt={pickerLabel} width={28} height={28} className="h-7 w-7 object-contain" unoptimized />
                     </span>
-                    <span className="text-xs text-ink-faint">{t('anonymousUpload.dropHint')}</span>
+                    <span className="flex min-w-0 flex-1 flex-col">
+                        <span className="text-[15px] font-semibold text-ink">{pickerLabel}</span>
+                        <span className="mt-0.5 text-[13px] text-ink-muted">{t('anonymousUpload.filesLabel')}</span>
+                        <span className="mt-0.5 hidden text-xs text-ink-faint md:block">{t('anonymousUpload.dropHint')}</span>
+                    </span>
+                    <ChevronRight className="h-4 w-4 shrink-0 text-ink-faint" aria-hidden="true" />
                     <input
                         type="file"
                         accept={uploadAccept.media}
@@ -243,11 +231,11 @@ export function AnonymousQrMediaUploadForm({ token, member = null, onSentChange 
                 </label>
 
                 {previews.length > 0 && (
-                    <div className="-mx-1 mt-3 flex gap-2 overflow-x-auto px-1 pb-1" onClick={handleRemoveFileClick}>
+                    <div className="flex gap-2 overflow-x-auto px-2 pb-4" onClick={handleRemoveFileClick}>
                         {previews.map((preview, index) => (
                             <div
                                 key={`${preview.file.name}-${preview.file.lastModified}-${index}`}
-                                className="relative h-20 w-20 shrink-0 overflow-hidden rounded-lg bg-surface-muted"
+                                className="relative h-20 w-20 shrink-0 overflow-hidden rounded-xl bg-surface-muted"
                             >
                                 {preview.isVideo ? (
                                     <>
@@ -276,7 +264,42 @@ export function AnonymousQrMediaUploadForm({ token, member = null, onSentChange 
                         ))}
                     </div>
                 )}
-            </FormFieldLabel>
+            </div>
+
+            {/* Name: a member's own, read-only */}
+            <div>
+                <FormFieldLabel
+                    label={t('anonymousUpload.nameLabel')}
+                    optional={!member}
+                    labelClassName="text-sm font-semibold tracking-normal text-ink normal-case"
+                    indicatorClassName="text-xs"
+                >
+                    <span
+                        className={cn(
+                            'flex items-center gap-2.5 rounded-[1rem] border border-border px-4 transition-shadow',
+                            member
+                                ? 'bg-ink/[0.03]'
+                                : 'bg-background focus-within:border-primary/40 focus-within:ring-3 focus-within:ring-primary/15',
+                        )}
+                    >
+                        <UserRound className="h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
+                        <input
+                            type="text"
+                            maxLength={100}
+                            value={member ? member.displayName : uploaderName}
+                            onChange={handleUploaderNameChange}
+                            readOnly={Boolean(member)}
+                            aria-describedby={member ? undefined : nameHintId}
+                            className="min-w-0 flex-1 bg-transparent py-3 text-base text-ink outline-none read-only:text-ink-muted"
+                        />
+                    </span>
+                </FormFieldLabel>
+                {!member && (
+                    <p id={nameHintId} className="mt-1.5 text-xs text-ink-muted">
+                        {t('anonymousUpload.namePlaceholder')}
+                    </p>
+                )}
+            </div>
 
             {/* Acceptance: guests only */}
             {!member && <SignupAcceptanceCheckbox minimumAge={16} checked={acceptedDocuments} onChangeAction={handleAcceptedChange} />}
@@ -298,20 +321,29 @@ export function AnonymousQrMediaUploadForm({ token, member = null, onSentChange 
                 )
             )}
 
-            <button
-                type="submit"
-                disabled={INCIDENT_MODE || uploadBatch.isPending || files.length === 0 || !isAccepted}
-                className="flex w-full items-center justify-center gap-2 rounded-full py-3 text-sm font-semibold text-white transition-opacity bg-gradient-brand hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
-            >
-                {uploadBatch.isPending ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                    <>
-                        {t('anonymousUpload.submit')}
-                        <ArrowRight className="h-4 w-4" />
-                    </>
-                )}
-            </button>
+            {/* Upload */}
+            <div className="flex flex-col gap-3">
+                <button
+                    type="submit"
+                    disabled={INCIDENT_MODE || uploadBatch.isPending || files.length === 0 || !isAccepted}
+                    className="flex min-h-12 w-full items-center justify-center gap-2 rounded-full text-[15px] font-semibold text-white transition-opacity bg-gradient-brand hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                    {uploadBatch.isPending ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                        <>
+                            {t('anonymousUpload.submit')}
+                            <ArrowRight className="h-4 w-4" />
+                        </>
+                    )}
+                </button>
+
+                {/* Where uploads go */}
+                <p className="px-4 text-center text-xs leading-relaxed text-balance text-ink-muted">
+                    <Images className="mr-1.5 inline-block h-3.5 w-3.5 align-[-2px]" aria-hidden="true" />
+                    {t('anonymousUpload.galleryOnlyNote')}
+                </p>
+            </div>
         </form>
     );
 }
