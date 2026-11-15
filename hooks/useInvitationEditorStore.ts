@@ -6,10 +6,11 @@ import { useStore } from 'zustand';
 import type { InvitationDocument } from '@/lib/invitation/document';
 import { createInvitationEditorStore } from '@/lib/invitation/editorStore';
 
-// The open draft's document with its undo history. One store per editor mount.
-export function useInvitationEditorStore(initialDocument: InvitationDocument) {
-    const [store] = useState(() => createInvitationEditorStore(initialDocument));
+// The open draft's document and theme with their undo history. One store per editor mount.
+export function useInvitationEditorStore(initialDocument: InvitationDocument, initialThemeSlug = '') {
+    const [store] = useState(() => createInvitationEditorStore(initialDocument, initialThemeSlug));
     const document = useStore(store, (state) => state.document);
+    const themeSlug = useStore(store, (state) => state.themeSlug);
     const canUndo = useStore(store, (state) => state.past.length > 0);
     const canRedo = useStore(store, (state) => state.future.length > 0);
     const undo = useCallback(() => store.getState().undo(), [store]);
@@ -23,5 +24,5 @@ export function useInvitationEditorStore(initialDocument: InvitationDocument) {
         [store],
     );
 
-    return { store, document, canUndo, canRedo, undo, redo, setTextColor };
+    return { store, document, themeSlug, canUndo, canRedo, undo, redo, setTextColor };
 }
