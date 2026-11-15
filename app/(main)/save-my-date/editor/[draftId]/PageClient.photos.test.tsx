@@ -76,7 +76,10 @@ function storedSection<T extends InvitationSection['type']>(type: T) {
     return backend.stored().document.sections.find((item): item is Extract<InvitationSection, { type: T }> => item.type === type)!;
 }
 
-describe('Invitation editor: photos', () => {
+// Every case opens the whole editor and some wait for its autosave, which takes a while when the whole suite runs.
+const EDITOR_FLOW_TIMEOUT_MS = 15_000;
+
+describe('Invitation editor: photos', { timeout: EDITOR_FLOW_TIMEOUT_MS }, () => {
     beforeAll(() => backend.server.listen({ onUnhandledRequest: 'error' }));
     beforeEach(() => localStorage.setItem(EDITOR_TOUR_SEEN_KEY, '1'));
     afterEach(() => {
@@ -187,5 +190,21 @@ describe('Invitation editor: photos', () => {
 
         expect(within(section('Photo')).getAllByRole('button', { name: /^(Upload|Change) photo$/ })).toHaveLength(1);
         expect(within(section('Parents')).getAllByRole('button', { name: /^(Upload|Change) photo$/ })).toHaveLength(2);
+    });
+
+    it('moves the photo band and saves where it is, undoable', async () => {
+        await openEditor();
+        const before = storedSection('photo').data.imageY;
+        const move = within(section('Photo')).getByRole('button', { name: 'Move photo' });
+
+        const photo = () => within(section('Photo')).getByRole('img');
+
+        fireEvent.keyDown(move, { key: 'ArrowUp' });
+        expect(photo()).toHaveStyle({ objectPosition: `50% ${before + 5}%` });
+        fireEvent.click(screen.getByRole('button', { name: 'Undo' }));
+        expect(photo()).toHaveStyle({ objectPosition: `50% ${before}%` });
+        fireEvent.click(screen.getByRole('button', { name: 'Redo' }));
+
+        await waitFor(() => expect(storedSection('photo').data.imageY).toBe(before + 5), { timeout: 4000 });
     });
 });

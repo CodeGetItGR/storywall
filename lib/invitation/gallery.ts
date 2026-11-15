@@ -1,5 +1,5 @@
 import type { InvitationLabels } from '@/lib/invitation/labels';
-import { resolvePhotoFrame } from '@/lib/invitation/photoFrame';
+import { type PhotoFrameElement, resolveFrameArt, resolvePhotoFrame } from '@/lib/invitation/photoFrame';
 import { type RenderContext, resolveImage } from '@/lib/invitation/render';
 import type { InvitationSection } from '@/lib/invitation/sections';
 
@@ -50,11 +50,18 @@ export function stepGalleryIndex(index: number, direction: 1 | -1, count: number
 // editor shows an empty photo or frame, with its camera, so the host can fill it.
 export function isEmptyForGuests(section: InvitationSection, ctx: RenderContext): boolean {
     if (section.type === 'gallery') return galleryImages(section.data, ctx).length === 0;
-    if (ctx.canvasTools?.photo) return false;
-    if (section.type === 'photo') return !resolveImage(section.data.photo, ctx);
+    if (section.type === 'photo') return !ctx.canvasTools?.photo && !resolveImage(section.data.photo, ctx);
     if (section.type === 'photoFrame' || section.type === 'blank') {
         const { elements } = section;
-        return elements.length > 0 && elements.every((element) => element.kind === 'photoFrame' && !resolvePhotoFrame(element, ctx));
+        return elements.length > 0 && elements.every((element) => element.kind === 'photoFrame' && !isFrameShown(element, ctx));
     }
     return false;
+}
+
+// What PhotoFrame draws: guests a frame with its photo; the editor an empty frame
+// with its camera too, and admins a frame not chosen yet.
+function isFrameShown(element: PhotoFrameElement, ctx: RenderContext): boolean {
+    if (ctx.canvasTools?.frameSettings) return true;
+    if (ctx.canvasTools?.photo) return resolveFrameArt(element, ctx) !== null;
+    return resolvePhotoFrame(element, ctx) !== null;
 }

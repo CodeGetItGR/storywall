@@ -154,11 +154,10 @@ export function qrCardStyleOf(template: QrCardTemplateDto): QrCardStyle {
 
 // The default line under the code (a QrCardPage.lines key), by what the QR opens. A guest code's line follows
 // what it offers: photos, wishes or both.
-export type QrCardLineKey = 'join' | 'invitation' | 'gallery' | 'guestWish' | 'guestBoth';
+export type QrCardLineKey = 'join' | 'gallery' | 'guestWish' | 'guestBoth';
 
 export function qrCardLineKey(targetType: QrTargetType, modules: EventModuleResponseDto[]): QrCardLineKey {
     if (targetType === 'EVENT_JOIN') return 'join';
-    if (targetType === 'INVITATION') return 'invitation';
     if (targetType === 'MEDIA_UPLOAD') return 'gallery';
     const actions = guestCodeActions(modules);
     if (actions.includes('UPLOAD') && actions.includes('WISH')) return 'guestBoth';
