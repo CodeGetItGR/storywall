@@ -13,6 +13,7 @@ const meta = {
         coverSrc: '/landing/couple-cheering-with-guests-under-lit-arch-at-night.webp',
         eventTitle: 'Maria & Nikos',
         isSignedIn: false,
+        details: { when: 'Sat, Nov 28, 2026, 6:30 PM', where: 'Agios Nikolaos, Kifisia' },
     },
     decorators: [
         (Story) => (
@@ -34,6 +35,11 @@ export const GuestWithoutCover: Story = {
     args: { coverSrc: null },
 };
 
+// An event with a date but no place.
+export const GuestWithoutPlace: Story = {
+    args: { details: { when: 'Sat, Nov 28, 2026, 6:30 PM', where: null } },
+};
+
 // Someone signed in who hasn't joined this event yet.
 export const SignedInGuest: Story = {
     args: { isSignedIn: true },
@@ -52,5 +58,6 @@ export const LiteGuestCode: Story = {
     args: {
         eventId: null,
         plan: { choices: ['upload', 'wish'], joinInviteToken: null, uploadToken: 'self', wishToken: 'self' },
+        details: null,
     },
 };

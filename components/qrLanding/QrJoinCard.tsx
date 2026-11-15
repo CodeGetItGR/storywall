@@ -8,13 +8,20 @@ interface QrJoinCardProps {
     href: string;
     coverSrc: string | null;
     title: string;
-    // Only someone without an account is told that joining makes one.
-    showAccountNote: boolean;
+    // A guest without an account: sign-up and log-in in place of Join, both carrying the event's invite.
+    accountHrefs: { register: string; login: string } | null;
 }
 
-// The main choice on a scanned event code (KAN-213): what is inside the event, then the button into it.
-export function QrJoinCard({ choice, href, coverSrc, title, showAccountNote }: QrJoinCardProps) {
+const PRIMARY_CLASS =
+    'flex min-h-11 items-center justify-center rounded-full bg-gradient-brand px-5 py-3 text-[15px] font-semibold text-white transition-opacity hover:opacity-90';
+const SECONDARY_CLASS =
+    'flex min-h-11 items-center justify-center rounded-full bg-background px-5 py-3 text-[15px] font-semibold text-ink transition-colors hover:bg-background/70';
+
+// The main choice on a scanned event code (KAN-213): what is inside the event, then the way in.
+export function QrJoinCard({ choice, href, coverSrc, title, accountHrefs }: QrJoinCardProps) {
     const t = useTranslations('QrCodePage');
+    const tInvite = useTranslations('InviteOnboardingPage');
+    const showAccountButtons = choice === 'join' && accountHrefs !== null;
 
     return (
         <section className="flex flex-col gap-3 rounded-3xl bg-surface-muted p-4">
@@ -24,14 +31,22 @@ export function QrJoinCard({ choice, href, coverSrc, title, showAccountNote }: Q
             {/* Line */}
             <p className="text-[13px] leading-snug text-ink-muted">{choice === 'join' ? t('choices.joinLine') : t('choices.eventHint')}</p>
 
-            {/* Action */}
-            <AppLink
-                href={href}
-                className="flex min-h-11 items-center justify-center rounded-full bg-gradient-brand px-5 py-3 text-[15px] font-semibold text-white transition-opacity hover:opacity-90"
-            >
-                {choice === 'join' ? t('choices.join') : t('choices.open')}
-            </AppLink>
-            {showAccountNote ? <p className="-mt-1 text-center text-xs text-ink-muted">{t('choices.freeAccount')}</p> : null}
+            {/* Actions */}
+            {showAccountButtons ? (
+                <>
+                    <AppLink href={accountHrefs.register} className={PRIMARY_CLASS}>
+                        {tInvite('createAccount')}
+                    </AppLink>
+                    <AppLink href={accountHrefs.login} className={SECONDARY_CLASS}>
+                        {tInvite('haveAccount')}
+                    </AppLink>
+                    <p className="-mt-1 text-center text-xs text-ink-muted">{t('choices.freeAccount')}</p>
+                </>
+            ) : (
+                <AppLink href={href} className={PRIMARY_CLASS}>
+                    {choice === 'join' ? t('choices.join') : t('choices.open')}
+                </AppLink>
+            )}
         </section>
     );
 }
