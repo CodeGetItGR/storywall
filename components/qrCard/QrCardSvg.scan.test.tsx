@@ -45,6 +45,7 @@ const MOVED = {
     code: { x: 47, y: 90, size: 50, panel: true, radius: 2 },
     lines: { ...L.lines, y: 40, height: 40 },
     fields: [],
+    features: null,
 };
 // The smallest code the backend allows.
 const SMALLEST = { ...L, code: { ...L.code, x: 37.5, y: 55, size: 30 } };

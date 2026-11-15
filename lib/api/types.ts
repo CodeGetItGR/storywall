@@ -1108,6 +1108,8 @@ export interface QrCardLayoutDto {
         text?: Partial<Record<QrCardWordingKey, LocalizedText>> | null;
     };
     fields?: QrCardTextFieldDto[]; // up to 5; absent on layouts saved before KAN-103
+    // The picture tiles' box. null = removed; absent on layouts saved before it, which also means no tiles.
+    features?: { x: number; y: number; width: number; height: number } | null;
 }
 
 // The scan lines a design can word: one per thing a code opens (QrCardPage.lines), and the gift card's.
