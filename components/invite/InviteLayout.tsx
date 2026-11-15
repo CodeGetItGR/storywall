@@ -25,6 +25,12 @@ interface InviteLayoutProps {
     scroll?: 'body' | 'page';
     // 'plain' keeps the logo hero (no cover, no illustration) on the page's own white, for the QR choice page.
     heroTone?: 'muted' | 'plain';
+    // A shorter hero, to leave room below (the QR choice page): a cover or illustration about 5% shorter, the plain logo hero shorter still.
+    compactHero?: boolean;
+    // Shown at the foot of the body, after some space, with the footer logo right under it.
+    bottom?: ReactNode;
+    // Floats over the hero's top-right corner (the QR page's language switcher).
+    corner?: ReactNode;
     children: ReactNode;
 }
 
@@ -37,6 +43,9 @@ export function InviteLayout({
     actions,
     scroll = 'body',
     heroTone = 'muted',
+    compactHero = false,
+    bottom,
+    corner,
     children,
 }: InviteLayoutProps) {
     const { hero, handleIllustrationError } = useInviteHero(theme, coverImageSrc);
@@ -45,15 +54,21 @@ export function InviteLayout({
         // One stacked column at every size: the hero on top, the actions below. Wider screens centre it.
         <div
             className={cn(
-                'mx-auto flex h-full w-full max-w-xl flex-col bg-background md:px-6 md:pt-6',
+                'relative mx-auto flex h-full w-full max-w-xl flex-col bg-background md:px-6 md:pt-6',
                 scroll === 'page' ? 'overflow-y-auto' : 'overflow-hidden',
             )}
         >
+            {/* Corner */}
+            {corner ? <div className="absolute top-3 right-3 z-10 md:top-9 md:right-9">{corner}</div> : null}
+
             {hero.kind === 'illustration' && (
                 // Illustration mode: the art sits clean on the theme colour and the title goes below it
                 // in dark ink. The cover-photo overlay (dark gradient, white title) would only muddy it.
                 <div
-                    className="relative flex h-72 w-full shrink-0 flex-col bg-surface-muted md:h-96 md:overflow-hidden md:rounded-3xl"
+                    className={cn(
+                        'relative flex w-full shrink-0 flex-col bg-surface-muted md:overflow-hidden md:rounded-3xl',
+                        compactHero ? 'h-[274px] md:h-[365px]' : 'h-72 md:h-96',
+                    )}
                     style={hero.columnStyle}
                     {...themeFontScopeProps(hero.headingFont)}
                 >
@@ -78,7 +93,12 @@ export function InviteLayout({
             )}
 
             {hero.kind === 'cover' && (
-                <div className="relative h-64 w-full shrink-0 bg-gradient-brand md:h-80 md:overflow-hidden md:rounded-3xl">
+                <div
+                    className={cn(
+                        'relative w-full shrink-0 bg-gradient-brand md:overflow-hidden md:rounded-3xl',
+                        compactHero ? 'h-[243px] md:h-[304px]' : 'h-64 md:h-80',
+                    )}
+                >
                     <ProtectedImage
                         src={hero.src}
                         alt={coverImageAlt}
@@ -100,8 +120,10 @@ export function InviteLayout({
                 // Logo mode: no illustration and no cover, so the app logo stands in, with the title below it.
                 <div
                     className={cn(
-                        'flex w-full shrink-0 flex-col items-center justify-center gap-6 px-6 text-center md:rounded-3xl',
-                        heroTone === 'plain' ? 'h-56 bg-background md:h-64' : 'h-64 bg-surface-muted md:h-80',
+                        'flex w-full shrink-0 flex-col items-center justify-center px-6 text-center md:rounded-3xl',
+                        heroTone !== 'plain' && 'h-64 gap-6 bg-surface-muted md:h-80',
+                        // The QR choice page keeps it short, so the join card starts on the first screen (KAN-213).
+                        heroTone === 'plain' && (compactHero ? 'h-44 gap-4 bg-background md:h-52' : 'h-56 gap-6 bg-background md:h-64'),
                     )}
                 >
                     <Logo direction="col" iconClassName="h-12 w-auto" wordmarkClassName="h-6 w-auto" />
@@ -130,13 +152,16 @@ export function InviteLayout({
                         </div>
                     )}
 
+                    {/* Bottom */}
+                    {bottom && <div className="mt-auto pt-12">{bottom}</div>}
+
                     {/* Footer: the logo column already shows it */}
                     {hero.kind !== 'logo' && (
                         <Logo
                             direction="row"
                             iconClassName="h-5 w-auto"
                             wordmarkClassName="h-3.5 w-auto"
-                            className={cn('justify-center gap-2 pb-8 opacity-70', actions ? 'pt-6 md:pt-10' : 'mt-auto pt-10')}
+                            className={cn('justify-center gap-2 pb-8 opacity-70', bottom ? 'pt-8' : actions ? 'pt-6 md:pt-10' : 'mt-auto pt-10')}
                         />
                     )}
                 </div>

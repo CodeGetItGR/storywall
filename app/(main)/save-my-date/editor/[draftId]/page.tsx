@@ -13,7 +13,7 @@ import { prefetchAccessToken } from '@/lib/auth/serverEventContext';
 import { type InvitationDraftDto, invitationDraftKeys } from '@/lib/invitation/drafts';
 import { THEME_CATALOGUE_REVALIDATE_SECONDS } from '@/lib/invitation/serverThemeCatalogue';
 import { fetchUploadedFonts } from '@/lib/invitation/serverUploadedFonts';
-import { invitationThemeKeys, type ThemeSamples } from '@/lib/invitation/themeCatalogue';
+import { invitationThemeKeys } from '@/lib/invitation/themeCatalogue';
 import { invitationThemeEndpoint, type InvitationThemePublicDto } from '@/lib/invitation/themePreview';
 import { makeQueryClient } from '@/lib/queryClient';
 import { showsSaveMyDate } from '@/lib/saveMyDateRelease';
@@ -35,9 +35,7 @@ async function prefetchEvent(queryClient: ReturnType<typeof makeQueryClient>, dr
     await Promise.all([
         themeSlug
             ? serverPublicCachedGetOrNull<InvitationThemePublicDto>(invitationThemeEndpoint(themeSlug), THEME_CATALOGUE_REVALIDATE_SECONDS)
-                  .then((theme) => {
-                      if (theme) queryClient.setQueryData<ThemeSamples>(invitationThemeKeys.samples(themeSlug), { document: theme.document, assetUrls: theme.assetUrls });
-                  })
+                  .then((theme) => theme && queryClient.setQueryData(invitationThemeKeys.publicTheme(themeSlug), theme))
                   .catch(() => {})
             : null,
         serverGet<EventDetailResponseDto>(endpoints.events.byId(eventId), accessToken)

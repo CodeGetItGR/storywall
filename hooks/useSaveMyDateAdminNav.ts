@@ -1,6 +1,6 @@
 'use client';
 
-import { LayoutTemplate, type LucideIcon } from 'lucide-react';
+import { Baseline, LayoutTemplate, type LucideIcon, TextQuote, Type } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useMemo } from 'react';
@@ -27,7 +27,12 @@ export function useSaveMyDateAdminNav() {
             {
                 key: 'catalog',
                 label: t('layout.groupCatalog'),
-                items: [item('themes', routes.saveMyDateAdmin.themes, t('tabs.invitationThemes'), LayoutTemplate)],
+                items: [
+                    item('themes', routes.saveMyDateAdmin.themes, t('tabs.invitationThemes'), LayoutTemplate),
+                    item('fonts', routes.saveMyDateAdmin.fonts, t('saveMyDate.fonts.title'), Type),
+                    item('fontPairings', routes.saveMyDateAdmin.fontPairings, t('saveMyDate.fontPairings.title'), Baseline),
+                    item('texts', routes.saveMyDateAdmin.texts, t('saveMyDate.texts.title'), TextQuote),
+                ],
             },
         ];
     }, [pathname, t]);

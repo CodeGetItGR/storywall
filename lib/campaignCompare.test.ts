@@ -9,6 +9,7 @@ import {
     campaignsForTab,
     campaignTab,
     changeOf,
+    chartLabelDates,
     rateMeasure,
     revenueChangeOf,
     sparklinePoints,
@@ -364,5 +365,28 @@ describe('campaignPlatformRows', () => {
         expect(email?.expandable).toBe(false);
         expect(email?.rate).toBeNull();
         expect(email?.share).toBe(0);
+    });
+});
+
+describe('chartLabelDates', () => {
+    const days = (count: number) => Array.from({ length: count }, (_, index) => `d${index}`);
+
+    it('labels every day when they fit', () => {
+        expect(chartLabelDates(days(5))).toEqual(days(5));
+    });
+
+    it('labels the first, the last and evenly spaced days between for 30 days', () => {
+        expect(chartLabelDates(days(30))).toEqual(['d0', 'd5', 'd10', 'd15', 'd20', 'd25', 'd29']);
+    });
+
+    it('drops a spaced day that would sit next to the last one', () => {
+        expect(chartLabelDates(days(10))).toEqual(['d0', 'd2', 'd4', 'd6', 'd9']);
+    });
+
+    it('keeps at most eight labels for 90 days', () => {
+        const labels = chartLabelDates(days(90));
+        expect(labels).toHaveLength(8);
+        expect(labels[0]).toBe('d0');
+        expect(labels.at(-1)).toBe('d89');
     });
 });

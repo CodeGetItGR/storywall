@@ -1,13 +1,14 @@
 'use client';
 
 import { useQueryClient } from '@tanstack/react-query';
-import { ArrowRight, ImagePlus, Loader2, Video, X } from 'lucide-react';
+import { ArrowRight, ImagePlus, Images, Loader2, Video, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 
 import { ProtectedImage } from '@/components/common/ProtectedImage';
 import { IncidentPausedNote } from '@/components/incident/IncidentPausedNote';
 import { SignupAcceptanceCheckbox } from '@/components/legal/SignupAcceptanceCheckbox';
+import { QrSentArt } from '@/components/qrGuest/QrSentArt';
 import { FormFieldLabel } from '@/components/ui/FormFieldLabel';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useAppConfig } from '@/hooks/useAppConfig';
@@ -15,6 +16,7 @@ import { communityGuidelinesQueryKey, useCommunityGuidelinesVersion } from '@/ho
 import { useFilePreviews } from '@/hooks/useFilePreviews';
 import { useUploadMediaBatch } from '@/hooks/useMedia';
 import { useUploadQrMediaBatch } from '@/hooks/useQrMediaUpload';
+import { useSlowUpload } from '@/hooks/useSlowUpload';
 import { termsVersionQueryKey, useTermsVersion } from '@/hooks/useTermsVersion';
 import { useUploadAccept } from '@/hooks/useUploadAccept';
 import { isGuidelinesVersionMismatchError, isTermsVersionMismatchError } from '@/lib/api/errors';
@@ -27,9 +29,11 @@ interface AnonymousQrMediaUploadFormProps {
     token: string;
     // A signed-in member of the event uploads as themselves: their name, their account's acceptance.
     member?: { eventId: string; displayName: string } | null;
+    // Told when the sent screen shows or hides, so the page can drop its own header there.
+    onSentChange?: (sent: boolean) => void;
 }
 
-export function AnonymousQrMediaUploadForm({ token, member = null }: AnonymousQrMediaUploadFormProps) {
+export function AnonymousQrMediaUploadForm({ token, member = null, onSentChange }: AnonymousQrMediaUploadFormProps) {
     const t = useTranslations('QrCodePage');
     const tAlt = useTranslations('ImageAlt');
     const uploadAccept = useUploadAccept();
@@ -37,6 +41,7 @@ export function AnonymousQrMediaUploadForm({ token, member = null }: AnonymousQr
     const qrUploadBatch = useUploadQrMediaBatch();
     const memberUploadBatch = useUploadMediaBatch();
     const uploadBatch = member ? memberUploadBatch : qrUploadBatch;
+    const isSlow = useSlowUpload(uploadBatch.isPending);
     const queryClient = useQueryClient();
     const termsVersion = useTermsVersion();
     const guidelinesVersion = useCommunityGuidelinesVersion();
@@ -55,8 +60,19 @@ export function AnonymousQrMediaUploadForm({ token, member = null }: AnonymousQr
     const [isBusy, setIsBusy] = useState(false);
     const previews = useFilePreviews(files);
 
+    useEffect(() => {
+        onSentChange?.(done);
+    }, [done, onSentChange]);
+
     const handleUploaderNameChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
         setUploaderName(e.target.value);
+    }, []);
+
+    // Back to an empty form for the next set. The name stays; the box is ticked again, as on every upload.
+    const handleUploadMore = useCallback(() => {
+        setAcceptedDocuments(false);
+        setSubmitError(null);
+        setDone(false);
     }, []);
 
     const handleAcceptedChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -159,11 +175,30 @@ export function AnonymousQrMediaUploadForm({ token, member = null }: AnonymousQr
     }
 
     if (done) {
-        return <p className="text-center text-sm text-ink-muted">{t('anonymousUpload.success')}</p>;
+        return (
+            /* Sent */
+            <div className="flex flex-col items-center gap-4 py-8 text-center">
+                <QrSentArt kind="upload" />
+                <p className="text-base font-semibold text-ink">{t('anonymousUpload.success')}</p>
+                <button
+                    type="button"
+                    onClick={handleUploadMore}
+                    className="inline-flex min-h-10 items-center rounded-full bg-surface-muted px-5 text-sm font-semibold text-ink transition-opacity hover:opacity-80"
+                >
+                    {t('anonymousUpload.uploadMore')}
+                </button>
+            </div>
+        );
     }
 
     return (
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+            {/* Where uploads go */}
+            <p className="flex items-start gap-2 rounded-xl bg-primary/10 px-3 py-2.5 text-sm leading-snug text-ink">
+                <Images className="mt-0.5 h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
+                <span>{t('anonymousUpload.galleryOnlyNote')}</span>
+            </p>
+
             {/* Name: a member's own, read-only */}
             <FormFieldLabel label={t('anonymousUpload.nameLabel')} optional={!member}>
                 <input
@@ -250,6 +285,10 @@ export function AnonymousQrMediaUploadForm({ token, member = null }: AnonymousQr
             {isBusy ? (
                 <p role="status" className="-mt-1 text-center text-xs text-ink-muted">
                     {t('anonymousUpload.uploadBusy')}
+                </p>
+            ) : isSlow ? (
+                <p role="status" className="-mt-1 text-center text-xs text-ink-muted">
+                    {t('anonymousUpload.uploadSlow')}
                 </p>
             ) : (
                 submitError && (

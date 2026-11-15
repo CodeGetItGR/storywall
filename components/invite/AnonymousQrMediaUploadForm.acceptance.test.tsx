@@ -53,6 +53,15 @@ describe('AnonymousQrMediaUploadForm acceptance', () => {
         expect(submit).toBeEnabled();
     });
 
+    // QR uploads go to the gallery only, so guests and members are told they won't be in the feed.
+    it('says the files go to the gallery, not the feed', () => {
+        render(<AnonymousQrMediaUploadForm token="t" />);
+        expect(screen.getByText('anonymousUpload.galleryOnlyNote')).toBeInTheDocument();
+        cleanup();
+        render(<AnonymousQrMediaUploadForm token="t" member={{ eventId: 'e1', displayName: 'Maria' }} />);
+        expect(screen.getByText('anonymousUpload.galleryOnlyNote')).toBeInTheDocument();
+    });
+
     // KAN-208: a signed-in member uploads as themselves, with no box to tick.
     it('lets a member upload under their own name with no box', async () => {
         memberMutateAsync.mockResolvedValue({ created: [], failed: [] });
@@ -82,6 +91,23 @@ describe('AnonymousQrMediaUploadForm acceptance', () => {
         expect(mutateAsync).toHaveBeenCalledWith(
             expect.objectContaining({ token: 't', acceptance: { termsVersion: '2026-10-04', guidelinesVersion: '2026-09-30' } }),
         );
+    });
+
+    // KAN-208: the sent screen shows its drawing, and Upload more opens an empty form with the name kept and the box to tick again.
+    it('goes back to the form for another set from the sent screen', async () => {
+        mutateAsync.mockResolvedValue({ created: [], failed: [] });
+        const { container } = render(<AnonymousQrMediaUploadForm token="t" />);
+        fireEvent.change(screen.getByPlaceholderText('anonymousUpload.namePlaceholder'), { target: { value: 'Nikos' } });
+        chooseFile(container);
+        tickBox();
+        fireEvent.submit(container.querySelector('form')!);
+
+        expect(await screen.findByRole('img', { name: 'qrUploadSent' })).toBeInTheDocument();
+        fireEvent.click(screen.getByRole('button', { name: 'anonymousUpload.uploadMore' }));
+
+        expect(screen.getByDisplayValue('Nikos')).toBeInTheDocument();
+        expect(screen.getByRole('checkbox', { name: 'accept 16' })).not.toBeChecked();
+        expect(screen.getByRole('button', { name: /anonymousUpload.submit/ })).toBeDisabled();
     });
 
     it('unticks the documents and asks again when the Terms changed meanwhile', async () => {

@@ -1,5 +1,5 @@
 import { act, renderHook } from '@testing-library/react';
-import type { ChangeEvent, SubmitEvent } from 'react';
+import type { SubmitEvent } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { useGiftClaim } from '@/hooks/useGiftClaim';
@@ -10,7 +10,7 @@ const mocks = vi.hoisted(() => ({
     auth: { isAuthenticated: true, isBootstrapping: false, user: { isGuestAccount: false, emailVerified: true } as Record<string, unknown> | null },
     preview: { data: undefined as GiftClaimPreviewDto | undefined, error: null as unknown, isLoading: false },
     calls: [] as GiftClaimRequestDto[],
-    result: (): Promise<GiftClaimResponseDto> => Promise.resolve({ status: 'COMPLETED', ownershipTransfersAt: null }),
+    result: (): Promise<GiftClaimResponseDto> => Promise.resolve({ eventId: 'e1', status: 'COMPLETED', ownershipTransfersAt: null }),
 }));
 
 vi.mock('next-intl', () => ({ useTranslations: () => (key: string) => key }));
@@ -38,13 +38,14 @@ function preview(overrides: Partial<GiftClaimPreviewDto> = {}): GiftClaimPreview
         giverDisplayName: 'Maria',
         recipientLabel: 'Anna',
         emailBound: true,
+        callerIsRecipient: true,
         state: 'CLAIMABLE',
         ...overrides,
     };
 }
 
 const submitEvent = { preventDefault: () => {} } as SubmitEvent<HTMLFormElement>;
-const typed = (value: string) => ({ target: { value } }) as ChangeEvent<HTMLInputElement>;
+const typed = (value: string) => value;
 const refuse = (error: ApiError) => () => Promise.reject(error);
 
 describe('useGiftClaim', () => {
@@ -52,17 +53,17 @@ describe('useGiftClaim', () => {
         mocks.auth = { isAuthenticated: true, isBootstrapping: false, user: { isGuestAccount: false, emailVerified: true } };
         mocks.preview = { data: preview(), error: null, isLoading: false };
         mocks.calls = [];
-        mocks.result = () => Promise.resolve({ status: 'COMPLETED', ownershipTransfersAt: null });
+        mocks.result = () => Promise.resolve({ eventId: 'e1', status: 'COMPLETED', ownershipTransfersAt: null });
     });
 
-    it('claims without a PIN when an email is bound', async () => {
+    it('claims without a PIN as the recipient', async () => {
         const { result } = renderHook(() => useGiftClaim('tok'));
         expect(result.current.showPin).toBe(false);
 
         await act(() => result.current.submit(submitEvent));
 
         expect(mocks.calls).toEqual([{}]);
-        expect(result.current.outcome).toEqual({ status: 'COMPLETED', ownershipTransfersAt: null });
+        expect(result.current.outcome).toEqual({ eventId: 'e1', status: 'COMPLETED', ownershipTransfersAt: null });
     });
 
     it('asks for the PIN up front when no email is bound, and keeps digits only', async () => {
@@ -91,7 +92,16 @@ describe('useGiftClaim', () => {
         expect(result.current.pin).toBe('');
     });
 
-    it('asks for the PIN when the email did not match', async () => {
+    it('asks another account for the PIN up front', () => {
+        mocks.preview.data = preview({ callerIsRecipient: false });
+        const { result } = renderHook(() => useGiftClaim('tok'));
+
+        expect(result.current.showPin).toBe(true);
+        expect(result.current.canSubmit).toBe(false);
+    });
+
+    it('asks for the PIN when the server did not match the email after all', async () => {
+        mocks.preview.data = preview({ callerIsRecipient: null });
         mocks.result = refuse(new ApiError(400, { errorCode: 3036, details: { attemptsLeft: 5 } }));
         const { result } = renderHook(() => useGiftClaim('tok'));
 

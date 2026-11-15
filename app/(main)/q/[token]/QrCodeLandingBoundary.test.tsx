@@ -8,13 +8,20 @@ import { routes } from '@/lib/routes';
 const mocks = vi.hoisted(() => ({
     resolution: vi.fn(),
     replace: vi.fn(),
+    push: vi.fn(),
+    back: vi.fn(),
+    inAppPrevious: false,
+    search: '',
     auth: { isAuthenticated: false, isBootstrapping: false },
     memberships: [] as { eventId: string; displayName: string }[],
     modules: [] as { moduleKey: string; isAvailable: boolean }[],
 }));
 
 vi.mock('next-intl', () => ({ useTranslations: () => (key: string) => key }));
-vi.mock('next/navigation', () => ({ useRouter: () => ({ replace: mocks.replace }) }));
+vi.mock('next/navigation', () => ({ useRouter: () => ({ replace: mocks.replace, push: mocks.push, back: mocks.back }),
+    useSearchParams: () => new URLSearchParams(mocks.search),
+}));
+vi.mock('@/lib/inAppHistory', () => ({ hasInAppPrevious: () => mocks.inAppPrevious }));
 vi.mock('next/image', () => ({ default: ({ alt }: { alt: string }) => <span>{`img:${alt}`}</span> }));
 vi.mock('@/components/ui/AppLink', () => ({
     AppLink: ({ href, children }: { href: string; children: ReactNode }) => <a href={href}>{children}</a>,
@@ -23,6 +30,7 @@ vi.mock('@/hooks/useQrLinks', () => ({ useQrLinkResolution: (token: string) => m
 vi.mock('@/hooks/useAuth', () => ({ useAuth: () => mocks.auth }));
 vi.mock('@/hooks/useMyEvents', () => ({ useMyEvents: () => ({ data: mocks.memberships, isLoading: false }) }));
 vi.mock('@/hooks/useEventModules', () => ({ useEventModules: () => ({ data: mocks.modules, isLoading: false }) }));
+vi.mock('@/hooks/useQrEventDetails', () => ({ useQrEventDetails: () => null }));
 vi.mock('@/components/invite/InviteLayout', () => ({ InviteLayout: ({ children }: { children: ReactNode }) => <div>{children}</div> }));
 vi.mock('@/components/invite/AnonymousQrMediaUploadForm', () => ({
     AnonymousQrMediaUploadForm: ({ token, member }: { token: string; member: { displayName: string } | null }) => (
@@ -39,6 +47,10 @@ describe('QrCodeLandingBoundary', () => {
     beforeEach(() => {
         mocks.resolution.mockReset();
         mocks.replace.mockReset();
+        mocks.push.mockReset();
+        mocks.back.mockReset();
+        mocks.inAppPrevious = false;
+        mocks.search = '';
         mocks.auth = { isAuthenticated: false, isBootstrapping: false };
         mocks.memberships = [];
         mocks.modules = [];
@@ -49,19 +61,19 @@ describe('QrCodeLandingBoundary', () => {
         resolve({ status: 'ACTIVE', targetType: 'EVENT_JOIN', inviteToken: 'inv', uploadToken: 'up' });
         render(<QrCodeLandingBoundary token="t" />);
 
-        expect(screen.getByRole('link', { name: /choices.join/ })).toHaveAttribute('href', routes.inviteToken('inv'));
+        expect(screen.getByRole('link', { name: 'createAccount' })).toHaveAttribute('href', expect.stringContaining('invite=inv'));
         fireEvent.click(screen.getByRole('button', { name: /guestCode.uploadButton/ }));
         expect(screen.getByText('upload-form:up:guest')).toBeInTheDocument();
 
         fireEvent.click(screen.getByRole('button', { name: 'guestCode.back' }));
-        expect(screen.getByText('choices.title')).toBeInTheDocument();
+        expect(screen.getByRole('link', { name: 'haveAccount' })).toBeInTheDocument();
     });
 
     it('offers join and upload on an old printed upload code, uploading on that code', () => {
         resolve({ status: 'ACTIVE', targetType: 'MEDIA_UPLOAD', joinInviteToken: 'inv' });
         render(<QrCodeLandingBoundary token="t" />);
 
-        expect(screen.getByRole('link', { name: /choices.join/ })).toHaveAttribute('href', routes.inviteToken('inv'));
+        expect(screen.getByRole('link', { name: 'createAccount' })).toHaveAttribute('href', expect.stringContaining('invite=inv'));
         fireEvent.click(screen.getByRole('button', { name: /guestCode.uploadButton/ }));
         expect(screen.getByText('upload-form:t:guest')).toBeInTheDocument();
     });
@@ -75,12 +87,6 @@ describe('QrCodeLandingBoundary', () => {
 
     it('goes straight to the invite page when join is the only choice', () => {
         resolve({ status: 'ACTIVE', targetType: 'EVENT_JOIN', inviteToken: 'inv' });
-        render(<QrCodeLandingBoundary token="t" />);
-        expect(mocks.replace).toHaveBeenCalledWith(routes.inviteToken('inv'));
-    });
-
-    it('keeps sending a personal invitation to the invite page', () => {
-        resolve({ status: 'ACTIVE', targetType: 'INVITATION', inviteToken: 'inv' });
         render(<QrCodeLandingBoundary token="t" />);
         expect(mocks.replace).toHaveBeenCalledWith(routes.inviteToken('inv'));
     });
@@ -116,5 +122,30 @@ describe('QrCodeLandingBoundary', () => {
         resolve({ status: 'REVOKED', targetType: 'GUEST', guestActions: ['WISH'] });
         render(<QrCodeLandingBoundary token="t" />);
         expect(screen.getByText('revoked.title')).toBeInTheDocument();
+    });
+
+    it('goes back to the feed from the upload form the feed opened', () => {
+        mocks.inAppPrevious = true;
+        mocks.auth = { isAuthenticated: true, isBootstrapping: false };
+        mocks.memberships = [{ eventId: 'e1', displayName: 'Maria' }];
+        mocks.search = 'choice=upload';
+        resolve({ status: 'ACTIVE', targetType: 'MEDIA_UPLOAD', inviteToken: 'inv', uploadToken: 'up' });
+        render(<QrCodeLandingBoundary token="up" />);
+
+        fireEvent.click(screen.getByRole('button', { name: 'guestCode.back' }));
+        expect(mocks.back).toHaveBeenCalled();
+        expect(mocks.push).not.toHaveBeenCalled();
+        expect(screen.getByText('upload-form:up:Maria')).toBeInTheDocument();
+    });
+
+    it('opens the feed when there is no in-app page to go back to', () => {
+        mocks.auth = { isAuthenticated: true, isBootstrapping: false };
+        mocks.memberships = [{ eventId: 'e1', displayName: 'Maria' }];
+        mocks.search = 'choice=upload';
+        resolve({ status: 'ACTIVE', targetType: 'MEDIA_UPLOAD', uploadToken: 'up' });
+        render(<QrCodeLandingBoundary token="up" />);
+
+        fireEvent.click(screen.getByRole('button', { name: 'guestCode.back' }));
+        expect(mocks.push).toHaveBeenCalledWith(routes.events.feed('e1'));
     });
 });

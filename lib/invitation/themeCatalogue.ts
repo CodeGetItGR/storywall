@@ -23,15 +23,12 @@ export function invitationThemesEndpoint(eventType: CatalogueEventType): string 
     return `/api/invitation-themes?eventType=${eventType}`;
 }
 
-// What the editor keeps of the draft's theme, under invitationThemeKeys.samples: its document and image URLs.
-export type ThemeSamples = { document: unknown; assetUrls?: Record<string, string> };
-
 export const invitationThemeKeys = {
     all: ['invitationThemes'] as const,
     catalogue: () => [...invitationThemeKeys.all, 'catalogue'] as const,
     page: (slug: string) => [...invitationThemeKeys.all, 'page', slug] as const,
-    // The theme's own sections, for the editor to tell sample content from the host's (KAN-84).
-    samples: (slug: string) => [...invitationThemeKeys.all, 'samples', slug] as const,
+    // The theme's public answer as it comes: for the editor's theme switch, and for its sample content (KAN-84).
+    publicTheme: (slug: string) => [...invitationThemeKeys.all, 'public', slug] as const,
 };
 
 // Every event type's list, one after the other in the catalogue's order. Each list keeps the backend's
