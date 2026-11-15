@@ -129,4 +129,29 @@ describe('createInvitationEditorStore', () => {
         }
         expect(store.getState().past).toHaveLength(EDITOR_HISTORY_LIMIT);
     });
+
+    it('switches theme in one undo step, even to a theme with the same document', () => {
+        const store = createInvitationEditorStore(previewDocument(), 'olive');
+        const before = store.getState().document;
+
+        // A copied theme keeps its source's themeId, so the document may not change at all.
+        store.getState().switchTheme('olive-copy', () => {});
+        expect(store.getState()).toMatchObject({ themeSlug: 'olive-copy', document: before, changeCount: 1 });
+        expect(store.getState().past).toHaveLength(1);
+
+        store.getState().edit(setColor('#111111'), 'textColor');
+        store.getState().undo();
+        store.getState().undo();
+        expect(store.getState().themeSlug).toBe('olive');
+        store.getState().redo();
+        expect(store.getState().themeSlug).toBe('olive-copy');
+        store.getState().redo();
+        expect(store.getState()).toMatchObject({ themeSlug: 'olive-copy', document: { overrides: { textColor: '#111111' } } });
+    });
+
+    it('does nothing when switching to the theme it is in', () => {
+        const store = createInvitationEditorStore(previewDocument(), 'olive');
+        store.getState().switchTheme('olive', setColor('#111111'));
+        expect(store.getState()).toMatchObject({ themeSlug: 'olive', past: [], changeCount: 0 });
+    });
 });

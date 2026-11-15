@@ -22,6 +22,9 @@ import { PublishSignInDialog } from '@/components/saveMyDate/editor/publish/Publ
 import { SectionSettings } from '@/components/saveMyDate/editor/settings/SectionSettings';
 import { InlineTextEditing } from '@/components/saveMyDate/editor/text/InlineTextEditing';
 import { TextColorSetting } from '@/components/saveMyDate/editor/TextColorSetting';
+import { ThemeSwitchDialog } from '@/components/saveMyDate/editor/theme/ThemeSwitchDialog';
+import { ThemeSwitchPanel } from '@/components/saveMyDate/editor/theme/ThemeSwitchPanel';
+import { ThemeSwitchSheet } from '@/components/saveMyDate/editor/theme/ThemeSwitchSheet';
 import { ThemeAssetsPanel } from '@/components/saveMyDate/editor/ThemeAssetsPanel';
 import { EditorTour } from '@/components/saveMyDate/editor/tour/EditorTour';
 import { useInvitationEditor } from '@/hooks/useInvitationEditor';
@@ -48,7 +51,15 @@ export function InvitationEditor({ draft, uploadedFonts, onReload, isReloading =
     const editor = useInvitationEditor(draft, uploadedFonts);
     const { sectionSettings } = editor;
 
-    const assets = <ThemeAssetsPanel />;
+    const assets = (
+        <div className="flex flex-col gap-4">
+            {/* Design */}
+            <ThemeSwitchPanel themeName={editor.themeName} onChange={editor.openThemeSwitch} />
+
+            {/* Assets */}
+            <ThemeAssetsPanel />
+        </div>
+    );
     const settings = <TextColorSetting value={editor.textColor} onChange={editor.setTextColor} />;
 
     return (
@@ -134,6 +145,17 @@ export function InvitationEditor({ draft, uploadedFonts, onReload, isReloading =
                 onSeePlan={editor.publishing.seePlan}
                 onClose={editor.publishing.closePlanPrompt}
             />
+
+            {/* Design change */}
+            <ThemeSwitchSheet
+                step={editor.themeSwitch.step}
+                list={editor.themeSwitch.list}
+                currentSlug={editor.themeSwitch.currentSlug}
+                onChoose={editor.themeSwitch.choose}
+                onRetryList={editor.themeSwitch.retryList}
+                onClose={editor.themeSwitch.close}
+            />
+            <ThemeSwitchDialog step={editor.themeSwitch.step} onConfirm={editor.themeSwitch.confirm} onCancel={editor.themeSwitch.back} />
 
             {/* Dialogs */}
             <EditorConflictDialog open={editor.status === 'conflict'} isReloading={isReloading} onReload={onReload} />

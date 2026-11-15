@@ -5,14 +5,51 @@ import type { InvitationDocument } from '@/lib/invitation/document';
 import { DRAFT_REVISION_STALE_ERROR_CODE } from '@/lib/invitation/drafts';
 import { DRAFT_TOKEN_HEADER } from '@/lib/invitation/draftTokens';
 import type { InvitationPublicationDto } from '@/lib/invitation/publication';
-import { type SampleDraftDto, sampleDraftDto } from '@/lib/invitation/sampleDraft';
+import { sampleDraftDocument, type SampleDraftDto, sampleDraftDto } from '@/lib/invitation/sampleDraft';
+import type { InvitationThemeCardDto } from '@/lib/invitation/themeCatalogue';
+import type { InvitationThemePublicDto } from '@/lib/invitation/themePreview';
+import { PREVIEW_THEME } from '@/lib/saveMyDatePreview';
 
 // A fake drafts backend for the editor's tests. Set NEXT_PUBLIC_API_BASE_URL to TEST_API
 // (in vi.hoisted) before the API client loads.
 export const TEST_API = 'http://api.test';
 
-type SavedBody = { revision: number; document: InvitationDocument };
+type SavedBody = { revision: number; document: InvitationDocument; themeSlug?: string };
 type PublishBody = { revision: number; slug?: string };
+
+// The draft's own theme, a second wedding theme with no gift list or FAQ, to switch to, and a copy
+// of the first that keeps its document's themeId, as a copied theme does.
+const OLIVE_DOCUMENT = sampleDraftDocument();
+export const TEST_THEMES: Record<string, InvitationThemePublicDto> = {
+    olive: { slug: 'olive', name: 'Olive', eventType: 'WEDDING', design: PREVIEW_THEME, document: OLIVE_DOCUMENT, assetUrls: {} },
+    linen: {
+        slug: 'linen',
+        name: 'Linen',
+        eventType: 'WEDDING',
+        design: { ...PREVIEW_THEME, colors: { primary: '#d8c3a5', secondary: '#f4efe6', text: '#3b3226' } },
+        document: {
+            ...OLIVE_DOCUMENT,
+            themeId: 'linen',
+            sections: OLIVE_DOCUMENT.sections.filter((section) => section.type !== 'gift' && section.type !== 'faq'),
+        },
+        assetUrls: {},
+    },
+    sage: {
+        slug: 'sage',
+        name: 'Sage',
+        eventType: 'WEDDING',
+        design: { ...PREVIEW_THEME, colors: { primary: '#9caf88', secondary: '#eef2e8', text: '#2f3a28' } },
+        document: OLIVE_DOCUMENT,
+        assetUrls: {},
+    },
+};
+const themeCard = (theme: InvitationThemePublicDto): InvitationThemeCardDto => ({
+    slug: theme.slug,
+    name: theme.name,
+    eventType: theme.eventType,
+    cardColor: null,
+    cardThumbUrl: null,
+});
 
 const problem = (status: number, errorCode: number) =>
     HttpResponse.json({ status, errorCode, title: 'Refused' }, { status, headers: { 'Content-Type': 'application/problem+json' } });
@@ -71,8 +108,31 @@ export function createDraftServer() {
                     { status: 409, headers: { 'Content-Type': 'application/problem+json' } },
                 );
             }
-            stored = { ...stored, revision: stored.revision + 1, document: body.document };
+            const theme = body.themeSlug ? TEST_THEMES[body.themeSlug] : undefined;
+            if (body.themeSlug && !theme) return problem(404, 4004);
+            stored = theme
+                ? {
+                      ...stored,
+                      revision: stored.revision + 1,
+                      document: body.document,
+                      themeSlug: theme.slug,
+                      themeName: theme.name,
+                      design: theme.design,
+                  }
+                : { ...stored, revision: stored.revision + 1, document: body.document };
             return HttpResponse.json({ id: stored.id, revision: stored.revision, expiresAt: null, updatedAt: '2026-06-15T12:01:00Z' });
+        }),
+        http.get(`${TEST_API}/api/invitation-themes`, ({ request }) => {
+            const eventType = new URL(request.url).searchParams.get('eventType');
+            return HttpResponse.json(
+                Object.values(TEST_THEMES)
+                    .filter((theme) => theme.eventType === eventType)
+                    .map(themeCard),
+            );
+        }),
+        http.get(`${TEST_API}/api/invitation-themes/:slug`, ({ params }) => {
+            const theme = TEST_THEMES[params.slug as string];
+            return theme ? HttpResponse.json(theme) : problem(404, 4004);
         }),
         http.get(`${TEST_API}/api/invitation-drafts/:id/publication`, () => (publication ? HttpResponse.json(publication) : problem(404, 4004))),
         http.post(`${TEST_API}/api/invitation-drafts/:id/publish`, async ({ request }) => {
@@ -154,6 +214,10 @@ export function createDraftServer() {
         // Every upload is refused with this status and error code.
         refuseUploads(status: number, errorCode: number) {
             uploadRefusal = { status, errorCode };
+        },
+        // The stored draft says which of its images are its theme's own.
+        themeImagesAre(ids: string[]) {
+            stored = { ...stored, themeImageIds: ids };
         },
         // Someone else saved the draft: the stored copy moves on without us.
         saveElsewhere(document: InvitationDocument) {

@@ -27,6 +27,8 @@ export const invitationThemeKeys = {
     all: ['invitationThemes'] as const,
     catalogue: () => [...invitationThemeKeys.all, 'catalogue'] as const,
     page: (slug: string) => [...invitationThemeKeys.all, 'page', slug] as const,
+    // The theme's public answer as it comes, for the editor's theme switch.
+    publicTheme: (slug: string) => [...invitationThemeKeys.all, 'public', slug] as const,
 };
 
 // Every event type's list, one after the other in the catalogue's order. Each list keeps the backend's

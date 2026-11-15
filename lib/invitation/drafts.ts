@@ -20,6 +20,8 @@ export type InvitationDraftDto = {
     design: unknown;
     // Image id to URL, for the images the design and document point at.
     imageUrls: Record<string, string>;
+    // The ids in imageUrls that are the theme's own, not the draft's uploads.
+    themeImageIds?: string[];
     expiresAt: string | null;
     updatedAt: string;
     token: string | null;
@@ -52,6 +54,9 @@ export const invitationDraftKeys = {
 export type EditableDraft = {
     id: string;
     revision: number;
+    // The theme the draft was loaded with. A theme switch in the editor changes it on the next save.
+    themeSlug: string;
+    themeName: string;
     // The event type the theme is for: it decides which sections the host may add.
     eventType: string;
     // The event that pays for publishing; null until the draft is put on one.
@@ -59,6 +64,8 @@ export type EditableDraft = {
     document: InvitationDocument;
     theme: ThemeDesign;
     media: MediaResolver;
+    // The theme's own images among the draft's: those a switch to another theme leaves behind.
+    themeImageIds: ReadonlySet<string>;
 };
 
 // Throws when the stored document or theme isn't in the format the renderer draws.
@@ -67,11 +74,14 @@ export function readEditableDraft(dto: InvitationDraftDto): EditableDraft {
     return {
         id: dto.id,
         revision: dto.revision,
+        themeSlug: dto.themeSlug,
+        themeName: dto.themeName,
         eventType: dto.eventType,
         eventId: dto.eventId ?? null,
         document: upgradeInvitationDocument(dto.document),
         theme: themeDesignSchema.parse(dto.design),
         media: (mediaId) => imageUrls[mediaId],
+        themeImageIds: new Set(dto.themeImageIds ?? []),
     };
 }
 
