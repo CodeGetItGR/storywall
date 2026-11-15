@@ -27,11 +27,11 @@ export function EventActivityTile({
                 >
                     <Icon aria-hidden="true" className="h-[15px] w-[15px]" />
                 </span>
-                <span className="truncate">{label}</span>
+                <span className="leading-tight break-words">{label}</span>
             </div>
             {/* Value */}
             <p className="mt-1.5 text-[22px] leading-tight font-semibold text-ink tabular-nums">{value}</p>
-            {detail && <p className="mt-0.5 truncate text-xs text-ink-faint">{detail}</p>}
+            {detail && <p className="mt-0.5 text-xs break-words text-ink-faint">{detail}</p>}
         </div>
     );
 }

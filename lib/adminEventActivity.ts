@@ -171,9 +171,10 @@ export function removedKinds(removed: AdminEventActivityDto['removed']): Removed
     return REMOVED_KINDS.filter((kind) => removed[kind] > 0);
 }
 
-// Each reaction with its count ("❤️ 12  👏 3"), using the code when there is no emoji.
+// Each reaction with its count ("❤️ 12  👏 3"), using the code when there is no emoji. A no-break
+// space keeps each emoji on the same line as its count.
 export function reactionsSummary(reactions: AdminEventActivityDto['totals']['reactionsByType'], formatCount: (value: number) => string): string {
-    return reactions.map((reaction) => `${reaction.emoji ?? reaction.code} ${formatCount(reaction.count)}`).join('  ');
+    return reactions.map((reaction) => `${reaction.emoji ?? reaction.code} ${formatCount(reaction.count)}`).join('  ');
 }
 
 export function removedTotal(removed: AdminEventActivityDto['removed']): number {

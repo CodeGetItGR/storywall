@@ -144,7 +144,7 @@ describe('reactionsSummary', () => {
             ],
             (value) => `#${value}`,
         );
-        expect(summary).toBe('❤️ #1200  CLAP #3');
+        expect(summary).toBe('❤️ #1200  CLAP #3');
     });
     it('is empty with no reactions', () => {
         expect(reactionsSummary([], String)).toBe('');
