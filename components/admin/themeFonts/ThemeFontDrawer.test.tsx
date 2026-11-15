@@ -51,6 +51,8 @@ const FONT: AdminThemeFontDto = {
     archived: false,
     url: '/api/theme-fonts/gfs-didot/1.woff2',
     presetCount: 2,
+    library: 'WALL',
+    invitationEventTypes: [],
 };
 
 function state(overrides: Record<string, unknown> = {}) {
