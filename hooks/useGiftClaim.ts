@@ -1,7 +1,7 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { type ChangeEvent, type SubmitEvent, useCallback, useState } from 'react';
+import { type SubmitEvent, useCallback, useState } from 'react';
 
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useAuth } from '@/hooks/useAuth';
@@ -10,7 +10,8 @@ import { useMe } from '@/hooks/useMe';
 import { ApiError } from '@/lib/api/client';
 import { ERROR_CODES, getErrorCode } from '@/lib/api/errors';
 import type { GiftClaimResponseDto } from '@/lib/api/types';
-import { GIFT_PIN_LENGTH, giftClaimRefusal, isGiftClaimable, isGiftPinFormat } from '@/lib/gift';
+import { onlyDigits } from '@/lib/emailCode';
+import { GIFT_PIN_LENGTH, giftClaimRefusal, isGiftClaimable, isGiftPinFormat, needsGiftPin } from '@/lib/gift';
 import { routes } from '@/lib/routes';
 
 // Why the card can't be claimed at all, or null while it can.
@@ -19,7 +20,7 @@ export type GiftClaimBlock = 'invalid' | 'locked' | 'claimed' | 'void';
 /**
  * The public /gift/{token} page: the card's preview, then sign-in, then the
  * claim. A visitor whose account has the recipient's email claims without the
- * PIN; anyone else is asked for it (5 tries per card, each supplied PIN uses one).
+ * PIN; anyone else is asked for it up front (5 tries per card, each supplied PIN uses one).
  */
 export function useGiftClaim(token: string) {
     const t = useTranslations('GiftMode.claim');
@@ -30,7 +31,7 @@ export function useGiftClaim(token: string) {
     const preview = useGiftClaimPreview(token);
     const claim = useClaimGift(token);
     const [pin, setPin] = useState('');
-    // The PIN field shows up front when no email is bound, or once the server asks for it.
+    // Set when the server asks for the PIN after all, e.g. the preview didn't know the caller.
     const [pinAsked, setPinAsked] = useState(false);
     const [attemptsLeft, setAttemptsLeft] = useState<number | null>(null);
     const [error, setError] = useState<string | null>(null);
@@ -52,13 +53,13 @@ export function useGiftClaim(token: string) {
                     ? 'invalid'
                     : null);
 
-    const showPin = pinAsked || preview.data?.emailBound === false;
+    const showPin = needsGiftPin(preview.data ?? null, isAuthenticated) || pinAsked;
     // Guests and unconfirmed accounts are refused (4009), so they are told first.
     const accountIssue = !isAuthenticated ? null : user?.isGuestAccount ? 'guest' : user?.emailVerified === false ? 'unverified' : null;
     const returnPath = routes.giftClaim(token);
 
-    const handlePinChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {
-        setPin(event.target.value.replace(/\D/g, '').slice(0, GIFT_PIN_LENGTH));
+    const handlePinChange = useCallback((value: string) => {
+        setPin(onlyDigits(value, GIFT_PIN_LENGTH));
     }, []);
 
     const { mutateAsync } = claim;

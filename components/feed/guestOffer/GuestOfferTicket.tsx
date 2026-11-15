@@ -2,12 +2,12 @@ import { Check, Sparkles } from 'lucide-react';
 
 // The discount drawn as a ticket with confetti, in the style of the vendor tools' drawings. Shows the
 // percent on offer, or a tick once the guest holds a code. Only the percent is read out; the rest is
-// decoration.
-export function GuestOfferTicket({ label }: { label: string | null }) {
+// decoration. Compact is the size used in the folded strip.
+export function GuestOfferTicket({ label, compact = false }: { label: string | null; compact?: boolean }) {
     return (
-        // Drawn at 100×88 and shown at 80%.
-        <div className="relative h-[70px] w-20 shrink-0">
-            <div className="relative h-[88px] w-[100px] origin-top-left scale-[0.8]">
+        // Drawn at 100×88 and shown at 80%, or 60% when compact.
+        <div className={`relative shrink-0 ${compact ? 'h-[53px] w-[60px]' : 'h-[70px] w-20'}`}>
+            <div className={`relative h-[88px] w-[100px] origin-top-left ${compact ? 'scale-[0.6]' : 'scale-[0.8]'}`}>
                 {/* Confetti */}
                 <span aria-hidden="true" className="absolute top-2.5 left-1.5 size-1.5 rounded-full bg-[#F4A6B8]" />
                 <span aria-hidden="true" className="absolute top-0.5 left-4.5 h-[3px] w-[7px] rotate-30 rounded-sm bg-[#F9C29A]" />

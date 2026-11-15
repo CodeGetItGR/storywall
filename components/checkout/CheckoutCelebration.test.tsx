@@ -28,8 +28,8 @@ describe('CheckoutCelebration', () => {
         expect(screen.getByText('CheckoutSuccessPage.celebration.line')).toBeInTheDocument();
         expect(screen.getByText('Maria & Nikos')).toBeInTheDocument();
         expect(screen.getByAltText('Wedding')).toBeInTheDocument();
-        expect(screen.getByRole('link', { name: 'CheckoutSuccessPage.celebration.openEvent' })).toHaveAttribute('href', '/events/e1/feed');
-        expect(screen.getByRole('link', { name: 'CheckoutSuccessPage.celebration.inviteGuests' })).toHaveAttribute('href', '/events/e1/manage/qr');
+        expect(screen.getByRole('link', { name: 'EventCelebration.openEvent' })).toHaveAttribute('href', '/events/e1/feed');
+        expect(screen.getByRole('link', { name: 'EventCelebration.inviteGuests' })).toHaveAttribute('href', '/events/e1/manage/qr');
     });
 
     it('shows the heading and buttons before the event has loaded', () => {

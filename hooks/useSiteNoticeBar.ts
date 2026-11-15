@@ -1,5 +1,6 @@
 'use client';
 
+import { usePathname } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import { useCallback, useMemo } from 'react';
 
@@ -9,7 +10,7 @@ import { useSiteNoticeDismissals } from '@/hooks/useSiteNoticeDismissals';
 import { useSiteNotices } from '@/hooks/useSiteNotices';
 import type { Locale } from '@/i18n/config';
 import type { SiteNoticeLiveDto, SiteNoticeTone } from '@/lib/api/types';
-import { campaignShowsOver, discountCampaignDismissalKey, plansHref } from '@/lib/discountCampaign';
+import { campaignBarHiddenOn, campaignShowsOver, discountCampaignDismissalKey, plansHref } from '@/lib/discountCampaign';
 import { numberFormat } from '@/lib/format';
 import { resolveLocalizedText } from '@/lib/localizedText';
 import { dismissalKey, pickSiteNotice, type SiteNoticeViewArea } from '@/lib/siteNotices';
@@ -31,7 +32,9 @@ export function useSiteNoticeBar(area: SiteNoticeViewArea | null, initialDismiss
     const t = useTranslations('SiteNotice');
     const locale = useLocale() as Locale;
     const notices = useSiteNotices().data ?? NO_NOTICES;
-    const campaign = useLiveDiscountCampaign();
+    const liveCampaign = useLiveDiscountCampaign();
+    const pathname = usePathname();
+    const campaign = liveCampaign && !campaignBarHiddenOn(pathname ?? '') ? liveCampaign : null;
     const apiDown = useApiDown();
     const { dismissed, dismiss } = useSiteNoticeDismissals(initialDismissed);
     const notice = useMemo(() => pickSiteNotice(notices, area, dismissed), [notices, area, dismissed]);

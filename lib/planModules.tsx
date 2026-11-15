@@ -6,7 +6,6 @@ import {
     Gift,
     HelpCircle,
     Images,
-    Mail,
     MailOpen,
     MessageCircleQuestion,
     MessageSquareText,
@@ -40,7 +39,6 @@ const moduleIcons: Record<string, ComponentType<{ className?: string }>> = {
     theme: Palette,
     schedule: CalendarDays,
     co_hosts: UserCog,
-    named_invites: Mail,
     he_or_she: Baby,
     quiz_polls: MessageCircleQuestion,
     qr_cards: QrCode,
@@ -79,11 +77,6 @@ const moduleFallbacks: Record<string, { name: string; description: string }> = {
     member_roles: {
         name: 'Guest roles',
         description: 'Guests pick a role, like best man, shown next to their name.',
-    },
-    // Off platform-wide, so /api/config never lists it to name it.
-    named_invites: {
-        name: 'Personal invitations',
-        description: 'Invitations sent to a guest by name and email.',
     },
     theme: {
         name: 'Theme',

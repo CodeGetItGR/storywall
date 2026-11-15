@@ -1268,6 +1268,10 @@ export interface EventDetailResponseDto {
     partnerBranding: PartnerBrandingDto | null;
     // Hosts only: an admin linked a partner and no host has answered yet.
     partnerBrandingPrompt: PartnerBrandingNoticeDto | null;
+    // The link name of the event's online invitation while guests can open it; null otherwise. Missing from an older backend.
+    invitationSlug?: string | null;
+    // Members only: the event's upload code while it takes photos, so the feed can open the upload page. Null otherwise.
+    uploadToken?: string | null;
 }
 
 // --- Partner feed branding (collaborator-feed-branding-design.md, 2026-10-08) ---
@@ -3123,23 +3127,13 @@ export interface CostSummaryResponseDto {
 
 // GUEST: the one code a lite event (a plan without posts) gets; only the system makes it. Its scan lists guestActions.
 // See guestwall-be docs/fe-guides/lite-tiers-fe-integration.md §3.
-export type QrTargetType = 'EVENT_JOIN' | 'MEDIA_UPLOAD' | 'INVITATION' | 'GUEST';
+export type QrTargetType = 'EVENT_JOIN' | 'MEDIA_UPLOAD' | 'GUEST';
 // What a scanner can do without an account, in display order.
 export type QrGuestAction = 'UPLOAD' | 'WISH';
 export type QrLinkStatus = 'ACTIVE' | 'REVOKED' | 'EXPIRED' | 'TARGET_UNAVAILABLE';
 
-export interface QrLinkRequestDto {
-    targetType: QrTargetType;
-    targetId?: string;
-    maxGuests?: number;
-    label?: string;
-    metadata?: Record<string, unknown>;
-    expiresAt?: string;
-}
-
 export interface QrLinkPatchDto {
     targetType?: QrTargetType;
-    targetId?: string;
     maxGuests?: number;
     label?: string;
     metadata?: Record<string, unknown>;
@@ -3187,7 +3181,8 @@ export interface QrLinkStatsDto {
 export interface QrLinkResolutionDto {
     status: QrLinkStatus;
     targetType: QrTargetType;
-    // [] unless the code is ACTIVE: GUEST lists UPLOAD and/or WISH, MEDIA_UPLOAD lists UPLOAD.
+    // [] unless the code is ACTIVE: GUEST lists UPLOAD and/or WISH, MEDIA_UPLOAD lists UPLOAD, EVENT_JOIN lists WISH
+    // while the wishbook is in the plan.
     guestActions?: QrGuestAction[];
     eventId?: string;
     eventTitle?: string;
@@ -3206,6 +3201,9 @@ export interface QrLinkResolutionDto {
     // link's invite token, while it works. Lets one scan offer both (KAN-208).
     uploadToken?: string;
     joinInviteToken?: string;
+    // The token a wish from this scan goes through, without an account: the code's own, or the event's join
+    // code's. Missing when the event takes no wishes, and from a backend older than this field.
+    wishToken?: string;
 }
 
 // POST /api/qr/{token}/wishes: a wish left through a GUEST code, with no account. See
@@ -4567,12 +4565,16 @@ export interface GiftClaimPreviewDto {
     giverDisplayName: string;
     recipientLabel: string;
     emailBound: boolean;
+    // Signed in: whether this account's email is the recipient's. Null for a visitor with no account.
+    callerIsRecipient: boolean | null;
     state: GiftClaimState;
 }
 
 // POST /api/gift-claims/{token}/claim. COMPLETED: the caller owns the event now.
 // CLAIMED: co-host now, owner at ownershipTransfersAt (null while a withdrawal is under review).
 export interface GiftClaimResponseDto {
+    // The claimed event, which the caller hosts now.
+    eventId: string;
     status: 'COMPLETED' | 'CLAIMED';
     ownershipTransfersAt: string | null;
 }
@@ -5071,6 +5073,41 @@ export interface AdminEventSummaryDto {
     suspendedAt: string | null;
     closedAt: string | null;
     deletedAt: string | null;
+}
+
+// GET /api/admin/events/{eventId}/activity — anonymous counts; hour is local "yyyy-MM-ddTHH:00" in `timezone`.
+export interface AdminEventActivityDto {
+    timezone: string;
+    eventStartAt: string | null;
+    eventEndAt: string | null;
+    generatedAt: string;
+    members: { total: number; contributed: number };
+    totals: {
+        posts: number;
+        postMedia: number;
+        stories: number;
+        storyViews: number;
+        galleryUploads: number;
+        galleryViaQr: number;
+        proUploads: number;
+        comments: number;
+        reactions: number;
+        reactionsByType: { code: string; emoji: string | null; count: number }[];
+        wishes: number | null;
+        playlist: { suggestions: number; votes: number } | null;
+        quizAnswers: number | null;
+        rsvp: { attending: number; declined: number } | null;
+    };
+    removed: { posts: number; stories: number; galleryUploads: number; comments: number; wishes: number };
+    hours: AdminEventActivityHour[];
+}
+
+export interface AdminEventActivityHour {
+    hour: string;
+    posts: number;
+    stories: number;
+    gallery: number;
+    wishes: number;
 }
 
 export type AdminEventModuleSource = 'PLAN' | 'ADDON' | 'ADMIN_GRANT' | 'NONE';
