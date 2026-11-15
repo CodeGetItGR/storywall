@@ -117,6 +117,9 @@ export const routes = {
     saveMyDateAdmin: {
         root: '/admin/save-my-date',
         themes: '/admin/save-my-date/themes',
+        fonts: '/admin/save-my-date/fonts',
+        fontPairings: '/admin/save-my-date/font-pairings',
+        texts: '/admin/save-my-date/texts',
     },
     reportContent: '/report-content',
     notifications: '/notifications',
