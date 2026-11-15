@@ -10461,6 +10461,12 @@
             "empty": "The event has no photos yet.",
             "photoAlt": "Event photo {n}"
         },
+        "eventLock": {
+            "note": "This comes from your event. Change it in the event's settings.",
+            "settings": "Event settings",
+            "rsvp": "RSVP",
+            "schedule": "Event schedule"
+        },
         "photos": {
             "upload": "Upload photo",
             "change": "Change photo",

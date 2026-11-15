@@ -5,9 +5,9 @@ import { copyFor } from '@/.storybook/copy';
 import { useStoryPanel } from '@/.storybook/sectionSettings';
 import { FollowEventSettings } from '@/components/saveMyDate/editor/settings/FollowEventSettings';
 
-// The "Follow the event" switch on its own, over the sample date section (KAN-84).
+// The cover's "Follow the event" switch on its own, over the sample photo section (KAN-84).
 function FollowEventStory({ followsEvent }: { followsEvent: boolean }) {
-    const { scope } = useStoryPanel('s-date', false, followsEvent);
+    const { scope } = useStoryPanel('s-photo', false, { followsEvent });
     return (
         <div className="smd-editor max-w-xl bg-(--smd-editor-panel) p-4 text-[12.5px] text-(--smd-editor-text)">
             <FollowEventSettings scope={scope} />
@@ -26,7 +26,7 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-// Following: turning it off keeps the invitation's own copy.
+// Following: turning it off keeps the invitation's own photo.
 export const Following: Story = {
     play: async ({ canvasElement, globals }) => {
         const toggle = within(canvasElement).getByRole('switch', { name: copyFor(globals).InvitationEditor.sectionSettings.followEvent });
@@ -36,5 +36,5 @@ export const Following: Story = {
     },
 };
 
-// The host took the section over: the switch is off until they follow the event again.
+// The host picked their own photo: the switch is off until they follow the event again.
 export const TakenOver: Story = { args: { followsEvent: false } };

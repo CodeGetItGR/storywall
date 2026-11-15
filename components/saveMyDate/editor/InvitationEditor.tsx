@@ -92,7 +92,14 @@ export function InvitationEditor({ draft, uploadedFonts, onReload, isReloading =
             {/* Workspace */}
             <div className="flex min-h-0 flex-1">
                 <EditorDockedPanel title={t('themeAssets')}>{assets}</EditorDockedPanel>
-                <InlineTextEditing store={editor.store} document={editor.document} theme={editor.theme} uploadedFonts={uploadedFonts}>
+                <InlineTextEditing
+                    store={editor.store}
+                    document={editor.document}
+                    theme={editor.theme}
+                    uploadedFonts={uploadedFonts}
+                    event={editor.event}
+                    fieldLinks={editor.fieldLinks}
+                >
                     <PhotoUploadsContext.Provider value={editor.photos.slots}>
                         <CanvasHandles store={editor.store} frames={editor.theme.frames}>
                             <EditorCanvas

@@ -6,12 +6,13 @@ import type { InvitationElement } from '@/lib/invitation/elements';
 import { INVITATION_LABELS, invitationLanguage } from '@/lib/invitation/labels';
 import { createSection, type NewSectionType } from '@/lib/invitation/newSection';
 import { type EventLink, linkSchema } from '@/lib/invitation/primitives';
-import { type InvitationSection, LINKABLE_SECTION_TYPES } from '@/lib/invitation/sections';
-import { textSectionId,type TextTarget } from '@/lib/invitation/textEditing';
+import { type InvitationSection, LINKABLE_SECTION_TYPES, type SectionType } from '@/lib/invitation/sections';
+import { textSectionId, type TextTarget } from '@/lib/invitation/textEditing';
 
 // The invitation following its event (KAN-84; docs/superpowers/specs/2026-11-06-invitation-module-integration-design.md,
-// "Following the event"). What the event knows fills the invitation's linked fields until the host edits them on the
-// invitation. Nothing here ever writes to the event.
+// "Following the event"). The names, the date, the RSVP deadline, the schedule and the places always show the event's
+// values once the event has them: the host changes them on the event, never on the invitation. The cover follows the
+// event until the host picks another photo. Nothing here ever writes to the event.
 
 export type InvitationEventSession = {
     id: string;
@@ -19,6 +20,8 @@ export type InvitationEventSession = {
     description: string | null;
     startAt: string | null;
     locationName: string | null;
+    // Missing from a backend older than the session address.
+    locationAddress?: string | null;
     mapsUrl: string | null;
     displayOrder: number;
     isMain: boolean;
@@ -44,11 +47,19 @@ export type InvitationEventData = {
     joinUrl: string | null;
 };
 
+// Where the host changes a locked value: the event's settings, its RSVP or its schedule.
+export type EventFieldSource = 'settings' | 'rsvp' | 'schedule';
+
 type Section = InvitationSection;
 type SectionOf<T extends Section['type']> = Extract<Section, { type: T }>;
 type PhotoFrame = Extract<InvitationElement, { kind: 'photoFrame' }>;
 
 const FOLLOWING: EventLink = { source: 'event', enabled: true };
+
+// The sections whose event values are locked. The Photo section only carries the cover, which the host may take over.
+const LOCKED_SECTION_TYPES: ReadonlySet<SectionType> = new Set([
+    'top', 'coupleNames', 'baby', 'date', 'rsvp', 'program', 'programIcons', 'locations',
+]);
 
 // Event types whose secondary session is the reception (lib/sessionLocations.ts).
 const RECEPTION_EVENT_TYPES = new Set(['WEDDING', 'BAPTISM']);
@@ -89,17 +100,24 @@ function sortedSessions(sessions: InvitationEventSession[]): InvitationEventSess
     return [...sessions].sort((a, b) => a.displayOrder - b.displayOrder || start(a) - start(b));
 }
 
-// The ceremony's place from the event: the main session's, else the event's own. Null when it has none.
-function ceremonyPlace(event: InvitationEventData): { name: string; address: string; mapsUrl: string | null } | null {
+type Place = { name: string; address: string; mapsUrl: string | null };
+
+// The ceremony's place from the event: the main session's, else the event's own. Null when it has none. The main
+// session mirrors the event's place, so the event's address stands in for a backend that sends none.
+function ceremonyPlace(event: InvitationEventData): Place | null {
     const main = (event.sessions ?? []).find((session) => session.isMain && session.locationName);
-    if (main?.locationName) return { name: main.locationName, address: '', mapsUrl: main.mapsUrl };
+    if (main?.locationName) {
+        return { name: main.locationName, address: main.locationAddress ?? event.location.address ?? '', mapsUrl: main.mapsUrl };
+    }
     if (event.location.name) return { name: event.location.name, address: event.location.address ?? '', mapsUrl: event.location.mapsUrl };
     return null;
 }
 
-function receptionSession(event: InvitationEventData): InvitationEventSession | undefined {
-    if (!RECEPTION_EVENT_TYPES.has(event.eventType)) return undefined;
-    return (event.sessions ?? []).find((session) => session.isSecondary && session.locationName);
+// The reception's place: the secondary session's, on event types that have one.
+function receptionPlace(event: InvitationEventData): Place | null {
+    if (!RECEPTION_EVENT_TYPES.has(event.eventType)) return null;
+    const session = (event.sessions ?? []).find((item) => item.isSecondary && item.locationName);
+    return session?.locationName ? { name: session.locationName, address: session.locationAddress ?? '', mapsUrl: session.mapsUrl } : null;
 }
 
 // A link the format accepts, else none.
@@ -121,38 +139,11 @@ function coverFrame<T extends { elements: readonly InvitationElement[] }>(sectio
 }
 
 const DATE_WORDS = ['iso', 'day', 'number', 'month', 'monthName', 'monthGenitive', 'monthNumber', 'time', 'yearLabel', 'yearShort', 'periodLabel'] as const;
-// The places' names and map links follow the event. The address doesn't: a session has none, so the host types it,
-// and it goes with the ceremony's place (applyPlaces).
-const PLACE_FIELDS = ['ceremony', 'ceremonyMap', 'reception', 'receptionMap'] as const;
+const CEREMONY_FIELDS = ['ceremony', 'ceremonyAddress', 'ceremonyMap'] as const;
+const RECEPTION_FIELDS = ['reception', 'receptionAddress', 'receptionMap'] as const;
 
-// The values a section's own `link` covers. An edit that changes them takes the section over.
-function followedValues(section: Section): unknown {
-    switch (section.type) {
-        case 'top':
-            return topNameElements(section).map((element) => (element.kind === 'text' ? element.text : ''));
-        case 'coupleNames':
-            return [section.data.partnerAName, section.data.partnerBName];
-        case 'baby':
-            return section.data.babyName;
-        case 'date':
-            return DATE_WORDS.map((field) => section.data[field] ?? '');
-        case 'rsvp':
-            return section.data.deadline;
-        case 'program':
-            return section.data.items.map((item) => [item.id, item.time, item.label]);
-        case 'programIcons':
-            return section.data.items.map((item) => [item.id, item.time, item.label, item.description]);
-        case 'locations':
-            return PLACE_FIELDS.map((field) => section.data[field]);
-        case 'photo':
-            return section.data.photo ?? null;
-        default:
-            return null;
-    }
-}
-
-// Whether the event has anything for this section to follow. A section is linked only then, so the switch never
-// claims a field comes from the event when it can't.
+// Whether the event has anything for this section to show. A section follows only then; until then the host may
+// still type in it.
 function eventFeeds(section: Section, event: InvitationEventData, hasTopFrame: boolean): boolean {
     switch (section.type) {
         case 'top':
@@ -169,12 +160,17 @@ function eventFeeds(section: Section, event: InvitationEventData, hasTopFrame: b
         case 'programIcons':
             return Boolean(event.sessions?.length);
         case 'locations':
-            return ceremonyPlace(event) !== null || receptionSession(event) !== undefined;
+            return ceremonyPlace(event) !== null || receptionPlace(event) !== null;
         case 'photo':
             return !hasTopFrame;
         default:
             return false;
     }
+}
+
+// Whether the section shows event values the host can't change here.
+function isLocked(section: Section, event: InvitationEventData): boolean {
+    return LOCKED_SECTION_TYPES.has(section.type) && eventFeeds(section, event, false);
 }
 
 // --- Writing the event into the invitation ------------------------------------------------------------------------
@@ -219,20 +215,40 @@ function applyCover(frame: Draft<PhotoFrame>, cover: InvitationEventCover) {
     frame.imageY = 50;
 }
 
-// The address belongs to the ceremony's place: it changes only when the place does, to the event's own address, or
-// to none when a session gives the place (sessions have no address). Otherwise the host's address stays.
+// Each place the event has: its name, address and map link.
 function applyPlaces(section: Draft<SectionOf<'locations'>>, event: InvitationEventData) {
     const ceremony = ceremonyPlace(event);
     if (ceremony) {
-        if (ceremony.name !== section.data.ceremony) section.data.ceremonyAddress = ceremony.address;
         section.data.ceremony = ceremony.name;
+        section.data.ceremonyAddress = ceremony.address;
         section.data.ceremonyMap = mapLink(ceremony.mapsUrl);
     }
-    const reception = receptionSession(event);
+    const reception = receptionPlace(event);
     if (reception) {
-        section.data.reception = reception.locationName ?? '';
+        section.data.reception = reception.name;
+        section.data.receptionAddress = reception.address;
         section.data.receptionMap = mapLink(reception.mapsUrl);
     }
+}
+
+function applyProgram(section: Draft<SectionOf<'program'> | SectionOf<'programIcons'>>, event: InvitationEventData) {
+    if (!event.sessions?.length) return;
+    const oldIds = section.data.items.map((item) => item.id);
+    const sessions = sortedSessions(event.sessions);
+    const rows = sessions.map((session) => ({ id: session.id, time: programTime(session, event.timezone), label: session.title }));
+    if (section.type === 'program') {
+        if (!sameValues(rows, section.data.items)) section.data.items = rows;
+    } else {
+        // The icons are the host's: each stays with its session.
+        const icons = new Map(section.data.items.map((item) => [item.id, item.icon]));
+        const items = sessions.map((session, index) => ({
+            ...rows[index],
+            description: session.description ?? '',
+            icon: icons.get(session.id) ?? ({ kind: 'auto' } as const),
+        }));
+        if (!sameValues(items, section.data.items)) section.data.items = items;
+    }
+    if (!sameValues(oldIds, section.data.items.map((item) => item.id))) carryRowStyles(section, oldIds);
 }
 
 // The theme's sample sections by id: what a section held before anyone typed in it. The editor reads them from the
@@ -260,23 +276,24 @@ function dropGoneCover(section: Draft<Section>, samples: SampleSections) {
     if (frame?.link?.enabled && frame.photo?.source === 'event') frame.photo = samplePhoto(section, samples, frame.id);
 }
 
+// Writes the event's values into one section: the locked ones always, the cover where it follows.
 function applySection(section: Draft<Section>, event: InvitationEventData, language: 'el' | 'en', samples: SampleSections | null = null) {
     // Without the theme (the published page, or before it loads) the saved photo stays.
     if (!event.cover && samples) dropGoneCover(section, samples);
     switch (section.type) {
         case 'top':
-            if (section.link?.enabled) applyNames(section, event.title);
+            applyNames(section, event.title);
             break;
         case 'coupleNames': {
             const names = splitNames(event.title);
-            if (section.link?.enabled && names) [section.data.partnerAName, section.data.partnerBName] = names;
+            if (names) [section.data.partnerAName, section.data.partnerBName] = names;
             break;
         }
         case 'baby':
-            if (section.link?.enabled && event.title.trim()) section.data.babyName = event.title.trim();
+            if (event.title.trim()) section.data.babyName = event.title.trim();
             break;
         case 'date': {
-            const iso = section.link?.enabled && event.startAt ? localDateTime(event.startAt, event.timezone) : null;
+            const iso = event.startAt ? localDateTime(event.startAt, event.timezone) : null;
             // The words are written again only when the date moves, as a language change writes them.
             if (iso && iso !== section.data.iso) {
                 section.data.iso = iso;
@@ -285,7 +302,7 @@ function applySection(section: Draft<Section>, event: InvitationEventData, langu
             break;
         }
         case 'rsvp': {
-            const deadline = section.link?.enabled ? event.rsvp?.deadline : null;
+            const deadline = event.rsvp?.deadline;
             const local = deadline ? localDateTime(deadline, event.timezone) : null;
             if (local) {
                 const [month, day] = local.slice(5, 10).split('-').map(Number);
@@ -295,27 +312,11 @@ function applySection(section: Draft<Section>, event: InvitationEventData, langu
             break;
         }
         case 'program':
-        case 'programIcons': {
-            if (!section.link?.enabled || !event.sessions?.length) break;
-            const oldIds = section.data.items.map((item) => item.id);
-            const sessions = sortedSessions(event.sessions);
-            const rows = sessions.map((session) => ({ id: session.id, time: programTime(session, event.timezone), label: session.title }));
-            if (section.type === 'program') {
-                if (!sameValues(rows, section.data.items)) section.data.items = rows;
-            } else {
-                const icons = new Map(section.data.items.map((item) => [item.id, item.icon]));
-                const items = sessions.map((session, index) => ({
-                    ...rows[index],
-                    description: session.description ?? '',
-                    icon: icons.get(session.id) ?? ({ kind: 'auto' } as const),
-                }));
-                if (!sameValues(items, section.data.items)) section.data.items = items;
-            }
-            if (!sameValues(oldIds, section.data.items.map((item) => item.id))) carryRowStyles(section, oldIds);
+        case 'programIcons':
+            applyProgram(section, event);
             break;
-        }
         case 'locations':
-            if (section.link?.enabled) applyPlaces(section, event);
+            applyPlaces(section, event);
             break;
         case 'photo':
             if (section.link?.enabled && event.cover && !(section.data.photo?.source === 'event' && section.data.photo.mediaId === event.cover.mediaId)) {
@@ -334,21 +335,13 @@ function applyEvent(draft: Draft<InvitationDocument>, event: InvitationEventData
     for (const section of draft.sections) applySection(section, event, language, samples);
 }
 
-// What the host may have typed or picked in a section the event would fill: the followed values without row ids,
-// which every new list gets afresh, plus what following the event would reset (the addresses, the program's icons).
-function contentValues(section: Section): unknown {
-    if (section.type === 'program') return section.data.items.map((item) => [item.time, item.label]);
-    if (section.type === 'programIcons') return section.data.items.map((item) => [item.time, item.label, item.description, item.icon]);
-    if (section.type === 'locations') return [followedValues(section), section.data.ceremonyAddress, section.data.receptionAddress];
-    return followedValues(section);
-}
-
-// Whether a section still holds sample content nobody typed over: the theme's own section with its id, or a fresh
-// section of its type. Only such a section may start following the event, so the event never replaces the host's text.
-function holdsSample(section: Section, samples: SampleSections, eventType: string): boolean {
+// Whether the Photo section still holds the theme's photo, or a new section's: only then may it start showing the
+// cover, so the event never replaces the host's photo.
+function photoHoldsSample(section: SectionOf<'photo'>, samples: SampleSections, eventType: string): boolean {
     const sample = samples.get(section.id);
-    if (sample?.type === section.type && sameValues(contentValues(sample), contentValues(section))) return true;
-    return sameValues(contentValues(createSection(section.type as NewSectionType, eventType)), contentValues(section));
+    if (sample?.type === 'photo') return sameValues(sample.data.photo ?? null, section.data.photo ?? null);
+    const fresh = createSection('photo' as NewSectionType, eventType);
+    return fresh.type === 'photo' && sameValues(fresh.data.photo ?? null, section.data.photo ?? null);
 }
 
 function frameHoldsSample(top: Section, frame: PhotoFrame, samples: SampleSections): boolean {
@@ -369,15 +362,17 @@ function mayFollow(draft: Draft<InvitationDocument>, section: Draft<Section>, ev
     return eventFeeds(section as Section, event, Boolean(top && coverFrame(top)));
 }
 
-// Links what has never been linked and still holds sample content: a new draft follows the event from the start, a
-// draft the host typed in before keeps the host's text. A section the host took over keeps `enabled: false`.
-function linkSampleSections(draft: Draft<InvitationDocument>, event: InvitationEventData, samples: SampleSections) {
+// Every locked section the event has values for follows it, whatever the host typed or switched off before. The
+// cover starts following only where the theme's photo is still in place; a cover the host took over stays theirs.
+function linkSections(draft: Draft<InvitationDocument>, event: InvitationEventData, samples: SampleSections | null) {
     for (const section of draft.sections) {
-        if (!section.link && mayFollow(draft, section, event) && holdsSample(section as Section, samples, event.eventType)) {
-            section.link = { ...FOLLOWING };
+        if (LOCKED_SECTION_TYPES.has(section.type)) {
+            if (mayFollow(draft, section, event) && !section.link?.enabled) section.link = { ...FOLLOWING };
+        } else if (samples && section.type === 'photo' && !section.link && mayFollow(draft, section, event)) {
+            if (photoHoldsSample(section as SectionOf<'photo'>, samples, event.eventType)) section.link = { ...FOLLOWING };
         }
         const frame = section.type === 'top' ? coverFrame(section) : undefined;
-        if (frame && !frame.link && event.cover && frameHoldsSample(section as Section, frame as PhotoFrame, samples)) {
+        if (samples && frame && !frame.link && event.cover && frameHoldsSample(section as Section, frame as PhotoFrame, samples)) {
             frame.link = { ...FOLLOWING };
         }
     }
@@ -390,17 +385,16 @@ export function resolveLinkedSections(document: InvitationDocument, event: Invit
     return produce(document, (draft) => applyEvent(draft, event));
 }
 
-// The editor's sync: writes the event into what follows it. With the theme's samples it also links what still holds
-// sample content. A recipe for the editor store.
+// The editor's sync: links what follows the event and writes the event into it. A recipe for the editor store.
 export function syncWithEvent(event: InvitationEventData, samples: SampleSections | null) {
     return (draft: Draft<InvitationDocument>) => {
-        if (samples) linkSampleSections(draft, event, samples);
+        linkSections(draft, event, samples);
         applyEvent(draft, event, samples);
     };
 }
 
-// A section the host adds follows the event from the start, as the theme's do, and shows its data at once. Runs in
-// the same edit as the add, so one undo takes both away.
+// A section the host adds follows the event from the start and shows its data at once. Runs in the same edit as the
+// add, so one undo takes both away.
 export function followFromTheStart(sectionId: string, event: InvitationEventData, samples: SampleSections | null = null) {
     return (draft: Draft<InvitationDocument>) => {
         const section = draft.sections.find((item) => item.id === sectionId);
@@ -410,24 +404,21 @@ export function followFromTheStart(sectionId: string, event: InvitationEventData
     };
 }
 
-// --- Taking over and following again -------------------------------------------------------------------------------
+// --- The cover: taking it over and following again -----------------------------------------------------------------
 
 function sameValues(left: unknown, right: unknown): boolean {
     return JSON.stringify(left) === JSON.stringify(right);
 }
 
-// Runs inside every editor edit: a followed field the edit changed becomes the invitation's own. A language switch
-// rewrites the date's words without taking the date over.
+// Runs inside every editor edit: a cover the edit changed becomes the invitation's own.
 export function takeOverEditedFields(before: InvitationDocument, draft: Draft<InvitationDocument>) {
     const previous = new Map(before.sections.map((section) => [section.id, section]));
     for (const section of draft.sections) {
         const old = previous.get(section.id);
-        if (!old || old.type !== section.type) continue;
-        if (section.link?.enabled && old.link?.enabled) {
-            const languageChanged = section.type === 'date' && old.type === 'date' && old.data.displayLanguage !== section.data.displayLanguage;
-            if (!languageChanged && !sameValues(followedValues(old), followedValues(section as Section))) section.link.enabled = false;
+        if (section.type === 'photo' && old?.type === 'photo' && section.link?.enabled && old.link?.enabled) {
+            if (!sameValues(old.data.photo ?? null, section.data.photo ?? null)) section.link.enabled = false;
         }
-        if (section.type === 'top' && old.type === 'top') {
+        if (section.type === 'top' && old?.type === 'top') {
             const frame = coverFrame(section);
             const oldFrame = coverFrame(old);
             if (frame?.link?.enabled && oldFrame?.id === frame.id && oldFrame.link?.enabled && !sameValues(oldFrame.photo, frame.photo)) {
@@ -437,25 +428,24 @@ export function takeOverEditedFields(before: InvitationDocument, draft: Draft<In
     }
 }
 
-// The links the "Follow the event" switch of one section controls: the section's own, and in the top the cover frame's.
-function sectionLinks(section: Section): EventLink[] {
-    const links = section.link ? [section.link] : [];
-    const frameLink = section.type === 'top' ? coverFrame(section)?.link : undefined;
-    return frameLink ? [...links, frameLink] : links;
+// The link the cover's "Follow the event" switch controls: the Photo section's own, or the top's frame's.
+function coverLink(section: Section): EventLink | undefined {
+    if (section.type === 'photo') return section.link;
+    return section.type === 'top' ? coverFrame(section)?.link : undefined;
 }
 
-// Whether the section has a "Follow the event" switch, and whether it is on.
+// Whether the section has a "Follow the event" switch for its cover, and whether it is on.
 export function followState(section: Section): { available: boolean; following: boolean } {
-    const links = sectionLinks(section);
-    return { available: links.length > 0, following: links.length > 0 && links.every((link) => link.enabled) };
+    const link = coverLink(section);
+    return { available: Boolean(link), following: Boolean(link?.enabled) };
 }
 
-// The switch: on, the section follows the event again and shows the event's data at once; off, it keeps its copy.
+// The cover's switch: on, the cover follows the event again and shows it at once; off, it keeps its photo.
 export function setFollowEvent(sectionId: string, following: boolean, event: InvitationEventData | null, samples: SampleSections | null = null) {
     return (draft: Draft<InvitationDocument>) => {
         const section = draft.sections.find((item) => item.id === sectionId);
         if (!section) return;
-        if (section.link) section.link.enabled = following;
+        if (section.type === 'photo' && section.link) section.link.enabled = following;
         if (section.type === 'top') {
             const frame = coverFrame(section);
             if (frame?.link) frame.link.enabled = following;
@@ -464,37 +454,57 @@ export function setFollowEvent(sectionId: string, following: boolean, event: Inv
     };
 }
 
-// Whether a text field the host is editing follows the event, so the text toolbar can say so.
-export function textFollowsEvent(section: Section, target: { kind: 'field'; path: string } | { kind: 'element'; elementId: string }): boolean {
-    if (!section.link?.enabled) return false;
+// --- Locked fields ---------------------------------------------------------------------------------------------------
+
+// Where the host changes a text field the event fills, or null when the host may type in it here.
+export function textLock(
+    section: Section,
+    target: { kind: 'field'; path: string } | { kind: 'element'; elementId: string },
+    event: InvitationEventData | null,
+): EventFieldSource | null {
+    if (!event || !isLocked(section, event)) return null;
     if (target.kind === 'element') {
-        return section.type === 'top' && topNameElements(section).some((element) => element.id === target.elementId);
+        return section.type === 'top' && topNameElements(section).some((element) => element.id === target.elementId) ? 'settings' : null;
     }
     const field = target.path.split('.')[0];
     switch (section.type) {
         case 'coupleNames':
-            return field === 'partnerAName' || field === 'partnerBName';
+            return field === 'partnerAName' || field === 'partnerBName' ? 'settings' : null;
         case 'baby':
-            return field === 'babyName';
+            return field === 'babyName' ? 'settings' : null;
         case 'date':
-            return (DATE_WORDS as readonly string[]).includes(field);
+            return (DATE_WORDS as readonly string[]).includes(field) ? 'settings' : null;
         case 'rsvp':
-            return field === 'deadline';
+            return field === 'deadline' ? 'rsvp' : null;
         case 'program':
         case 'programIcons':
-            return field === 'items' && !target.path.endsWith('.icon');
+            return field === 'items' && !target.path.endsWith('.icon') ? 'schedule' : null;
         case 'locations':
-            return (PLACE_FIELDS as readonly string[]).includes(field);
+            return placeFieldLock(field, event);
         default:
-            return false;
+            return null;
     }
 }
 
-// The same for the text being edited anywhere in the document.
-export function editedTextFollowsEvent(document: InvitationDocument, target: TextTarget | null): boolean {
-    if (!target) return false;
+// A place's name, address or map link is locked once the event has that place. The ceremony is the event's own
+// place (or its main session, which mirrors it); the reception is a session of the schedule.
+export function placeFieldLock(field: string, event: InvitationEventData | null): EventFieldSource | null {
+    if (!event) return null;
+    if ((CEREMONY_FIELDS as readonly string[]).includes(field)) return ceremonyPlace(event) ? 'settings' : null;
+    if ((RECEPTION_FIELDS as readonly string[]).includes(field)) return receptionPlace(event) ? 'schedule' : null;
+    return null;
+}
+
+// Whether the program's rows are the event's sessions, so they can't be added, removed or retyped here.
+export function programLock(section: Section, event: InvitationEventData | null): EventFieldSource | null {
+    return event && (section.type === 'program' || section.type === 'programIcons') && isLocked(section, event) ? 'schedule' : null;
+}
+
+// The same as textLock, for the text being edited anywhere in the document.
+export function editedTextLock(document: InvitationDocument, target: TextTarget | null, event: InvitationEventData | null): EventFieldSource | null {
+    if (!target || !event) return null;
     const sectionId = textSectionId(document, target);
     const section = document.sections.find((item) => item.id === sectionId);
-    if (!section) return false;
-    return textFollowsEvent(section, target.kind === 'field' ? { kind: 'field', path: target.path } : target);
+    if (!section) return null;
+    return textLock(section, target.kind === 'field' ? { kind: 'field', path: target.path } : target, event);
 }

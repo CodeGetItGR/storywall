@@ -4,6 +4,7 @@ import { Bold, Italic, Trash2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { type KeyboardEvent, type RefObject, useRef } from 'react';
 
+import { EventLockNote } from '@/components/saveMyDate/editor/EventLockNote';
 import { TextAddMenu } from '@/components/saveMyDate/editor/text/TextAddMenu';
 import { TextAlignButtons } from '@/components/saveMyDate/editor/text/TextAlignButtons';
 import { TextColorPicker } from '@/components/saveMyDate/editor/text/TextColorPicker';
@@ -53,10 +54,8 @@ export function TextToolbar({ toolbar, anchor, canAdd, onDelete, toolbarRef, onK
                 docked ? 'inset-x-2 mb-[max(0.5rem,env(safe-area-inset-bottom))]' : 'top-0 left-0 max-w-[calc(100vw-16px)]',
             )}
         >
-            {/* Follows the event */}
-            {toolbar.followsEvent && (
-                <p className="max-w-90 px-1.5 pt-0.5 text-[12px] leading-snug text-(--smd-editor-muted)">{t('sectionSettings.followEventHint')}</p>
-            )}
+            {/* From the event */}
+            {toolbar.lock && <EventLockNote source={toolbar.lock} href={toolbar.lockHref} className="max-w-90 px-1.5 pt-0.5" />}
 
             {/* Tools */}
             <div className="-m-1.5 flex items-center gap-1 overflow-x-auto p-1.5">
@@ -101,9 +100,11 @@ export function TextToolbar({ toolbar, anchor, canAdd, onDelete, toolbarRef, onK
 
                 {/* Add and delete */}
                 <TextAddMenu disabled={!canAdd} onAdd={toolbar.add} />
-                <TextToolbarButton label={t('deleteText')} onClick={onDelete} className="text-rose-300">
-                    <Trash2 aria-hidden="true" />
-                </TextToolbarButton>
+                {!toolbar.lock && (
+                    <TextToolbarButton label={t('deleteText')} onClick={onDelete} className="text-rose-300">
+                        <Trash2 aria-hidden="true" />
+                    </TextToolbarButton>
+                )}
             </div>
         </div>
     );

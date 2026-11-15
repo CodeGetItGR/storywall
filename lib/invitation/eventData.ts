@@ -1,6 +1,7 @@
 import type { EventDetailResponseDto } from '@/lib/api/types';
 import { isModuleAvailable } from '@/lib/eventLifecycle';
-import type { InvitationEventData } from '@/lib/invitation/eventLinks';
+import type { EventFieldSource, InvitationEventData } from '@/lib/invitation/eventLinks';
+import { routes } from '@/lib/routes';
 
 // The editor's copy of what the public page gets as `event` (guestwall-be InvitationPublicationService): the same
 // fields, from the event's own detail. `joinUrl` is the event's general guest link, when the host's side has it.
@@ -25,6 +26,7 @@ export function invitationEventDataFromDetail(event: EventDetailResponseDto, joi
                           description: session.description,
                           startAt: session.startAt,
                           locationName: session.locationName,
+                          locationAddress: session.locationAddress ?? null,
                           mapsUrl: session.mapsUrl,
                           displayOrder: session.displayOrder,
                           isMain: session.isMain,
@@ -32,6 +34,17 @@ export function invitationEventDataFromDetail(event: EventDetailResponseDto, joi
                       }))
                 : null,
         joinUrl: has('posts') ? joinUrl : null,
+    };
+}
+
+// Where the host changes each value the invitation takes from its event (KAN-84).
+export type EventFieldLinks = Readonly<Record<EventFieldSource, string>>;
+
+export function eventFieldLinks(eventId: string): EventFieldLinks {
+    return {
+        settings: routes.events.manage(eventId, { tab: 'settings' }),
+        rsvp: routes.events.manage(eventId, { tab: 'rsvp' }),
+        schedule: routes.events.tools.schedule(eventId),
     };
 }
 

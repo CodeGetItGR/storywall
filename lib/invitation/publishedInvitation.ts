@@ -38,6 +38,7 @@ const invitationEventDataSchema: z.ZodType<InvitationEventData> = z.object({
                 description: nullableString,
                 startAt: nullableString,
                 locationName: nullableString,
+                locationAddress: nullableString.optional(),
                 mapsUrl: nullableString,
                 displayOrder: z.number(),
                 isMain: z.boolean(),

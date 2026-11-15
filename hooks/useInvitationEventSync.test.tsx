@@ -57,7 +57,7 @@ describe('useInvitationEventSync', () => {
         expect(dateIso(store)).toBe('2027-08-01T18:30');
     });
 
-    it('stops following a field once the host edits it', () => {
+    it('shows the event again in a field the host edited', () => {
         sources.event = storyEvent({ schedule: { ...storyEvent().schedule, startAt: '2027-07-12T15:30:00Z', timezone: 'Europe/Athens' } });
         const store = createInvitationEditorStore(linkedDocument());
         const { rerender } = renderHook(() => useInvitationEventSync(store, sources.event!.id, vi.fn(() => undefined), 'classic'));
@@ -71,7 +71,7 @@ describe('useInvitationEventSync', () => {
         sources.event = { ...sources.event, schedule: { ...sources.event.schedule, startAt: '2027-10-01T15:30:00Z' } };
         rerender();
 
-        expect(dateIso(store)).toBe('2027-09-09T12:00');
+        expect(dateIso(store)).toBe('2027-10-01T18:30');
     });
 
     it("draws the event's cover from the event's own detail when the draft has no URL for it", () => {
@@ -95,18 +95,17 @@ describe('useInvitationEventSync', () => {
         expect(sources.themeSlug).toBeNull();
     });
 
-    it("links what still holds the theme's sample content once the theme is known", () => {
+    it("links the event's sections before the theme is known, and draws the theme's images once it is", () => {
         sources.event = storyEvent({ schedule: { ...storyEvent().schedule, startAt: '2027-07-12T15:30:00Z', timezone: 'Europe/Athens' } });
         sources.samples = null;
         const store = createInvitationEditorStore(SAMPLE_DOCUMENT);
         const { result, rerender } = renderHook(() => useInvitationEventSync(store, sources.event!.id, vi.fn(() => undefined), 'classic'));
 
-        expect(store.getState().document.sections.some((section) => section.link)).toBe(false);
+        expect(store.getState().document.sections.find((section) => section.type === 'date')?.link).toEqual({ source: 'event', enabled: true });
+        expect(dateIso(store)).toBe('2027-07-12T18:30');
 
         sources.samples = { sections: new Map(SAMPLE_DOCUMENT.sections.map((section) => [section.id, section])), imageUrls: { 'm-theme': 'https://cdn.test/theme.jpg' } };
         rerender();
-        expect(store.getState().document.sections.find((section) => section.type === 'date')?.link).toEqual({ source: 'event', enabled: true });
-        expect(dateIso(store)).toBe('2027-07-12T18:30');
         // The theme's images draw a sample photo the draft never had.
         expect(result.current.media('m-theme')).toBe('https://cdn.test/theme.jpg');
         sources.samples = null;

@@ -55,7 +55,7 @@ export function settingsGroups(section: InvitationSection, mode: EditorMode, the
     const isAdmin = mode === 'admin';
     if (section.type === 'footer') return isAdmin ? ['footer', 'effect'] : [];
     const groups: SettingsGroup[] = [...(TYPE_GROUPS[section.type] ?? [])];
-    // Hosts choose whether a section follows its event (KAN-84); a theme has no event.
+    // Hosts choose whether the cover follows its event (KAN-84); a theme has no event.
     if (!isAdmin && followState(section).available) groups.unshift('follow');
     if (section.elements.some((element) => element.kind === 'link')) groups.push('buttons');
     if (isAdmin || hostBackgroundSlots(section, theme).length > 0) groups.push('background');

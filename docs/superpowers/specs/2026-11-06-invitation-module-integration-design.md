@@ -44,9 +44,11 @@ Sessions are read in `displayOrder`, without deleted ones.
 | | `label` | Session `title` |
 | `programIcons` | `description` | Session `description` |
 | | `icon` | The host's own choice is kept; a new session uses `auto` |
-| `locations` | `ceremony`, `ceremonyMap` | Main session (`isMain`): `locationName`, `mapsUrl` |
-| | `reception`, `receptionMap` | Secondary session (`isSecondary`): `locationName`, `mapsUrl` |
-| | `ceremonyAddress`, `receptionAddress`, `welcome*`, `note` | Not linked: the event has no per-session address, so these stay the host's own |
+| `locations` | `ceremony`, `ceremonyAddress`, `ceremonyMap` | Main session (`isMain`): `locationName`, `locationAddress`, `mapsUrl` |
+| | `reception`, `receptionAddress`, `receptionMap` | Secondary session (`isSecondary`): `locationName`, `locationAddress`, `mapsUrl` |
+| | `welcome*`, `note` | Not linked: these stay the host's own |
+
+Since 2026-11-16 a session has its own address (`locationAddress`, nullable). The main session mirrors the event's address, as it mirrors its place; the host sets the others' on the schedule.
 
 Each section keeps its title, subtitle and styles. If the event has no main session, `locations` uses `EventLocationDto` (`name`, `address`, `mapsUrl`) for the ceremony, including its address. `isSecondary` is a display convention per event type, so `locations` links only for event types where it means the reception; for others the reception stays typed.
 
@@ -85,12 +87,23 @@ Each section keeps its title, subtitle and styles. The theme is never linked.
 - **Following again (owner, 2026-11-12):** a "Follow the event" switch in the settings of `top`, `date`, `rsvp`, `program`, `programIcons`, `locations`, `coupleNames`, `baby` and `photo`. Turning it on replaces the invitation's copy with the event's, as one undo step. In `top` it covers both the names and the cover.
 - **Telling the host:** while the switch is on, its caption says, and the text toolbar repeats it while a followed text is being edited (approved 2026-11-12): en "Comes from your event. If you edit it here, it stops following the event. Your event doesn't change." / el "Έρχεται από την εκδήλωσή σας. Αν το αλλάξετε εδώ, δεν θα ακολουθεί πια την εκδήλωση. Η εκδήλωσή σας δεν αλλάζει." Switch label: en "Follow the event" / el "Ακολουθεί την εκδήλωση".
 
+### Locked fields (owner, 2026-11-16)
+
+Replaces "Editing on the invitation takes the field over" and the switch above for everything but the cover.
+
+- **Always the event's.** When the invitation has an event, the names and title, the date, the RSVP deadline, and the places and schedule always show the event's values. This holds for every shown section of those types, including one the host typed in or took over before: the editor links it again when the draft opens.
+- **Locked until changed on the event.** A field stays editable until the event has a value for it, then it locks. Places lock per place: name, address and map link of the ceremony once the event has one, of the reception once its secondary session has one. Program rows lock whole (times, titles, descriptions, adding, deleting and reordering); their icons stay the host's. A locked text keeps its look editable (font, colour, size, alignment) but not its words, and a locked name can't be deleted.
+- **Telling the host.** Tapping a locked value shows "This comes from your event. Change it in the event's settings." / "Έρχεται από την εκδήλωσή σας. Αλλάξτε το στις ρυθμίσεις της εκδήλωσης." with a link to where it changes: names, date and the ceremony's place to the event's settings ("Event settings" / "Ρυθμίσεις εκδήλωσης"), the deadline to its RSVP tab ("RSVP"), the schedule and the reception's place to the schedule ("Event schedule" / "Πρόγραμμα εκδήλωσης"). The text toolbar shows the same note in place of the follow hint.
+- **The cover is unchanged.** It still follows until the host picks another photo, with the "Follow the event" switch in the top's and the Photo section's settings and the hint above. Those are now the only places the switch and hint appear. A cover links on a draft only where the theme's photo is still in place.
+- **The public page** shows the event's values in every shown section of those types, linked or not; the cover only where it follows. The backend sends names, date, deadline, sessions and place for any shown section of their type.
+- Hiding and showing sections is unchanged.
+
 ### How it runs
 
 - **One function, two places.** `resolveLinkedSections(document, eventData)` in `lib/invitation/eventLinks.ts` returns the document with the event's data written into every followed field, and changes nothing else.
   - The **editor** reads the event (`GET /api/events/{id}`, prefetched on the server with the draft) and applies it to the draft as a change outside the undo history, so the saved copy stays current. Edits are compared before and after: a followed field that changed is taken over.
   - The **public page** applies it on the server, before `InvitationRenderer`, to the published copy and the `event` the read endpoint returns. A schedule or date change on the event shows without republishing.
-- **Event data** (`InvitationEventData`), the same shape from both sources: `title`, `timezone`, `startAt`, `rsvpDeadline` (null unless RSVP is on), `coverMediaId`, `joinUrl` (null unless the wall is on and the guest link active), `location` (`name`, `address`, `mapsUrl`), and `sessions` (null unless the schedule is on; each with `id`, `title`, `description`, `startAt`, `locationName`, `mapsUrl`, `isMain`, `isSecondary`, in display order, without deleted ones).
+- **Event data** (`InvitationEventData`), the same shape from both sources: `title`, `timezone`, `startAt`, `rsvpDeadline` (null unless RSVP is on), `coverMediaId`, `joinUrl` (null unless the wall is on and the guest link active), `location` (`name`, `address`, `mapsUrl`), and `sessions` (null unless the schedule is on; each with `id`, `title`, `description`, `startAt`, `locationName`, `locationAddress`, `mapsUrl`, `isMain`, `isSecondary`, in display order, without deleted ones).
 - **Public read endpoint:** `GET /api/public/invitations/{slug}` adds `event` (the data above) and puts the URL of the event's cover and of every live picked event photo into `imageUrls`. Nothing else of the event: no ids but the sessions' and the cover's, no members, no counts.
 - **Fallback:** with no `event` in the answer, the page shows the published copy as it is.
 

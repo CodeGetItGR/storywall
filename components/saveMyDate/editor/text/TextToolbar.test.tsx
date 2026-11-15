@@ -30,7 +30,8 @@ function toolbarState(overrides: Partial<TextToolbarState> = {}): TextToolbarSta
         setAlign: vi.fn(),
         pickColor: vi.fn(),
         add: vi.fn(),
-        followsEvent: false,
+        lock: null,
+        lockHref: undefined,
         ...overrides,
     };
 }
@@ -105,13 +106,17 @@ describe('TextToolbar', () => {
         expect(screen.getByRole('button', { name: 'Theme font' })).toHaveAttribute('aria-pressed', 'false');
     });
 
-    it('says when the text comes from the event, and only then', () => {
-        const hint = en.InvitationEditor.sectionSettings.followEventHint;
-        renderToolbar(toolbarState({ followsEvent: true }));
-        expect(screen.getByText(hint)).toBeInTheDocument();
+    it('says where to change a text the event fills, and offers no delete for it', () => {
+        const copy = en.InvitationEditor.eventLock;
+        renderToolbar(toolbarState({ lock: 'rsvp', lockHref: '/events/e1/manage?tab=rsvp' }));
+        expect(screen.getByText(copy.note, { exact: false })).toBeInTheDocument();
+        expect(screen.getByRole('link', { name: copy.rsvp })).toHaveAttribute('href', '/events/e1/manage?tab=rsvp');
+        expect(screen.queryByRole('button', { name: 'Delete text' })).toBeNull();
+        expect(screen.queryByText(en.InvitationEditor.sectionSettings.followEventHint)).toBeNull();
         cleanup();
         renderToolbar();
-        expect(screen.queryByText(hint)).toBeNull();
+        expect(screen.queryByText(copy.note, { exact: false })).toBeNull();
+        expect(screen.getByRole('button', { name: 'Delete text' })).toBeInTheDocument();
     });
 
     it('cannot add a text where the section takes no more', () => {

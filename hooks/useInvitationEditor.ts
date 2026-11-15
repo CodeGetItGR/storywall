@@ -82,6 +82,8 @@ export function useInvitationEditor(draft: EditableDraft, uploadedFonts?: Invita
         // What the invitation follows from its event, once it has loaded; null for a draft on no event.
         event: eventSync.event,
         joinUrl: eventSync.joinUrl,
+        // Where the host changes what the event fills; null for a draft on no event.
+        fieldLinks: eventSync.fieldLinks,
         textColor: editor.document.overrides.textColor ?? shown.theme.colors.text,
         setTextColor: editor.setTextColor,
         canUndo: editor.canUndo,

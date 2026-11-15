@@ -27,7 +27,8 @@ const toolbar: TextToolbarState = {
     setAlign: fn(),
     pickColor: fn(),
     add: fn(),
-    followsEvent: false,
+    lock: null,
+    lockHref: undefined,
 };
 
 const meta = {
@@ -82,10 +83,14 @@ export const CannotAdd: Story = {
     args: { canAdd: false },
 };
 
-// A text that comes from the event, such as the date: editing it makes it the invitation's own.
-export const FollowsTheEvent: Story = {
-    args: { toolbar: { ...toolbar, followsEvent: true } },
+// A text the event fills, such as the date: its look changes here, its words on the event.
+export const FromTheEvent: Story = {
+    args: { toolbar: { ...toolbar, lock: 'settings', lockHref: '/events/e1/manage?tab=settings' } },
     play: async ({ canvasElement, globals }) => {
-        await expect(within(canvasElement).getByText(copyFor(globals).InvitationEditor.sectionSettings.followEventHint)).toBeVisible();
+        const copy = copyFor(globals).InvitationEditor;
+        const bar = within(canvasElement);
+        await expect(bar.getByText(copy.eventLock.note, { exact: false })).toBeVisible();
+        await expect(bar.getByRole('link', { name: copy.eventLock.settings })).toHaveAttribute('href', '/events/e1/manage?tab=settings');
+        await expect(bar.queryByRole('button', { name: copy.deleteText })).toBeNull();
     },
 };

@@ -7,11 +7,14 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { BackgroundSettings } from '@/components/saveMyDate/editor/settings/BackgroundSettings';
 import { DressCodeSettings } from '@/components/saveMyDate/editor/settings/DressCodeSettings';
 import { FollowEventSettings } from '@/components/saveMyDate/editor/settings/FollowEventSettings';
+import { LocationsSettings } from '@/components/saveMyDate/editor/settings/LocationsSettings';
+import { ProgramItemsSettings } from '@/components/saveMyDate/editor/settings/ProgramItemsSettings';
 import { SettingsTextField } from '@/components/saveMyDate/editor/settings/SettingsTextField';
 import { StyleFields } from '@/components/saveMyDate/editor/settings/StyleFields';
 import type { SectionOf, SettingsScope } from '@/hooks/useSectionSettingsPanel';
 import type { InvitationDocument } from '@/lib/invitation/document';
 import { readEditableDraft } from '@/lib/invitation/drafts';
+import { eventFieldLinks } from '@/lib/invitation/eventData';
 import type { InvitationEventData } from '@/lib/invitation/eventLinks';
 import { sampleDraftDto } from '@/lib/invitation/sampleDraft';
 import type { InvitationSection } from '@/lib/invitation/sections';
@@ -65,6 +68,7 @@ function scopeFor<T extends InvitationSection['type']>(
         addUploaded: vi.fn(),
         event,
         eventSamples: null,
+        eventFieldLinks: event ? eventFieldLinks('e1') : null,
     };
     return { scope, edit, edited: () => document.sections.find((item) => item.id === section.id) as SectionOf<T> };
 }
@@ -166,22 +170,24 @@ describe('FollowEventSettings', () => {
         timezone: 'Europe/Athens',
         startAt: '2027-07-12T15:30:00Z',
         rsvp: null,
-        cover: null,
+        cover: { mediaId: 'm-cover', width: 1600, height: 1000 },
         location: { name: null, address: null, mapsUrl: null },
         sessions: null,
         joinUrl: null,
     };
 
-    it('is offered to hosts on a section linked to its event, first, and never to admins or unlinked sections', () => {
-        const linked = scopeFor('date', { following: true }).scope;
+    it('is offered to hosts on a cover linked to its event, first, and never to admins, unlinked or locked sections', () => {
+        const linked = scopeFor('photo', { following: true }).scope;
         expect(settingsGroups(linked.section, 'host', linked.theme)[0]).toBe('follow');
         expect(settingsGroups(linked.section, 'admin', linked.theme)).not.toContain('follow');
-        const unlinked = scopeFor('date').scope;
+        const unlinked = scopeFor('photo').scope;
         expect(settingsGroups(unlinked.section, 'host', unlinked.theme)).not.toContain('follow');
+        const locked = scopeFor('date', { following: true }).scope;
+        expect(settingsGroups(locked.section, 'host', locked.theme)).not.toContain('follow');
     });
 
     it('says what following means, and stops following when switched off', () => {
-        const { scope, edited } = scopeFor('date', { following: true, event });
+        const { scope, edited } = scopeFor('photo', { following: true, event });
         renderIn(<FollowEventSettings scope={scope} />);
         expect(screen.getByText(en.InvitationEditor.sectionSettings.followEventHint)).toBeInTheDocument();
         const toggle = screen.getByRole('switch', { name: 'Follow the event' });
@@ -191,15 +197,61 @@ describe('FollowEventSettings', () => {
         expect(edited().link).toEqual({ source: 'event', enabled: false });
     });
 
-    it("follows again when switched on, and shows the event's date at once", () => {
-        const { scope, edited } = scopeFor('date', { following: false, event });
+    it("follows again when switched on, and shows the event's cover at once", () => {
+        const { scope, edited } = scopeFor('photo', { following: false, event });
         renderIn(<FollowEventSettings scope={scope} />);
         const toggle = screen.getByRole('switch', { name: 'Follow the event' });
         expect(toggle).not.toBeChecked();
 
         fireEvent.click(toggle);
         expect(edited().link).toEqual({ source: 'event', enabled: true });
-        expect(edited().data.iso).toBe('2027-07-12T18:30');
+        expect(edited().data.photo).toEqual({ source: 'event', mediaId: 'm-cover' });
+    });
+});
+
+describe('Locked by the event', () => {
+    const event: InvitationEventData = {
+        eventType: 'WEDDING',
+        title: 'Maria & Nikos',
+        timezone: 'Europe/Athens',
+        startAt: '2027-07-12T15:30:00Z',
+        rsvp: null,
+        cover: null,
+        location: { name: 'Agios Nikolaos', address: 'Plaka', mapsUrl: null },
+        sessions: [
+            {
+                id: 'ses-1',
+                title: 'Ceremony',
+                description: null,
+                startAt: '2027-07-12T15:30:00Z',
+                locationName: 'Agios Nikolaos',
+                locationAddress: 'Plaka',
+                mapsUrl: null,
+                displayOrder: 0,
+                isMain: true,
+                isSecondary: false,
+            },
+        ],
+        joinUrl: null,
+    };
+
+    it("offers no new moments on the event's schedule, and says where to change them", () => {
+        renderIn(<ProgramItemsSettings scope={scopeFor('programIcons', { event }).scope} />);
+        expect(screen.queryByRole('button', { name: en.InvitationEditor.sectionSettings.addMoment })).toBeNull();
+        expect(screen.getByRole('link', { name: en.InvitationEditor.eventLock.schedule })).toHaveAttribute('href', '/events/e1/tools/schedule');
+    });
+
+    it('adds moments while the event has no schedule', () => {
+        renderIn(<ProgramItemsSettings scope={scopeFor('programIcons', { event: { ...event, sessions: null } }).scope} />);
+        expect(screen.getByRole('button', { name: en.InvitationEditor.sectionSettings.addMoment })).toBeInTheDocument();
+        expect(screen.queryByText(en.InvitationEditor.eventLock.note, { exact: false })).toBeNull();
+    });
+
+    it("sends the event's place to its settings, and keeps the map link of a place the event lacks", () => {
+        renderIn(<LocationsSettings scope={scopeFor('locations', { event }).scope} />);
+        expect(screen.getByRole('link', { name: en.InvitationEditor.eventLock.settings })).toHaveAttribute('href', '/events/e1/manage?tab=settings');
+        // No reception on the event: its map link stays the host's.
+        expect(screen.getAllByLabelText(en.InvitationEditor.sectionSettings.mapLink)).toHaveLength(1);
     });
 });
 
