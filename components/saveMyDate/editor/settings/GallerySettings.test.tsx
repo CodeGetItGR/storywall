@@ -1,4 +1,4 @@
-import { act, cleanup, fireEvent, render, renderHook, screen } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, renderHook, screen, within } from '@testing-library/react';
 import { produce } from 'immer';
 import { NextIntlClientProvider } from 'next-intl';
 import type { ReactNode } from 'react';
@@ -10,7 +10,7 @@ import type { PhotoUploadSlots } from '@/hooks/usePhotoUploads';
 import { PhotoUploadsContext } from '@/hooks/usePhotoUploadsContext';
 import type { SectionOf, SettingsScope } from '@/hooks/useSectionSettingsPanel';
 import type { InvitationDocument } from '@/lib/invitation/document';
-import { photoSlotKey } from '@/lib/invitation/photoSlots';
+import { galleryPhotoKey, photoSlotKey } from '@/lib/invitation/photoSlots';
 import { createPhotoUploadStore } from '@/lib/invitation/photoUploadStore';
 import type { ImageRef } from '@/lib/invitation/primitives';
 import { SAMPLE_DOCUMENT, SAMPLE_SECTIONS, SAMPLE_THEME } from '@/lib/invitation/samples';
@@ -112,9 +112,34 @@ describe('GallerySettings', () => {
         const { value } = renderGallery();
         fireEvent.change(screen.getAllByTestId('gallery-replace-input')[1], { target: { files: [file('new.jpg')] } });
         expect(value!.upload).toHaveBeenCalledWith(
-            { kind: 'gallery', sectionId: SAMPLE_SECTIONS.gallery.id, index: 1, photo: photo('m-2') },
+            { kind: 'gallery', sectionId: SAMPLE_SECTIONS.gallery.id, photoId: 'media:m-2#0', photo: photo('m-2') },
             expect.any(File),
         );
+    });
+
+    it('shows a replacement on the photo it was opened on, wherever that photo is now', () => {
+        const value = slots();
+        value.uploads.getState().set(galleryPhotoKey(SAMPLE_SECTIONS.gallery.id, 'media:m-2#0'), { percent: 40 });
+        renderGallery({ images: [photo('m-2'), photo('m-1')], value });
+        const tile = screen.getByRole('img', { name: 'Photo 1' }).closest('li')!;
+        expect(within(tile).getByRole('progressbar')).toHaveAttribute('aria-valuenow', '40');
+        expect(screen.getAllByRole('progressbar')).toHaveLength(1);
+    });
+
+    it('keeps the photos being added in the order picked while each uploads', async () => {
+        const value = slots();
+        // Each upload reports some progress, then waits.
+        vi.mocked(value.upload).mockImplementation(async (slot) => {
+            value.uploads.getState().set(photoSlotKey(slot), { percent: 50 });
+            await new Promise(() => {});
+        });
+        renderGallery({ value });
+
+        await act(async () => {
+            fireEvent.change(screen.getByTestId('gallery-add-input'), { target: { files: [file('a.jpg'), file('b.jpg')] } });
+        });
+        expect(value.report).toHaveBeenCalledWith(null);
+        expect(screen.getAllByRole('progressbar').map((bar) => bar.getAttribute('aria-valuenow'))).toEqual(['50', '0']);
     });
 
     it('leaves the photos out where uploads are not on', () => {

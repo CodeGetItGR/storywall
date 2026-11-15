@@ -5,12 +5,11 @@ import type { InvitationDocument } from '@/lib/invitation/document';
 import {
     deleteGalleryPhoto,
     galleryHasShape,
-    galleryPhotoIds,
     moveGalleryPhoto,
     setGalleryLayout,
     setGalleryShape,
 } from '@/lib/invitation/galleryEdits';
-import { GALLERY_MAX_PHOTOS, photoSlotKey, setSlotPhoto } from '@/lib/invitation/photoSlots';
+import { GALLERY_MAX_PHOTOS, galleryHasNoRoom, galleryPhotoIds, photoSlotKey, setSlotPhoto } from '@/lib/invitation/photoSlots';
 import type { ImageRef } from '@/lib/invitation/primitives';
 import { SAMPLE_DOCUMENT, SAMPLE_SECTIONS } from '@/lib/invitation/samples';
 
@@ -77,11 +76,30 @@ describe('gallery photo slots', () => {
     });
 
     it('replaces the photo it was opened on, wherever it moved meanwhile', () => {
-        const slot = { kind: 'gallery', sectionId: ID, index: 0, photo: photo('a') } as const;
+        const slot = { kind: 'gallery', sectionId: ID, photoId: 'media:a#0', photo: photo('a') } as const;
+        expect(photoSlotKey(slot)).toBe(`gallery:${ID}:media:a#0`);
         expect(mediaIds(produce(withImages([photo('a'), photo('b')]), setSlotPhoto(slot, photo('new'), SIZE)))).toEqual(['new', 'b']);
         expect(mediaIds(produce(withImages([photo('b'), photo('a')]), setSlotPhoto(slot, photo('new'), SIZE)))).toEqual(['b', 'new']);
+    });
 
+    it('replaces the one copy it was opened on, where a photo is there twice', () => {
+        const slot = { kind: 'gallery', sectionId: ID, photoId: 'media:a#1', photo: photo('a') } as const;
+        expect(mediaIds(produce(withImages([photo('a'), photo('b'), photo('a')]), setSlotPhoto(slot, photo('new'), SIZE)))).toEqual(['a', 'b', 'new']);
+    });
+
+    it('adds a replacement whose photo was deleted meanwhile at the end, while there is room', () => {
+        const slot = { kind: 'gallery', sectionId: ID, photoId: 'media:a#0', photo: photo('a') } as const;
         const gone = withImages([photo('b')]);
-        expect(produce(gone, setSlotPhoto(slot, photo('new'), SIZE))).toBe(gone);
+        expect(galleryHasNoRoom(gone, slot)).toBe(false);
+        expect(mediaIds(produce(gone, setSlotPhoto(slot, photo('new'), SIZE)))).toEqual(['b', 'new']);
+    });
+
+    it('knows when an uploaded photo has no room left', () => {
+        const full = withImages(Array.from({ length: GALLERY_MAX_PHOTOS }, (_, index) => photo(`p${index}`)));
+        expect(galleryHasNoRoom(full, { kind: 'galleryAdd', sectionId: ID, id: 'u-1' })).toBe(true);
+        expect(galleryHasNoRoom(full, { kind: 'gallery', sectionId: ID, photoId: 'media:a#0', photo: photo('a') })).toBe(true);
+        // Replacing a photo still there needs no room.
+        expect(galleryHasNoRoom(full, { kind: 'gallery', sectionId: ID, photoId: 'media:p3#0', photo: photo('p3') })).toBe(false);
+        expect(galleryHasNoRoom(full, { kind: 'frame', elementId: 'e-1' })).toBe(false);
     });
 });

@@ -51,7 +51,7 @@ export function GalleryEmptyTool({ sectionId, images, edit }: GalleryEmptyToolPr
                     <span>{t('gallery.add')}</span>
                 </button>
             )}
-            <input ref={inputRef} type="file" accept={PHOTO_ACCEPT} multiple hidden onChange={onFiles} data-testid="gallery-add-input" />
+            <input ref={inputRef} type="file" accept={PHOTO_ACCEPT} multiple hidden onChange={onFiles} data-testid="gallery-empty-input" />
 
             {/* Upload */}
             {percent !== undefined && <PhotoUploadProgress percent={percent} label={t('uploading')} />}

@@ -20,11 +20,9 @@ export function GallerySection({ section, contrast, ctx }: GallerySectionProps) 
             {/* Title */}
             <SectionText section={section} path="title" value={data.title} tag="h2" contrast={contrast} ctx={ctx} />
             {/* Photos */}
-            {images.length > 0 ? (
-                <GalleryPhotos images={images} layout={data.layout} shape={data.shape} labels={ctx.labels} />
-            ) : (
-                ctx.canvasTools?.gallery?.(section.id, data.images)
-            )}
+            {images.length > 0 && <GalleryPhotos images={images} layout={data.layout} shape={data.shape} labels={ctx.labels} />}
+            {/* Add the first photos, in the editor; photos that fail to show still count as photos */}
+            {data.images.length === 0 && ctx.canvasTools?.gallery?.(section.id, data.images)}
             {/* Elements */}
             <InvitationElements elements={section.elements} contrast={contrast} ctx={ctx} />
         </div>

@@ -6,7 +6,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
 import type { InvitationEditorStore } from '@/lib/invitation/editorStore';
-import { type PhotoSlot, photoSlotKey, setSlotPhoto } from '@/lib/invitation/photoSlots';
+import { galleryHasNoRoom, type PhotoSlot, photoSlotKey, setSlotPhoto } from '@/lib/invitation/photoSlots';
 import { PHOTO_COMPRESSION, photoFileProblem, type PhotoProblem, photoUploadPercent, photoUploadProblem } from '@/lib/invitation/photoUpload';
 import { createPhotoUploadStore } from '@/lib/invitation/photoUploadStore';
 import type { InvitationDraftImageDto } from '@/lib/invitation/programIconUpload';
@@ -20,6 +20,8 @@ type PhotoUploadsOptions = {
     // Makes a draft started signed out the account's; false when that failed.
     claim: () => Promise<boolean>;
 };
+
+type PhotoUploadOptions = { queued?: boolean };
 
 // Smaller before sending; the original goes when the browser can't make it smaller.
 async function compressPhoto(file: File, onProgress: (percent: number) => void): Promise<File> {
@@ -40,13 +42,18 @@ export function usePhotoUploads({ draftId, store, addUploaded, claim }: PhotoUpl
     const [problem, setProblem] = useState<PhotoProblem | null>(null);
     const [isSignInOpen, setIsSignInOpen] = useState(false);
 
+    // A queued upload already waits in the list under its key (several photos picked at
+    // once). It keeps the notice an earlier photo of the same pick raised.
     const upload = useCallback(
-        async (slot: PhotoSlot, file: File) => {
+        async (slot: PhotoSlot, file: File, { queued = false }: PhotoUploadOptions = {}) => {
             const key = photoSlotKey(slot);
-            if (uploads.getState().uploads[key]) return;
+            if (!queued && uploads.getState().uploads[key]) return;
             const found = photoFileProblem(file);
-            setProblem(found);
-            if (found) return;
+            if (found || !queued) setProblem(found);
+            if (found) {
+                uploads.getState().clear(key);
+                return;
+            }
 
             const progress = uploads.getState().set;
             progress(key, { percent: 0 });
@@ -58,6 +65,10 @@ export function usePhotoUploads({ draftId, store, addUploaded, claim }: PhotoUpl
                 body.append('file', small, file.name);
                 const saved = await api.postForm<InvitationDraftImageDto>(endpoints.invitationDrafts.images(draftId), body);
                 addUploaded(saved.mediaId, saved.url);
+                if (galleryHasNoRoom(store.getState().document, slot)) {
+                    setProblem('galleryFull');
+                    return;
+                }
                 store.getState().edit(setSlotPhoto(slot, { source: 'media', mediaId: saved.mediaId }, saved));
             } catch (error) {
                 setProblem(photoUploadProblem(error));
@@ -76,8 +87,8 @@ export function usePhotoUploads({ draftId, store, addUploaded, claim }: PhotoUpl
     }, [isAuthenticated]);
 
     const dismissProblem = useCallback(() => setProblem(null), []);
-    // A problem found before any upload starts, such as a full gallery.
-    const report = useCallback((found: PhotoProblem) => setProblem(found), []);
+    // A problem found before any upload starts, such as a full gallery; null clears the last one.
+    const report = useCallback((found: PhotoProblem | null) => setProblem(found), []);
     const closeSignIn = useCallback(() => setIsSignInOpen(false), []);
 
     const slots = useMemo(() => ({ uploads, upload, canPick, report }), [canPick, report, upload, uploads]);

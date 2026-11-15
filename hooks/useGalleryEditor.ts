@@ -5,9 +5,9 @@ import { useStore } from 'zustand';
 import { useShallow } from 'zustand/react/shallow';
 
 import { usePhotoUploadsContext } from '@/hooks/usePhotoUploadsContext';
-import { deleteGalleryPhoto, galleryPhotoIds, moveGalleryPhoto } from '@/lib/invitation/galleryEdits';
+import { deleteGalleryPhoto, moveGalleryPhoto } from '@/lib/invitation/galleryEdits';
 import { newSectionId } from '@/lib/invitation/newSection';
-import { GALLERY_MAX_PHOTOS, galleryAddKeyPrefix, type PhotoSlot, photoSlotKey } from '@/lib/invitation/photoSlots';
+import { GALLERY_MAX_PHOTOS, galleryAddKeyPrefix, galleryPhotoIds, galleryPhotoKey, type PhotoSlot, photoSlotKey } from '@/lib/invitation/photoSlots';
 import { createPhotoUploadStore, type PhotoUploadState } from '@/lib/invitation/photoUploadStore';
 import type { ImageRef } from '@/lib/invitation/primitives';
 import type { DocumentRecipe } from '@/lib/invitation/sectionSettings';
@@ -41,9 +41,7 @@ export function useGalleryEditor({ sectionId, images, edit }: GalleryEditorOptio
     );
     const replacing = useStore(
         uploads,
-        useShallow((state) =>
-            images.map((photo, index) => state.uploads[photoSlotKey({ kind: 'gallery', sectionId, index, photo })]?.percent ?? null),
-        ),
+        useShallow((state) => ids.map((id) => state.uploads[galleryPhotoKey(sectionId, id)]?.percent ?? null)),
     );
     const room = GALLERY_MAX_PHOTOS - images.length - adding.length;
 
@@ -58,20 +56,18 @@ export function useGalleryEditor({ sectionId, images, edit }: GalleryEditorOptio
     }, [room, slots]);
 
     // Sends the picked photos one after another, so they land in the order picked.
-    // Each waits in the list from the start, so the room left stays true meanwhile.
+    // Each waits in the list from the start, so the room left stays true meanwhile, and
+    // keeps its place there while it uploads. A notice raised early in the pick stays.
     const addFiles = useCallback(
         async (files: readonly File[]) => {
             if (!slots || files.length === 0) return;
             const left = GALLERY_MAX_PHOTOS - images.length - addedPercents(uploads.getState(), prefix).length;
-            if (files.length > left) slots.report('galleryFull');
+            slots.report(files.length > left ? 'galleryFull' : null);
             const queued = files
                 .slice(0, Math.max(0, left))
                 .map((file) => ({ file, slot: { kind: 'galleryAdd', sectionId, id: newSectionId() } as PhotoSlot }));
             for (const { slot } of queued) uploads.getState().set(photoSlotKey(slot), { percent: 0 });
-            for (const { file, slot } of queued) {
-                uploads.getState().clear(photoSlotKey(slot));
-                await slots.upload(slot, file);
-            }
+            for (const { file, slot } of queued) await slots.upload(slot, file, { queued: true });
         },
         [images.length, prefix, sectionId, slots, uploads],
     );
@@ -89,9 +85,9 @@ export function useGalleryEditor({ sectionId, images, edit }: GalleryEditorOptio
     const replace = useCallback(
         (index: number, file: File) => {
             const photo = images[index];
-            if (slots && photo) void slots.upload({ kind: 'gallery', sectionId, index, photo }, file);
+            if (slots && photo) void slots.upload({ kind: 'gallery', sectionId, photoId: ids[index], photo }, file);
         },
-        [images, sectionId, slots],
+        [ids, images, sectionId, slots],
     );
 
     const remove = useCallback((index: number) => edit(deleteGalleryPhoto(sectionId, index)), [edit, sectionId]);

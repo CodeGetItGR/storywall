@@ -8,7 +8,6 @@ import type { SectionOf, SettingsScope } from '@/hooks/useSectionSettingsPanel';
 import type { GalleryLayout, GalleryShape } from '@/lib/invitation/gallery';
 import { galleryHasShape, setGalleryLayout, setGalleryShape } from '@/lib/invitation/galleryEdits';
 import { resolveImage } from '@/lib/invitation/render';
-import type { DocumentRecipe } from '@/lib/invitation/sectionSettings';
 
 const LAYOUTS: readonly GalleryLayout[] = ['grid', 'masonry', 'carousel', 'featured'];
 const SHAPES: readonly GalleryShape[] = ['round', 'square', 'rectangle', 'roundedSquare'];
@@ -17,8 +16,7 @@ const SHAPES: readonly GalleryShape[] = ['round', 'square', 'rectangle', 'rounde
 export function useGallerySettings({ section, edit, theme, media }: SettingsScope<SectionOf<'gallery'>>) {
     const t = useTranslations('InvitationEditor.photos.gallery');
     const { data } = section;
-    const editOnce = useCallback((recipe: DocumentRecipe) => edit(recipe), [edit]);
-    const gallery = useGalleryEditor({ sectionId: section.id, images: data.images, edit: editOnce });
+    const gallery = useGalleryEditor({ sectionId: section.id, images: data.images, edit });
 
     const layouts = useMemo(() => LAYOUTS.map((value) => ({ value, label: t(`layouts.${value}`) })), [t]);
     const shapes = useMemo(() => SHAPES.map((value) => ({ value, label: t(`shapes.${value}`) })), [t]);

@@ -1,3 +1,4 @@
+import type { InvitationDocument } from '@/lib/invitation/document';
 import type { ImageRef } from '@/lib/invitation/primitives';
 import { resolveTextField, type SectionType } from '@/lib/invitation/sections';
 import type { DocumentRecipe } from '@/lib/invitation/sectionSettings';
@@ -7,12 +8,12 @@ import type { DocumentRecipe } from '@/lib/invitation/sectionSettings';
 // the photo frames). A field path reads like a text path: a list segment is an
 // item's id, so `godparents.<id>.photo` follows the godparent when it moves.
 // Element ids are unique in the whole invitation, so a frame is found by its id alone.
-// A gallery photo has no id of its own: replacing one finds it by the photo it held,
-// and each added photo gets an upload id of its own.
+// A gallery photo is known by its steady id (galleryPhotoIds), so a replacement
+// follows it when it moves; each added photo gets an upload id of its own.
 export type PhotoSlot =
     | { kind: 'field'; sectionId: string; path: string }
     | { kind: 'frame'; elementId: string }
-    | { kind: 'gallery'; sectionId: string; index: number; photo: ImageRef }
+    | { kind: 'gallery'; sectionId: string; photoId: string; photo: ImageRef }
     | { kind: 'galleryAdd'; sectionId: string; id: string };
 
 // A gallery holds at most 10 photos.
@@ -55,7 +56,7 @@ export function photoSlotKey(slot: PhotoSlot): string {
         case 'frame':
             return `frame:${slot.elementId}`;
         case 'gallery':
-            return `gallery:${slot.sectionId}:${slot.index}`;
+            return galleryPhotoKey(slot.sectionId, slot.photoId);
         case 'galleryAdd':
             return galleryAddKeyPrefix(slot.sectionId) + slot.id;
     }
@@ -75,12 +76,47 @@ export function sameImage(a: ImageRef, b: ImageRef): boolean {
     return imageKey(a) === imageKey(b);
 }
 
+// A steady id for each photo, for the drag, the list keys and its replacement: the
+// photo itself, and how many times it came before, since one photo can be in a gallery twice.
+export function galleryPhotoIds(images: readonly ImageRef[]): string[] {
+    const seen = new Map<string, number>();
+    return images.map((image) => {
+        const base = imageKey(image);
+        const count = seen.get(base) ?? 0;
+        seen.set(base, count + 1);
+        return `${base}#${count}`;
+    });
+}
+
+// The upload key of one gallery photo's replacement.
+export function galleryPhotoKey(sectionId: string, photoId: string): string {
+    return `gallery:${sectionId}:${photoId}`;
+}
+
+// Where a gallery photo's replacement goes: the photo it was opened on, wherever it moved.
+function galleryReplaceIndex(images: readonly ImageRef[], slot: Extract<PhotoSlot, { kind: 'gallery' }>): number {
+    const at = galleryPhotoIds(images).indexOf(slot.photoId);
+    return at >= 0 ? at : images.findIndex((item) => sameImage(item, slot.photo));
+}
+
+// True when an uploaded photo has no place left in its gallery: an added photo, or a
+// replacement whose photo was deleted meanwhile, while the gallery holds 10 already.
+export function galleryHasNoRoom(document: InvitationDocument, slot: PhotoSlot): boolean {
+    if (slot.kind !== 'gallery' && slot.kind !== 'galleryAdd') return false;
+    const section = document.sections.find((item) => item.id === slot.sectionId);
+    if (section?.type !== 'gallery') return false;
+    const { images } = section.data;
+    if (slot.kind === 'gallery' && galleryReplaceIndex(images, slot) >= 0) return false;
+    return images.length >= GALLERY_MAX_PHOTOS;
+}
+
 function isRecord(value: unknown): value is Record<string, unknown> {
     return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
 // Puts an uploaded photo in its slot. A slot that is gone by the time the upload
-// answers (deleted, or undone away) is left alone, as the old editor did. A frame
+// answers (deleted, or undone away) is left alone, as the old editor did; a gallery
+// photo still goes in its gallery while there is room. A frame
 // keeps the host's crop and learns the new photo's size.
 export function setSlotPhoto(slot: PhotoSlot, photo: ImageRef, size: PhotoSize): DocumentRecipe {
     return (draft) => {
@@ -97,13 +133,10 @@ export function setSlotPhoto(slot: PhotoSlot, photo: ImageRef, size: PhotoSize):
         if (slot.kind !== 'field') {
             if (section?.type !== 'gallery') return;
             const { images } = section.data;
-            if (slot.kind === 'galleryAdd') {
-                if (images.length < GALLERY_MAX_PHOTOS) images.push(photo);
-                return;
-            }
-            // Where the photo was, or where it moved to meanwhile.
-            const at = images[slot.index] && sameImage(images[slot.index], slot.photo) ? slot.index : images.findIndex((item) => sameImage(item, slot.photo));
+            const at = slot.kind === 'gallery' ? galleryReplaceIndex(images, slot) : -1;
             if (at >= 0) images[at] = photo;
+            // An added photo, or one whose photo was deleted meanwhile, goes at the end while there is room.
+            else if (images.length < GALLERY_MAX_PHOTOS) images.push(photo);
             return;
         }
         if (!section || !isPhotoField(section.type, slot.path)) return;
