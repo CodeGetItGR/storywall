@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import type { QrLinkResolutionDto } from '@/lib/api/types';
-import { qrLandingChoiceHref, qrLandingPlan, qrLandingStart, resolveQrLandingToken, splitQrLandingChoices } from '@/lib/qrLanding';
+import type { EventInvitationPreviewDto, QrLinkResolutionDto } from '@/lib/api/types';
+import { qrEventDetails, qrJoinAccountHrefs, qrLandingChoiceHref, qrLandingPlan, qrLandingStart, resolveQrLandingToken, splitQrLandingChoices } from '@/lib/qrLanding';
 import { routes } from '@/lib/routes';
 
 const guest = { isMember: false, hasWishbook: false };
@@ -98,5 +98,37 @@ describe('splitQrLandingChoices', () => {
 
     it('leaves every choice as a row when there is no event choice', () => {
         expect(splitQrLandingChoices(['upload', 'wish'])).toEqual({ event: null, rest: ['upload', 'wish'] });
+    });
+});
+
+describe('qrJoinAccountHrefs', () => {
+    const plan = { choices: ['join' as const], joinInviteToken: 'inv', uploadToken: null, wishToken: null };
+
+    it('sends sign-up and log-in to the feed with the invite', () => {
+        expect(qrJoinAccountHrefs(plan, 'e1')).toEqual({
+            register: routes.auth.register({ invite: 'inv', next: routes.events.feed('e1') }),
+            login: routes.auth.login({ invite: 'inv', next: routes.events.feed('e1') }),
+        });
+    });
+
+    it('is null without a join link', () => {
+        expect(qrJoinAccountHrefs({ ...plan, joinInviteToken: null }, 'e1')).toBeNull();
+    });
+});
+
+describe('qrEventDetails', () => {
+    const preview = (overrides: Partial<EventInvitationPreviewDto>) =>
+        ({ eventStartAt: '2026-11-28T18:30:00+02:00', eventTimezone: 'Europe/Athens', eventLocationName: ' Kifisia ', ...overrides }) as EventInvitationPreviewDto;
+
+    it('puts the date and time on one line, in the event time zone, and trims the place', () => {
+        const details = qrEventDetails('en', preview({}));
+        expect(details?.when).toContain('2026');
+        expect(details?.when).toMatch(/6:30/);
+        expect(details?.where).toBe('Kifisia');
+    });
+
+    it('is null before the preview loads, or with neither date nor place', () => {
+        expect(qrEventDetails('en', null)).toBeNull();
+        expect(qrEventDetails('en', preview({ eventStartAt: '', eventLocationName: '  ' }))).toBeNull();
     });
 });

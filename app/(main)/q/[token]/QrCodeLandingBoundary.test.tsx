@@ -30,6 +30,7 @@ vi.mock('@/hooks/useQrLinks', () => ({ useQrLinkResolution: (token: string) => m
 vi.mock('@/hooks/useAuth', () => ({ useAuth: () => mocks.auth }));
 vi.mock('@/hooks/useMyEvents', () => ({ useMyEvents: () => ({ data: mocks.memberships, isLoading: false }) }));
 vi.mock('@/hooks/useEventModules', () => ({ useEventModules: () => ({ data: mocks.modules, isLoading: false }) }));
+vi.mock('@/hooks/useQrEventDetails', () => ({ useQrEventDetails: () => null }));
 vi.mock('@/components/invite/InviteLayout', () => ({ InviteLayout: ({ children }: { children: ReactNode }) => <div>{children}</div> }));
 vi.mock('@/components/invite/AnonymousQrMediaUploadForm', () => ({
     AnonymousQrMediaUploadForm: ({ token, member }: { token: string; member: { displayName: string } | null }) => (
@@ -60,19 +61,19 @@ describe('QrCodeLandingBoundary', () => {
         resolve({ status: 'ACTIVE', targetType: 'EVENT_JOIN', inviteToken: 'inv', uploadToken: 'up' });
         render(<QrCodeLandingBoundary token="t" />);
 
-        expect(screen.getByRole('link', { name: /choices.join/ })).toHaveAttribute('href', routes.inviteToken('inv'));
+        expect(screen.getByRole('link', { name: 'createAccount' })).toHaveAttribute('href', expect.stringContaining('invite=inv'));
         fireEvent.click(screen.getByRole('button', { name: /guestCode.uploadButton/ }));
         expect(screen.getByText('upload-form:up:guest')).toBeInTheDocument();
 
         fireEvent.click(screen.getByRole('button', { name: 'guestCode.back' }));
-        expect(screen.getByRole('link', { name: /choices.join/ })).toBeInTheDocument();
+        expect(screen.getByRole('link', { name: 'haveAccount' })).toBeInTheDocument();
     });
 
     it('offers join and upload on an old printed upload code, uploading on that code', () => {
         resolve({ status: 'ACTIVE', targetType: 'MEDIA_UPLOAD', joinInviteToken: 'inv' });
         render(<QrCodeLandingBoundary token="t" />);
 
-        expect(screen.getByRole('link', { name: /choices.join/ })).toHaveAttribute('href', routes.inviteToken('inv'));
+        expect(screen.getByRole('link', { name: 'createAccount' })).toHaveAttribute('href', expect.stringContaining('invite=inv'));
         fireEvent.click(screen.getByRole('button', { name: /guestCode.uploadButton/ }));
         expect(screen.getByText('upload-form:t:guest')).toBeInTheDocument();
     });

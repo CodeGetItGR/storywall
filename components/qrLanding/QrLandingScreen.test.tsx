@@ -6,6 +6,7 @@ import type { useQrLanding } from '@/hooks/useQrLanding';
 
 vi.mock('next-intl', () => ({ useTranslations: () => (key: string) => key }));
 vi.mock('@/components/invite/AnonymousQrMediaUploadForm', () => ({ AnonymousQrMediaUploadForm: () => <div>upload form</div> }));
+vi.mock('@/hooks/useQrEventDetails', () => ({ useQrEventDetails: () => null }));
 vi.mock('@/components/qrGuest/GuestWishForm', () => ({ GuestWishForm: () => <div>wish form</div> }));
 
 type Landing = ReturnType<typeof useQrLanding>;

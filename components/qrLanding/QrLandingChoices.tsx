@@ -5,11 +5,19 @@ import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 import { useCallback, useRef } from 'react';
 
+import { QrEventDetailsLine } from '@/components/qrLanding/QrEventDetailsLine';
 import { QrJoinCard } from '@/components/qrLanding/QrJoinCard';
 import { QrMoreOptionsHint } from '@/components/qrLanding/QrMoreOptionsHint';
 import { AppLink } from '@/components/ui/AppLink';
 import { useMoreBelowHint } from '@/hooks/useMoreBelowHint';
-import { type QrLandingChoice, qrLandingChoiceHref, type QrLandingPlan, splitQrLandingChoices } from '@/lib/qrLanding';
+import {
+    type QrEventDetails,
+    qrJoinAccountHrefs,
+    type QrLandingChoice,
+    qrLandingChoiceHref,
+    type QrLandingPlan,
+    splitQrLandingChoices,
+} from '@/lib/qrLanding';
 
 interface QrLandingChoicesProps {
     plan: QrLandingPlan;
@@ -20,6 +28,8 @@ interface QrLandingChoicesProps {
     eventTitle: string;
     // A signed-in visitor already has an account: no account note, no "without an account" label.
     isSignedIn: boolean;
+    // When and where the event is, under its name. Null while loading or when the event has neither.
+    details: QrEventDetails | null;
 }
 
 const ICONS: Record<QrLandingChoice, string> = {
@@ -33,12 +43,13 @@ const ICONS: Record<QrLandingChoice, string> = {
 // Plain rows split by thin lines, so the choices read as one short list.
 const ROW_CLASS = 'flex w-full items-center gap-4 px-2 py-4 text-left transition-colors hover:bg-surface-muted/60';
 
-export function QrLandingChoices({ plan, eventId, onChoose, coverSrc, eventTitle, isSignedIn }: QrLandingChoicesProps) {
+export function QrLandingChoices({ plan, eventId, onChoose, coverSrc, eventTitle, isSignedIn, details }: QrLandingChoicesProps) {
     const t = useTranslations('QrCodePage');
     const { event, rest } = splitQrLandingChoices(plan.choices);
     const eventHref = event ? qrLandingChoiceHref(event, plan, eventId) : null;
     const showCard = Boolean(event && eventHref);
     const rows = showCard ? rest : plan.choices;
+    const accountHrefs = event === 'join' && !isSignedIn ? qrJoinAccountHrefs(plan, eventId) : null;
 
     const restRef = useRef<HTMLDivElement>(null);
     const hint = useMoreBelowHint(restRef, showCard && rows.length > 0);
@@ -66,9 +77,16 @@ export function QrLandingChoices({ plan, eventId, onChoose, coverSrc, eventTitle
 
     return (
         <div className="flex flex-col gap-6">
+            {/* Details: pulled up to sit under the event's name in the page header. */}
+            {details ? (
+                <div className="-mt-10">
+                    <QrEventDetailsLine details={details} />
+                </div>
+            ) : null}
+
             {/* Event card */}
             {showCard && event && eventHref ? (
-                <QrJoinCard choice={event} href={eventHref} coverSrc={coverSrc} title={eventTitle} showAccountNote={event === 'join' && !isSignedIn} />
+                <QrJoinCard choice={event} href={eventHref} coverSrc={coverSrc} title={eventTitle} accountHrefs={accountHrefs} />
             ) : null}
 
             {/* Other choices */}

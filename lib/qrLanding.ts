@@ -1,7 +1,8 @@
 import type { Locale } from '@/i18n/config';
 import { getPublicLandingPath } from '@/i18n/publicLocale';
-import type { QrLinkResolutionDto } from '@/lib/api/types';
+import type { EventInvitationPreviewDto, QrLinkResolutionDto } from '@/lib/api/types';
 import type { Campaign } from '@/lib/campaignVisits';
+import { formatEventDateParts } from '@/lib/datetime';
 import { routes } from '@/lib/routes';
 
 // What a scanned event code can offer (KAN-208). Join, upload and wish come from the codes themselves;
@@ -92,6 +93,31 @@ export function qrLandingChoiceHref(choice: QrLandingChoice, plan: QrLandingPlan
     if (choice === 'open') return eventId ? routes.events.feed(eventId) : null;
     if (choice === 'wishbook') return eventId ? routes.events.tools.wishbook(eventId) : null;
     return null;
+}
+
+// Sign-up and log-in for a guest without an account, straight from the join card: both carry the join
+// link's invite, so the guest lands in the event's feed once they are in, without the invite page between.
+export function qrJoinAccountHrefs(plan: QrLandingPlan, eventId: string | null | undefined): { register: string; login: string } | null {
+    if (!plan.joinInviteToken) return null;
+    const next = eventId ? routes.events.feed(eventId) : null;
+    return {
+        register: routes.auth.register({ invite: plan.joinInviteToken, next }),
+        login: routes.auth.login({ invite: plan.joinInviteToken, next }),
+    };
+}
+
+// When and where the event is, from the join link's invite preview, as one short line each.
+export interface QrEventDetails {
+    when: string | null;
+    where: string | null;
+}
+
+export function qrEventDetails(locale: string, preview: EventInvitationPreviewDto | null | undefined): QrEventDetails | null {
+    if (!preview) return null;
+    const parts = formatEventDateParts(locale, preview.eventStartAt, null, preview.eventTimezone);
+    const when = parts ? `${parts.date}, ${parts.time}` : null;
+    const where = preview.eventLocationName?.trim() || null;
+    return when || where ? { when, where } : null;
 }
 
 // What the page opens on: the chooser when there is more than one choice, otherwise the one choice.

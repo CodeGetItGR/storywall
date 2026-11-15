@@ -10,7 +10,7 @@ const meta = {
         href: '/invite/inv-story',
         coverSrc: '/landing/couple-cheering-with-guests-under-lit-arch-at-night.webp',
         title: 'Maria & Nikos',
-        showAccountNote: true,
+        accountHrefs: { register: '/register?invite=inv-story', login: '/login?invite=inv-story' },
     },
     decorators: [
         (Story) => (
@@ -24,17 +24,17 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-// A guest without an account.
+// A guest without an account: sign-up and log-in in place of Join.
 export const Join: Story = {};
 
-// Someone signed in who hasn't joined yet: no account note.
+// Someone signed in who hasn't joined yet: one Join button.
 export const JoinSignedIn: Story = {
-    args: { showAccountNote: false },
+    args: { accountHrefs: null },
 };
 
 // A member opening the event.
 export const Open: Story = {
-    args: { choice: 'open', showAccountNote: false },
+    args: { choice: 'open', accountHrefs: null },
 };
 
 // An event without a cover.

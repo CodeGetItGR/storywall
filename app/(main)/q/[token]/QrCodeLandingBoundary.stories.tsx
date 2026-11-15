@@ -3,7 +3,7 @@ import { http, HttpResponse } from 'msw';
 
 import { withAppContext } from '@/.storybook/appContext';
 import { STORY_EVENT_ID, storyMember, storyModules } from '@/.storybook/fixtures';
-import type { MediaResponseDto, QrLinkResolutionDto } from '@/lib/api/types';
+import type { EventInvitationPreviewDto, MediaResponseDto, QrLinkResolutionDto } from '@/lib/api/types';
 
 import QrCodeLandingBoundary from './QrCodeLandingBoundary';
 
@@ -25,6 +25,21 @@ const joinCode: QrLinkResolutionDto = {
     wishToken: 'join-story',
 };
 
+// The join link's preview: the choice page reads when and where the event is from it.
+const joinPreview = {
+    inviteToken: 'inv-story',
+    eventId: STORY_EVENT_ID,
+    eventTitle: 'Eleni & Nikos',
+    eventStartAt: '2026-11-28T18:30:00+02:00',
+    eventEndAt: null,
+    eventTimezone: 'Europe/Athens',
+    eventLocationName: 'Agios Nikolaos, Kifisia',
+    coverMedia: null,
+    theme: null,
+    expired: false,
+    alreadyUsed: false,
+} as unknown as EventInvitationPreviewDto;
+
 const meta = {
     title: 'QrLanding/QrCodeLandingBoundary',
     component: QrCodeLandingBoundary,
@@ -40,7 +55,10 @@ const meta = {
         ),
     ],
     beforeEach({ msw }) {
-        msw.use(http.get('*/api/qr/:token', () => HttpResponse.json(joinCode)));
+        msw.use(
+            http.get('*/api/qr/:token', () => HttpResponse.json(joinCode)),
+            http.get('*/api/event-invitations/:token/preview', () => HttpResponse.json(joinPreview)),
+        );
     },
 } satisfies Meta<typeof QrCodeLandingBoundary>;
 
