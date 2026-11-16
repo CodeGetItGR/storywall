@@ -24,7 +24,7 @@ import { useActiveEvent, useEventContextLoading, useIsHost } from '@/providers/E
 // non-host members the panel only ever shows their plain tool links (same
 // set MobileTabBar's member context menu shows), so every host-only
 // summary/fetch below is also gated on `isHost`.
-export function useRightContextPanel({ includeManageLinks = true }: { includeManageLinks?: boolean } = {}) {
+export function useRightContextPanel() {
     const activeEvent = useActiveEvent();
     const moduleCopy = useModuleCopy(activeEvent?.eventType);
     const isHost = useIsHost();
@@ -58,11 +58,7 @@ export function useRightContextPanel({ includeManageLinks = true }: { includeMan
     // RSVPs from the dashboard's RSVP section, already linked in that menu).
     // The share links are excluded here — they get their own section below
     // instead of sitting in this flat list.
-    // `includeManageLinks: false` (used when this content is reused inside the
-    // manage page itself, e.g. its Overview tab) drops "Manage", which would link
-    // to the page you are on, and "Vendors", which is already in the dashboard's nav.
-    let hostItemsForActions = useHostMenuItems().filter((item) => item.key !== 'invitationsQr');
-    if (!includeManageLinks) hostItemsForActions = hostItemsForActions.filter((item) => item.key !== 'manage' && item.key !== 'vendors');
+    const hostItemsForActions = useHostMenuItems().filter((item) => item.key !== 'invitationsQr');
     const toolItems = useToolsMenuItems();
     // The shared tools menu leaves the playlist out because MobileTabBar gives
     // it its own tab; the desktop host actions have no such tab, so add it here.

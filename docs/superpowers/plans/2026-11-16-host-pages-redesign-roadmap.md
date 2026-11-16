@@ -17,7 +17,7 @@
 | # | Ticket | Piece | Mockup | Depends on | Plan |
 |---|---|---|---|---|---|
 | 1 | KAN-223 | Navigation: grouped sidebar, Overview is the mobile menu, header B, Help folded into Overview, Share links and Vendors inside the dashboard | N1, MN1, header B | — | [2026-11-16-host-dashboard-navigation.md](2026-11-16-host-dashboard-navigation.md) |
-| 2 | KAN-224 | Overview: the event journey (before, all done, on the day, after) | C1 | 1 (takes over the setup steps) | not written yet |
+| 2 | KAN-224 | Overview: the event journey (before, all done, on the day, after) | C1 | 1 (takes over the setup steps) | [2026-11-16-host-overview-journey.md](2026-11-16-host-overview-journey.md) |
 | 3 | KAN-225 | Invitations & QR codes as one section | Q5 | 1 (merges the Invitation and Share links entries) | not written yet |
 | 4 | KAN-226 | Members on one page | M1 | 1 | not written yet |
 | 5 | KAN-227 | RSVP on one page | R1a | 1 | not written yet |
@@ -38,6 +38,8 @@ Pieces 3–9 and 11 only need piece 1. They can be built in any order once it is
   - The setup steps sit on the Overview in their current look until piece 2 turns them into the journey.
 - **2 Overview**
   - The Announcement quick tool and stop link to the current announcement page until piece 10 points them at the composer.
+  - Built 2026-11-16. Changes from the plan: Playlist uses the lucide `Music` icon, because `public/icons/music.svg` is the bottom bar's plain dark icon, not a gradient one. The current stop shows its action once: as a coral line on the path, with the button in its card.
+  - The floating Overview button above "+" with a steps-left badge is its own ticket, KAN-236.
 - **3 Invitations & QR codes**
   - The scan page gets a live invitation as one more choice. The scan page's own design is out of scope.
   - Check whether the backend already returns what the scan page needs. If it doesn't, add a guestwall-be ticket and release it first.
@@ -49,7 +51,7 @@ Pieces 3–9 and 11 only need piece 1. They can be built in any order once it is
 | Piece | Words |
 |---|---|
 | 1 | Group headings "Event" and "People" (English agreed; Greek to approve). The removals listed in that plan's Task 1. |
-| 2 | The C1 words |
+| 2 | Approved 2026-11-16 (see that plan's Wording section) |
 | 3 | "See the invitation", "What guests see", the QR code alt text |
 | 5 | "Guests" (heading), "Edit RSVP deadline" |
 | 6 | Pencil button labels ("Edit" + field name) |
