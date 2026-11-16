@@ -2,6 +2,7 @@ import { hashKey } from '@tanstack/react-query';
 
 import { ApiError } from '@/lib/api/client';
 import { type InvitationDocument, upgradeInvitationDocument } from '@/lib/invitation/document';
+import { withUniqueListItemIds } from '@/lib/invitation/listIds';
 import type { MediaResolver } from '@/lib/invitation/render';
 import { type ThemeDesign, themeDesignSchema } from '@/lib/invitation/theme';
 
@@ -78,7 +79,7 @@ export function readEditableDraft(dto: InvitationDraftDto): EditableDraft {
         themeName: dto.themeName,
         eventType: dto.eventType,
         eventId: dto.eventId ?? null,
-        document: upgradeInvitationDocument(dto.document),
+        document: withUniqueListItemIds(upgradeInvitationDocument(dto.document)),
         theme: themeDesignSchema.parse(dto.design),
         media: (mediaId) => imageUrls[mediaId],
         themeImageIds: new Set(dto.themeImageIds ?? []),

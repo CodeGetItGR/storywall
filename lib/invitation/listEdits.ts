@@ -29,13 +29,6 @@ export type EditableList = keyof typeof EDITABLE_LISTS;
 export type ListItem<L extends EditableList> = ReturnType<(typeof EDITABLE_LISTS)[L]['blank']>;
 export type ListItemPatch<L extends EditableList> = Partial<Omit<ListItem<L>, 'id'>>;
 
-// The people list of a section, for the sections that hold one.
-export const PEOPLE_LISTS: Partial<Record<SectionType, EditableList>> = {
-    godparents: 'godparents',
-    weddingSponsors: 'sponsors',
-    parentsSimple: 'parentsGodparents',
-};
-
 // The items of one list in a section, or null when the section isn't of the list's type.
 export function listItems<L extends EditableList>(section: InvitationSection, list: L): readonly ListItem<L>[] | null {
     const { type, key } = EDITABLE_LISTS[list];

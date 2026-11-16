@@ -159,6 +159,48 @@ describe.each(LANGUAGES)('Invitation images in %s', (language) => {
     });
 });
 
+describe('Lists on the guest page', () => {
+    const blankStay = { id: 'h2', name: '', address: '', phone: '', email: '', website: '', mapUrl: '' };
+
+    it('leaves out questions with nothing in them', () => {
+        const faq = { ...SAMPLE_SECTIONS.faq, data: { ...SAMPLE_SECTIONS.faq.data, items: [...SAMPLE_SECTIONS.faq.data.items, { id: 'q2', question: ' ', answer: '' }] } };
+        const { container } = renderInvitation(documentIn('el', [faq]));
+        expect(Array.from(container.querySelectorAll('.faq-item')).map((item) => item.textContent)).toEqual(['Υπάρχει πάρκινγκ;Ναι.']);
+    });
+
+    it('leaves out empty places to stay, and the map button of a place with no name or address', () => {
+        const stays = {
+            ...SAMPLE_SECTIONS.accommodation,
+            data: { ...SAMPLE_SECTIONS.accommodation.data, items: [...SAMPLE_SECTIONS.accommodation.data.items, blankStay, { ...blankStay, id: 'h3', phone: '2241000000' }] },
+        };
+        const { container } = renderInvitation(documentIn('el', [stays]));
+        const cards = Array.from(container.querySelectorAll<HTMLElement>('.stay-item'));
+
+        expect(cards).toHaveLength(2);
+        expect(cards[0].querySelector('.stay-map-btn')).toHaveAttribute('href', expect.stringContaining(encodeURIComponent('Ξενοδοχείο, Ρόδος')));
+        expect(cards[1]).toHaveTextContent('2241000000');
+        expect(cards[1].querySelector('.stay-map-btn')).toBeNull();
+        expect(cards[1].querySelector('.stay-name')).toBeNull();
+        expect(container.querySelector('[href="https://maps.google.com"]')).toBeNull();
+    });
+
+    it('leaves out people with no name and no photo', () => {
+        const godparents = {
+            ...SAMPLE_SECTIONS.godparents,
+            data: { ...SAMPLE_SECTIONS.godparents.data, godparents: [...SAMPLE_SECTIONS.godparents.data.godparents, { id: 'g3', name: '' }, { id: 'g4', name: '', photo: { source: 'media' as const, mediaId: 'm-g4' } }] },
+        };
+        const sponsors = { ...SAMPLE_SECTIONS.weddingSponsors, data: { ...SAMPLE_SECTIONS.weddingSponsors.data, sponsors: [{ id: 'k1', name: '' }] } };
+        const parents = { ...SAMPLE_SECTIONS.parentsSimple, data: { ...SAMPLE_SECTIONS.parentsSimple.data, godparents: [...SAMPLE_SECTIONS.parentsSimple.data.godparents, { id: 'g2', name: '  ' }] } };
+        const { container } = renderInvitation(documentIn('el', [godparents, sponsors, parents]));
+        const section = (id: string) => container.querySelector(`[data-section-id="${id}"]`)!;
+
+        expect(section(godparents.id).querySelectorAll('.family-godparent')).toHaveLength(3);
+        expect(section(sponsors.id).querySelectorAll('.family-godparent')).toHaveLength(0);
+        expect(Array.from(section(parents.id).querySelectorAll('.family-godparent-simple-item')).map((item) => item.textContent)).toEqual(['Γιώργος']);
+        expect(Array.from(container.querySelectorAll('h2')).filter((heading) => !heading.textContent?.trim())).toEqual([]);
+    });
+});
+
 describe('RSVP through the whole invitation', () => {
     const labels = INVITATION_LABELS.el;
 

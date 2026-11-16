@@ -7,6 +7,7 @@ import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } 
 import { createDraftServer } from '@/hooks/invitationDraftTestServer';
 import { TEST_USER, testAuth, WithAuth } from '@/hooks/testAuthContext';
 import { EDITOR_TOUR_SEEN_KEY } from '@/lib/invitation/editorTour';
+import { keyboardDrag, layOut } from '@/lib/testing/keyboardDrag';
 import en from '@/messages/en.json';
 import { AuthContext } from '@/providers/AuthProvider';
 
@@ -158,6 +159,45 @@ describe('Invitation editor: section settings', () => {
             'Μπορώ να φέρω τα παιδιά μου;',
             'Υπάρχει dress code;',
         ]);
+    });
+
+    it('undoes an added question, and Redo brings it back without opening it', async () => {
+        await openEditor();
+        openSettings('FAQ');
+        const settings = panel('FAQ');
+
+        fireEvent.click(within(settings).getByRole('button', { name: 'Add question' }));
+        expect(within(settings).getByRole('group', { name: 'Untitled' })).toBeInTheDocument();
+        expect(section('FAQ').querySelectorAll('.faq-q')).toHaveLength(3);
+
+        fireEvent.click(screen.getByRole('button', { name: 'Undo' }));
+        expect(section('FAQ').querySelectorAll('.faq-q')).toHaveLength(2);
+        expect(within(settings).queryByRole('group', { name: 'Untitled' })).not.toBeInTheDocument();
+
+        fireEvent.click(screen.getByRole('button', { name: 'Redo' }));
+        expect(within(settings).getByRole('button', { name: 'Untitled' })).toBeInTheDocument();
+        expect(within(settings).queryByRole('group', { name: 'Untitled' })).not.toBeInTheDocument();        await save();
+        const faq = storedSection('s-faq');
+        expect(faq.type === 'faq' && faq.data.items).toHaveLength(3);
+    });
+
+    it('moves a question with the keyboard, and Undo puts it back', async () => {
+        await openEditor();
+        openSettings('FAQ');
+        const settings = panel('FAQ');
+        const canvasOrder = () => Array.from(section('FAQ').querySelectorAll('.faq-q')).map((button) => button.textContent);
+
+        layOut(within(settings).getAllByRole('listitem'));
+        await keyboardDrag(within(settings).getAllByRole('button', { name: 'Drag to reorder' })[0], ['ArrowDown']);
+        expect(canvasOrder()).toEqual(['Μπορώ να φέρω τα παιδιά μου;', 'Υπάρχει πάρκινγκ;']);
+
+        fireEvent.click(screen.getByRole('button', { name: 'Undo' }));
+        expect(canvasOrder()).toEqual(['Υπάρχει πάρκινγκ;', 'Μπορώ να φέρω τα παιδιά μου;']);
+
+        fireEvent.click(screen.getByRole('button', { name: 'Redo' }));
+        await save();
+        const faq = storedSection('s-faq');
+        expect(faq.type === 'faq' && faq.data.items.map((item) => item.id)).toEqual(['q2', 'q1']);
     });
 
     it('deletes a godparent from the settings, and Undo brings them back', async () => {

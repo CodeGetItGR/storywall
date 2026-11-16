@@ -9,7 +9,6 @@ import {
     EDITABLE_LISTS,
     listItems,
     moveListItem,
-    PEOPLE_LISTS,
     updateListItem,
 } from '@/lib/invitation/listEdits';
 import { SAMPLE_DOCUMENT, SAMPLE_SECTIONS } from '@/lib/invitation/samples';
@@ -67,8 +66,7 @@ describe('list edits', () => {
         expect(run(document, addListItem(SAMPLE_SECTIONS.program.id, 'faq', 'q2'))).toBe(document);
     });
 
-    it('finds the people list of each people section', () => {
-        expect(PEOPLE_LISTS).toEqual({ godparents: 'godparents', weddingSponsors: 'sponsors', parentsSimple: 'parentsGodparents' });
+    it('adds to the sponsors list', () => {
         const next = run(documentWith(SAMPLE_SECTIONS.weddingSponsors), addListItem(SAMPLE_SECTIONS.weddingSponsors.id, 'sponsors', 'k2'));
         expect(listItems(at(next), 'sponsors')).toEqual([{ id: 'k1', name: 'Κώστας' }, { id: 'k2', name: '' }]);
     });

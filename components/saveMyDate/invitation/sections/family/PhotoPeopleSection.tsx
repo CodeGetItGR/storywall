@@ -1,6 +1,7 @@
 import { InvitationElements } from '@/components/saveMyDate/invitation/InvitationElements';
 import { FamilyPhoto } from '@/components/saveMyDate/invitation/sections/family/FamilyPhoto';
 import { SectionText } from '@/components/saveMyDate/invitation/sections/SectionText';
+import { personHasContent, showsText, visibleItems } from '@/lib/invitation/listContent';
 import type { RenderContext, TextContrast } from '@/lib/invitation/render';
 import type { InvitationSection } from '@/lib/invitation/sections';
 
@@ -24,10 +25,12 @@ export function PhotoPeopleSection({ section, contrast, ctx }: PhotoPeopleSectio
                 <SectionText section={section} path={list.titlePath} value={list.title} tag="h3" className="family-title" contrast={contrast} ctx={ctx} />
                 {/* People */}
                 <div className="family-godparents-list">
-                    {list.people.map((person) => (
+                    {visibleItems(list.people, personHasContent, ctx).map((person) => (
                         <div key={person.id} className="family-godparent">
                             <FamilyPhoto photo={person.photo} name={person.name} sectionId={section.id} path={`${list.path}.${person.id}.photo`} ctx={ctx} />
-                            <SectionText section={section} path={`${list.path}.${person.id}.name`} value={person.name} tag="h2" contrast={contrast} ctx={ctx} />
+                            {showsText(person.name, ctx) && (
+                                <SectionText section={section} path={`${list.path}.${person.id}.name`} value={person.name} tag="h2" contrast={contrast} ctx={ctx} />
+                            )}
                         </div>
                     ))}
                 </div>

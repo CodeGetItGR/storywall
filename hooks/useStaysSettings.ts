@@ -10,7 +10,7 @@ import type { ListItem } from '@/lib/invitation/listEdits';
 // The places to stay as rows, and the details and links of the one open.
 export function useStaysSettings(scope: SettingsScope<SectionOf<'accommodation'>>) {
     const t = useTranslations('InvitationEditor.sectionSettings');
-    const labelOf = useCallback((item: ListItem<'stays'>) => item.name.trim() || t('stays'), [t]);
+    const labelOf = useCallback((item: ListItem<'stays'>) => item.name.trim() || t('untitled'), [t]);
     const list = useListSettings(scope, 'stays', labelOf);
     const save = list.fieldSaver;
 

@@ -5,16 +5,17 @@ import type { ReactNode } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { GallerySettings } from '@/components/saveMyDate/editor/settings/GallerySettings';
-import { useGalleryDrag } from '@/hooks/useGalleryDrag';
 import type { PhotoUploadSlots } from '@/hooks/usePhotoUploads';
 import { PhotoUploadsContext } from '@/hooks/usePhotoUploadsContext';
 import type { SectionOf, SettingsScope } from '@/hooks/useSectionSettingsPanel';
+import { GALLERY_DRAG_MESSAGES, useSortableDrag } from '@/hooks/useSortableDrag';
 import type { InvitationDocument } from '@/lib/invitation/document';
 import { galleryPhotoKey, photoSlotKey } from '@/lib/invitation/photoSlots';
 import { createPhotoUploadStore } from '@/lib/invitation/photoUploadStore';
 import type { ImageRef } from '@/lib/invitation/primitives';
 import { SAMPLE_DOCUMENT, SAMPLE_SECTIONS, SAMPLE_THEME } from '@/lib/invitation/samples';
 import type { DocumentRecipe } from '@/lib/invitation/sectionSettings';
+import { keyboardDrag, layOut } from '@/lib/testing/keyboardDrag';
 import en from '@/messages/en.json';
 
 type Gallery = SectionOf<'gallery'>;
@@ -67,6 +68,13 @@ describe('GallerySettings', () => {
 
         fireEvent.click(screen.getByRole('radio', { name: 'Circle' }));
         expect(edited().shape).toBe('round');
+    });
+
+    it('moves a photo with the keyboard', async () => {
+        const { edited } = renderGallery();
+        layOut(screen.getAllByRole('listitem'), 'x');
+        await keyboardDrag(screen.getAllByRole('button', { name: en.InvitationEditor.sectionSettings.reorder })[0], ['ArrowRight']);
+        expect(edited().images).toEqual([photo('m-2'), photo('m-1')]);
     });
 
     it('lists the photos with their count, and deletes one', () => {
@@ -149,7 +157,7 @@ describe('GallerySettings', () => {
     });
 });
 
-describe('useGalleryDrag', () => {
+describe('useSortableDrag with the gallery lines', () => {
     const wrapper = ({ children }: { children: ReactNode }) => (
         <NextIntlClientProvider locale="en" messages={en}>
             {children}
@@ -159,7 +167,7 @@ describe('useGalleryDrag', () => {
 
     it('reorders on a drop over another photo, and tells where it went', () => {
         const onReorder = vi.fn();
-        const { result } = renderHook(() => useGalleryDrag(3, onReorder), { wrapper });
+        const { result } = renderHook(() => useSortableDrag(3, onReorder, GALLERY_DRAG_MESSAGES), { wrapper });
         const { announcements } = result.current.accessibility;
 
         expect(announcements.onDragStart({ active: item(1) } as never)).toBe('Picked up photo 1.');

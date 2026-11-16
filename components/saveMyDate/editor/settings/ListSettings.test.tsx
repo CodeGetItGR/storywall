@@ -7,9 +7,9 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { FaqItemsSettings } from '@/components/saveMyDate/editor/settings/FaqItemsSettings';
 import { PeopleSettings } from '@/components/saveMyDate/editor/settings/PeopleSettings';
 import { StaysSettings } from '@/components/saveMyDate/editor/settings/StaysSettings';
-import { useListDrag } from '@/hooks/useListDrag';
 import type { PeopleSection } from '@/hooks/usePeopleSettings';
 import type { SectionOf, SettingsScope } from '@/hooks/useSectionSettingsPanel';
+import { LIST_DRAG_MESSAGES, useSortableDrag } from '@/hooks/useSortableDrag';
 import type { InvitationDocument } from '@/lib/invitation/document';
 import { SAMPLE_DOCUMENT, SAMPLE_SECTIONS, SAMPLE_THEME } from '@/lib/invitation/samples';
 import type { InvitationSection } from '@/lib/invitation/sections';
@@ -143,12 +143,12 @@ describe('StaysSettings', () => {
     it('adds a place to stay to an empty list', () => {
         stays({ ...SAMPLE_SECTIONS.accommodation, data: { ...SAMPLE_SECTIONS.accommodation.data, items: [] } });
         fireEvent.click(screen.getByRole('button', { name: copy.addStay }));
-        expect(screen.getByRole('group', { name: copy.stays })).toBeInTheDocument();
+        expect(screen.getByRole('group', { name: copy.untitled })).toBeInTheDocument();
         expect(items().items).toHaveLength(1);
     });
 });
 
-describe('useListDrag', () => {
+describe('useSortableDrag with the list lines', () => {
     const wrapper = ({ children }: { children: ReactNode }) => (
         <NextIntlClientProvider locale="en" messages={en}>
             {children}
@@ -157,7 +157,7 @@ describe('useListDrag', () => {
     const row = (name: string, index?: number) => ({ id: name, data: { current: { name, sortable: index === undefined ? undefined : { index } } } });
 
     it('names the row being moved and its place', () => {
-        const { result } = renderHook(() => useListDrag(3, vi.fn()), { wrapper });
+        const { result } = renderHook(() => useSortableDrag(3, vi.fn(), LIST_DRAG_MESSAGES), { wrapper });
         const { announcements, screenReaderInstructions } = result.current.accessibility;
         expect(screenReaderInstructions.draggable).toBe(copy.listDrag.instructions);
         const active = row('Νονός') as never;
@@ -170,7 +170,7 @@ describe('useListDrag', () => {
 
     it('reorders only when dropped on another row', () => {
         const onReorder = vi.fn();
-        const { result } = renderHook(() => useListDrag(2, onReorder), { wrapper });
+        const { result } = renderHook(() => useSortableDrag(2, onReorder, LIST_DRAG_MESSAGES), { wrapper });
         act(() => result.current.onDragEnd({ active: { id: 'a' }, over: { id: 'a' } } as never));
         act(() => result.current.onDragEnd({ active: { id: 'a' }, over: { id: 'b' } } as never));
         expect(onReorder).toHaveBeenCalledOnce();

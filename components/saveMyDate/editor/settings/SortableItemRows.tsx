@@ -7,7 +7,7 @@ import { ChevronRight, GripVertical } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import type { SettingsItemRow } from '@/components/saveMyDate/editor/settings/SettingsItemRows';
-import { useListDrag } from '@/hooks/useListDrag';
+import { LIST_DRAG_MESSAGES, useSortableDrag } from '@/hooks/useSortableDrag';
 import { useSortableItemRow } from '@/hooks/useSortableItemRow';
 import { cn } from '@/lib/utils';
 
@@ -22,7 +22,7 @@ const MODIFIERS = [restrictToVerticalAxis];
 // A list's items as compact rows, each with a handle to drag it to another place.
 // Tapping a row opens its settings.
 export function SortableItemRows({ rows, onOpen, onReorder }: SortableItemRowsProps) {
-    const drag = useListDrag(rows.length, onReorder);
+    const drag = useSortableDrag(rows.length, onReorder, LIST_DRAG_MESSAGES);
 
     return (
         <DndContext sensors={drag.sensors} collisionDetection={closestCenter} accessibility={drag.accessibility} modifiers={MODIFIERS} onDragEnd={drag.onDragEnd}>

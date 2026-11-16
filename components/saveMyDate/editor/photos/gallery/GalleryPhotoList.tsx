@@ -6,8 +6,8 @@ import { useTranslations } from 'next-intl';
 
 import { GalleryPhotoTile, type GalleryTilePhoto } from '@/components/saveMyDate/editor/photos/gallery/GalleryPhotoTile';
 import { PhotoUploadProgress } from '@/components/saveMyDate/editor/photos/PhotoUploadProgress';
-import { useGalleryDrag } from '@/hooks/useGalleryDrag';
 import type { GalleryEditor } from '@/hooks/useGalleryEditor';
+import { GALLERY_DRAG_MESSAGES, useSortableDrag } from '@/hooks/useSortableDrag';
 
 type GalleryPhotoListProps = {
     photos: readonly GalleryTilePhoto[];
@@ -17,7 +17,7 @@ type GalleryPhotoListProps = {
 // The gallery's photos, three to a row, in their order on the invitation, then the ones still uploading.
 export function GalleryPhotoList({ photos, gallery }: GalleryPhotoListProps) {
     const t = useTranslations('InvitationEditor.photos');
-    const drag = useGalleryDrag(photos.length, gallery.reorder);
+    const drag = useSortableDrag(photos.length, gallery.reorder, GALLERY_DRAG_MESSAGES);
     if (photos.length === 0 && gallery.adding.length === 0) return null;
 
     return (
