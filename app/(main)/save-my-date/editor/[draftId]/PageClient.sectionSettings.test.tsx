@@ -140,6 +140,30 @@ describe('Invitation editor: section settings', () => {
         expect(program.type === 'program' && program.data.items.map((item) => item.label)).toEqual(['Μυστήριο', 'Δείπνο']);
     });
 
+    it('moves a moment with the keyboard, and Undo puts it back', async () => {
+        await openEditor();
+        openSettings('Event schedule');
+        const settings = panel('Event schedule');
+        fireEvent.click(within(settings).getByRole('button', { name: 'Add moment' }));
+        const title = within(settings).getByLabelText('Text');
+        fireEvent.change(title, { target: { value: 'Δείπνο' } });
+        fireEvent.blur(title);
+        fireEvent.click(within(within(settings).getByRole('group', { name: 'Moment' })).getByRole('button', { name: 'Done' }));
+        const labels = () => within(settings).getAllByRole('listitem').map((row) => row.textContent);
+
+        layOut(within(settings).getAllByRole('listitem'));
+        await keyboardDrag(within(settings).getAllByRole('button', { name: 'Drag to reorder' })[0], ['ArrowDown']);
+        expect(labels()).toEqual(['Δείπνο', '18:00Μυστήριο']);
+
+        fireEvent.click(screen.getByRole('button', { name: 'Undo' }));
+        expect(labels()).toEqual(['18:00Μυστήριο', 'Δείπνο']);
+
+        fireEvent.click(screen.getByRole('button', { name: 'Redo' }));
+        await save();
+        const program = storedSection('s-program');
+        expect(program.type === 'program' && program.data.items.map((item) => item.label)).toEqual(['Δείπνο', 'Μυστήριο']);
+    });
+
     it('adds a question to the FAQ, shows it on the invitation and saves it', async () => {
         await openEditor();
         openSettings('FAQ');

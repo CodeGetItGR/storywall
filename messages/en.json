@@ -10639,6 +10639,7 @@
             "website": "Website",
             "mapLink": "Google Maps link",
             "mapHint": "Left empty, the map searches by name and address.",
+            "showWelcome": "Show the welcome place",
             "contactLinks": {
                 "phone": "Phone",
                 "sms": "Text message (SMS)",

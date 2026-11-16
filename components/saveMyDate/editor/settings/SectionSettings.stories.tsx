@@ -47,7 +47,15 @@ export const Rsvp: Story = { args: { sectionId: 's-rsvp' } };
 
 export const Program: Story = { args: { sectionId: 's-program' } };
 
-export const ProgramIcons: Story = { args: { sectionId: 's-programIcons' } };
+// Each moment has a handle to move it.
+export const ProgramIcons: Story = {
+    args: { sectionId: 's-programIcons' },
+    play: async ({ globals }) => {
+        const copy = copyFor(globals).InvitationEditor.sectionSettings;
+        const sheet = await openSheet();
+        await expect(sheet.getAllByRole('button', { name: copy.reorder })).toHaveLength(3);
+    },
+};
 
 export const Accommodation: Story = { args: { sectionId: 's-accommodation' } };
 
@@ -55,7 +63,15 @@ export const Contact: Story = { args: { sectionId: 's-contact' } };
 
 export const CoupleContact: Story = { args: { sectionId: 's-coupleContact' } };
 
-export const Locations: Story = { args: { sectionId: 's-locations' } };
+// The welcome place's switch, then each place's map link.
+export const Locations: Story = {
+    args: { sectionId: 's-locations' },
+    play: async ({ globals }) => {
+        const copy = copyFor(globals).InvitationEditor.sectionSettings;
+        const sheet = await openSheet();
+        await expect(sheet.getByRole('switch', { name: copy.showWelcome })).not.toBeChecked();
+    },
+};
 
 export const DressCode: Story = { args: { sectionId: 's-dressCode' } };
 
@@ -81,6 +97,7 @@ export const ProgramFromTheEvent: Story = {
         const sheet = await openSheet();
         await expect(sheet.getByRole('link', { name: copy.eventLock.schedule })).toHaveAttribute('href', '/events/evt-wedding/tools/schedule');
         await expect(sheet.queryByRole('button', { name: copy.sectionSettings.addMoment })).toBeNull();
+        await expect(sheet.queryByRole('button', { name: copy.sectionSettings.reorder })).toBeNull();
     },
 };
 

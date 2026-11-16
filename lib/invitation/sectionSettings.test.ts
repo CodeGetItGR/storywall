@@ -22,6 +22,7 @@ import {
     addProgramItem,
     deleteProgramItem,
     MAX_DRESS_CODE_COLORS,
+    moveProgramItem,
     patchFooter,
     patchSectionStyle,
     removeDressCodeColor,
@@ -211,6 +212,12 @@ describe('program moments', () => {
         const deleted = sectionOf(run(updated, deleteProgramItem(id, itemId)), 'programIcons');
         expect(deleted.data.items.some((item) => item.id === itemId)).toBe(false);
         expect(deleted.textStyles).toEqual({});
+    });
+
+    it('moves a moment to where another one is', () => {
+        const moved = sectionOf(run(doc, moveProgramItem(id, 'p1', 'p3')), 'programIcons');
+        expect(moved.data.items.map((item) => item.id)).toEqual(['p2', 'p3', 'p1']);
+        expect(run(doc, moveProgramItem(id, 'p1', 'gone'))).toBe(doc);
     });
 
     it('adds a plain moment to a program without icons', () => {
