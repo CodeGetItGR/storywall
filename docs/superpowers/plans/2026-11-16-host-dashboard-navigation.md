@@ -582,12 +582,12 @@ git commit -m "KAN-223: group the dashboard nav under Event and People"
 
 ```json
         "navGroups": {
-            "event": "<approved Greek for Event>",
-            "people": "<approved Greek for People>"
+            "event": "Η εκδήλωση",
+            "people": "Άτομα"
         },
 ```
 
-Use the exact words from the approval. If the approval has not happened yet, go back to Task 1.
+Approved on 2026-11-16: "Η εκδήλωση" and "Άτομα".
 
 - [ ] **Step 2: Label pages as well as sections**
 
