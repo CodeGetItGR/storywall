@@ -2,6 +2,7 @@ import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/re
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { GuestWishForm } from '@/components/qrGuest/GuestWishForm';
+import type { VoiceRecorder } from '@/hooks/useVoiceRecorder';
 import { ApiError } from '@/lib/api/client';
 
 const { mutateAsync } = vi.hoisted(() => ({ mutateAsync: vi.fn() }));
@@ -16,6 +17,8 @@ vi.mock('@/hooks/useCommunityGuidelinesVersion', () => ({
     communityGuidelinesQueryKey: ['legal', 'community-guidelines'],
     useCommunityGuidelinesVersion: () => ({ data: '2026-09-30' }),
 }));
+let recorderState: VoiceRecorder;
+vi.mock('@/hooks/useVoiceRecorder', () => ({ useVoiceRecorder: () => recorderState }));
 vi.mock('@/components/incident/IncidentPausedNote', () => ({ IncidentPausedNote: () => null }));
 // The checkbox copy and links are covered by SignupAcceptanceCheckbox's own use at sign-up.
 vi.mock('@/components/legal/SignupAcceptanceCheckbox', () => ({
@@ -40,6 +43,7 @@ function submit(container: HTMLElement) {
 describe('GuestWishForm', () => {
     beforeEach(() => {
         mutateAsync.mockReset();
+        recorderState = { status: 'idle', elapsedMs: 0, recording: null, start: vi.fn(), stop: vi.fn(), discard: vi.fn() };
     });
     afterEach(cleanup);
 
@@ -51,6 +55,27 @@ describe('GuestWishForm', () => {
         expect(send).toBeDisabled();
         fireEvent.click(screen.getByRole('checkbox', { name: 'accept 16' }));
         expect(send).toBeEnabled();
+    });
+
+    it('offers to record a message under the message box', () => {
+        render(<GuestWishForm token="t" />);
+        fireEvent.click(screen.getByRole('button', { name: 'record' }));
+        expect(recorderState.start).toHaveBeenCalled();
+    });
+
+    it('sends a recording with no message written', async () => {
+        recorderState.status = 'recorded';
+        recorderState.recording = { blob: new Blob(['x'], { type: 'audio/webm' }), url: 'blob:x', durationMs: 3000 };
+        mutateAsync.mockResolvedValue({ id: 'w1', createdAt: '' });
+        const { container } = render(<GuestWishForm token="t" />);
+        fill('Maria', '');
+        tickBox();
+
+        expect(screen.getByRole('button', { name: /guestCode.wish.submit/ })).toBeEnabled();
+        submit(container);
+
+        await screen.findByText('guestCode.wish.sent');
+        expect(mutateAsync).toHaveBeenCalledWith(expect.objectContaining({ message: '', audio: recorderState.recording.blob }));
     });
 
     it('sends the trimmed name and message with the acceptance versions', async () => {
@@ -66,6 +91,7 @@ describe('GuestWishForm', () => {
             token: 't',
             guestName: 'Maria',
             message: 'Hi',
+            audio: null,
             acceptance: { termsVersion: '2026-10-04', guidelinesVersion: '2026-09-30' },
         });
     });

@@ -2,6 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 
+import { VoiceWishPlayer } from '@/components/wishbook/VoiceWishPlayer';
 import type { ModerationContentDto } from '@/lib/api/types';
 
 // The reported item as it is now (guide §2.2). null: it was deleted before the review.
@@ -33,6 +34,9 @@ export function ModerationContentPreview({ content, isMemberCase = false }: { co
                     <p className="text-sm leading-6 break-words whitespace-pre-wrap text-ink">{content.text}</p>
                 </div>
             ) : null}
+
+            {/* Recording */}
+            {content.audio ? <VoiceWishPlayer src={content.audio.url} durationMs={content.audio.durationMs} /> : null}
 
             {/* Media */}
             {/* Admins are always sent a mediaUrl; the type is shared with members, who see null while a video processes. */}

@@ -177,6 +177,7 @@ export const endpoints = {
         giftCard: (eventId: string) => `/api/events/${eventId}/gift/card`,
         wishbook: (eventId: string) => `/api/events/${eventId}/wishbook`,
         wishbookCount: (eventId: string) => `/api/events/${eventId}/wishbook/count`,
+        wishbookMine: (eventId: string) => `/api/events/${eventId}/wishbook/mine`,
         wishbookBook: (eventId: string) => `/api/events/${eventId}/wishbook/book`,
         wishbookBookTexts: (eventId: string) => `/api/events/${eventId}/wishbook/book-texts`,
         // Boy or Girl? quiz (module he_or_she, he-or-she-quiz-fe-integration.md).
