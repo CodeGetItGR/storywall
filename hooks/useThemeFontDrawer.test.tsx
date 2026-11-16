@@ -24,6 +24,8 @@ const FONT: AdminThemeFontDto = {
     archived: false,
     url: '/api/theme-fonts/gfs-didot/1.woff2',
     presetCount: 2,
+    library: 'WALL',
+    invitationEventTypes: [],
 };
 
 // jsdom has no FontFace or document.fonts.
@@ -459,5 +461,49 @@ describe('useThemeFontDrawer pending file check', () => {
         await expect(check).resolves.toBeUndefined();
         expect(result.current.pendingFileName).toBeNull();
         expect(consoleError).not.toHaveBeenCalled();
+    });
+});
+
+describe('useThemeFontDrawer on Save my date fonts', () => {
+    const INVITATION: AdminThemeFontDto = { ...FONT, library: 'INVITATION', invitationEventTypes: ['WEDDING'] };
+
+    function renderInvitationDrawer(font: AdminThemeFontDto | null, onDoneAction = vi.fn()) {
+        return renderHook(() => useThemeFontDrawer({ font, library: 'INVITATION', onDoneAction }), { wrapper });
+    }
+
+    it('creates into its list, then sends the event types the create cannot carry', async () => {
+        const onDoneAction = vi.fn();
+        mocks.create.mockResolvedValue({ ...INVITATION, invitationEventTypes: [] });
+        mocks.patch.mockResolvedValue(INVITATION);
+        const { result } = renderInvitationDrawer(null, onDoneAction);
+
+        fillValidDraft(result);
+        act(() => result.current.handleEventTypeChange('WEDDING', true));
+        act(() => result.current.handleEventTypeChange('BAPTISM', true));
+        await act(() => result.current.handleSubmit(submitEvent()));
+
+        expect(mocks.create).toHaveBeenCalledWith({ key: 'gfs-didot', familyName: 'GFS Didot', fallback: 'serif', library: 'INVITATION' });
+        expect(mocks.patch).toHaveBeenCalledWith({ id: 'f1', input: { invitationEventTypes: ['BAPTISM', 'WEDDING'] } });
+        expect(onDoneAction).toHaveBeenCalledOnce();
+    });
+
+    it('creates with no follow-up when no event type is picked', async () => {
+        mocks.create.mockResolvedValue({ ...INVITATION, invitationEventTypes: [] });
+        const { result } = renderInvitationDrawer(null);
+
+        fillValidDraft(result);
+        await act(() => result.current.handleSubmit(submitEvent()));
+
+        expect(mocks.patch).not.toHaveBeenCalled();
+    });
+
+    it('saves a changed event type list on an existing font', async () => {
+        mocks.patch.mockResolvedValue(INVITATION);
+        const { result } = renderInvitationDrawer(INVITATION);
+
+        act(() => result.current.handleEventTypeChange('WEDDING', false));
+        await act(() => result.current.handleSubmit(submitEvent()));
+
+        expect(mocks.patch).toHaveBeenCalledWith({ id: 'f1', input: { invitationEventTypes: [] } });
     });
 });

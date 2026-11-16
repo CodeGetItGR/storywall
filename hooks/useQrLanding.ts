@@ -1,6 +1,6 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { useAuth } from '@/hooks/useAuth';
@@ -8,7 +8,9 @@ import { useEventModules } from '@/hooks/useEventModules';
 import { useMyEvents } from '@/hooks/useMyEvents';
 import { useQrLinkResolution } from '@/hooks/useQrLinks';
 import { isModuleAvailable } from '@/lib/eventLifecycle';
+import { hasInAppPrevious } from '@/lib/inAppHistory';
 import { type QrLandingChoice, qrLandingChoiceHref, type QrLandingForm, qrLandingPlan, qrLandingStart, resolveQrLandingToken } from '@/lib/qrLanding';
+import { routes } from '@/lib/routes';
 
 export type QrLandingView = 'chooser' | QrLandingForm;
 
@@ -38,9 +40,11 @@ export function useQrLanding(token: string) {
         if (redirectPath) router.replace(redirectPath);
     }, [redirectPath, router]);
 
-    const [chosen, setChosen] = useState<QrLandingForm | null>(null);
+    // The feed's Photos action opens the upload form straight away (?choice=upload).
+    const requested = useSearchParams().get('choice') === 'upload' && plan.choices.includes('upload') ? 'upload' : null;
+    const [chosen, setChosen] = useState<QrLandingView | null>(null);
     const startView: QrLandingView | null = start === 'upload' || start === 'wish' || start === 'chooser' ? start : null;
-    const view: QrLandingView | null = chosen ?? startView;
+    const view: QrLandingView | null = chosen ?? requested ?? startView;
 
     // The form's sent screen stands on its own, without the back arrow and section label above it.
     const [isSent, setIsSent] = useState(false);
@@ -48,10 +52,18 @@ export function useQrLanding(token: string) {
     const choose = useCallback((choice: QrLandingChoice) => {
         if (choice === 'upload' || choice === 'wish') setChosen(choice);
     }, []);
+    // Back goes where the form was opened from: a browser back to the feed for the feed's Photos action
+    // (the feed itself when there is no in-app page behind this one), the choices otherwise.
+    const feedPath = requested && !chosen && eventId ? routes.events.feed(eventId) : null;
     const back = useCallback(() => {
-        setChosen(null);
+        if (feedPath) {
+            if (hasInAppPrevious()) router.back();
+            else router.push(feedPath);
+            return;
+        }
+        setChosen('chooser');
         setIsSent(false);
-    }, []);
+    }, [feedPath, router]);
 
     return {
         resolution,
@@ -59,12 +71,13 @@ export function useQrLanding(token: string) {
         isLoading: resolutionQuery.isLoading || (isActive && isVisitorLoading) || Boolean(redirectPath),
         plan,
         eventId,
+        isSignedIn: isAuthenticated,
         view,
         choose,
         back,
         isSent,
         setIsSent,
-        canGoBack: startView === 'chooser' && chosen !== null,
+        canGoBack: Boolean(feedPath) || (startView === 'chooser' && view !== 'chooser'),
         uploadToken: resolveQrLandingToken(plan.uploadToken, token),
         wishToken: resolveQrLandingToken(plan.wishToken, token),
         // A member uploads as themselves: no name to type, no boxes to tick.

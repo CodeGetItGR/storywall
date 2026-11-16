@@ -40,3 +40,9 @@ type Story = StoryObj<typeof meta>;
 
 // No cover and no theme art: the logo stands in, and there's no footer, so the body keeps its own bottom space.
 export const LogoHeroLongForm: Story = {};
+
+// The QR forms: the cover cut to a short strip with the title on it.
+export const StripWithCover: Story = { args: { stripHero: true, coverImageSrc: '/images/banner.jpg' } };
+
+// The QR forms without a cover: the strip falls back to the brand gradient.
+export const StripWithoutCover: Story = { args: { stripHero: true } };

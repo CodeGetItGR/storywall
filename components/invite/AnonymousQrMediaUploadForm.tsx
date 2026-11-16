@@ -1,9 +1,10 @@
 'use client';
 
 import { useQueryClient } from '@tanstack/react-query';
-import { ArrowRight, ImagePlus, Loader2, Video, X } from 'lucide-react';
+import { ArrowRight, Images, Loader2, UserRound, Video, X } from 'lucide-react';
+import Image from 'next/image';
 import { useTranslations } from 'next-intl';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useId, useState } from 'react';
 
 import { ProtectedImage } from '@/components/common/ProtectedImage';
 import { IncidentPausedNote } from '@/components/incident/IncidentPausedNote';
@@ -16,6 +17,7 @@ import { communityGuidelinesQueryKey, useCommunityGuidelinesVersion } from '@/ho
 import { useFilePreviews } from '@/hooks/useFilePreviews';
 import { useUploadMediaBatch } from '@/hooks/useMedia';
 import { useUploadQrMediaBatch } from '@/hooks/useQrMediaUpload';
+import { useSlowUpload } from '@/hooks/useSlowUpload';
 import { termsVersionQueryKey, useTermsVersion } from '@/hooks/useTermsVersion';
 import { useUploadAccept } from '@/hooks/useUploadAccept';
 import { isGuidelinesVersionMismatchError, isTermsVersionMismatchError } from '@/lib/api/errors';
@@ -40,6 +42,7 @@ export function AnonymousQrMediaUploadForm({ token, member = null, onSentChange 
     const qrUploadBatch = useUploadQrMediaBatch();
     const memberUploadBatch = useUploadMediaBatch();
     const uploadBatch = member ? memberUploadBatch : qrUploadBatch;
+    const isSlow = useSlowUpload(uploadBatch.isPending);
     const queryClient = useQueryClient();
     const termsVersion = useTermsVersion();
     const guidelinesVersion = useCommunityGuidelinesVersion();
@@ -57,6 +60,8 @@ export function AnonymousQrMediaUploadForm({ token, member = null, onSentChange 
     const [isDragActive, setIsDragActive] = useState(false);
     const [isBusy, setIsBusy] = useState(false);
     const previews = useFilePreviews(files);
+    const nameHintId = useId();
+    const pickerLabel = files.length > 0 ? t('anonymousUpload.addMore') : t('anonymousUpload.chooseFiles');
 
     useEffect(() => {
         onSentChange?.(done);
@@ -190,40 +195,28 @@ export function AnonymousQrMediaUploadForm({ token, member = null, onSentChange 
     }
 
     return (
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-            {/* Name: a member's own, read-only */}
-            <FormFieldLabel label={t('anonymousUpload.nameLabel')} optional={!member}>
-                <input
-                    type="text"
-                    maxLength={100}
-                    value={member ? member.displayName : uploaderName}
-                    onChange={handleUploaderNameChange}
-                    readOnly={Boolean(member)}
-                    placeholder={t('anonymousUpload.namePlaceholder')}
-                    className="w-full rounded-xl bg-surface-muted px-4 py-3 text-sm text-ink transition outline-none placeholder:text-ink-faint read-only:text-ink-muted focus:ring-2 focus:ring-primary/30"
-                />
-            </FormFieldLabel>
-
+        <form onSubmit={handleSubmit} className="flex flex-col gap-5">
             {/* Incident note */}
             <IncidentPausedNote />
 
-            <FormFieldLabel label={t('anonymousUpload.filesLabel')} required>
+            {/* Files: a dashed tile to pick from, the picked files in a strip under it, then where they go */}
+            <div className="flex flex-col gap-3">
                 <label
                     onDragOver={handleDragOver}
                     onDragLeave={handleDragLeave}
                     onDrop={handleDrop}
                     className={cn(
-                        'flex cursor-pointer flex-col items-center justify-center gap-1.5 rounded-xl border-2 border-dashed px-4 text-center transition-colors',
-                        files.length > 0 ? 'py-4' : 'py-10',
-                        isDragActive ? 'border-primary bg-primary/5' : 'border-ink-faint/30 bg-surface-muted hover:border-ink-faint/50',
+                        'flex min-h-36 w-full cursor-pointer flex-col items-center justify-center gap-1 rounded-[1.25rem] border-2 border-dashed px-4 py-5 text-center transition-colors',
+                        isDragActive ? 'border-primary/60 bg-primary/10' : 'border-primary/30 bg-primary/[0.04] hover:bg-primary/[0.07]',
                         INCIDENT_MODE && 'pointer-events-none opacity-60',
                     )}
                 >
-                    <ImagePlus className={cn('h-6 w-6', isDragActive ? 'text-primary' : 'text-ink-faint')} />
-                    <span className="text-sm font-medium text-ink">
-                        {files.length > 0 ? t('anonymousUpload.addMore') : t('anonymousUpload.chooseFiles')}
+                    <span className="mb-1.5 flex h-14 w-14 items-center justify-center rounded-full bg-background shadow-xs">
+                        <Image src="/icons/camera.svg" alt={pickerLabel} width={28} height={28} className="h-7 w-7 object-contain" unoptimized />
                     </span>
-                    <span className="text-xs text-ink-faint">{t('anonymousUpload.dropHint')}</span>
+                    <span className="text-[15px] font-semibold text-ink">{pickerLabel}</span>
+                    <span className="text-[13px] text-ink-muted">{t('anonymousUpload.filesLabel')}</span>
+                    <span className="hidden text-xs text-ink-faint md:block">{t('anonymousUpload.dropHint')}</span>
                     <input
                         type="file"
                         accept={uploadAccept.media}
@@ -235,11 +228,11 @@ export function AnonymousQrMediaUploadForm({ token, member = null, onSentChange 
                 </label>
 
                 {previews.length > 0 && (
-                    <div className="-mx-1 mt-3 flex gap-2 overflow-x-auto px-1 pb-1" onClick={handleRemoveFileClick}>
+                    <div className="flex gap-2 overflow-x-auto" onClick={handleRemoveFileClick}>
                         {previews.map((preview, index) => (
                             <div
                                 key={`${preview.file.name}-${preview.file.lastModified}-${index}`}
-                                className="relative h-20 w-20 shrink-0 overflow-hidden rounded-lg bg-surface-muted"
+                                className="relative h-20 w-20 shrink-0 overflow-hidden rounded-xl bg-surface-muted"
                             >
                                 {preview.isVideo ? (
                                     <>
@@ -268,7 +261,48 @@ export function AnonymousQrMediaUploadForm({ token, member = null, onSentChange 
                         ))}
                     </div>
                 )}
-            </FormFieldLabel>
+
+                {/* Where uploads go */}
+                <p className="flex gap-2 text-xs leading-relaxed text-ink-muted">
+                    <Images className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                    {t('anonymousUpload.galleryOnlyNote')}
+                </p>
+            </div>
+
+            {/* Name: a member's own, read-only */}
+            <div>
+                <FormFieldLabel
+                    label={t('anonymousUpload.nameLabel')}
+                    optional={!member}
+                    labelClassName="text-sm font-semibold tracking-normal text-ink normal-case"
+                    indicatorClassName="text-xs"
+                >
+                    <span
+                        className={cn(
+                            'flex items-center gap-2.5 rounded-[1rem] border border-border px-4 transition-shadow',
+                            member
+                                ? 'bg-ink/[0.03]'
+                                : 'bg-background focus-within:border-primary/40 focus-within:ring-3 focus-within:ring-primary/15',
+                        )}
+                    >
+                        <UserRound className="h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
+                        <input
+                            type="text"
+                            maxLength={100}
+                            value={member ? member.displayName : uploaderName}
+                            onChange={handleUploaderNameChange}
+                            readOnly={Boolean(member)}
+                            aria-describedby={member ? undefined : nameHintId}
+                            className="min-w-0 flex-1 bg-transparent py-3 text-base text-ink outline-none read-only:text-ink-muted"
+                        />
+                    </span>
+                </FormFieldLabel>
+                {!member && (
+                    <p id={nameHintId} className="mt-1.5 text-xs text-ink-muted">
+                        {t('anonymousUpload.namePlaceholder')}
+                    </p>
+                )}
+            </div>
 
             {/* Acceptance: guests only */}
             {!member && <SignupAcceptanceCheckbox minimumAge={16} checked={acceptedDocuments} onChangeAction={handleAcceptedChange} />}
@@ -278,6 +312,10 @@ export function AnonymousQrMediaUploadForm({ token, member = null, onSentChange 
                 <p role="status" className="-mt-1 text-center text-xs text-ink-muted">
                     {t('anonymousUpload.uploadBusy')}
                 </p>
+            ) : isSlow ? (
+                <p role="status" className="-mt-1 text-center text-xs text-ink-muted">
+                    {t('anonymousUpload.uploadSlow')}
+                </p>
             ) : (
                 submitError && (
                     <p role="alert" className="-mt-1 text-center text-xs text-red-500">
@@ -286,10 +324,11 @@ export function AnonymousQrMediaUploadForm({ token, member = null, onSentChange 
                 )
             )}
 
+            {/* Upload */}
             <button
                 type="submit"
                 disabled={INCIDENT_MODE || uploadBatch.isPending || files.length === 0 || !isAccepted}
-                className="flex w-full items-center justify-center gap-2 rounded-full py-3 text-sm font-semibold text-white transition-opacity bg-gradient-brand hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+                className="flex min-h-12 w-full items-center justify-center gap-2 rounded-full text-[15px] font-semibold text-white transition-opacity bg-gradient-brand hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
             >
                 {uploadBatch.isPending ? (
                     <Loader2 className="h-4 w-4 animate-spin" />

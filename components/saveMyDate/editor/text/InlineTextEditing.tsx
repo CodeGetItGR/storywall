@@ -15,6 +15,8 @@ import { useInlineTextEdit } from '@/hooks/useInlineTextEdit';
 import { useTextToolbar } from '@/hooks/useTextToolbar';
 import type { InvitationDocument } from '@/lib/invitation/document';
 import type { InvitationEditorStore } from '@/lib/invitation/editorStore';
+import type { EventFieldLinks } from '@/lib/invitation/eventData';
+import type { InvitationEventData } from '@/lib/invitation/eventLinks';
 import type { InvitationTextProps } from '@/lib/invitation/textEditing';
 import type { ThemeDesign } from '@/lib/invitation/theme';
 import type { InvitationFontDto } from '@/lib/invitation/uploadedFonts';
@@ -24,6 +26,9 @@ type InlineTextEditingProps = {
     document: InvitationDocument;
     theme: ThemeDesign;
     uploadedFonts?: InvitationFontDto[];
+    // What the event fills, which the host changes on the event (KAN-84); null on no event.
+    event?: InvitationEventData | null;
+    fieldLinks?: EventFieldLinks | null;
     // The canvas: every text in it becomes editable in place.
     children: ReactNode;
 };
@@ -31,10 +36,10 @@ type InlineTextEditingProps = {
 const renderEditableText = (props: InvitationTextProps) => <EditableText {...props} />;
 
 // Typing straight into the invitation, with the text toolbar for the text being edited.
-export function InlineTextEditing({ store, document, theme, uploadedFonts, children }: InlineTextEditingProps) {
+export function InlineTextEditing({ store, document, theme, uploadedFonts, event = null, fieldLinks = null, children }: InlineTextEditingProps) {
     const t = useTranslations('InvitationEditor');
-    const edit = useInlineTextEdit(store, document);
-    const toolbar = useTextToolbar(edit, document, theme, uploadedFonts);
+    const edit = useInlineTextEdit(store, document, event);
+    const toolbar = useTextToolbar(edit, document, theme, uploadedFonts, fieldLinks);
     const root = useRef<HTMLDivElement>(null);
     useDeactivateOnOutsideTap(root, edit.active !== null, edit.deactivate);
 

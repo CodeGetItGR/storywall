@@ -1,5 +1,5 @@
 import { act, renderHook } from '@testing-library/react';
-import type { ChangeEvent, SubmitEvent } from 'react';
+import type { SubmitEvent } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { useGiftClaim } from '@/hooks/useGiftClaim';
@@ -45,7 +45,7 @@ function preview(overrides: Partial<GiftClaimPreviewDto> = {}): GiftClaimPreview
 }
 
 const submitEvent = { preventDefault: () => {} } as SubmitEvent<HTMLFormElement>;
-const typed = (value: string) => ({ target: { value } }) as ChangeEvent<HTMLInputElement>;
+const typed = (value: string) => value;
 const refuse = (error: ApiError) => () => Promise.reject(error);
 
 describe('useGiftClaim', () => {

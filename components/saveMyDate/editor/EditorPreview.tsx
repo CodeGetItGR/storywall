@@ -19,13 +19,15 @@ type EditorPreviewProps = {
     theme: ThemeDesign;
     media: MediaResolver;
     uploadedFonts?: InvitationFontDto[];
+    // The event's guest link, for the "Join the event" button guests will see.
+    joinUrl?: string;
     // The width it opens at on tablets and computers. Phones always show their own width.
     initialWidth?: PreviewWidth;
 };
 
 // The invitation as guests see it, with nothing of the editor around it: effects run, the FAQ opens,
 // the gallery browses, and an RSVP sent here is not saved.
-export function EditorPreview({ open, onClose, document, theme, media, uploadedFonts, initialWidth }: EditorPreviewProps) {
+export function EditorPreview({ open, onClose, document, theme, media, uploadedFonts, joinUrl, initialWidth }: EditorPreviewProps) {
     const t = useTranslations('InvitationEditor');
     const { width, setWidth } = usePreviewWidth(initialWidth);
 
@@ -47,7 +49,7 @@ export function EditorPreview({ open, onClose, document, theme, media, uploadedF
                                 'md:my-6 md:max-w-97.5 md:overflow-hidden md:rounded-[26px] md:shadow-[0_24px_70px_rgba(0,0,0,0.5)]',
                         )}
                     >
-                        <InvitationRenderer document={document} theme={theme} media={media} uploadedFonts={uploadedFonts} />
+                        <InvitationRenderer document={document} theme={theme} media={media} uploadedFonts={uploadedFonts} joinUrl={joinUrl} />
                     </div>
                 </div>
             </div>

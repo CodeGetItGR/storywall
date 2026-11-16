@@ -1033,6 +1033,8 @@ export interface AdminProvisionScheduleItem {
     startAt?: string;
     endAt?: string;
     locationName?: string;
+    // Added 2026-11-16 (KAN-84).
+    locationAddress?: string;
     mapsUrl?: string;
     // The reception venue of a wedding or baptism; at most one.
     isSecondary?: boolean;
@@ -1108,6 +1110,8 @@ export interface QrCardLayoutDto {
         text?: Partial<Record<QrCardWordingKey, LocalizedText>> | null;
     };
     fields?: QrCardTextFieldDto[]; // up to 5; absent on layouts saved before KAN-103
+    // The picture tiles' box. null = removed; absent on layouts saved before it, which also means no tiles.
+    features?: { x: number; y: number; width: number; height: number } | null;
     logo?: QrCardLogoDto | null; // null or absent = no logo
 }
 
@@ -1278,6 +1282,10 @@ export interface EventDetailResponseDto {
     partnerBranding: PartnerBrandingDto | null;
     // Hosts only: an admin linked a partner and no host has answered yet.
     partnerBrandingPrompt: PartnerBrandingNoticeDto | null;
+    // The link name of the event's online invitation while guests can open it; null otherwise. Missing from an older backend.
+    invitationSlug?: string | null;
+    // Members only: the event's upload code while it takes photos, so the feed can open the upload page. Null otherwise.
+    uploadToken?: string | null;
 }
 
 // --- Partner feed branding (collaborator-feed-branding-design.md, 2026-10-08) ---
@@ -3187,7 +3195,8 @@ export interface QrLinkStatsDto {
 export interface QrLinkResolutionDto {
     status: QrLinkStatus;
     targetType: QrTargetType;
-    // [] unless the code is ACTIVE: GUEST lists UPLOAD and/or WISH, MEDIA_UPLOAD lists UPLOAD.
+    // [] unless the code is ACTIVE: GUEST lists UPLOAD and/or WISH, MEDIA_UPLOAD lists UPLOAD, EVENT_JOIN lists WISH
+    // while the wishbook is in the plan.
     guestActions?: QrGuestAction[];
     eventId?: string;
     eventTitle?: string;
@@ -3206,6 +3215,9 @@ export interface QrLinkResolutionDto {
     // link's invite token, while it works. Lets one scan offer both (KAN-208).
     uploadToken?: string;
     joinInviteToken?: string;
+    // The token a wish from this scan goes through, without an account: the code's own, or the event's join
+    // code's. Missing when the event takes no wishes, and from a backend older than this field.
+    wishToken?: string;
 }
 
 // POST /api/qr/{token}/wishes: a wish left through a GUEST code, with no account. See
@@ -3704,6 +3716,7 @@ export interface EventSessionRequestDto {
     endAt?: string;
     locationName?: string;
     mapsUrl?: string;
+    locationAddress?: string;
     displayOrder: number;
     isSecondary?: boolean; // defaults to false; at most one non-deleted session per event
     rsvpEnabled?: boolean; // defaults to false; guests may answer for this session only when true
@@ -3719,6 +3732,8 @@ export interface EventSessionResponseDto {
     endAt: string | null;
     locationName: string | null;
     mapsUrl: string | null;
+    // The main session's mirrors the event's own address.
+    locationAddress: string | null;
     displayOrder: number;
     isMain: boolean; // system-managed, read-only — set only via initialSessionTitle at event creation
     isSecondary: boolean;
@@ -3736,6 +3751,7 @@ export interface EventSessionPatchDto {
     clearEndAt?: boolean;
     locationName?: string;
     mapsUrl?: string | null;
+    locationAddress?: string;
     displayOrder?: number;
     isSecondary?: boolean;
     rsvpEnabled?: boolean;
@@ -4652,6 +4668,9 @@ export type AdminAuditAction =
     | 'INVITATION_THEME_IMAGE_DELETED'
     | 'INVITATION_FONT_PAIRING_CREATED'
     | 'INVITATION_FONT_PAIRING_UPDATED'
+    | 'INVITATION_TEXT_CREATED'
+    | 'INVITATION_TEXT_UPDATED'
+    | 'INVITATION_TEXT_DELETED'
     | 'QR_CARD_TEMPLATE_DUPLICATED'
     | 'INVIART_COLLECTION_CHANGED'
     | 'SHOP_STORE_CREATED'
@@ -5027,27 +5046,35 @@ export interface AdminQrCardTemplatePatchDto {
     layout?: QrCardLayoutDto; // a full layout replaces the stored one
 }
 
-// /api/admin/theme-fonts
+// Which list a font belongs to: the wall's theme presets and QR cards, or Save my date. Set on create, never changes.
+export type ThemeFontLibrary = 'WALL' | 'INVITATION';
+
+// /api/admin/theme-fonts?library=
 export interface AdminThemeFontDto {
     id: string;
     key: string;
     familyName: string;
     fallback: 'serif' | 'sans-serif';
+    library: ThemeFontLibrary;
     archived: boolean;
     url: string | null; // null until a file is uploaded; such a font can't be put on a preset
     presetCount: number;
+    // Save my date fonts only: the event types the editor offers it to, sorted. Empty means every type.
+    invitationEventTypes: string[];
 }
 
 export interface AdminThemeFontRequestDto {
     key: string;
     familyName: string;
     fallback: 'serif' | 'sans-serif';
+    library?: ThemeFontLibrary; // WALL when left out
 }
 
 export interface AdminThemeFontPatchDto {
     familyName?: string;
     fallback?: 'serif' | 'sans-serif';
     archived?: boolean;
+    invitationEventTypes?: string[]; // Save my date fonts only
 }
 
 // Why an admin closed an event when no rule was broken (admin-event-management-fe-integration.md §7).
@@ -5075,6 +5102,41 @@ export interface AdminEventSummaryDto {
     suspendedAt: string | null;
     closedAt: string | null;
     deletedAt: string | null;
+}
+
+// GET /api/admin/events/{eventId}/activity — anonymous counts; hour is local "yyyy-MM-ddTHH:00" in `timezone`.
+export interface AdminEventActivityDto {
+    timezone: string;
+    eventStartAt: string | null;
+    eventEndAt: string | null;
+    generatedAt: string;
+    members: { total: number; contributed: number };
+    totals: {
+        posts: number;
+        postMedia: number;
+        stories: number;
+        storyViews: number;
+        galleryUploads: number;
+        galleryViaQr: number;
+        proUploads: number;
+        comments: number;
+        reactions: number;
+        reactionsByType: { code: string; emoji: string | null; count: number }[];
+        wishes: number | null;
+        playlist: { suggestions: number; votes: number } | null;
+        quizAnswers: number | null;
+        rsvp: { attending: number; declined: number } | null;
+    };
+    removed: { posts: number; stories: number; galleryUploads: number; comments: number; wishes: number };
+    hours: AdminEventActivityHour[];
+}
+
+export interface AdminEventActivityHour {
+    hour: string;
+    posts: number;
+    stories: number;
+    gallery: number;
+    wishes: number;
 }
 
 export type AdminEventModuleSource = 'PLAN' | 'ADDON' | 'ADMIN_GRANT' | 'NONE';

@@ -5,7 +5,7 @@ import { type ChangeEvent, useCallback, useMemo, useState } from 'react';
 
 import type { QrCardSize, QrCardTemplateDto, QrCardWordingKey } from '@/lib/api/types';
 import { resolveLocalizedText } from '@/lib/localizedText';
-import { PLAIN_QR_CARD_ID, PLAIN_QR_CARD_STYLE, qrCardFieldTexts, qrCardStyleOf } from '@/lib/qrCard';
+import { PLAIN_FEATURES_QR_CARD_STYLE, PLAIN_QR_CARD_ID, PLAIN_QR_CARD_STYLE, qrCardFieldTexts, qrCardStyleOf } from '@/lib/qrCard';
 import { qrCardLineWording } from '@/lib/qrCardLayout';
 
 export type QrCardText = { title: string; line: string; giver: string };
@@ -20,10 +20,13 @@ export function useQrCardDesigner({
     templates,
     defaults,
     lineKey,
+    withFeatures = false,
 }: {
     templates: QrCardTemplateDto[];
     defaults: QrCardDefaults;
     lineKey: QrCardWordingKey | null;
+    // The event's card: Plain and unsaved templates get the layout with picture tiles. The gift card leaves it off.
+    withFeatures?: boolean;
 }) {
     const [pickedId, setPickedId] = useState(PLAIN_QR_CARD_ID);
     const [pickedSize, setPickedSize] = useState<QrCardSize>('A6');
@@ -34,7 +37,8 @@ export function useQrCardDesigner({
 
     // A template that left the list (archived meanwhile, say) falls back to Plain.
     const picked = templates.find((template) => template.id === pickedId) ?? null;
-    const style = useMemo(() => (picked ? qrCardStyleOf(picked) : PLAIN_QR_CARD_STYLE), [picked]);
+    const plain = withFeatures ? PLAIN_FEATURES_QR_CARD_STYLE : PLAIN_QR_CARD_STYLE;
+    const style = useMemo(() => (picked ? qrCardStyleOf(picked, plain.layout) : plain), [picked, plain]);
 
     // A design without A5 prints at A6; going back to one with A5 restores the host's pick.
     const size: QrCardSize = style.sizes.includes(pickedSize) ? pickedSize : 'A6';

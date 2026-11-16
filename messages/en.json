@@ -157,6 +157,7 @@
         "copy": "Copy",
         "copied": "Copied",
         "close": "Close",
+        "showLess": "Show less",
         "claimFailed": "Your code could not be created. Try again."
     },
     "PostCard": {
@@ -647,7 +648,33 @@
         "choices": {
             "join": "Join the event",
             "open": "Open the event",
-            "eventHint": "See what guests share"
+            "eventHint": "See what guests share",
+            "joinLine": "See everyone's photos, share yours and join in on the day.",
+            "freeAccount": "Free account, in a few seconds",
+            "noAccount": "Without an account",
+            "uploadLine": "The hosts get them in their photo album",
+            "wishLine": "A message for the wishbook",
+            "moreOptions": "More options"
+        },
+        "preview": {
+            "feed": "The event feed",
+            "photo": "A guest's photo",
+            "wish": "A wish from a guest",
+            "song": "A song request",
+            "days": "D",
+            "hours": "H",
+            "minutes": "M",
+            "seconds": "S",
+            "story1": "Eleni",
+            "story2": "Nikos",
+            "story3": "Sofia",
+            "story4": "Giorgos",
+            "postAuthor": "Maria K.",
+            "postText": "What a night! 🎉",
+            "wishAuthor": "Eleni",
+            "wishText": "So happy to celebrate with you! ❤️",
+            "songTitle": "September",
+            "songArtist": "Earth, Wind & Fire"
         },
         "guestCode": {
             "uploadButton": "Upload photos",
@@ -681,7 +708,9 @@
             "acceptanceChanged": "The Terms of Use or Community Guidelines were just updated. Please review them and tick the box again.",
             "acceptanceUnavailable": "The Terms of Use or Community Guidelines couldn't be loaded. Refresh the page and try again.",
             "filesTooLarge": "Photos can be up to {imageSize} and videos up to {videoSize}. Larger files were left out.",
-            "uploadBusy": "The server is busy. Your upload will retry shortly…"
+            "uploadBusy": "The server is busy. Your upload will retry shortly…",
+            "uploadSlow": "Slow connection. This may take a little longer, keep this page open.",
+            "galleryOnlyNote": "Photos and videos you upload here go to the gallery, not the feed."
         },
         "unknown": {
             "title": "Code not found",
@@ -3106,7 +3135,44 @@
         },
         "saveMyDate": {
             "title": "Save my date",
-            "backToAdmin": "Back to admin"
+            "backToAdmin": "Back to admin",
+            "eventTypes": "Event types",
+            "eventTypesAll": "All",
+            "eventTypesHint": "None picked means every event type.",
+            "checks": {
+                "upTo100": "Enter 1 to 100 characters.",
+                "upTo2000": "Enter 1 to 2,000 characters."
+            },
+            "fonts": {
+                "title": "Fonts",
+                "empty": "No fonts yet.",
+                "availableHint": "Offered in the invitation editor.",
+                "archivedHint": "Invitations that use it keep it. The editor no longer offers it."
+            },
+            "fontPairings": {
+                "title": "Font pairings",
+                "create": "New pairing",
+                "empty": "No font pairings yet.",
+                "fonts": {
+                    "title": "Title",
+                    "body": "Text",
+                    "button": "Buttons"
+                },
+                "sameAsText": "Same as text",
+                "shown": "Shown"
+            },
+            "texts": {
+                "title": "Texts",
+                "create": "New text",
+                "empty": "No texts yet.",
+                "label": "Label",
+                "labelHint": "Only admins see it.",
+                "body": "Text",
+                "delete": "Delete",
+                "deleteTitle": "Delete this text?",
+                "deleteBody": "Invitations that used it keep their wording.",
+                "deleteConfirm": "Delete text"
+            }
         },
         "tabs": {
             "appReviews": "Reviews",
@@ -3856,6 +3922,9 @@
                 "INVITATION_THEME_IMAGE_DELETED": "Invitation theme image deleted",
                 "INVITATION_FONT_PAIRING_CREATED": "Font pairing created",
                 "INVITATION_FONT_PAIRING_UPDATED": "Font pairing changed",
+                "INVITATION_TEXT_CREATED": "Invitation text created",
+                "INVITATION_TEXT_UPDATED": "Invitation text changed",
+                "INVITATION_TEXT_DELETED": "Invitation text deleted",
                 "QR_CARD_TEMPLATE_DUPLICATED": "QR card template copied",
                 "INVIART_COLLECTION_CHANGED": "INVIART collection changed",
                 "SHOP_STORE_CREATED": "Shopify store connected",
@@ -4115,6 +4184,65 @@
                 "illegalHint": "Name the law or legal provision.",
                 "note": "Internal note",
                 "noteHint": "Only admins see this."
+            },
+            "activity": {
+                "tabs": {
+                    "settings": "Settings",
+                    "activity": "Activity",
+                    "label": "Event sections"
+                },
+                "updatedAt": "Updated {time}",
+                "refresh": "Refresh",
+                "loading": "Loading activity",
+                "members": "{contributed} of {total} members contributed · {share}",
+                "tiles": {
+                    "posts": "Posts",
+                    "postMedia": "{count, plural, one {# photo or video} other {# photos and videos}}",
+                    "stories": "Stories",
+                    "storyViews": "{count, plural, one {# view} other {# views}}",
+                    "gallery": "Gallery",
+                    "viaQr": "{count} via QR",
+                    "pro": "Professional uploads",
+                    "reactions": "Reactions",
+                    "comments": "Comments",
+                    "wishes": "Wishes",
+                    "playlist": "Songs suggested",
+                    "votes": "{count, plural, one {# vote} other {# votes}}",
+                    "quiz": "Quiz answers",
+                    "rsvp": "Attending",
+                    "declined": "{count} not attending",
+                    "removed": "Removed"
+                },
+                "removed": {
+                    "posts": "{count, plural, one {# post} other {# posts}}",
+                    "stories": "{count, plural, one {# story} other {# stories}}",
+                    "galleryUploads": "{count, plural, one {# gallery upload} other {# gallery uploads}}",
+                    "comments": "{count, plural, one {# comment} other {# comments}}",
+                    "wishes": "{count, plural, one {# wish} other {# wishes}}"
+                },
+                "series": {
+                    "posts": "Posts",
+                    "stories": "Stories",
+                    "gallery": "Gallery",
+                    "wishes": "Wishes"
+                },
+                "hourly": {
+                    "title": "Per hour",
+                    "previous": "Previous day",
+                    "next": "Next day"
+                },
+                "heatmap": {
+                    "title": "Busiest hours of the day",
+                    "cell": "{kind} at {hour}: {count}"
+                },
+                "peaks": {
+                    "title": "Peak moments"
+                },
+                "daily": {
+                    "title": "Per day",
+                    "earlier": "Earlier"
+                },
+                "empty": "No activity yet."
             }
         },
         "accounts": {
@@ -5439,7 +5567,6 @@
                 "slug": "Slug",
                 "seoTitle": "SEO title",
                 "seoDescription": "Meta description",
-                "sortOrder": "Sort order",
                 "counter": "{count}/{max}",
                 "nameInvalid": "Enter 1 to 120 characters.",
                 "slugInvalid": "Use lower-case letters, digits and hyphens.",
@@ -5548,6 +5675,7 @@
                     "title": "Title",
                     "code": "Code",
                     "lines": "Lines",
+                    "features": "Pictures",
                     "logo": "Logo",
                     "fixed": "Text {number}",
                     "host": "Host field {number}"
@@ -5557,7 +5685,9 @@
                 "addLogo": "Add logo",
                 "addLimit": "Up to 5 text fields.",
                 "restoreTitle": "Add title back",
+                "restoreFeatures": "Add pictures back",
                 "removeTitle": "Remove title",
+                "removeFeatures": "Remove pictures",
                 "removeField": "Remove field",
                 "removeLogo": "Remove logo",
                 "logoColorOptions": { "original": "Original", "one": "One colour" },
@@ -6505,6 +6635,14 @@
             }
         }
     },
+    "FeedQuickActions": {
+        "invitation": "Invitation",
+        "photos": "Photos",
+        "rsvpReport": "RSVP",
+        "share": "Share",
+        "shareCopied": "Copied",
+        "vendors": "Vendors"
+    },
     "FeedQuickAccessBar": {
         "ariaLabel": "Quick access",
         "eyebrow": "Quick access",
@@ -6735,6 +6873,7 @@
         "selectionLimited": "Only supported photos and videos are accepted, with at most {count} per upload.",
         "filesTooLarge": "Photos can be up to {imageSize} and videos up to {videoSize}. Larger files were left out.",
         "uploadBusy": "The server is busy. Your upload will retry shortly…",
+        "uploadSlow": "Slow connection. This may take a little longer, keep this page open.",
         "viewerLabel": "Media viewer",
         "closeViewer": "Close media viewer",
         "previousMedia": "Previous",
@@ -6809,6 +6948,23 @@
             "gallery": "Scan to add your photos",
             "guestWish": "Scan to leave a wish",
             "guestBoth": "Scan to add your photos or leave a wish"
+        },
+        "tiles": {
+            "posts": "Posts",
+            "stories": "Stories",
+            "wishes": "Wishes",
+            "reactions": "Reactions",
+            "music": "Music",
+            "songTwo": "Dancing Queen",
+            "songThree": "Perfect",
+            "games": "Games",
+            "gifts": "Gifts",
+            "schedule": "Schedule",
+            "gameQuestion": "Who said 'I love you' first?",
+            "gameHim": "Him",
+            "gameHer": "Her",
+            "giftTitle": "For our honeymoon",
+            "giftCopy": "Copy"
         }
     },
     "InvitationsQrPage": {
@@ -7937,7 +8093,8 @@
         "songFailed": "Couldn't add the song. Try again.",
         "retry": "Retry",
         "dismiss": "Dismiss",
-        "uploadBusy": "The server is busy. Retrying shortly…"
+        "uploadBusy": "The server is busy. Retrying shortly…",
+        "uploadSlow": "Slow connection. This may take a little longer, keep this page open."
     },
     "EmailVerificationBanner": {
         "message": "Confirm your email address to create an event.",
@@ -10144,6 +10301,19 @@
         "linkFallback": "See more"
     },
     "InvitationEditor": {
+        "themeSwitch": {
+            "change": "Change design",
+            "current": "Design: {name}",
+            "currentBadge": "Current",
+            "thumbAlt": "{name} design",
+            "listFailed": "We couldn't load the designs.",
+            "confirmTitle": "Switch to {name}?",
+            "confirmBody": "Your texts, photos and dates stay. Only the design changes. You can undo this.",
+            "hiddenTitle": "This design doesn't have these sections. They'll be hidden, not deleted:",
+            "restoredTitle": "These hidden sections will show again:",
+            "textLookReset": "Your text color and fonts go back to the design's.",
+            "themeFailed": "We couldn't load this design. Try again."
+        },
         "metaTitle": "Edit invitation",
         "back": "Back",
         "undo": "Undo",
@@ -10310,6 +10480,17 @@
             "photoFrame": "Framed photo",
             "footer": "Footer"
         },
+        "eventPhotos": {
+            "title": "Event photos",
+            "empty": "The event has no photos yet.",
+            "photoAlt": "Event photo {n}"
+        },
+        "eventLock": {
+            "note": "This comes from your event. Change it in the event's settings.",
+            "settings": "Event settings",
+            "rsvp": "RSVP",
+            "schedule": "Event schedule"
+        },
         "photos": {
             "upload": "Upload photo",
             "change": "Change photo",
@@ -10320,7 +10501,8 @@
                 "type": "Only JPG, PNG and WebP are allowed.",
                 "size": "The file is over 10 MB.",
                 "failed": "The photo didn't upload. Try again.",
-                "full": "You've reached the photo limit."
+                "full": "You've reached the photo limit.",
+                "galleryFull": "The gallery already has 10 photos."
             },
             "move": "Move photo",
             "zoomOut": "Zoom out",
@@ -10346,6 +10528,33 @@
                 "mask-reveal": "Mask Reveal",
                 "parallax-soft": "Parallax Soft",
                 "pop-elegant": "Pop Elegant"
+            },
+            "gallery": {
+                "title": "Photos",
+                "add": "Add photos",
+                "count": "{count}/10 photos",
+                "delete": "Delete photo",
+                "reorder": "Drag to reorder",
+                "photoAlt": "Photo {n}",
+                "layout": "Layout",
+                "shape": "Shape",
+                "dragInstructions": "Press space to pick up a photo. Use the arrow keys to move it, space to drop it, or escape to cancel.",
+                "picked": "Picked up photo {n}.",
+                "over": "Photo {n} is at place {position} of {count}.",
+                "dropped": "Dropped photo {n} at place {position} of {count}.",
+                "cancelled": "Photo {n} is back where it was.",
+                "layouts": {
+                    "grid": "Grid",
+                    "masonry": "Mosaic",
+                    "carousel": "Slideshow",
+                    "featured": "One large"
+                },
+                "shapes": {
+                    "round": "Circle",
+                    "square": "Square",
+                    "rectangle": "Rectangle",
+                    "roundedSquare": "Rounded"
+                }
             }
         },
         "sectionSettings": {
@@ -10461,6 +10670,8 @@
             "backgroundAuto": "Automatic",
             "backgroundNumber": "Background {n}",
             "hostCanChange": "The host can change it",
+            "followEvent": "Follow the event",
+            "followEventHint": "Comes from your event. If you edit it here, it stops following the event. Your event doesn't change.",
             "hostBackgrounds": "Backgrounds the host can pick",
             "effect": "Background effect",
             "effects": {

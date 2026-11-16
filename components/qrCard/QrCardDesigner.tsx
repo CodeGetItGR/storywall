@@ -14,6 +14,7 @@ import { QrCardTextFields } from '@/components/qrCard/QrCardTextFields';
 import type { QrCardDesignerState } from '@/hooks/useQrCardDesigner';
 import type { QrCardExportState } from '@/hooks/useQrCardExport';
 import type { QrCardLine } from '@/lib/qrCard';
+import type { QrCardFeature, QrCardFeatureTexts } from '@/lib/qrCardFeatures';
 
 // The card preview (also what prints), the design picker, the text fields, any extra options the
 // caller passes (the gift card's PIN) and the actions.
@@ -23,6 +24,8 @@ export function QrCardDesigner({
     url,
     lines,
     label,
+    features,
+    featureTexts,
     templatesFailed,
     onRetryTemplatesAction,
     children,
@@ -32,12 +35,14 @@ export function QrCardDesigner({
     url: string;
     lines: QrCardLine[];
     label: string;
+    features?: QrCardFeature[];
+    featureTexts?: QrCardFeatureTexts;
     templatesFailed: boolean;
     onRetryTemplatesAction: () => void;
     children?: ReactNode;
 }) {
     const { svgRef } = exporter;
-    const card = { style: designer.style, url, title: designer.text.title, lines, fields: designer.fieldTexts, label };
+    const card = { style: designer.style, url, title: designer.text.title, lines, fields: designer.fieldTexts, label, features, featureTexts };
 
     return (
         <div className="flex flex-col gap-6">

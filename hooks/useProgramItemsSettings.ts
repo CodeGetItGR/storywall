@@ -4,6 +4,7 @@ import { useCallback } from 'react';
 
 import { type SectionOf, type SettingsScope } from '@/hooks/useSectionSettingsPanel';
 import { useSettingsItem } from '@/hooks/useSettingsItem';
+import { programLock } from '@/lib/invitation/eventLinks';
 import { newSectionId } from '@/lib/invitation/newSection';
 import {
     addProgramItem,
@@ -15,8 +16,9 @@ import {
 
 export type ProgramSection = SectionOf<'program'> | SectionOf<'programIcons'>;
 
-// The program's moments: rows, one open at a time, added at the end.
-export function useProgramItemsSettings({ section, edit }: SettingsScope<ProgramSection>) {
+// The program's moments: rows, one open at a time, added at the end. Once they are the event's sessions (KAN-84)
+// the host changes them on the schedule; only their icons change here.
+export function useProgramItemsSettings({ section, edit, event, eventFieldLinks }: SettingsScope<ProgramSection>) {
     const items = section.data.items as ProgramSection['data']['items'];
     const selected = useSettingsItem(items);
     const { open, close } = selected;
@@ -41,8 +43,12 @@ export function useProgramItemsSettings({ section, edit }: SettingsScope<Program
         [close, edit, section.id],
     );
 
+    const lock = programLock(section, event);
+
     return {
         items,
+        lock,
+        lockHref: lock ? eventFieldLinks?.[lock] : undefined,
         canAdd: items.length < MAX_PROGRAM_ITEMS,
         add,
         update,

@@ -24,8 +24,8 @@ import { giftQrCardLines, type QrCardLine, qrCardSampleFieldTexts } from '@/lib/
 import {
     addField,
     addLogo,
-    DEFAULT_QR_CARD_LAYOUT,
     elementRect,
+    FEATURES_QR_CARD_LAYOUT,
     fieldElement,
     fieldIdOf,
     findField,
@@ -42,6 +42,7 @@ import {
     removeLogo,
     sameQrCardLayout,
     setCodeOptions,
+    setFeaturesShown,
     setLinesOptions,
     setLineWording,
     setLogoColor,
@@ -82,7 +83,7 @@ export function useQrCardLayoutEditor({
     const upload = useUploadQrCardArtwork();
     const textColor = look.style.textColor;
 
-    const saved = useMemo(() => qrCardLayoutOf(template.layout), [template.layout]);
+    const saved = useMemo(() => qrCardLayoutOf(template.layout, FEATURES_QR_CARD_LAYOUT), [template.layout]);
     const [layout, setLayout] = useState<QrCardLayout>(saved);
     const [picked, setSelected] = useState<QrCardElement | null>(null);
     const [incomplete, setIncomplete] = useState(false);
@@ -245,6 +246,7 @@ export function useQrCardLayoutEditor({
     const removeSelected = useCallback(() => {
         if (selected === 'title') setLayout((current) => setTitleShown(current, false));
         if (selected === 'logo') setLayout((current) => removeLogo(current));
+        if (selected === 'features') setLayout((current) => setFeaturesShown(current, false));
         const id = selected ? fieldIdOf(selected) : null;
         if (id) setLayout((current) => removeField(current, id));
         setSelected(null);
@@ -253,12 +255,16 @@ export function useQrCardLayoutEditor({
         setLayout((current) => setTitleShown(current, true));
         setSelected('title');
     }, []);
+    const restoreFeatures = useCallback(() => {
+        setLayout((current) => setFeaturesShown(current, true));
+        setSelected('features');
+    }, []);
 
     const handleSampleChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {
         setSample(event.currentTarget.value as QrCardLayoutSample);
     }, []);
 
-    const reset = useCallback(() => setLayout(DEFAULT_QR_CARD_LAYOUT), []);
+    const reset = useCallback(() => setLayout(FEATURES_QR_CARD_LAYOUT), []);
 
     const save = useCallback(async () => {
         setFailure(null);
@@ -340,6 +346,7 @@ export function useQrCardLayoutEditor({
         addHostField,
         removeSelected,
         restoreTitle,
+        restoreFeatures,
         handleSampleChange,
         requestClose,
         keepEditing,

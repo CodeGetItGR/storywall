@@ -28,7 +28,11 @@ const ALIGN_ICONS = {
 };
 const ALIGNMENTS: QrCardTextAlign[] = ['left', 'center', 'right'];
 // The remove button's label by element; any added field says removeField.
-const REMOVE_LABELS: Partial<Record<QrCardElement, 'removeTitle' | 'removeLogo'>> = { title: 'removeTitle', logo: 'removeLogo' };
+const REMOVE_LABELS: Partial<Record<QrCardElement, 'removeTitle' | 'removeFeatures' | 'removeLogo'>> = {
+    title: 'removeTitle',
+    features: 'removeFeatures',
+    logo: 'removeLogo',
+};
 
 // The side panel: adding text, then what the selected element can change, or the card itself while
 // nothing is selected.
@@ -142,7 +146,7 @@ export function QrCardLayoutInspector({ editor, look }: { editor: QrCardLayoutEd
                     {selectedField && <QrCardLayoutFieldPanel editor={editor} field={selectedField} alignOptions={alignOptions} />}
 
                     {/* Remove */}
-                    {(selected === 'title' || selected === 'logo' || selectedField) && (
+                    {(selected === 'title' || selected === 'features' || selected === 'logo' || selectedField) && (
                         <button
                             type="button"
                             onClick={editor.removeSelected}

@@ -122,11 +122,11 @@ describe('QrCardLayoutEditor', () => {
         // Shift moves 5 mm.
         fireEvent.keyDown(code, { key: 'ArrowRight', shiftKey: true });
 
-        expect(screen.getByText(/position .*"x":"25.5"/)).toBeInTheDocument();
+        expect(screen.getByText(/position .*"x":"34.5"/)).toBeInTheDocument();
         fireEvent.click(screen.getByRole('button', { name: 'save' }));
 
         await vi.waitFor(() => expect(onClose).toHaveBeenCalled());
-        expect(patch.mutateAsync.mock.calls[0][0].input.layout.code.x).toBe(25.5);
+        expect(patch.mutateAsync.mock.calls[0][0].input.layout.code.x).toBe(34.5);
         expect(onSaved).toHaveBeenCalled();
     });
 
@@ -170,6 +170,8 @@ describe('QrCardLayoutEditor', () => {
         fireEvent.click(screen.getByRole('button', { name: 'save' }));
         await vi.waitFor(() => expect(patch.mutateAsync).toHaveBeenCalled());
         expect(patch.mutateAsync.mock.calls[0][0].input.layout.logo).toEqual({ x: 30, y: 129.7, width: 45, color: '#FFFFFF' });
+        // The tiles got shorter to make room for it.
+        expect(patch.mutateAsync.mock.calls[0][0].input.layout.features).toEqual({ x: 8, y: 79, width: 89, height: 49.7 });
     });
 
     it('removes the logo', () => {

@@ -1,7 +1,7 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { type ChangeEvent, type SubmitEvent, useCallback, useState } from 'react';
+import { type SubmitEvent, useCallback, useState } from 'react';
 
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useAuth } from '@/hooks/useAuth';
@@ -10,6 +10,7 @@ import { useMe } from '@/hooks/useMe';
 import { ApiError } from '@/lib/api/client';
 import { ERROR_CODES, getErrorCode } from '@/lib/api/errors';
 import type { GiftClaimResponseDto } from '@/lib/api/types';
+import { onlyDigits } from '@/lib/emailCode';
 import { GIFT_PIN_LENGTH, giftClaimRefusal, isGiftClaimable, isGiftPinFormat, needsGiftPin } from '@/lib/gift';
 import { routes } from '@/lib/routes';
 
@@ -57,8 +58,8 @@ export function useGiftClaim(token: string) {
     const accountIssue = !isAuthenticated ? null : user?.isGuestAccount ? 'guest' : user?.emailVerified === false ? 'unverified' : null;
     const returnPath = routes.giftClaim(token);
 
-    const handlePinChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {
-        setPin(event.target.value.replace(/\D/g, '').slice(0, GIFT_PIN_LENGTH));
+    const handlePinChange = useCallback((value: string) => {
+        setPin(onlyDigits(value, GIFT_PIN_LENGTH));
     }, []);
 
     const { mutateAsync } = claim;
