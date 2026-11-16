@@ -19,6 +19,7 @@ const entry: WishbookEntryResponseDto = {
     guestName: 'Me',
     message: 'Hello',
     createdAt: '2026-11-16T10:00:00Z',
+    audio: null,
     canDelete: true,
     highlighted: null,
 };

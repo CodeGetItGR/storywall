@@ -472,6 +472,7 @@ export function createDemoHandlers(session: DemoSession, appOrigin: string | nul
             authorMemberId: null,
             guestName: String(body.guestName ?? 'Guest'),
             message: String(body.message ?? ''),
+            audio: null,
             createdAt: nowIso(),
             canDelete: true,
             highlighted: null,

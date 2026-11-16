@@ -20,7 +20,7 @@ export function useWishEditor(eventId: string) {
     function open(entry: WishbookEntryResponseDto) {
         edit.reset();
         setSelected(entry);
-        setDraft(entry.message);
+        setDraft(entry.message ?? '');
         setIsConfirmingDelete(false);
     }
     function close() {
