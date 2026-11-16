@@ -3336,6 +3336,11 @@ export interface WishbookEntryRequestDto {
     guestName?: string;
 }
 
+// PUT /api/wishbook/{entryId} — the author only, while the event is ACTIVE (KAN-217).
+export interface WishbookEntryEditDto {
+    message: string;
+}
+
 export interface WishbookEntryResponseDto {
     id: string;
     eventId: string;
