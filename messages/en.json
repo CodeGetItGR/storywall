@@ -6952,7 +6952,15 @@
             "reactions": "Reactions",
             "music": "Music",
             "songTwo": "Dancing Queen",
-            "songThree": "Perfect"
+            "songThree": "Perfect",
+            "games": "Games",
+            "gifts": "Gifts",
+            "schedule": "Schedule",
+            "gameQuestion": "Who said 'I love you' first?",
+            "gameHim": "Him",
+            "gameHer": "Her",
+            "giftTitle": "For our honeymoon",
+            "giftCopy": "Copy"
         }
     },
     "InvitationsQrPage": {

@@ -7459,7 +7459,15 @@
             "reactions": "Αντιδράσεις",
             "music": "Μουσική",
             "songTwo": "Dancing Queen",
-            "songThree": "Perfect"
+            "songThree": "Perfect",
+            "games": "Παιχνίδια",
+            "gifts": "Δώρα",
+            "schedule": "Πρόγραμμα",
+            "gameQuestion": "Ποιος είπε πρώτος «σ' αγαπώ»;",
+            "gameHim": "Εκείνος",
+            "gameHer": "Εκείνη",
+            "giftTitle": "Για τον μήνα του μέλιτος",
+            "giftCopy": "Αντιγραφή"
         }
     },
     "InvitationsQrPage": {

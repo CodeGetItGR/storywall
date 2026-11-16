@@ -1,8 +1,11 @@
 import type { ReactNode } from 'react';
 
+import { QrCardGamesTile } from '@/components/qrCard/features/QrCardGamesTile';
+import { QrCardGiftsTile } from '@/components/qrCard/features/QrCardGiftsTile';
 import { QrCardMusicTile } from '@/components/qrCard/features/QrCardMusicTile';
 import { QrCardPostsTile } from '@/components/qrCard/features/QrCardPostsTile';
 import { QrCardReactionsTile } from '@/components/qrCard/features/QrCardReactionsTile';
+import { QrCardScheduleTile } from '@/components/qrCard/features/QrCardScheduleTile';
 import { QrCardStoriesTile } from '@/components/qrCard/features/QrCardStoriesTile';
 import { QrCardWishesTile } from '@/components/qrCard/features/QrCardWishesTile';
 import { type QrCardTileProps, TILE_SIZE } from '@/components/qrCard/features/tileProps';
@@ -16,6 +19,9 @@ const TILES: Record<QrCardFeature, (props: QrCardTileProps) => ReactNode> = {
     wishes: QrCardWishesTile,
     reactions: QrCardReactionsTile,
     music: QrCardMusicTile,
+    games: QrCardGamesTile,
+    gifts: QrCardGiftsTile,
+    schedule: QrCardScheduleTile,
 };
 
 const LABEL_SIZE = 3.2;

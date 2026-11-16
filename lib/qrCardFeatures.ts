@@ -2,24 +2,31 @@ import type { EventModuleResponseDto, ModuleKeyConvention } from '@/lib/api/type
 import type { Rect } from '@/lib/qrCardLayout';
 
 // The picture tiles under the event card's code: what guests can do after scanning.
-export type QrCardFeature = 'posts' | 'stories' | 'wishes' | 'reactions' | 'music';
+export type QrCardFeature = 'posts' | 'stories' | 'wishes' | 'reactions' | 'music' | 'games' | 'gifts' | 'schedule';
 
 // The words a tile prints, already in the host's language: its label, and the sample text it shows.
 export type QrCardFeatureTexts = {
     labels: Record<QrCardFeature, string>;
     wish: string;
     songs: [string, string, string];
+    game: { question: string; answers: [string, string] };
+    gift: { title: string; copy: string };
+    schedule: [string, string];
 };
 
 export const QR_CARD_FEATURE_LIMIT = 5;
 
-// In print order. A tile shows when the plan makes any of its modules available. RSVP never shows.
+// In print order: the main five, then the backups that fill free places. A tile shows when the plan makes
+// any of its modules available. RSVP never shows.
 const FEATURE_RULES: { feature: QrCardFeature; modules: ModuleKeyConvention[] }[] = [
     { feature: 'posts', modules: ['posts', 'gallery'] },
     { feature: 'stories', modules: ['stories'] },
     { feature: 'wishes', modules: ['wishbook'] },
     { feature: 'reactions', modules: ['posts'] },
     { feature: 'music', modules: ['playlist'] },
+    { feature: 'games', modules: ['quiz_polls', 'he_or_she'] },
+    { feature: 'gifts', modules: ['wishlist'] },
+    { feature: 'schedule', modules: ['schedule'] },
 ];
 
 // What the admin previews show: a full plan.

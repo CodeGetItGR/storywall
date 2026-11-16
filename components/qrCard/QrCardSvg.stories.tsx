@@ -42,4 +42,7 @@ export const FullPlan: Story = { args: { features: QR_CARD_SAMPLE_FEATURES } };
 export const ThreeTiles: Story = { args: { features: ['posts', 'stories', 'wishes'] } };
 export const TwoTiles: Story = { args: { features: ['posts', 'music'] } };
 export const GalleryOnly: Story = { args: { features: qrCardFeatures([{ moduleKey: 'gallery', isAvailable: true }]) } };
+export const WithBackups: Story = {
+    args: { features: qrCardFeatures(['gallery', 'wishbook', 'he_or_she', 'wishlist', 'schedule'].map((moduleKey) => ({ moduleKey, isAvailable: true }))) },
+};
 export const NoTiles: Story = { args: { features: [] } };
