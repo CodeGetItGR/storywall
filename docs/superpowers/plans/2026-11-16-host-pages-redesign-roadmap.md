@@ -17,7 +17,7 @@
 | # | Ticket | Piece | Mockup | Depends on | Plan |
 |---|---|---|---|---|---|
 | 1 | KAN-223 | Navigation: grouped sidebar, Overview is the mobile menu, header B, Help folded into Overview, Share links and Vendors inside the dashboard | N1, MN1, header B | — | [2026-11-16-host-dashboard-navigation.md](2026-11-16-host-dashboard-navigation.md) |
-| 2 | KAN-224 | Overview: the event journey (before, all done, on the day, after) | C1 | 1 (takes over the setup steps) | not written yet |
+| 2 | KAN-224 | Overview: the event journey (before, all done, on the day, after) | C1 | 1 (takes over the setup steps) | [2026-11-16-host-overview-journey.md](2026-11-16-host-overview-journey.md) |
 | 3 | KAN-225 | Invitations & QR codes as one section | Q5 | 1 (merges the Invitation and Share links entries) | not written yet |
 | 4 | KAN-226 | Members on one page | M1 | 1 | not written yet |
 | 5 | KAN-227 | RSVP on one page | R1a | 1 | not written yet |
@@ -49,7 +49,7 @@ Pieces 3–9 and 11 only need piece 1. They can be built in any order once it is
 | Piece | Words |
 |---|---|
 | 1 | Group headings "Event" and "People" (English agreed; Greek to approve). The removals listed in that plan's Task 1. |
-| 2 | The C1 words |
+| 2 | Approved 2026-11-16 (see that plan's Wording section) |
 | 3 | "See the invitation", "What guests see", the QR code alt text |
 | 5 | "Guests" (heading), "Edit RSVP deadline" |
 | 6 | Pencil button labels ("Edit" + field name) |
