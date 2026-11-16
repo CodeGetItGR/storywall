@@ -3222,9 +3222,11 @@ export interface QrLinkResolutionDto {
 
 // POST /api/qr/{token}/wishes: a wish left through a GUEST code, with no account. See
 // guestwall-be docs/fe-guides/lite-tiers-fe-integration.md §4.
+// Since KAN-219 it also takes multipart/form-data: this DTO as a `wish` JSON part plus an optional `audio` part.
 export interface QrWishRequestDto {
     guestName: string;
-    message: string;
+    // Optional when the request carries a recording; the server needs one of the two (3132).
+    message?: string;
     ageConfirmed: true;
     acceptedTermsVersion: string;
     acceptedGuidelinesVersion: string;
@@ -3343,14 +3345,26 @@ export interface EventGiftAccountResponseDto {
     updatedAt: string;
 }
 
+// A wish's recording (KAN-219). url is presigned and short-lived: refetch the list for a fresh one.
+export interface WishAudioDto {
+    url: string;
+    durationMs: number;
+}
+
+// POST /api/events/{eventId}/wishbook. Since KAN-219 it also takes multipart/form-data: this DTO as a
+// `wish` JSON part plus an optional `audio` part (the recording).
 export interface WishbookEntryRequestDto {
-    message: string;
+    // Optional when the request carries a recording; the server needs one of the two (3132).
+    message?: string;
     guestName?: string;
 }
 
 // PUT /api/wishbook/{entryId} — the author only, while the event is ACTIVE (KAN-217).
+// A blank or missing message drops the text, so send the current text when only the recording changes.
 export interface WishbookEntryEditDto {
-    message: string;
+    message?: string;
+    // Drops the stored recording. Ignored when a new one is sent.
+    removeAudio?: boolean;
 }
 
 export interface WishbookEntryResponseDto {
@@ -3358,7 +3372,10 @@ export interface WishbookEntryResponseDto {
     eventId: string;
     authorMemberId: string | null;
     guestName: string;
-    message: string;
+    // null for a voice-only wish (KAN-219).
+    message: string | null;
+    // Hosts, co-hosts and the author only; null for everyone else and for a wish without one.
+    audio: WishAudioDto | null;
     createdAt: string;
     canDelete: boolean;
     // Starred for the book (2026-10-06). Hosts get true/false; everyone else gets null.
@@ -4749,6 +4766,8 @@ export interface ModerationContentDto {
     authorDisplayName: string | null;
     authorIsHost: boolean;
     media: MediaResponseDto[];
+    // A reported voice wish's recording (KAN-219); null for everything else.
+    audio: WishAudioDto | null;
     createdAt: string;
 }
 

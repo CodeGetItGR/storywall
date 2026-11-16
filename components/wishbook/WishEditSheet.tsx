@@ -6,10 +6,11 @@ import type { ChangeEvent, SubmitEvent } from 'react';
 
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { Modal } from '@/components/ui/modal';
+import { VoiceRecorder } from '@/components/wishbook/VoiceRecorder';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import type { WishEditor } from '@/hooks/useWishEditor';
 
-// One of the guest's own wishes, opened from "Your messages": change the text, or delete it.
+// One of the guest's own wishes, opened from "Your messages": change the text or the recording, or delete it.
 export function WishEditSheet({ editor, maxLength }: { editor: WishEditor; maxLength: number }) {
     const t = useTranslations('WishbookPage');
     const toErrorMessage = useApiErrorMessage();
@@ -49,14 +50,26 @@ export function WishEditSheet({ editor, maxLength }: { editor: WishEditor; maxLe
                             className="min-h-40 w-full resize-none rounded-[1.5rem] border border-border/70 bg-background px-5 py-4 text-base leading-8 text-ink transition-shadow outline-none focus:border-primary/30 focus:ring-2 focus:ring-primary/20 disabled:opacity-60"
                         />
                         <span className="text-xs text-ink-faint">{t('charactersLeft', { current: editor.draft.length, max: maxLength })}</span>
+
+                        {/* Recording */}
+                        <div className="px-1 py-3">
+                            <VoiceRecorder
+                                recorder={editor.recorder}
+                                disabled={editor.isSaving}
+                                existing={editor.existingAudio}
+                                onRemoveExisting={editor.removeExisting}
+                            />
+                        </div>
+
+                        {/* Error */}
                         {editor.saveError ? (
                             <p role="alert" className="text-xs text-rose-600">
                                 {toErrorMessage(editor.saveError)}
                             </p>
                         ) : null}
 
-                        {/* Actions */}
-                        <div className="flex items-center justify-between gap-3">
+                        {/* Actions: a line above them keeps them apart from the recording */}
+                        <div className="flex items-center justify-between gap-3 border-t border-border/60 pt-4">
                             <button
                                 type="button"
                                 onClick={editor.askDelete}

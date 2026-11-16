@@ -1,12 +1,14 @@
 'use client';
 
-import { Pencil } from 'lucide-react';
+import { Mic, Pencil } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import type { MouseEvent } from 'react';
 
+import { VoiceWishPlayer } from '@/components/wishbook/VoiceWishPlayer';
 import { WishbookEntriesSkeleton } from '@/components/wishbook/WishbookSkeletons';
 import type { WishbookEntryResponseDto } from '@/lib/api/types';
 import { dateTimeFormat } from '@/lib/format';
+import { formatClipDuration } from '@/lib/wishbook/voice';
 
 type Props = {
     entries: WishbookEntryResponseDto[];
@@ -51,13 +53,13 @@ export function MyWishesSection({ entries, isLoading, hasNextPage, isFetchingNex
                                     onClick={selectEntry}
                                     className="flex min-h-14 w-full items-start gap-3 rounded-[1.5rem] bg-surface-muted/70 px-4 py-3 text-left transition-colors hover:bg-surface-muted"
                                 >
-                                    <MyWishRowText entry={entry} />
+                                    <MyWishRowText entry={entry} playable={false} />
                                     <Pencil className="mt-0.5 h-4 w-4 shrink-0 text-ink-faint" aria-hidden="true" />
                                     <span className="sr-only">{t('edit')}</span>
                                 </button>
                             ) : (
                                 <div className="flex w-full items-start gap-3 rounded-[1.5rem] bg-surface-muted/70 px-4 py-3">
-                                    <MyWishRowText entry={entry} />
+                                    <MyWishRowText entry={entry} playable />
                                 </div>
                             )}
                         </li>
@@ -80,13 +82,35 @@ export function MyWishesSection({ entries, isLoading, hasNextPage, isFetchingNex
     );
 }
 
-function MyWishRowText({ entry }: { entry: WishbookEntryResponseDto }) {
+// An editable row is one button, so it can't hold a player: it shows the recording's length and the
+// edit sheet plays it. A read-only row plays it in place.
+function MyWishRowText({ entry, playable }: { entry: WishbookEntryResponseDto; playable: boolean }) {
+    // Inside a button only phrasing content is allowed; the player is a block.
+    const Box = playable ? 'div' : 'span';
     return (
-        <span className="min-w-0 flex-1">
-            <span className="line-clamp-2 text-sm leading-6 wrap-break-word whitespace-pre-wrap text-ink">{entry.message}</span>
+        <Box className="block min-w-0 flex-1">
+            {/* Message */}
+            {entry.message ? (
+                <span className="line-clamp-2 text-sm leading-6 wrap-break-word whitespace-pre-wrap text-ink">{entry.message}</span>
+            ) : null}
+
+            {/* Recording */}
+            {entry.audio && playable ? (
+                <div className="mt-1">
+                    <VoiceWishPlayer src={entry.audio.url} durationMs={entry.audio.durationMs} />
+                </div>
+            ) : null}
+            {entry.audio && !playable ? (
+                <span className="mt-1 flex items-center gap-1.5 text-sm text-ink-muted tabular-nums">
+                    <Mic className="h-4 w-4 text-primary" aria-hidden="true" />
+                    {formatClipDuration(entry.audio.durationMs)}
+                </span>
+            ) : null}
+
+            {/* Date */}
             <time dateTime={entry.createdAt} className="mt-1 block text-xs text-ink-faint">
                 {dateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(entry.createdAt))}
             </time>
-        </span>
+        </Box>
     );
 }

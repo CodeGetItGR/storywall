@@ -2,15 +2,23 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { WishEditSheet } from '@/components/wishbook/WishEditSheet';
+import type { VoiceRecorder } from '@/hooks/useVoiceRecorder';
 import type { WishEditor } from '@/hooks/useWishEditor';
 
 vi.mock('next-intl', () => ({ useTranslations: () => (key: string) => key }));
 vi.mock('@/hooks/useApiErrorMessage', () => ({ useApiErrorMessage: () => () => 'error' }));
 
+function recorder(): VoiceRecorder {
+    return { status: 'idle', elapsedMs: 0, recording: null, start: vi.fn(), stop: vi.fn(), discard: vi.fn() };
+}
+
 function editor(overrides: Partial<WishEditor> = {}): WishEditor {
     return {
         draft: 'Hello',
         changeDraft: vi.fn(),
+        recorder: recorder(),
+        existingAudio: null,
+        removeExisting: vi.fn(),
         canSave: true,
         isSaving: false,
         saveError: null,
@@ -70,6 +78,25 @@ describe('WishEditSheet', () => {
 
         expect(screen.queryByRole('textbox', { name: 'messageAriaLabel' })).toBeNull();
         expect(screen.getByText('deleteTitle')).toBeTruthy();
+    });
+
+    it('offers to record a message', () => {
+        const e = editor();
+        render(<WishEditSheet editor={e} maxLength={2000} />);
+
+        fireEvent.click(screen.getByRole('button', { name: 'record' }));
+
+        expect(e.recorder.start).toHaveBeenCalled();
+    });
+
+    it('removes the stored recording', () => {
+        const e = editor({ existingAudio: { url: 'https://cdn/w1.m4a', durationMs: 9000 } });
+        render(<WishEditSheet editor={e} maxLength={2000} />);
+
+        expect(screen.getByRole('button', { name: 'play' })).toBeTruthy();
+        fireEvent.click(screen.getByRole('button', { name: 'removeRecording' }));
+
+        expect(e.removeExisting).toHaveBeenCalled();
     });
 
     it('shows a save error', () => {
