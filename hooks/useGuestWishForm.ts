@@ -10,6 +10,7 @@ import { useAppConfig } from '@/hooks/useAppConfig';
 import { communityGuidelinesQueryKey, useCommunityGuidelinesVersion } from '@/hooks/useCommunityGuidelinesVersion';
 import { useSendQrWish } from '@/hooks/useQrWish';
 import { termsVersionQueryKey, useTermsVersion } from '@/hooks/useTermsVersion';
+import { useVoiceRecorder } from '@/hooks/useVoiceRecorder';
 import {
     ERROR_CODES,
     getErrorCode,
@@ -24,10 +25,12 @@ export const GUEST_WISH_NAME_MAX_LENGTH = 120;
 
 // State, submit and error mapping for the wish form on a guest code. No account: the 16+ confirmation
 // and the Terms / Guidelines acceptance are asked on every wish, in one box, like the anonymous upload form.
+// A wish is text, a recording, or both.
 export function useGuestWishForm(token: string) {
     const t = useTranslations('QrCodePage');
     const toErrorMessage = useApiErrorMessage();
     const sendWish = useSendQrWish();
+    const recorder = useVoiceRecorder();
     const queryClient = useQueryClient();
     const termsVersion = useTermsVersion();
     const guidelinesVersion = useCommunityGuidelinesVersion();
@@ -42,7 +45,10 @@ export function useGuestWishForm(token: string) {
     const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
     const isPending = sendWish.isPending;
-    const canSubmit = !INCIDENT_MODE && !isPending && guestName.trim() !== '' && message.trim() !== '' && acceptedDocuments;
+    const audio = recorder.status === 'recorded' ? (recorder.recording?.blob ?? null) : null;
+    const hasContent = message.trim() !== '' || audio !== null;
+    const canSubmit =
+        !INCIDENT_MODE && !isPending && recorder.status !== 'recording' && guestName.trim() !== '' && hasContent && acceptedDocuments;
 
     const changeGuestName = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
         setGuestName(e.target.value);
@@ -56,12 +62,14 @@ export function useGuestWishForm(token: string) {
         setAcceptedDocuments(e.target.checked);
     }, []);
 
+    const { discard: discardRecording } = recorder;
     const writeAnother = useCallback(() => {
+        discardRecording();
         setMessage('');
         setSubmitError(null);
         setFieldErrors({});
         setSent(false);
-    }, []);
+    }, [discardRecording]);
 
     async function submit(e: React.SubmitEvent<HTMLFormElement>) {
         e.preventDefault();
@@ -78,9 +86,11 @@ export function useGuestWishForm(token: string) {
                 token,
                 guestName: guestName.trim(),
                 message: message.trim(),
+                audio,
                 acceptance: { termsVersion: termsVersion.data, guidelinesVersion: guidelinesVersion.data },
             });
             setSent(true);
+            recorder.discard();
         } catch (err) {
             // A newer version went live while the page was open: fetch both and make them tick again.
             if (isTermsVersionMismatchError(err) || isGuidelinesVersionMismatchError(err)) {
@@ -119,6 +129,9 @@ export function useGuestWishForm(token: string) {
         canSubmit,
         isPending,
         maxMessageLength,
+        recorder,
+        // The message's required mark shows only while there is no recording.
+        messageRequired: audio === null,
         changeGuestName,
         changeMessage,
         changeAccepted,
@@ -126,3 +139,5 @@ export function useGuestWishForm(token: string) {
         writeAnother,
     };
 }
+
+export type GuestWishFormState = ReturnType<typeof useGuestWishForm>;
