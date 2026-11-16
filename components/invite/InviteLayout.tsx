@@ -149,10 +149,15 @@ export function InviteLayout({
                         'flex w-full shrink-0 flex-col items-center justify-center px-6 text-center md:rounded-3xl',
                         heroTone !== 'plain' && 'h-64 gap-6 bg-surface-muted md:h-80',
                         // The QR choice page keeps it short, so the join card starts on the first screen (KAN-213).
-                        heroTone === 'plain' && (compactHero ? 'h-44 gap-4 bg-background md:h-52' : 'h-56 gap-6 bg-background md:h-64'),
+                        heroTone === 'plain' && (compactHero ? 'h-36 gap-4 bg-background md:h-44' : 'h-56 gap-6 bg-background md:h-64'),
                     )}
                 >
-                    <Logo direction="col" iconClassName="h-12 w-auto" wordmarkClassName="h-6 w-auto" />
+                    {/* The short hero keeps the logo on one row: the mark beside the wordmark. */}
+                    {heroTone === 'plain' && compactHero ? (
+                        <Logo direction="row" className="gap-2" iconClassName="h-9 w-auto" wordmarkClassName="h-7 w-auto" />
+                    ) : (
+                        <Logo direction="col" iconClassName="h-12 w-auto" wordmarkClassName="h-6 w-auto" />
+                    )}
                     <div>
                         <h1 className="text-2xl font-bold text-balance text-ink md:text-3xl">{eventTitle}</h1>
                         {eventSubtitle && <p className="mx-auto mt-2 max-w-md text-sm text-ink-muted md:text-base">{eventSubtitle}</p>}
