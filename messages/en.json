@@ -1346,6 +1346,9 @@
             "event": "Event",
             "people": "People"
         },
+        "invitationsQr": {
+            "guestsSee": "What guests see"
+        },
         "invitation": {
             "notPublished": "Not published",
             "live": "Live",
@@ -1491,6 +1494,7 @@
             }
         },
         "qr": {
+            "codeAlt": "QR code for {event}",
             "empty": "No share links yet.",
             "emptyTitle": "No share links yet",
             "emptyBody": "Create one for group chats, printed cards, posters, or photo uploads.",
@@ -6964,9 +6968,7 @@
     },
     "InvitationsQrPage": {
         "title": "Share links",
-        "back": "Back to feed",
-        "subtitle": "QR codes and links guests can use to join right away.",
-        "subtitleWithUpload": "QR codes and links guests can use to join or upload photos."
+        "back": "Back to feed"
     },
     "MediaThumbnail": {
         "processing": "Processing video",

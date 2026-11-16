@@ -46,7 +46,8 @@ vi.mock('@/components/manage/invitations/ShareLinkPanel', () => ({
         return <p>row</p>;
     },
 }));
-vi.mock('@/components/manage/invitations/ShareLanguageNote', () => ({ ShareLanguageNote: () => null }));
+vi.mock('@/components/ui/AppLink', () => ({ AppLink: ({ children }: { children: React.ReactNode }) => <a>{children}</a> }));
+vi.mock('@/lib/invitation/invitationEvent', () => ({ offersOnlineInvitation: () => true }));
 
 const joinLink = { id: 'q1', targetType: 'EVENT_JOIN', label: 'Table', labelKey: null, publicUrl: 'https://x/q1' };
 
@@ -88,5 +89,22 @@ describe('InvitationsQrScreen links', () => {
         links.data = [joinLink, { id: 'g1', targetType: 'GUEST', label: null, labelKey: 'guest', publicUrl: 'https://x/g1' }];
         render(<InvitationsQrScreen />);
         expect(screen.getAllByText('row')).toHaveLength(1);
+    });
+});
+
+describe('InvitationsQrScreen What guests see', () => {
+    it("puts the invitation on a host's list", () => {
+        ctx.isHost = true;
+        render(<InvitationsQrScreen />);
+        expect(screen.getByRole('heading', { name: 'guestsSee' })).toBeTruthy();
+        expect(screen.getByText('choices.join')).toBeTruthy();
+        expect(screen.getByText('choices.invitation')).toBeTruthy();
+    });
+
+    it("leaves the invitation off a planner's list", () => {
+        ctx.isHost = false;
+        render(<InvitationsQrScreen />);
+        expect(screen.getByText('choices.join')).toBeTruthy();
+        expect(screen.queryByText('choices.invitation')).toBeNull();
     });
 });

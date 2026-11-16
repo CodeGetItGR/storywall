@@ -3,7 +3,7 @@
 import { QrCode } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
-import { ShareLanguageNote } from '@/components/manage/invitations/ShareLanguageNote';
+import { GuestChoicesList } from '@/components/manage/invitations/GuestChoicesList';
 import { ShareLinkPanel } from '@/components/manage/invitations/ShareLinkPanel';
 import { QrLinksListSkeleton } from '@/components/manage/ManageSkeletons';
 import { ManagePageFrame } from '@/components/manage/nav/ManagePageFrame';
@@ -30,15 +30,19 @@ export function InvitationsQrScreen() {
         upgradeHref,
         qrLinkStats,
         shareQrLinks,
+        invitation,
+        rows,
+        eventTitle,
     } = useInvitationsQrScreen();
 
     const content = isLoading ? (
         <QrLinksListSkeleton />
     ) : (
-        <>
-            {/* Capacity */}
-            {eventUsage && (
-                <div className="mb-8">
+        // Phones stack every section; from lg up, What guests see moves to a column on the right.
+        <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start">
+            <div className="flex min-w-0 flex-col gap-6">
+                {/* Capacity */}
+                {eventUsage && (
                     <UsagePanel
                         title={t('invitations.capacity.title')}
                         planName={currentPlanName}
@@ -54,37 +58,52 @@ export function InvitationsQrScreen() {
                             },
                         ]}
                     />
-                </div>
-            )}
+                )}
 
-            {/* Read-only note */}
-            {isHost && !isWritable && (
-                <p className="mb-3 rounded-2xl bg-surface-muted px-4 py-3 text-sm leading-relaxed text-ink-muted">{t('qr.readOnly')}</p>
-            )}
+                {/* Read only */}
+                {isHost && !isWritable && (
+                    <p className="rounded-2xl bg-surface-muted px-4 py-3 text-sm leading-relaxed text-ink-muted">{t('qr.readOnly')}</p>
+                )}
 
-            {/* Share links */}
-            <div className="flex flex-col divide-y divide-border [&>*]:py-8 [&>*:first-child]:pt-0">
-                {shareQrLinks.map((qrLink) => {
-                    const stats = qrLinkStats.find((row) => row.qrLinkId === qrLink.id);
-                    return <ShareLinkPanel key={qrLink.id} eventId={eventId} qrLink={qrLink} stats={stats} canWrite={canWrite} />;
-                })}
+                {/* Link and QR code */}
+                {shareQrLinks.length > 0 && (
+                    <div className="flex flex-col divide-y divide-border [&>*]:py-8 [&>*:first-child]:pt-0 [&>*:last-child]:pb-0">
+                        {shareQrLinks.map((qrLink) => {
+                            const stats = qrLinkStats.find((row) => row.qrLinkId === qrLink.id);
+                            return (
+                                <ShareLinkPanel
+                                    key={qrLink.id}
+                                    eventId={eventId}
+                                    qrLink={qrLink}
+                                    stats={stats}
+                                    canWrite={canWrite}
+                                    eventTitle={eventTitle}
+                                />
+                            );
+                        })}
+                    </div>
+                )}
+
+                {/* Empty */}
+                {shareQrLinks.length === 0 && <ToolEmptyState title={t('qr.emptyTitle')} body={t('qr.emptyBody')} icon={QrCode} className="py-8" />}
             </div>
 
-            {/* Link language */}
-            {shareQrLinks.length > 0 && <ShareLanguageNote />}
-
-            {/* Empty */}
-            {shareQrLinks.length === 0 && <ToolEmptyState title={t('qr.emptyTitle')} body={t('qr.emptyBody')} icon={QrCode} className="py-8" />}
-        </>
+            {/* What guests see */}
+            <GuestChoicesList rows={rows} invitation={isHost ? invitation : null} />
+        </div>
     );
 
     // Hosts see their links inside the dashboard; a planner (QR_READ) keeps the standalone page.
     if (isHost) {
-        return <ManagePageFrame active="invitationsQr">{content}</ManagePageFrame>;
+        return (
+            <ManagePageFrame active="invitationsQr" wide>
+                {content}
+            </ManagePageFrame>
+        );
     }
 
     return (
-        <ModulePageShell maxWidth="2xl" title={tPage('title')} icon={QrCode} backLabel={tPage('back')} backHref={routes.events.feed(eventId)}>
+        <ModulePageShell maxWidth="5xl" title={tPage('title')} icon={QrCode} backLabel={tPage('back')} backHref={routes.events.feed(eventId)}>
             {content}
         </ModulePageShell>
     );
