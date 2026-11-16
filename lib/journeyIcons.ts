@@ -1,4 +1,4 @@
-import { CalendarDays, Clock, Gem, type LucideIcon, Megaphone, PencilLine, QrCode } from 'lucide-react';
+import { CalendarDays, Clock, Gem, type LucideIcon, Megaphone, Music, PencilLine, QrCode } from 'lucide-react';
 
 export type JourneyIconKey =
     'details' | 'rsvp' | 'schedule' | 'gift' | 'invitations' | 'session' | 'media' | 'wishbook' | 'announcement' | 'playlist' | 'plan';
@@ -16,6 +16,6 @@ export const journeyIcons: Record<JourneyIconKey, JourneyIcon> = {
     media: { kind: 'image', src: '/icons/camera.svg' },
     wishbook: { kind: 'image', src: '/icons/wishbook.svg' },
     announcement: { kind: 'lucide', icon: Megaphone },
-    playlist: { kind: 'image', src: '/icons/music.svg' },
+    playlist: { kind: 'lucide', icon: Music },
     plan: { kind: 'lucide', icon: Gem },
 };

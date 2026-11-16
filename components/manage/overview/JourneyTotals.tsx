@@ -7,7 +7,7 @@ import { journeyIcons } from '@/lib/journeyIcons';
 function TotalIcon({ total }: { total: JourneyTotal }) {
     const icon = journeyIcons[total.icon];
     if (icon.kind === 'image')
-        return <Image src={icon.src} alt={total.label} width={32} height={32} className="h-8 w-8 object-contain" unoptimized />;
+        return <Image src={icon.src} alt={total.label} width={28} height={28} className="h-7 w-7 object-contain" unoptimized />;
     return <icon.icon className="h-6 w-6" role="img" aria-label={total.label} />;
 }
 

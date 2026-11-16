@@ -5,6 +5,7 @@ import { Fragment, type ReactNode } from 'react';
 import { JourneyConnector } from '@/components/manage/overview/JourneyConnector';
 import { JourneyStop } from '@/components/manage/overview/JourneyStop';
 import { JourneyStopCard } from '@/components/manage/overview/JourneyStopCard';
+import { JourneyStopIcon } from '@/components/manage/overview/JourneyStopIcon';
 import type { JourneyStopModel } from '@/lib/eventJourney';
 import { cn } from '@/lib/utils';
 
@@ -20,8 +21,9 @@ function PathEnd({ end, label }: { end: JourneyEnd; label: string }) {
 const walked = (stops: JourneyStopModel[], index: number) => stops[index].status === 'done';
 
 /**
- * The winding path. Small screens: stops down the page, alternating sides, the current card under
- * its stop. Desktop: stops across in a wave, the current card under the whole path.
+ * The winding path. Small screens: stops down the page, alternating sides, the current card beside
+ * its circle in place of the stop's text. Desktop: stops across in a wave, the current card under the
+ * whole path.
  */
 export function JourneyPath({
     label,
@@ -41,7 +43,9 @@ export function JourneyPath({
     aside?: ReactNode;
 }) {
     const current = stops.find((stop) => stop.status === 'current' && stop.card);
-    const card = replacementCard ?? (current ? <JourneyStopCard stop={current} aside={aside} /> : null);
+    // The stop whose card sits beside its circle on small screens; none when a replacement card shows.
+    const opened = replacementCard ? undefined : current;
+    const card = replacementCard ?? (current ? <JourneyStopCard stop={current} placement="under" aside={aside} /> : null);
 
     return (
         <>
@@ -50,21 +54,33 @@ export function JourneyPath({
                 <ol aria-label={label} className="flex flex-col">
                     {stops.map((stop, index) => (
                         <li key={stop.key} className="flex flex-col">
-                            <div className={cn('flex', index % 2 === 0 ? 'justify-start' : 'justify-end')}>
-                                <JourneyStop stop={stop} align={index % 2 === 0 ? 'start' : 'end'} />
-                            </div>
-                            {/* Current card */}
-                            {stop === current && !replacementCard && <div className="mt-4">{card}</div>}
+                            {stop === opened ? (
+                                // Current stop: its circle, a straight stem, and the card beside them
+                                <div className={cn('flex items-stretch gap-4', index % 2 === 1 && 'flex-row-reverse')}>
+                                    <div className="flex shrink-0 flex-col items-center">
+                                        <JourneyStopIcon stop={stop} />
+                                        <JourneyConnector orientation="stem" walked={walked(stops, index)} className="mt-4 min-h-4 w-2 flex-1" />
+                                    </div>
+                                    <div className="min-w-0 flex-1">
+                                        <JourneyStopCard stop={stop} placement="beside" />
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className={cn('flex', index % 2 === 0 ? 'justify-start' : 'justify-end')}>
+                                    <JourneyStop stop={stop} align={index % 2 === 0 ? 'start' : 'end'} />
+                                </div>
+                            )}
+                            {/* Connector */}
                             <JourneyConnector orientation="vertical" reverse={index % 2 === 1} walked={walked(stops, index)} className="mx-7 h-16" />
                         </li>
                     ))}
                 </ol>
-                {/* End */}
-                <div className={cn('flex', stops.length % 2 === 0 ? 'justify-start pl-4' : 'justify-end pr-4')}>
-                    <PathEnd end={end} label={endLabel} />
-                </div>
-                {/* Replacement card */}
-                {replacementCard && <div className="mt-6">{replacementCard}</div>}
+                {/* End, or the replacement card the path runs into */}
+                {replacementCard ?? (
+                    <div className={cn('flex', stops.length % 2 === 0 ? 'justify-start pl-4' : 'justify-end pr-4')}>
+                        <PathEnd end={end} label={endLabel} />
+                    </div>
+                )}
             </div>
 
             {/* Path (desktop) */}

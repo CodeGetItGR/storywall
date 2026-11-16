@@ -6,7 +6,13 @@ import type { JourneyStopModel } from '@/lib/eventJourney';
 import { journeyIcons } from '@/lib/journeyIcons';
 import { cn } from '@/lib/utils';
 
-/** The stop's circle: a check when done, the gradient when current, the icon when still to come. */
+// The current circle's size and soft halo.
+const CURRENT_CIRCLE = 'h-[4.5rem] w-[4.5rem] shadow-[0_8px_24px_rgba(242,136,92,0.35)] ring-8 ring-primary/10 bg-gradient-logo';
+
+/**
+ * The stop's circle: a check when done, the icon when still to come. When current, a gradient ring
+ * around a gradient image, or a filled gradient behind a white icon or badge.
+ */
 export function JourneyStopIcon({ stop }: { stop: JourneyStopModel }) {
     const t = useTranslations('ManagePage');
     const icon = journeyIcons[stop.icon];
@@ -21,13 +27,23 @@ export function JourneyStopIcon({ stop }: { stop: JourneyStopModel }) {
     }
 
     const current = stop.status === 'current';
+
+    // Current with a gradient image: a gradient ring so the image stays visible.
+    if (current && !stop.badge && icon.kind === 'image') {
+        return (
+            <span className={cn('flex shrink-0 rounded-full p-1', CURRENT_CIRCLE)}>
+                <span className="flex h-full w-full items-center justify-center rounded-full bg-white">
+                    <Image src={icon.src} alt={stop.title} width={28} height={28} className="h-7 w-7 object-contain" unoptimized />
+                </span>
+            </span>
+        );
+    }
+
     return (
         <span
             className={cn(
                 'flex shrink-0 items-center justify-center rounded-full',
-                current
-                    ? 'h-[4.5rem] w-[4.5rem] text-white shadow-[0_8px_24px_rgba(242,136,92,0.35)] ring-8 ring-primary/10 bg-gradient-logo'
-                    : 'h-14 w-14 border-2 border-[#f0e2d2] bg-event text-ink-muted',
+                current ? cn('text-white', CURRENT_CIRCLE) : 'h-14 w-14 border-2 border-[#f0e2d2] bg-event text-ink-muted',
             )}
         >
             {current && stop.badge ? (
