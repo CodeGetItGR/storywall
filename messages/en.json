@@ -2446,6 +2446,10 @@
         "deleteTitle": "Delete this message?",
         "deleteBody": "The message will be removed.",
         "cancel": "Cancel",
+        "myWishesTitle": "Your messages",
+        "edit": "Edit",
+        "editTitle": "Edit message",
+        "save": "Save",
         "wishSentTitle": "Your message is on its way",
         "wishSentBody": "Thank you for taking the time to write something so kind. It's saved now, waiting to be read."
     },

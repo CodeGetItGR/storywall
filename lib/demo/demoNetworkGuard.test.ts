@@ -97,6 +97,7 @@ describe('demo network guard', () => {
             '/api/events/evt-demo/rsvps',
             '/api/events/evt-demo/media?page=0',
             '/api/events/evt-demo/wishbook?page=0',
+            '/api/events/evt-demo/wishbook/mine?page=0',
             '/api/events/evt-demo/playlist-suggestions',
             '/api/events/evt-demo/qr-links',
             '/api/events/evt-demo/qr-links/stats',
@@ -129,6 +130,8 @@ describe('demo network guard', () => {
         await send('POST', '/api/rsvps', { eventMemberId: 'mem-host', attendanceStatus: 'ATTENDING' });
         await send('POST', '/api/playlist-suggestions', { title: 'Song' });
         await send('POST', '/api/events/evt-demo/wishbook', { guestName: 'A', message: 'B' });
+        const wishes = (await (await send('GET', '/api/events/evt-demo/wishbook/mine?page=0')).json()) as { content: { id: string }[] };
+        await send('PUT', `/api/wishbook/${wishes.content[0].id}`, { message: 'Edited' });
         await send('PATCH', '/api/events/evt-demo', { title: 'Renamed' });
         await send('PUT', '/api/events/evt-demo/gift-account', { iban: 'X', accountHolder: 'Y', bankName: 'Z' });
         await send('DELETE', `/api/posts/${post.id}`);

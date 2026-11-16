@@ -7,15 +7,18 @@ import { useModuleReadable } from '@/hooks/useModuleReadable';
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
 import type { Page } from '@/lib/api/pagination';
-import type { WishbookEntryRequestDto, WishbookEntryResponseDto } from '@/lib/api/types';
+import type { WishbookEntryEditDto, WishbookEntryRequestDto, WishbookEntryResponseDto } from '@/lib/api/types';
 import { LIVE_CONTENT_STALE_TIME } from '@/lib/queryClient';
 
 export const WISHBOOK_PAGE_SIZE = 20;
 export const wishbookKeys = {
     list: (eventId: string) => ['events', eventId, 'wishbook'] as const,
     count: (eventId: string) => ['events', eventId, 'wishbook', 'count'] as const,
+    // Under the list key on purpose: invalidating the list (a write, a delete) refreshes this too.
+    mine: (eventId: string) => ['events', eventId, 'wishbook', 'mine'] as const,
 };
 
+// Hosts and co-hosts only: the API answers 403 to anyone else. Pass null for a guest.
 export function useWishbook(eventId: string | null) {
     const { isAuthenticated } = useAuth();
     const wishbookReadable = useModuleReadable(eventId, 'wishbook');
@@ -43,6 +46,22 @@ export function useWishbookCount(eventId: string | null) {
     });
 }
 
+// The caller's own wishes (GET /wishbook/mine), for the "Your messages" list guests see.
+export function useMyWishes(eventId: string | null) {
+    const { isAuthenticated } = useAuth();
+    const wishbookReadable = useModuleReadable(eventId, 'wishbook');
+
+    return useInfiniteQuery({
+        queryKey: wishbookKeys.mine(eventId ?? ''),
+        queryFn: ({ pageParam }) =>
+            api.get<Page<WishbookEntryResponseDto>>(`${endpoints.events.wishbookMine(eventId!)}?page=${pageParam}&size=${WISHBOOK_PAGE_SIZE}`),
+        initialPageParam: 0,
+        getNextPageParam: (page) => (page.page.number + 1 < page.page.totalPages ? page.page.number + 1 : undefined),
+        enabled: Boolean(eventId) && isAuthenticated && wishbookReadable,
+        staleTime: LIVE_CONTENT_STALE_TIME,
+    });
+}
+
 export function useCreateWishbookEntry(eventId: string) {
     const queryClient = useQueryClient();
     return useMutation({
@@ -50,6 +69,17 @@ export function useCreateWishbookEntry(eventId: string) {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: wishbookKeys.list(eventId) });
             queryClient.invalidateQueries({ queryKey: wishbookKeys.count(eventId) });
+        },
+    });
+}
+
+export function useEditWishbookEntry(eventId: string) {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: ({ entryId, message }: { entryId: string } & WishbookEntryEditDto) =>
+            api.put<WishbookEntryResponseDto>(endpoints.wishbook.byId(entryId), { message }),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: wishbookKeys.mine(eventId) });
         },
     });
 }
