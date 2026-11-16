@@ -9,9 +9,12 @@ import type { WishAudioDto } from '@/lib/api/types';
 import { formatClipDuration, MAX_RECORDING_MS } from '@/lib/wishbook/voice';
 
 // White pills, like the guest pages' other secondary buttons; 44 px tall for a thumb.
-const PILL = 'inline-flex min-h-11 items-center gap-2 rounded-full px-4 text-sm font-semibold transition-colors disabled:opacity-40';
+const PILL =
+    'inline-flex min-h-11 items-center gap-2 whitespace-nowrap rounded-full px-3.5 text-sm font-semibold transition-colors disabled:opacity-40';
 const SECONDARY = `${PILL} border border-border bg-background text-ink hover:bg-primary-light/40`;
-const DANGER = `${PILL} text-rose-600 hover:bg-rose-50`;
+// Icon-only, so the player, "Record again" and remove fit on one row on a phone.
+const REMOVE =
+    'flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-rose-600 transition-colors hover:bg-rose-50 disabled:opacity-40';
 
 type Props = {
     recorder: VoiceRecorderState;
@@ -54,21 +57,24 @@ export function VoiceRecorder({ recorder, disabled = false, existing = null, onR
 
     if (playback) {
         return (
-            <div className="flex flex-wrap items-center gap-x-2 gap-y-3">
+            <div className="flex flex-wrap items-start gap-1.5">
                 {/* Playback */}
                 <VoiceWishPlayer src={playback.url} durationMs={playback.durationMs} />
 
                 {/* Actions */}
-                <div className="flex flex-wrap items-center gap-2">
-                    <button type="button" onClick={start} disabled={disabled} className={SECONDARY}>
-                        <RotateCcw className="h-4 w-4" aria-hidden="true" />
-                        {t('recordAgain')}
-                    </button>
-                    <button type="button" onClick={finished ? recorder.discard : onRemoveExisting} disabled={disabled} className={DANGER}>
-                        <Trash2 className="h-4 w-4" aria-hidden="true" />
-                        {t('removeRecording')}
-                    </button>
-                </div>
+                <button type="button" onClick={start} disabled={disabled} className={SECONDARY}>
+                    <RotateCcw className="h-4 w-4" aria-hidden="true" />
+                    {t('recordAgain')}
+                </button>
+                <button
+                    type="button"
+                    onClick={finished ? recorder.discard : onRemoveExisting}
+                    disabled={disabled}
+                    aria-label={t('removeRecording')}
+                    className={REMOVE}
+                >
+                    <Trash2 className="h-4 w-4" aria-hidden="true" />
+                </button>
             </div>
         );
     }
