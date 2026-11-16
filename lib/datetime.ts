@@ -138,6 +138,24 @@ export function getDaysUntil(value: string | number | Date | null | undefined, r
     return Math.max(0, Math.ceil((date.getTime() - referenceDate.getTime()) / (1000 * 60 * 60 * 24)));
 }
 
+/** The calendar day (yyyy-mm-dd) an instant falls on in a time zone. */
+export function localDay(instant: string | Date, timeZone: string): string {
+    // en-CA formats as yyyy-mm-dd.
+    return new Intl.DateTimeFormat('en-CA', { timeZone, year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date(instant));
+}
+
+/** A yyyy-mm-dd day moved by whole days. */
+export function addDays(day: string, days: number): string {
+    const date = new Date(`${day}T00:00:00Z`);
+    date.setUTCDate(date.getUTCDate() + days);
+    return date.toISOString().slice(0, 10);
+}
+
+/** Whole days from one yyyy-mm-dd day to another (negative when `to` is earlier). */
+export function daysBetween(from: string, to: string): number {
+    return Math.round((Date.parse(`${to}T00:00:00Z`) - Date.parse(`${from}T00:00:00Z`)) / 86_400_000);
+}
+
 export function formatDate(locale: string | undefined, value: string | number | Date, options: Intl.DateTimeFormatOptions): string {
     const date = parseDate(value);
     if (!date) return '';
