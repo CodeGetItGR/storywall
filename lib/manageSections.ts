@@ -1,22 +1,45 @@
-/**
- * The host dashboard is one flat list of sections at every screen size: the
- * desktop sidebar, the mobile section sheet and the `?tab=` query all read this
- * table, in this exact order. Co-host invitations live inside the Members
- * section; QR/share links have their own dedicated page linked from there.
- */
-export type ManageSection = 'overview' | 'settings' | 'theme' | 'invitation' | 'rsvp' | 'members' | 'gift' | 'billing' | 'danger';
+import { routes } from '@/lib/routes';
 
-export const manageSections: ManageSection[] = [
-    'overview',
-    'settings',
-    'theme',
-    'invitation',
-    'rsvp',
-    'members',
-    'gift',
-    'billing',
-    'danger',
+/**
+ * The host dashboard's nav. The desktop sidebar and the mobile Overview list both
+ * read `manageNavGroups`, in this exact order. Danger zone always sits apart, last.
+ * A section opens inside the dashboard through `?tab=`; a page (Share links,
+ * Vendors) has its own route under /manage and the same frame.
+ */
+export type ManageSection = 'overview' | 'settings' | 'theme' | 'billing' | 'gift' | 'rsvp' | 'invitation' | 'members' | 'danger';
+export type ManagePage = 'shareLinks' | 'vendors';
+export type ManageNavKey = ManageSection | ManagePage;
+export type ManageNavGroup = { key: 'event' | 'people'; items: ManageNavKey[] };
+
+export const manageNavGroups: ManageNavGroup[] = [
+    { key: 'event', items: ['overview', 'settings', 'theme', 'billing', 'gift'] },
+    { key: 'people', items: ['rsvp', 'invitation', 'shareLinks', 'members', 'vendors'] },
 ];
+
+// Every section, in nav order; `?tab=` accepts only these.
+export const manageSections: ManageSection[] = ['overview', 'settings', 'theme', 'billing', 'gift', 'rsvp', 'invitation', 'members', 'danger'];
+
+export function isManagePage(key: ManageNavKey): key is ManagePage {
+    return key === 'shareLinks' || key === 'vendors';
+}
+
+export function manageNavHref(eventId: string, key: ManageNavKey): string {
+    if (key === 'shareLinks') return routes.events.invitationsQr(eventId);
+    if (key === 'vendors') return routes.events.manageVendors(eventId);
+    return routes.events.manage(eventId, { tab: key === 'overview' ? null : key });
+}
+
+// The nav for this event: each group keeps its visible entries, an empty group goes.
+export function visibleManageNav(
+    visibleSections: ManageSection[],
+    pages: Record<ManagePage, boolean>,
+): { groups: ManageNavGroup[]; showDanger: boolean } {
+    const isShown = (key: ManageNavKey) => (isManagePage(key) ? pages[key] : visibleSections.includes(key));
+    return {
+        groups: manageNavGroups.map((group) => ({ ...group, items: group.items.filter(isShown) })).filter((group) => group.items.length > 0),
+        showDanger: visibleSections.includes('danger'),
+    };
+}
 
 // Sections named after a module show that module's name for the event type.
 export const manageSectionModuleKeys: Partial<Record<ManageSection, string>> = { rsvp: 'rsvp', theme: 'theme' };

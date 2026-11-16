@@ -1,10 +1,51 @@
 import { describe, expect, it } from 'vitest';
 
-import { manageSections, parseManageSection, resolveManageSection, visibleManageSections } from '@/lib/manageSections';
+import {
+    isManagePage,
+    manageNavGroups,
+    manageNavHref,
+    manageSections,
+    parseManageSection,
+    resolveManageSection,
+    visibleManageNav,
+    visibleManageSections,
+} from '@/lib/manageSections';
+import { routes } from '@/lib/routes';
 
 describe('manageSections', () => {
-    it('lists sections in the host dashboard nav order', () => {
-        expect(manageSections).toEqual(['overview', 'settings', 'theme', 'invitation', 'rsvp', 'members', 'gift', 'billing', 'danger']);
+    it('lists sections in the nav order: the Event group, then People, then Danger zone', () => {
+        expect(manageSections).toEqual(['overview', 'settings', 'theme', 'billing', 'gift', 'rsvp', 'invitation', 'members', 'danger']);
+        const groupedSections = manageNavGroups.flatMap((group) => group.items).filter((key) => !isManagePage(key));
+        expect([...groupedSections, 'danger']).toEqual(manageSections);
+    });
+
+    it('groups the nav under Event and People, with the two pages among the People', () => {
+        expect(manageNavGroups).toEqual([
+            { key: 'event', items: ['overview', 'settings', 'theme', 'billing', 'gift'] },
+            { key: 'people', items: ['rsvp', 'invitation', 'shareLinks', 'members', 'vendors'] },
+        ]);
+    });
+
+    it('manageNavHref opens a section through ?tab= and a page on its own route', () => {
+        expect(manageNavHref('e1', 'overview')).toBe(routes.events.manage('e1'));
+        expect(manageNavHref('e1', 'settings')).toBe(routes.events.manage('e1', { tab: 'settings' }));
+        expect(manageNavHref('e1', 'shareLinks')).toBe(routes.events.invitationsQr('e1'));
+        expect(manageNavHref('e1', 'vendors')).toBe(routes.events.manageVendors('e1'));
+    });
+
+    it('visibleManageNav keeps only visible entries, drops empty groups and keeps Danger zone apart', () => {
+        const visibleSections = visibleManageSections({ canDelete: true, rsvpAvailable: false, membersAvailable: false });
+        expect(visibleManageNav(visibleSections, { shareLinks: false, vendors: false })).toEqual({
+            groups: [{ key: 'event', items: ['overview', 'settings', 'billing'] }],
+            showDanger: true,
+        });
+        expect(visibleManageNav(visibleManageSections({ canDelete: false, rsvpAvailable: true }), { shareLinks: true, vendors: true })).toEqual({
+            groups: [
+                { key: 'event', items: ['overview', 'settings', 'billing'] },
+                { key: 'people', items: ['rsvp', 'shareLinks', 'members', 'vendors'] },
+            ],
+            showDanger: false,
+        });
     });
 
     it('visibleManageSections shows the invitation section only where it is offered', () => {
@@ -12,9 +53,9 @@ describe('manageSections', () => {
         expect(visibleManageSections({ canDelete: false, rsvpAvailable: false, invitationAvailable: true })).toEqual([
             'overview',
             'settings',
+            'billing',
             'invitation',
             'members',
-            'billing',
         ]);
     });
 
@@ -31,8 +72,8 @@ describe('manageSections', () => {
         expect(visibleManageSections({ canDelete: true, rsvpAvailable: false })).toEqual([
             'overview',
             'settings',
-            'members',
             'billing',
+            'members',
             'danger',
         ]);
     });
@@ -41,9 +82,9 @@ describe('manageSections', () => {
         expect(visibleManageSections({ canDelete: false, rsvpAvailable: true })).toEqual([
             'overview',
             'settings',
+            'billing',
             'rsvp',
             'members',
-            'billing',
         ]);
     });
 
@@ -51,9 +92,9 @@ describe('manageSections', () => {
         expect(visibleManageSections({ canDelete: false, rsvpAvailable: false, giftAvailable: true })).toEqual([
             'overview',
             'settings',
-            'members',
-            'gift',
             'billing',
+            'gift',
+            'members',
         ]);
     });
 
@@ -63,8 +104,8 @@ describe('manageSections', () => {
             'overview',
             'settings',
             'theme',
-            'members',
             'billing',
+            'members',
         ]);
     });
 
