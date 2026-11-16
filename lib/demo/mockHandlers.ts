@@ -13,6 +13,8 @@ import type {
     QrLinkStatsDto,
     RsvpResponseDto,
     UserResponseDto,
+    WishAudioDto,
+    WishbookEntryResponseDto,
 } from '@/lib/api/types';
 import { RECENT_COMMENTS_SIZE } from '@/lib/comments';
 import { demoEventTypeSlugFromKey } from '@/lib/demo/demoEventTypes';
@@ -161,6 +163,39 @@ function blockedResponse(request: Request) {
 // (tests) there is no object URL support, so fall back to a placeholder.
 function localMediaUrl(file: File): string {
     return typeof URL.createObjectURL === 'function' ? URL.createObjectURL(file) : `blob:demo/${file.name}`;
+}
+
+// A recording's length, read by decoding it as the backend would; 0 where the browser can't decode it
+// (or outside a browser), and the player then shows the element's own duration.
+async function clipDurationMs(audio: Blob): Promise<number> {
+    const Context = globalThis.OfflineAudioContext;
+    if (typeof Context !== 'function') return 0;
+    try {
+        const buffer = await new Context(1, 1, 44_100).decodeAudioData(await audio.arrayBuffer());
+        return Math.round(buffer.duration * 1000);
+    } catch {
+        return 0;
+    }
+}
+
+// A wish arrives as JSON, or as multipart with a recording (KAN-220): a `wish` JSON part and an
+// `audio` file. The recording plays from an object URL in this tab, like every demo upload.
+async function readWish(request: Request): Promise<{ wish: Record<string, unknown>; audio: WishAudioDto | null }> {
+    if (!request.headers.get('content-type')?.includes('multipart/form-data')) {
+        return { wish: (await request.json()) as Record<string, unknown>, audio: null };
+    }
+    const form = await request.formData();
+    const wishPart = form.get('wish');
+    const wish = wishPart instanceof Blob ? (JSON.parse(await wishPart.text()) as Record<string, unknown>) : {};
+    const audioPart = form.get('audio');
+    if (!(audioPart instanceof Blob)) return { wish, audio: null };
+    const url = typeof URL.createObjectURL === 'function' ? URL.createObjectURL(audioPart) : 'blob:demo/voice-wish';
+    return { wish, audio: { url, durationMs: await clipDurationMs(audioPart) } };
+}
+
+// The backend stores blank text as no text.
+function wishText(value: unknown): string | null {
+    return typeof value === 'string' && value.trim() !== '' ? value.trim() : null;
 }
 
 // Content a visitor creates as a member shows that member's picture and role, like its seeded content.
@@ -459,24 +494,33 @@ export function createDemoHandlers(session: DemoSession, appOrigin: string | nul
                 .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
             return HttpResponse.json(toPage(items, page, 20));
         }),
+        // Text left out stays as it was; a new recording replaces the stored one, removeAudio drops it.
         http.put(`${API_BASE_URL}/api/wishbook/:id`, async ({ params, request }) => {
-            const body = (await request.json()) as { message?: string };
-            const updated = db.update('wishbook', params.id as string, (wish) => ({ ...wish, message: String(body.message ?? wish.message) }));
+            const { wish: body, audio } = await readWish(request);
+            const updated = db.update('wishbook', params.id as string, (wish) => ({
+                ...wish,
+                message: body.message === undefined ? wish.message : wishText(body.message),
+                audio: audio ?? (body.removeAudio === true ? null : wish.audio),
+            }));
             return updated ? HttpResponse.json(updated) : new HttpResponse(null, { status: 404 });
         }),
         ...buildPageHandlers(db, 'wishbook', '/api/events/:eventId/wishbook', 20),
         http.get(`${API_BASE_URL}/api/events/:eventId/wishbook/count`, () => HttpResponse.json(db.list('wishbook').length)),
-        buildCreateHandler(db, 'wishbook', '/api/events/:eventId/wishbook', (body) => ({
-            id: newId('demo-wishbook'),
-            eventId,
-            authorMemberId: null,
-            guestName: String(body.guestName ?? 'Guest'),
-            message: String(body.message ?? ''),
-            audio: null,
-            createdAt: nowIso(),
-            canDelete: true,
-            highlighted: null,
-        })),
+        http.post(`${API_BASE_URL}/api/events/:eventId/wishbook`, async ({ request }) => {
+            const { wish, audio } = await readWish(request);
+            const record: WishbookEntryResponseDto = db.create('wishbook', {
+                id: newId('demo-wishbook'),
+                eventId,
+                authorMemberId: null,
+                guestName: String(wish.guestName ?? 'Guest'),
+                message: wishText(wish.message),
+                audio,
+                createdAt: nowIso(),
+                canDelete: true,
+                highlighted: null,
+            });
+            return HttpResponse.json(record, { status: 201 });
+        }),
         ...buildDetailHandlers(db, 'wishbook', '/api/wishbook/:id', { del: true }),
 
         // --- Media (uploads stay in this browser as object URLs) ---
