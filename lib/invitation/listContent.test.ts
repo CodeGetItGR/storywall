@@ -8,7 +8,7 @@ const stay = (fields: Partial<ReturnType<typeof EDITABLE_LISTS.stays.blank>> = {
 describe('list content', () => {
     it('counts only text that is more than spaces', () => {
         expect(faqItemHasContent({ id: 'q', question: ' ', answer: '' })).toBe(false);
-        expect(faqItemHasContent({ id: 'q', question: '', answer: 'Ναι.' })).toBe(true);
+        expect(faqItemHasContent({ id: 'q', question: '', answer: 'Ναι.' })).toBe(false);
         expect(stayHasContent(stay())).toBe(false);
         expect(stayHasContent(stay({ email: 'a@b.gr' }))).toBe(true);
     });

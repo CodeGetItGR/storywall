@@ -162,8 +162,8 @@ describe.each(LANGUAGES)('Invitation images in %s', (language) => {
 describe('Lists on the guest page', () => {
     const blankStay = { id: 'h2', name: '', address: '', phone: '', email: '', website: '', mapUrl: '' };
 
-    it('leaves out questions with nothing in them', () => {
-        const faq = { ...SAMPLE_SECTIONS.faq, data: { ...SAMPLE_SECTIONS.faq.data, items: [...SAMPLE_SECTIONS.faq.data.items, { id: 'q2', question: ' ', answer: '' }] } };
+    it('leaves out items with no question, even when they have an answer', () => {
+        const faq = { ...SAMPLE_SECTIONS.faq, data: { ...SAMPLE_SECTIONS.faq.data, items: [...SAMPLE_SECTIONS.faq.data.items, { id: 'q2', question: ' ', answer: '' }, { id: 'q3', question: '', answer: 'Μόνο απάντηση.' }] } };
         const { container } = renderInvitation(documentIn('el', [faq]));
         expect(Array.from(container.querySelectorAll('.faq-item')).map((item) => item.textContent)).toEqual(['Υπάρχει πάρκινγκ;Ναι.']);
     });

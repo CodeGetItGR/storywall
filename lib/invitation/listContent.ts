@@ -9,7 +9,8 @@ type Person = SectionData<'godparents'>['godparents'][number] | SectionData<'par
 
 const filled = (...values: (string | undefined)[]) => values.some((value) => Boolean(value?.trim()));
 
-export const faqItemHasContent = (item: FaqItem) => filled(item.question, item.answer);
+// An answer alone would show guests an empty question, so a question is what counts.
+export const faqItemHasContent = (item: FaqItem) => filled(item.question);
 
 export const stayHasContent = (stay: Stay) => filled(stay.name, stay.address, stay.phone, stay.email, stay.website, stay.mapUrl);
 

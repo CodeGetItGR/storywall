@@ -71,7 +71,6 @@ export function deleteListItem(sectionId: string, list: EditableList, itemId: st
     });
 }
 
-// Moves an item to where another one is, as a drag drops it.
 // The items with one moved to where another one is, or null when either is missing.
 export function moveById<T extends { id: string }>(items: T[], itemId: string, overId: string): T[] | null {
     const from = items.findIndex((item) => item.id === itemId);
@@ -79,6 +78,7 @@ export function moveById<T extends { id: string }>(items: T[], itemId: string, o
     return from === -1 || to === -1 || from === to ? null : arrayMove(items, from, to);
 }
 
+// Moves an item to where another one is, as a drag drops it.
 export function moveListItem(sectionId: string, list: EditableList, itemId: string, overId: string): DocumentRecipe {
     const { type, key } = EDITABLE_LISTS[list];
     return editSection(sectionId, (section) => {
