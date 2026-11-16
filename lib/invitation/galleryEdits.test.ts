@@ -28,7 +28,7 @@ function galleryOf(document: InvitationDocument) {
 }
 
 const mediaIds = (document: InvitationDocument) =>
-    galleryOf(document).images.map((image) => (image.source === 'media' ? image.mediaId : image.assetId));
+    galleryOf(document).images.map((image) => (image.source === 'theme' ? image.assetId : image.mediaId));
 
 describe('galleryPhotoIds', () => {
     it('gives each photo a steady id, a photo there twice included', () => {

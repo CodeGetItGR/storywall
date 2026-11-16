@@ -7,6 +7,7 @@ import { DateSettings } from '@/components/saveMyDate/editor/settings/DateSettin
 import { DressCodeSettings } from '@/components/saveMyDate/editor/settings/DressCodeSettings';
 import { EffectSettings, TransitionSettings } from '@/components/saveMyDate/editor/settings/EffectSettings';
 import { FaqItemsSettings } from '@/components/saveMyDate/editor/settings/FaqItemsSettings';
+import { FollowEventSettings } from '@/components/saveMyDate/editor/settings/FollowEventSettings';
 import { FooterSettings } from '@/components/saveMyDate/editor/settings/FooterSettings';
 import { GallerySettings } from '@/components/saveMyDate/editor/settings/GallerySettings';
 import { LinkButtonsSettings } from '@/components/saveMyDate/editor/settings/LinkButtonsSettings';
@@ -53,6 +54,8 @@ export function SectionSettingsGroups({ scope, groups }: SectionSettingsGroupsPr
 
 function SettingsGroupContent({ scope, group }: { scope: SettingsScope; group: SettingsGroup }) {
     switch (group) {
+        case 'follow':
+            return <FollowEventSettings scope={scope} />;
         case 'date': {
             const date = scopeOf(scope, 'date');
             return date && <DateSettings scope={date} />;

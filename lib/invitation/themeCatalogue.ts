@@ -27,7 +27,7 @@ export const invitationThemeKeys = {
     all: ['invitationThemes'] as const,
     catalogue: () => [...invitationThemeKeys.all, 'catalogue'] as const,
     page: (slug: string) => [...invitationThemeKeys.all, 'page', slug] as const,
-    // The theme's public answer as it comes, for the editor's theme switch.
+    // The theme's public answer as it comes: for the editor's theme switch, and for its sample content (KAN-84).
     publicTheme: (slug: string) => [...invitationThemeKeys.all, 'public', slug] as const,
 };
 

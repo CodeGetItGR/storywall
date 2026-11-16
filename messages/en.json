@@ -10476,6 +10476,17 @@
             "photoFrame": "Framed photo",
             "footer": "Footer"
         },
+        "eventPhotos": {
+            "title": "Event photos",
+            "empty": "The event has no photos yet.",
+            "photoAlt": "Event photo {n}"
+        },
+        "eventLock": {
+            "note": "This comes from your event. Change it in the event's settings.",
+            "settings": "Event settings",
+            "rsvp": "RSVP",
+            "schedule": "Event schedule"
+        },
         "photos": {
             "upload": "Upload photo",
             "change": "Change photo",
@@ -10670,6 +10681,8 @@
             "backgroundAuto": "Automatic",
             "backgroundNumber": "Background {n}",
             "hostCanChange": "The host can change it",
+            "followEvent": "Follow the event",
+            "followEventHint": "Comes from your event. If you edit it here, it stops following the event. Your event doesn't change.",
             "hostBackgrounds": "Backgrounds the host can pick",
             "effect": "Background effect",
             "effects": {

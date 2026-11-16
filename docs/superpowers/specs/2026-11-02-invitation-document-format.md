@@ -20,7 +20,8 @@ The TypeScript source of truth is [lib/invitation/](../../../lib/invitation). Sp
 | --- | --- |
 | Theme changes | Drafts follow the theme live. Publishing freezes a copy of the theme design together with its revision, so a live invitation never changes on its own. |
 | Validation | Strict per section type. Unknown fields, unknown section types and out-of-range values are rejected, not dropped. |
-| Images | Only references: `{source: 'media', mediaId}` for uploads in our storage, or `{source: 'theme', assetId}` for the theme's own library. No URLs, no base64. The converter uploads any inline images it finds. |
+| Images | Only references: `{source: 'media', mediaId}` for uploads in our storage, `{source: 'theme', assetId}` for the theme's own library, or `{source: 'event', mediaId}` for a photo of the invitation's own event (KAN-84, 2026-11-12). No URLs, no base64. The converter uploads any inline images it finds. |
+| Following the event | Optional `link: {source: 'event', enabled}` on the `top`, `coupleNames`, `baby`, `date`, `rsvp`, `program`, `programIcons`, `locations` and `photo` sections, and on `photoFrame` elements (KAN-84). See [the integration design](2026-11-06-invitation-module-integration-design.md#following-the-event-2026-11-12). Adding it kept `schemaVersion` at 1. |
 | Role names | Neutral: `partnerA`/`partnerB` and `parentA`/`parentB`, each with an editable label. `church*` becomes `ceremony*`. |
 | Web validation | zod (`zod@^4.6.7`). The same schema gives the TS types, the editor's pre-save check and the converter's check. |
 | Text | Plain text with line breaks. The old editor never stored inline marks; bold and italic apply to a whole field. |

@@ -1,6 +1,6 @@
 'use client';
 
-import type { ComponentPropsWithoutRef, ReactNode } from 'react';
+import { type ChangeEvent, type ComponentPropsWithoutRef, type ReactNode, useCallback, useId } from 'react';
 
 import { cn } from '@/lib/utils';
 
@@ -60,3 +60,25 @@ export function SettingsHint({ id, tone = 'muted', children }: { id?: string; to
 
 export const SECONDARY_BUTTON_CLASS =
     'flex h-10 items-center justify-center gap-2 rounded-[10px] bg-(--smd-editor-control) px-3 text-[13px] font-semibold text-(--smd-editor-text) hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 [&_svg]:h-4 [&_svg]:w-4';
+
+// A labelled on/off switch.
+export function SettingsToggle({ label, checked, onChange }: { label: string; checked: boolean; onChange: (checked: boolean) => void }) {
+    const id = useId();
+    const change = useCallback((event: ChangeEvent<HTMLInputElement>) => onChange(event.target.checked), [onChange]);
+
+    return (
+        <div className="flex min-h-10 items-center justify-between gap-3">
+            <label htmlFor={id} className="text-[13px] leading-tight">
+                {label}
+            </label>
+            <input
+                id={id}
+                type="checkbox"
+                role="switch"
+                checked={checked}
+                onChange={change}
+                className="h-5 w-9 shrink-0 cursor-pointer accent-(--smd-editor-accent)"
+            />
+        </div>
+    );
+}

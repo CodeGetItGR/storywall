@@ -40,6 +40,9 @@ function Harness({ initial, children }: { initial: InvitationDocument; children:
         fonts: [],
         draftId: 'draft-1',
         addUploaded: vi.fn(),
+        event: null,
+        eventSamples: null,
+        eventFieldLinks: null,
     };
     return children(scope);
 }

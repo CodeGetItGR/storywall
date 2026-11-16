@@ -5,6 +5,7 @@ import { type ChangeEvent, useCallback, useMemo } from 'react';
 import type { InlineTextEdit } from '@/hooks/useInlineTextEdit';
 import { useShownTextStyle } from '@/hooks/useShownTextStyle';
 import type { InvitationDocument } from '@/lib/invitation/document';
+import type { EventFieldLinks } from '@/lib/invitation/eventData';
 import type { TextStyle } from '@/lib/invitation/primitives';
 import {
     type ColorScope,
@@ -21,8 +22,14 @@ import type { InvitationFontDto } from '@/lib/invitation/uploadedFonts';
 type Align = NonNullable<TextStyle['align']>;
 
 // The text toolbar's values for the text being edited, and what each control does to it.
-export function useTextToolbar(edit: InlineTextEdit, document: InvitationDocument, theme: ThemeDesign, uploadedFonts: InvitationFontDto[] = []) {
-    const { snapshot, element, setStyle, applyColor, addText } = edit;
+export function useTextToolbar(
+    edit: InlineTextEdit,
+    document: InvitationDocument,
+    theme: ThemeDesign,
+    uploadedFonts: InvitationFontDto[] = [],
+    fieldLinks: EventFieldLinks | null = null,
+) {
+    const { lock, snapshot, element, setStyle, applyColor, addText } = edit;
     const style: TextStyle = useMemo(() => snapshot?.style ?? {}, [snapshot]);
     const shown = useShownTextStyle(element);
 
@@ -46,6 +53,8 @@ export function useTextToolbar(edit: InlineTextEdit, document: InvitationDocumen
     const setAlign = useCallback((align: Align) => setStyle({ align }), [setStyle]);
     const pickColor = useCallback((color: string, scope: ColorScope) => applyColor(color, scope), [applyColor]);
     const add = useCallback((role: TextRole) => addText(role), [addText]);
+    // The event fills the text's words (KAN-84): the toolbar says where to change them.
+    const lockHref = lock ? fieldLinks?.[lock] : undefined;
 
     return {
         font,
@@ -67,6 +76,8 @@ export function useTextToolbar(edit: InlineTextEdit, document: InvitationDocumen
         setAlign,
         pickColor,
         add,
+        lock,
+        lockHref,
     };
 }
 
