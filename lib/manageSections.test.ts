@@ -4,7 +4,7 @@ import { manageSections, parseManageSection, resolveManageSection, visibleManage
 
 describe('manageSections', () => {
     it('lists sections in the host dashboard nav order', () => {
-        expect(manageSections).toEqual(['overview', 'settings', 'theme', 'invitation', 'rsvp', 'members', 'gift', 'billing', 'help', 'danger']);
+        expect(manageSections).toEqual(['overview', 'settings', 'theme', 'invitation', 'rsvp', 'members', 'gift', 'billing', 'danger']);
     });
 
     it('visibleManageSections shows the invitation section only where it is offered', () => {
@@ -15,12 +15,11 @@ describe('manageSections', () => {
             'invitation',
             'members',
             'billing',
-            'help',
         ]);
     });
 
-    it('parseManageSection resolves "help"', () => {
-        expect(parseManageSection('help')).toBe('help');
+    it('parseManageSection sends the removed Help section to the overview', () => {
+        expect(parseManageSection('help')).toBe('overview');
     });
 
     it('parseManageSection falls back to "overview" for an unknown or removed section', () => {
@@ -34,7 +33,6 @@ describe('manageSections', () => {
             'settings',
             'members',
             'billing',
-            'help',
             'danger',
         ]);
     });
@@ -46,7 +44,6 @@ describe('manageSections', () => {
             'rsvp',
             'members',
             'billing',
-            'help',
         ]);
     });
 
@@ -57,7 +54,6 @@ describe('manageSections', () => {
             'members',
             'gift',
             'billing',
-            'help',
         ]);
     });
 
@@ -69,7 +65,6 @@ describe('manageSections', () => {
             'theme',
             'members',
             'billing',
-            'help',
         ]);
     });
 
@@ -79,7 +74,6 @@ describe('manageSections', () => {
             'overview',
             'settings',
             'billing',
-            'help',
             'danger',
         ]);
     });

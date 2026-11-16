@@ -37,7 +37,6 @@ import { useActiveMember } from '@/providers/EventProvider';
 import BillingTab from '../../app/(main)/(app)/(event)/events/[eventId]/manage/BillingTab';
 import DangerZoneTab from '../../app/(main)/(app)/(event)/events/[eventId]/manage/DangerZoneTab';
 import GiftTab from '../../app/(main)/(app)/(event)/events/[eventId]/manage/GiftTab';
-import HelpTab from '../../app/(main)/(app)/(event)/events/[eventId]/manage/HelpTab';
 import MembersTab from '../../app/(main)/(app)/(event)/events/[eventId]/manage/MembersTab';
 import OverviewTab from '../../app/(main)/(app)/(event)/events/[eventId]/manage/OverviewTab';
 import RsvpTab from '../../app/(main)/(app)/(event)/events/[eventId]/manage/RsvpTab';
@@ -196,18 +195,6 @@ export function ManageScreen() {
             {section === 'theme' && <ThemePicker event={activeEvent} canWrite={canEditDetails} showHeading={false} />}
 
             {section === 'invitation' && <InvitationTab invitation={onlineInvitation} />}
-
-            {section === 'help' && (
-                <HelpTab
-                    eventId={eventId}
-                    eventTitle={activeEvent.title}
-                    eventType={activeEvent.eventType}
-                    schedule={activeEvent.schedule}
-                    location={activeEvent.location}
-                    sessions={activeEvent.sessions ?? []}
-                    eventModules={activeEvent.modules}
-                />
-            )}
 
             {section === 'gift' &&
                 (giftSection.isLoading ? (

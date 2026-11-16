@@ -190,10 +190,10 @@ describe('useHostMenuItems', () => {
         expect(result.current.map((item) => item.key)).toEqual(['manage']);
     });
 
-    it('lists manage, the share links, announcement and help for a live event', () => {
+    it('lists manage, the share links and announcement for a live event', () => {
         mocks.activeEvent = withoutModule('vendors');
         const { result } = renderHook(() => useHostMenuItems());
-        expect(result.current.map((item) => item.key)).toEqual(['manage', 'invitationsQr', 'announcement', 'help']);
+        expect(result.current.map((item) => item.key)).toEqual(['manage', 'invitationsQr', 'announcement']);
     });
 
     it('mentions uploads on the share links only when QR upload is on', () => {
@@ -216,7 +216,7 @@ describe('useHostMenuItems', () => {
     it('hides both QR pages on a lite event and keeps only its gallery and wishbook tools', () => {
         mocks.isHost = true;
         mocks.activeEvent = { ...event(), modules: event().modules.filter((module) => module.moduleKey !== 'posts') };
-        expect(renderHook(() => useHostMenuItems()).result.current.map((item) => item.key)).toEqual(['manage', 'help']);
+        expect(renderHook(() => useHostMenuItems()).result.current.map((item) => item.key)).toEqual(['manage']);
         expect(renderHook(() => useToolsMenuItems()).result.current.map((item) => item.key)).toEqual(['gallery', 'wishbook']);
     });
 });

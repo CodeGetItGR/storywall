@@ -4,7 +4,7 @@
  * table, in this exact order. Co-host invitations live inside the Members
  * section; QR/share links have their own dedicated page linked from there.
  */
-export type ManageSection = 'overview' | 'settings' | 'theme' | 'invitation' | 'rsvp' | 'members' | 'gift' | 'billing' | 'help' | 'danger';
+export type ManageSection = 'overview' | 'settings' | 'theme' | 'invitation' | 'rsvp' | 'members' | 'gift' | 'billing' | 'danger';
 
 export const manageSections: ManageSection[] = [
     'overview',
@@ -15,7 +15,6 @@ export const manageSections: ManageSection[] = [
     'members',
     'gift',
     'billing',
-    'help',
     'danger',
 ];
 

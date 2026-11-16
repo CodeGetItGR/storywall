@@ -8,7 +8,6 @@ import {
     CalendarDays,
     ClipboardList,
     Gift,
-    HelpCircle,
     Images,
     LayoutDashboard,
     ListMusic,
@@ -172,7 +171,6 @@ export function useHostMenuItems(): ToolMenuItem[] {
         { key: 'invitationsQr', href: routes.events.invitationsQr(activeEvent.id), icon: Ticket, hidden: isDeleted || isDraft || isLite },
         { key: 'vendors', href: routes.events.manageVendors(activeEvent.id), icon: Store, hidden: isDeleted || isDraft || !vendorsOn },
         { key: 'announcement', href: routes.events.tools.announcement(activeEvent.id), icon: Megaphone, hidden: isDeleted || isDraft || !postsOn },
-        { key: 'help', href: routes.events.manage(activeEvent.id, { tab: 'help' }), icon: HelpCircle, hidden: isDeleted },
     ];
 
     return hostAdminDefinitions

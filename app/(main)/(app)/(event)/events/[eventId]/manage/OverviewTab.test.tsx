@@ -23,6 +23,7 @@ vi.mock('@/hooks/useEventOverviewPlan', () => ({
 vi.mock('@/hooks/useRightContextPanel', () => ({ useRightContextPanel: () => ({}) }));
 vi.mock('@/components/layout/right-context-panel/HostContextSections', () => ({ HostContextSections: () => null }));
 vi.mock('@/components/manage/CoverageStatusStrip', () => ({ CoverageStatusStrip: () => null }));
+vi.mock('@/components/manage/help/EventSetupSteps', () => ({ EventSetupSteps: () => null }));
 vi.mock('@/components/inviart/InviartOverviewSection', () => ({ InviartOverviewSection: () => null }));
 vi.mock('@/components/manage/ManageSkeletons', () => ({ ManageDraftOverviewSkeleton: () => null }));
 vi.mock('@/components/ui/MetricStrip', () => ({

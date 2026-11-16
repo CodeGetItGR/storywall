@@ -282,10 +282,6 @@
                 "label": "Share links",
                 "description": "QR codes and links guests can use to join",
                 "descriptionWithUpload": "QR codes and links guests can use to join or upload photos"
-            },
-            "help": {
-                "label": "Help",
-                "description": "Setup guide and tips"
             }
         },
         "items": {
@@ -1311,7 +1307,6 @@
         "sections": {
             "overview": "Overview",
             "settings": "Settings",
-            "help": "Help",
             "danger": "Danger zone",
             "rsvp": "RSVP",
             "members": "Members",
@@ -2339,10 +2334,6 @@
         "moduleUnavailable": "This isn't available on this event's current plan."
     },
     "HostOnboarding": {
-        "welcome": {
-            "greeting": "Welcome!",
-            "subtitle": "Let's get your event ready"
-        },
         "steps": {
             "section": {
                 "title": "Manage your event",
