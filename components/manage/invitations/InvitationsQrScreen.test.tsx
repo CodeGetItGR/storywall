@@ -38,6 +38,7 @@ vi.mock('@/hooks/useBilling', () => ({
 }));
 vi.mock('@/hooks/useIsPrimaryHost', () => ({ useIsPrimaryHost: () => ctx.isHost }));
 vi.mock('@/hooks/useAppConfig', () => ({ useAppConfig: () => ({ data: { planTiers: [] } }) }));
+vi.mock('@/hooks/useEventOnlineInvitation', () => ({ useEventOnlineInvitation: () => ({ isLoading: false, status: 'none' }) }));
 const rows = vi.hoisted(() => ({ canWrite: [] as boolean[] }));
 vi.mock('@/components/manage/invitations/ShareLinkPanel', () => ({
     ShareLinkPanel: ({ canWrite }: { canWrite: boolean }) => {
