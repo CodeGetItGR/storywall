@@ -3,6 +3,7 @@ import { useTranslations } from 'next-intl';
 import { InviartOverviewSection } from '@/components/inviart/InviartOverviewSection';
 import { HostContextSections } from '@/components/layout/right-context-panel/HostContextSections';
 import { CoverageStatusStrip } from '@/components/manage/CoverageStatusStrip';
+import { EventSetupSteps } from '@/components/manage/help/EventSetupSteps';
 import { ManageDraftOverviewSkeleton } from '@/components/manage/ManageSkeletons';
 import { OverviewDraftPanel } from '@/components/manage/OverviewDraftPanel';
 import { ThemePicker } from '@/components/manage/ThemePicker';
@@ -132,6 +133,11 @@ export default function OverviewTab({
                     ...(seatsClaimed === null ? [] : [{ key: 'seats', label: t('stats.seats.label'), value: seatsClaimed }]),
                 ]}
             />
+
+            {/* Setup steps (moved here from Help) */}
+            <div className="border-t border-border pt-5">
+                <EventSetupSteps event={event} />
+            </div>
 
             {/* Host context: same actions, usage and summaries the feed page's right panel shows */}
             <div className="border-t border-border pt-4">

@@ -282,10 +282,6 @@
                 "label": "Share links",
                 "description": "QR codes and links guests can use to join",
                 "descriptionWithUpload": "QR codes and links guests can use to join or upload photos"
-            },
-            "help": {
-                "label": "Help",
-                "description": "Setup guide and tips"
             }
         },
         "items": {
@@ -1311,7 +1307,6 @@
         "sections": {
             "overview": "Overview",
             "settings": "Settings",
-            "help": "Help",
             "danger": "Danger zone",
             "rsvp": "RSVP",
             "members": "Members",
@@ -1319,6 +1314,10 @@
             "gift": "Given as a gift",
             "theme": "Theme",
             "invitation": "Invitation"
+        },
+        "navGroups": {
+            "event": "Event",
+            "people": "People"
         },
         "invitation": {
             "notPublished": "Not published",
@@ -1334,7 +1333,6 @@
             "upgradeBody": "Upgrade your plan to make an online invitation for this event.",
             "upgradePlan": "Upgrade plan"
         },
-        "sectionSwitcher": "Change section",
         "stats": {
             "totalGuests": {
                 "label": "Members",
@@ -2339,10 +2337,6 @@
         "moduleUnavailable": "This isn't available on this event's current plan."
     },
     "HostOnboarding": {
-        "welcome": {
-            "greeting": "Welcome!",
-            "subtitle": "Let's get your event ready"
-        },
         "steps": {
             "section": {
                 "title": "Manage your event",
@@ -9493,7 +9487,6 @@
         "musicTab": "DJ",
         "manage": {
             "title": "Vendors",
-            "back": "Back",
             "unavailable": "Vendors aren't part of this event's plan.",
             "invite": "Invite a vendor",
             "inviteTitle": "Invite a vendor",
