@@ -55,6 +55,10 @@ export type InvitationLabels = {
     rsvpPhoneMissing: string;
     rsvpPhoneInvalid: string;
     rsvpClosed: string;
+    // The RSVP line written from the event's reply-by date (KAN-84).
+    rsvpDeadline: string;
+    // The button to the event's guest link (KAN-84).
+    joinEvent: string;
     // The starting wording of a text the host adds in the editor.
     newTitle: string;
     newSubtitle: string;
@@ -115,6 +119,8 @@ export const INVITATION_LABELS: Record<DateLanguage, InvitationLabels> = {
         rsvpPhoneMissing: 'Συμπλήρωσε το τηλέφωνο επικοινωνίας.',
         rsvpPhoneInvalid: 'Έλεγξε το τηλέφωνο επικοινωνίας.',
         rsvpClosed: 'Η εκδήλωση δεν δέχεται πλέον απαντήσεις.',
+        rsvpDeadline: 'Απαντήστε έως {date}',
+        joinEvent: 'Συμμετοχή στην εκδήλωση',
         newTitle: 'Νέος τίτλος',
         newSubtitle: 'Νέος υπότιτλος',
         newParagraph: 'Νέα παράγραφος',
@@ -160,6 +166,8 @@ export const INVITATION_LABELS: Record<DateLanguage, InvitationLabels> = {
         rsvpPhoneMissing: 'Fill in your contact phone.',
         rsvpPhoneInvalid: 'Check your contact phone.',
         rsvpClosed: 'This event is no longer accepting replies.',
+        rsvpDeadline: 'Please reply by {date}',
+        joinEvent: 'Join the event',
         newTitle: 'New title',
         newSubtitle: 'New subtitle',
         newParagraph: 'New paragraph',

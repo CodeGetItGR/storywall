@@ -1,6 +1,7 @@
 import { InvitationElements } from '@/components/saveMyDate/invitation/InvitationElements';
 import { SectionText } from '@/components/saveMyDate/invitation/sections/SectionText';
-import { mapsUrl, websiteUrl } from '@/lib/invitation/mapLinks';
+import { showsText, stayHasContent, stayMapUrl, visibleItems } from '@/lib/invitation/listContent';
+import { websiteUrl } from '@/lib/invitation/mapLinks';
 import type { RenderContext, TextContrast } from '@/lib/invitation/render';
 import { stayVars } from '@/lib/invitation/sectionCss';
 import type { InvitationSection } from '@/lib/invitation/sections';
@@ -21,7 +22,8 @@ function listClass(count: number) {
 // Places to stay: one centred card, or two columns on wider screens.
 export function AccommodationSection({ section, contrast, ctx }: AccommodationSectionProps) {
     const { data } = section;
-    const count = data.items.length;
+    const stays = visibleItems(data.items, stayHasContent, ctx);
+    const count = stays.length;
 
     return (
         <div className={`section-inner stay-section-inner${count > 1 ? ' has-multiple' : ''}`}>
@@ -30,7 +32,7 @@ export function AccommodationSection({ section, contrast, ctx }: AccommodationSe
             <SectionText section={section} path="subtitle" value={data.subtitle} tag="p" contrast={contrast} ctx={ctx} />
             {/* Stays */}
             <div className={listClass(count)} style={stayVars(data)}>
-                {data.items.map((item) => (
+                {stays.map((item) => (
                     <StayCard key={item.id} section={section} item={item} contrast={contrast} ctx={ctx} />
                 ))}
             </div>
@@ -49,13 +51,18 @@ type StayCardProps = {
 
 function StayCard({ section, item, contrast, ctx }: StayCardProps) {
     const website = websiteUrl(item.website);
+    const map = stayMapUrl(item);
     const field = (name: 'name' | 'address' | 'phone' | 'email') => `items.${item.id}.${name}`;
 
     return (
         <div className="stay-item">
             {/* Details */}
-            <SectionText section={section} path={field('name')} value={item.name} tag="h3" className="stay-name" contrast={contrast} ctx={ctx} />
-            <SectionText section={section} path={field('address')} value={item.address} tag="p" className="stay-address" contrast={contrast} ctx={ctx} />
+            {showsText(item.name, ctx) && (
+                <SectionText section={section} path={field('name')} value={item.name} tag="h3" className="stay-name" contrast={contrast} ctx={ctx} />
+            )}
+            {showsText(item.address, ctx) && (
+                <SectionText section={section} path={field('address')} value={item.address} tag="p" className="stay-address" contrast={contrast} ctx={ctx} />
+            )}
             {/* Contact */}
             <div className="stay-contact-row">
                 <div className="stay-contact-item">
@@ -84,9 +91,11 @@ function StayCard({ section, item, contrast, ctx }: StayCardProps) {
                         {ctx.labels.website}
                     </a>
                 )}
-                <a className="theme-btn stay-map-btn" href={item.mapUrl || mapsUrl(item.name, item.address)} target="_blank" rel="noopener">
-                    {ctx.labels.map}
-                </a>
+                {map && (
+                    <a className="theme-btn stay-map-btn" href={map} target="_blank" rel="noopener">
+                        {ctx.labels.map}
+                    </a>
+                )}
             </div>
         </div>
     );

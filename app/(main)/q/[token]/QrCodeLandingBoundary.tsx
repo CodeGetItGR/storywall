@@ -50,6 +50,7 @@ export default function QrCodeLandingBoundary({ token }: { token: string }) {
                         scroll="page"
                         heroTone="plain"
                         compactHero={isChooser}
+                        stripHero={!isChooser}
                         bottom={isChooser ? <QrLandingPromo /> : null}
                         corner={<LanguageSwitcher variant="auth" className="rounded-full bg-background/85 px-1 shadow-xs backdrop-blur-sm" />}
                     >

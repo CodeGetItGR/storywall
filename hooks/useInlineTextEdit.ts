@@ -5,6 +5,7 @@ import { useCallback, useMemo, useRef, useState } from 'react';
 import { useTextToolbarFocus } from '@/hooks/useTextToolbarFocus';
 import type { InvitationDocument } from '@/lib/invitation/document';
 import type { InvitationEditorState, InvitationEditorStore } from '@/lib/invitation/editorStore';
+import { editedTextLock, type InvitationEventData } from '@/lib/invitation/eventLinks';
 import { INVITATION_LABELS, invitationLanguage } from '@/lib/invitation/labels';
 import {
     addTextElement,
@@ -38,8 +39,9 @@ function newElementId(): string {
 }
 
 // The text being edited in place and every change the toolbar makes to it. All of it goes
-// through the editor store, so undo, redo and autosave cover it.
-export function useInlineTextEdit(store: InvitationEditorStore, document: InvitationDocument) {
+// through the editor store, so undo, redo and autosave cover it. A text the event fills (KAN-84) keeps its words:
+// only its look changes here.
+export function useInlineTextEdit(store: InvitationEditorStore, document: InvitationDocument, event: InvitationEventData | null = null) {
     const [target, setTarget] = useState<TextTarget | null>(null);
     const [caret, setCaret] = useState<CaretRequest>('end');
     const [element, setElement] = useState<HTMLElement | null>(null);
@@ -52,6 +54,8 @@ export function useInlineTextEdit(store: InvitationEditorStore, document: Invita
     const active = target && snapshot ? target : null;
     const activeKey = active ? textTargetKey(active) : null;
     const sectionId = active ? textSectionId(document, active) : undefined;
+    // Where the host changes the open text's words, when the event fills them.
+    const lock = useMemo(() => editedTextLock(document, active, event), [active, document, event]);
 
     const edit = useCallback<InvitationEditorState['edit']>((recipe, mergeKey) => store.getState().edit(recipe, mergeKey), [store]);
 
@@ -84,10 +88,10 @@ export function useInlineTextEdit(store: InvitationEditorStore, document: Invita
 
     const setText = useCallback(
         (text: string) => {
-            if (!active) return;
+            if (!active || lock) return;
             edit((draft) => writeText(draft, active, text), textMergeKey(active, 'text'));
         },
-        [active, edit],
+        [active, edit, lock],
     );
 
     const setStyle = useCallback(
@@ -121,7 +125,7 @@ export function useInlineTextEdit(store: InvitationEditorStore, document: Invita
 
     // An added text goes at once; a section's own text asks first.
     const requestDelete = useCallback(() => {
-        if (!active) return;
+        if (!active || lock) return;
         if (active.kind === 'field') {
             setIsConfirmingDelete(true);
             return;
@@ -129,7 +133,7 @@ export function useInlineTextEdit(store: InvitationEditorStore, document: Invita
         edit((draft) => deleteText(draft, active));
         setTarget(null);
         setElement(null);
-    }, [active, edit]);
+    }, [active, edit, lock]);
 
     const confirmDelete = useCallback(() => {
         if (active) edit((draft) => deleteText(draft, active));
@@ -160,6 +164,7 @@ export function useInlineTextEdit(store: InvitationEditorStore, document: Invita
         () => ({
             active,
             activeKey,
+            lock,
             snapshot: active ? snapshot : undefined,
             caret,
             element: active ? element : null,
@@ -183,6 +188,7 @@ export function useInlineTextEdit(store: InvitationEditorStore, document: Invita
         [
             active,
             activeKey,
+            lock,
             snapshot,
             caret,
             element,

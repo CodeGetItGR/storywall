@@ -10469,6 +10469,17 @@
             "photoFrame": "Framed photo",
             "footer": "Footer"
         },
+        "eventPhotos": {
+            "title": "Event photos",
+            "empty": "The event has no photos yet.",
+            "photoAlt": "Event photo {n}"
+        },
+        "eventLock": {
+            "note": "This comes from your event. Change it in the event's settings.",
+            "settings": "Event settings",
+            "rsvp": "RSVP",
+            "schedule": "Event schedule"
+        },
         "photos": {
             "upload": "Upload photo",
             "change": "Change photo",
@@ -10479,7 +10490,8 @@
                 "type": "Only JPG, PNG and WebP are allowed.",
                 "size": "The file is over 10 MB.",
                 "failed": "The photo didn't upload. Try again.",
-                "full": "You've reached the photo limit."
+                "full": "You've reached the photo limit.",
+                "galleryFull": "The gallery already has 10 photos."
             },
             "move": "Move photo",
             "zoomOut": "Zoom out",
@@ -10505,6 +10517,32 @@
                 "mask-reveal": "Mask Reveal",
                 "parallax-soft": "Parallax Soft",
                 "pop-elegant": "Pop Elegant"
+            },
+            "gallery": {
+                "title": "Photos",
+                "add": "Add photos",
+                "count": "{count}/10 photos",
+                "delete": "Delete photo",
+                "photoAlt": "Photo {n}",
+                "layout": "Layout",
+                "shape": "Shape",
+                "dragInstructions": "Press space to pick up a photo. Use the arrow keys to move it, space to drop it, or escape to cancel.",
+                "picked": "Picked up photo {n}.",
+                "over": "Photo {n} is at place {position} of {count}.",
+                "dropped": "Dropped photo {n} at place {position} of {count}.",
+                "cancelled": "Photo {n} is back where it was.",
+                "layouts": {
+                    "grid": "Grid",
+                    "masonry": "Mosaic",
+                    "carousel": "Slideshow",
+                    "featured": "One large"
+                },
+                "shapes": {
+                    "round": "Circle",
+                    "square": "Square",
+                    "rectangle": "Rectangle",
+                    "roundedSquare": "Rounded"
+                }
             }
         },
         "sectionSettings": {
@@ -10594,6 +10632,7 @@
             "website": "Website",
             "mapLink": "Google Maps link",
             "mapHint": "Left empty, the map searches by name and address.",
+            "showWelcome": "Show the welcome place",
             "contactLinks": {
                 "phone": "Phone",
                 "sms": "Text message (SMS)",
@@ -10614,12 +10653,30 @@
             "colors": "Colors",
             "addColor": "Add color",
             "removeColor": "Remove color {color}",
+            "questions": "Questions",
+            "addQuestion": "Add question",
+            "addStay": "Add place to stay",
+            "name": "Name",
+            "address": "Address",
+            "addGodparent": "Add godparent",
+            "addSponsor": "Add sponsor",
+            "untitled": "Untitled",
+            "reorder": "Drag to reorder",
+            "listDrag": {
+                "instructions": "Press space to pick up an item. Use the arrow keys to move it, space to drop it, or escape to cancel.",
+                "picked": "Picked up {name}.",
+                "over": "{name} is at place {position} of {count}.",
+                "dropped": "Dropped {name} at place {position} of {count}.",
+                "cancelled": "{name} is back where it was."
+            },
             "buttons": "Buttons",
             "buttonText": "Button text",
             "link": "Link",
             "backgroundAuto": "Automatic",
             "backgroundNumber": "Background {n}",
             "hostCanChange": "The host can change it",
+            "followEvent": "Follow the event",
+            "followEventHint": "Comes from your event. If you edit it here, it stops following the event. Your event doesn't change.",
             "hostBackgrounds": "Backgrounds the host can pick",
             "effect": "Background effect",
             "effects": {

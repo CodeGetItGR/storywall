@@ -2,6 +2,7 @@ import { applyPatches, type Draft, enablePatches, type Patch, produceWithPatches
 import { createStore, type StoreApi } from 'zustand/vanilla';
 
 import type { InvitationDocument } from '@/lib/invitation/document';
+import { takeOverEditedFields } from '@/lib/invitation/eventLinks';
 
 enablePatches();
 
@@ -26,6 +27,9 @@ export type InvitationEditorState = {
     // Goes up with every change to the document, undo and redo included. Autosave compares it.
     changeCount: number;
     edit: (recipe: (draft: Draft<InvitationDocument>) => void, mergeKey?: string, options?: EditOptions) => void;
+    // A change the host didn't make (the event's data written into the fields that follow it): saved, but not an
+    // undo step, and it never takes a field over.
+    sync: (recipe: (draft: Draft<InvitationDocument>) => void) => void;
     // One undo step that moves the invitation to another theme and changes the document with it.
     switchTheme: (themeSlug: string, recipe: (draft: Draft<InvitationDocument>) => void) => void;
     undo: () => void;
@@ -46,7 +50,11 @@ export function createInvitationEditorStore(document: InvitationDocument, themeS
 
         edit: (recipe, mergeKey, options) => {
             const { document: current, past, changeCount } = get();
-            const [next, patches, inversePatches] = produceWithPatches(current, recipe);
+            const [next, patches, inversePatches] = produceWithPatches(current, (draft) => {
+                recipe(draft);
+                // A field that followed the event and was edited is the invitation's own now (KAN-84).
+                takeOverEditedFields(current, draft);
+            });
             if (patches.length === 0) return;
 
             const now = Date.now();
@@ -59,6 +67,13 @@ export function createInvitationEditorStore(document: InvitationDocument, themeS
             const kept = merges ? past.slice(0, -1) : past;
 
             set({ document: next, past: [...kept, step].slice(-EDITOR_HISTORY_LIMIT), future: [], changeCount: changeCount + 1 });
+        },
+
+        sync: (recipe) => {
+            const { document: current, changeCount } = get();
+            const [next, patches] = produceWithPatches(current, recipe);
+            if (patches.length === 0) return;
+            set({ document: next, changeCount: changeCount + 1 });
         },
 
         switchTheme: (nextSlug, recipe) => {

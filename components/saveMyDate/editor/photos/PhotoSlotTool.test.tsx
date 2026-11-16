@@ -19,7 +19,7 @@ const BABY = SAMPLE_DOCUMENT.sections.find((section) => section.type === 'baby')
 const SLOT = photoFieldSlot(BABY.id, 'babyPhoto');
 
 function slots(canPick = true): PhotoUploadSlots {
-    return { uploads: createPhotoUploadStore(), upload: vi.fn(async () => {}), canPick: vi.fn(() => canPick) };
+    return { uploads: createPhotoUploadStore(), upload: vi.fn(async () => {}), canPick: vi.fn(() => canPick), report: vi.fn() };
 }
 
 const withBabyPhoto = (id: string) => (id === 'm-baby' ? '/images/baby.png' : undefined);

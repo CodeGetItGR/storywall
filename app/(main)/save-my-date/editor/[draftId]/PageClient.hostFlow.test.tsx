@@ -60,6 +60,7 @@ function eventStepHandlers({ events }: { events: boolean }) {
             HttpResponse.json(events ? [storyMember({ id: 'mem-host', eventId: wedding.id, role: 'HOST' })] : []),
         ),
         http.get(`${TEST_API}/api/events/:eventId`, () => HttpResponse.json(wedding)),
+        http.get(`${TEST_API}/api/events/:eventId/qr-links`, () => HttpResponse.json([])),
         http.get(`${TEST_API}/api/invitation-drafts`, () => HttpResponse.json([])),
         http.get(`${TEST_API}/api/plan-tiers`, () => HttpResponse.json([sampleInvitationPlan()])),
         http.get(`${TEST_API}/api/config`, () =>
@@ -106,8 +107,9 @@ describe('Invitation editor: from draft to event', { timeout: EDITOR_FLOW_TIMEOU
         created.length = 0;
         checkout.navigate.mockReset();
     });
-    afterEach(() => {
+    afterEach(async () => {
         cleanup();
+        await backend.settled();
         backend.server.resetHandlers();
         backend.reset();
         localStorage.clear();
