@@ -6,16 +6,19 @@ import { useManageSectionRoute } from '@/hooks/useManageSectionRoute';
 import type { ManageSection } from '@/lib/manageSections';
 import { routes } from '@/lib/routes';
 
-const mocks = vi.hoisted(() => ({ query: '', replacePageUrl: vi.fn() }));
+const mocks = vi.hoisted(() => ({ query: '', replacePageUrl: vi.fn(), pushPageEntry: vi.fn() }));
 vi.mock('next/navigation', () => ({ useSearchParams: () => new URLSearchParams(mocks.query) }));
-vi.mock('@/lib/overlayHistory', () => ({ replacePageUrl: mocks.replacePageUrl }));
+vi.mock('@/lib/overlayHistory', () => ({ replacePageUrl: mocks.replacePageUrl, pushPageEntry: mocks.pushPageEntry }));
 
 const visibleSections: ManageSection[] = ['overview', 'settings', 'rsvp', 'members', 'billing'];
 const options = { eventId: 'e1', isDraft: false, isDeleted: false, visibleSections, pendingSections: [] };
 
 beforeEach(() => {
     mocks.replacePageUrl.mockClear();
+    mocks.pushPageEntry.mockClear();
+    window.history.replaceState(null, '');
     vi.spyOn(window, 'scrollTo').mockImplementation(() => undefined);
+    vi.spyOn(window.history, 'back').mockImplementation(() => undefined);
 });
 
 describe('useManageSectionRoute', () => {
@@ -38,18 +41,38 @@ describe('useManageSectionRoute', () => {
         expect(mocks.replacePageUrl).not.toHaveBeenCalled();
     });
 
-    it('switches a section in place and scrolls to the top', () => {
+    // On a phone the Overview is the menu, so Back from a section must return to it.
+    it('leaving the overview adds a Back step and scrolls to the top', () => {
         mocks.query = '';
         const { result } = renderHook(() => useManageSectionRoute(options));
         act(() => result.current.navigateToSection('rsvp'));
-        expect(mocks.replacePageUrl).toHaveBeenCalledWith(`${routes.events.manage('e1')}?tab=rsvp`);
+        expect(mocks.pushPageEntry).toHaveBeenCalledWith(`${routes.events.manage('e1')}?tab=rsvp`, { manageOpenedFromOverview: true });
+        expect(mocks.replacePageUrl).not.toHaveBeenCalled();
         expect(window.scrollTo).toHaveBeenCalled();
     });
 
-    it('drops ?tab= when going back to the overview', () => {
+    it('moving between sections replaces the entry', () => {
+        mocks.query = 'tab=rsvp';
+        const { result } = renderHook(() => useManageSectionRoute(options));
+        act(() => result.current.navigateToSection('billing'));
+        expect(mocks.replacePageUrl).toHaveBeenCalledWith(`${routes.events.manage('e1')}?tab=billing`);
+        expect(mocks.pushPageEntry).not.toHaveBeenCalled();
+    });
+
+    it('steps back to the overview it was opened from', () => {
+        mocks.query = 'tab=rsvp';
+        window.history.replaceState({ manageOpenedFromOverview: true }, '');
+        const { result } = renderHook(() => useManageSectionRoute(options));
+        act(() => result.current.navigateToSection('overview'));
+        expect(window.history.back).toHaveBeenCalled();
+        expect(mocks.replacePageUrl).not.toHaveBeenCalled();
+    });
+
+    it('drops ?tab= when going to the overview from a section opened directly', () => {
         mocks.query = 'tab=rsvp';
         const { result } = renderHook(() => useManageSectionRoute(options));
         act(() => result.current.navigateToSection('overview'));
+        expect(window.history.back).not.toHaveBeenCalled();
         expect(mocks.replacePageUrl).toHaveBeenLastCalledWith(routes.events.manage('e1'));
     });
 
