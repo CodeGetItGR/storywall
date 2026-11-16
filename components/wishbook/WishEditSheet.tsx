@@ -68,8 +68,8 @@ export function WishEditSheet({ editor, maxLength }: { editor: WishEditor; maxLe
                             </p>
                         ) : null}
 
-                        {/* Actions */}
-                        <div className="flex items-center justify-between gap-3">
+                        {/* Actions: a line above them keeps them apart from the recording */}
+                        <div className="flex items-center justify-between gap-3 border-t border-border/60 pt-4">
                             <button
                                 type="button"
                                 onClick={editor.askDelete}

@@ -64,8 +64,8 @@ export function GuestWishFormContent({ form }: { form: GuestWishFormState }) {
                 <VoiceRecorder recorder={form.recorder} disabled={form.isPending} />
             </div>
 
-            {/* Name */}
-            <div>
+            {/* Name: a line above it keeps it apart from the recording */}
+            <div className="border-t border-border/60 pt-5">
                 <FormFieldLabel label={t('guestCode.wish.nameLabel')} required labelClassName={FIELD_LABEL_CLASS}>
                     <span className="flex items-center gap-2.5 rounded-[1rem] border border-border bg-background px-4 transition-shadow focus-within:border-primary/40 focus-within:ring-3 focus-within:ring-primary/15">
                         <Signature className="h-4 w-4 shrink-0 text-primary" aria-hidden="true" />

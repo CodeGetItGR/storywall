@@ -48,8 +48,8 @@ export function WishComposer({ composer, maxMessageLength }: Props) {
                 <VoiceRecorder recorder={composer.recorder} disabled={composer.isSending} />
             </div>
 
-            {/* Send */}
-            <div className="flex items-center justify-between gap-3">
+            {/* Send: a line above it keeps it apart from the recording */}
+            <div className="flex items-center justify-between gap-3 border-t border-border/60 pt-5">
                 <span className="text-xs text-ink-faint">{t('charactersLeft', { current: composer.message.length, max: maxMessageLength })}</span>
                 <button
                     type="submit"
