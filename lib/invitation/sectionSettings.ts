@@ -18,6 +18,7 @@ export type SectionData<T extends SectionType> = Extract<InvitationSection, { ty
 export type SettingsGroup =
     | 'follow'
     | 'date'
+    | 'gallery'
     | 'countdown'
     | 'faq'
     | 'rsvp'
@@ -37,6 +38,7 @@ export type SettingsGroup =
 
 const TYPE_GROUPS: Partial<Record<SectionType, SettingsGroup[]>> = {
     date: ['date'],
+    gallery: ['gallery'],
     countdown: ['countdown'],
     faq: ['faq'],
     rsvp: ['rsvp'],
