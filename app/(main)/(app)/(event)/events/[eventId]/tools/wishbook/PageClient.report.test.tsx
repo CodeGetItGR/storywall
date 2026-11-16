@@ -176,7 +176,7 @@ describe('Wishbook composer for hosts', () => {
         fireEvent.change(screen.getByRole('textbox', { name: 'messageAriaLabel' }), { target: { value: 'Congrats!' } });
         fireEvent.click(screen.getByRole('button', { name: 'addToWishbook' }));
 
-        expect(createEntry).toHaveBeenCalledWith({ message: 'Congrats!', guestName: undefined });
+        expect(createEntry).toHaveBeenCalledWith({ message: 'Congrats!', guestName: undefined, audio: null });
     });
 });
 
