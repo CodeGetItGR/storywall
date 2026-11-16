@@ -30,6 +30,12 @@ export function QrCardLayoutAddBar({ editor }: { editor: QrCardLayoutEditorState
                         {t('restoreTitle')}
                     </button>
                 )}
+                {editor.layout.features === null && (
+                    <button type="button" onClick={editor.restoreFeatures} className={BUTTON_CLASS}>
+                        <Plus className="h-3.5 w-3.5" aria-hidden="true" />
+                        {t('restoreFeatures')}
+                    </button>
+                )}
             </div>
             {/* Limit */}
             {!editor.canAddField && <p className="text-[11px] leading-4 text-ink-muted">{t('addLimit')}</p>}

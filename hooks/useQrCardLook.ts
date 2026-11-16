@@ -15,7 +15,7 @@ import { themeFontOptions } from '@/lib/adminThemePresets';
 import type { AdminQrCardTemplateDto, EventThemeFontDto } from '@/lib/api/types';
 import { isHexColor } from '@/lib/eventTheme';
 import { QR_CARD_INK, type QrCardStyle } from '@/lib/qrCard';
-import { qrCardLayoutOf } from '@/lib/qrCardLayout';
+import { FEATURES_QR_CARD_LAYOUT, qrCardLayoutOf } from '@/lib/qrCardLayout';
 
 export type QrCardFontsStatus = 'loading' | 'error' | 'ready';
 
@@ -63,7 +63,7 @@ export function useQrCardLook(template: AdminQrCardTemplateDto) {
             headingFont: previewFont,
             codeColor: isHexColor(draft.codeColor) ? draft.codeColor : QR_CARD_INK,
             centerLogo: draft.centerLogo,
-            layout: qrCardLayoutOf(template.layout),
+            layout: qrCardLayoutOf(template.layout, FEATURES_QR_CARD_LAYOUT),
             // The editor never prints, so its sizes don't matter.
             sizes: ['A6'],
         }),
