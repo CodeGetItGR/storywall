@@ -1,14 +1,19 @@
 'use client';
 
-import { Loader2, Send } from 'lucide-react';
+import { Loader2, Send, Signature } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useEffect } from 'react';
 
 import { IncidentPausedNote } from '@/components/incident/IncidentPausedNote';
 import { SignupAcceptanceCheckbox } from '@/components/legal/SignupAcceptanceCheckbox';
 import { QrSentArt } from '@/components/qrGuest/QrSentArt';
+import { WishLengthCount } from '@/components/qrGuest/WishLengthCount';
+import { WishPreviewPile } from '@/components/qrGuest/WishPreviewPile';
 import { FormFieldLabel } from '@/components/ui/FormFieldLabel';
 import { GUEST_WISH_NAME_MAX_LENGTH, useGuestWishForm } from '@/hooks/useGuestWishForm';
+
+// Field labels in plain sentence case, a step stronger than the app's small caps, so the two boxes read clearly.
+const FIELD_LABEL_CLASS = 'text-sm font-semibold tracking-normal text-ink normal-case';
 
 interface GuestWishFormProps {
     token: string;
@@ -42,37 +47,43 @@ export function GuestWishForm({ token, onSentChange }: GuestWishFormProps) {
     }
 
     return (
-        <form onSubmit={form.submit} className="flex flex-col gap-4">
-            {/* Name */}
-            <div>
-                <FormFieldLabel label={t('guestCode.wish.nameLabel')} required>
-                    <input
-                        type="text"
-                        maxLength={GUEST_WISH_NAME_MAX_LENGTH}
-                        value={form.guestName}
-                        onChange={form.changeGuestName}
-                        className="w-full rounded-xl bg-surface-muted px-4 py-3 text-sm text-ink transition outline-none placeholder:text-ink-faint focus:ring-2 focus:ring-primary/30"
-                    />
-                </FormFieldLabel>
-                {form.fieldErrors.guestName && <p className="mt-1 text-xs text-red-500">{form.fieldErrors.guestName}</p>}
+        <form onSubmit={form.submit} className="flex flex-col gap-5">
+            {/* Preview: the wish as it will read in the wishbook */}
+            <div className="-mx-2 rounded-3xl bg-linear-to-b from-primary-light/70 to-transparent px-6 pt-5 pb-4">
+                <WishPreviewPile message={form.message} guestName={form.guestName} />
             </div>
 
             {/* Message */}
             <div>
-                <FormFieldLabel label={t('guestCode.wish.messageLabel')} required>
+                <FormFieldLabel label={t('guestCode.wish.messageLabel')} required labelClassName={FIELD_LABEL_CLASS}>
                     <textarea
                         maxLength={form.maxMessageLength}
-                        rows={6}
+                        rows={5}
                         value={form.message}
                         onChange={form.changeMessage}
                         disabled={form.isPending}
-                        className="min-h-40 w-full resize-none rounded-[1.5rem] border border-border/70 bg-background px-5 py-4 text-base leading-8 text-ink transition-shadow outline-none focus:border-primary/30 focus:ring-2 focus:ring-primary/20 disabled:opacity-60"
+                        className="min-h-32 w-full resize-none rounded-[1rem] border border-border bg-background px-4 py-3 text-base leading-7 text-ink transition-shadow outline-none focus:border-primary/40 focus:ring-3 focus:ring-primary/15 disabled:opacity-60"
                     />
                 </FormFieldLabel>
                 {form.fieldErrors.message && <p className="mt-1 text-xs text-red-500">{form.fieldErrors.message}</p>}
-                <p className="mt-1 text-xs text-ink-faint">
-                    {t('guestCode.wish.charactersLeft', { current: form.message.length, max: form.maxMessageLength })}
-                </p>
+                <WishLengthCount current={form.message.length} max={form.maxMessageLength} />
+            </div>
+
+            {/* Name */}
+            <div>
+                <FormFieldLabel label={t('guestCode.wish.nameLabel')} required labelClassName={FIELD_LABEL_CLASS}>
+                    <span className="flex items-center gap-2.5 rounded-[1rem] border border-border bg-background px-4 transition-shadow focus-within:border-primary/40 focus-within:ring-3 focus-within:ring-primary/15">
+                        <Signature className="h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
+                        <input
+                            type="text"
+                            maxLength={GUEST_WISH_NAME_MAX_LENGTH}
+                            value={form.guestName}
+                            onChange={form.changeGuestName}
+                            className="min-w-0 flex-1 bg-transparent py-3 text-base text-ink outline-none"
+                        />
+                    </span>
+                </FormFieldLabel>
+                {form.fieldErrors.guestName && <p className="mt-1 text-xs text-red-500">{form.fieldErrors.guestName}</p>}
             </div>
 
             {/* Incident note */}
@@ -92,7 +103,7 @@ export function GuestWishForm({ token, onSentChange }: GuestWishFormProps) {
             <button
                 type="submit"
                 disabled={!form.canSubmit}
-                className="flex w-full items-center justify-center gap-2 rounded-full py-3 text-sm font-semibold text-white transition-opacity bg-gradient-brand hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+                className="flex min-h-12 w-full items-center justify-center gap-2 rounded-full text-[15px] font-semibold text-white transition-opacity bg-gradient-brand hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
             >
                 {form.isPending ? (
                     <Loader2 className="h-4 w-4 animate-spin" />

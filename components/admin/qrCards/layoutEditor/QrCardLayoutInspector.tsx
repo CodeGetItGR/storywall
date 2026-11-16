@@ -136,14 +136,14 @@ export function QrCardLayoutInspector({ editor, look }: { editor: QrCardLayoutEd
                     {selectedField && <QrCardLayoutFieldPanel editor={editor} field={selectedField} alignOptions={alignOptions} />}
 
                     {/* Remove */}
-                    {(selected === 'title' || selectedField) && (
+                    {(selected === 'title' || selected === 'features' || selectedField) && (
                         <button
                             type="button"
                             onClick={editor.removeSelected}
                             className="inline-flex h-8 items-center gap-1.5 rounded-md px-2.5 text-xs font-semibold text-status-danger hover:bg-status-danger/10"
                         >
                             <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
-                            {selected === 'title' ? t('removeTitle') : t('removeField')}
+                            {selected === 'title' ? t('removeTitle') : selected === 'features' ? t('removeFeatures') : t('removeField')}
                         </button>
                     )}
                 </div>

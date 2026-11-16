@@ -122,11 +122,11 @@ describe('QrCardLayoutEditor', () => {
         // Shift moves 5 mm.
         fireEvent.keyDown(code, { key: 'ArrowRight', shiftKey: true });
 
-        expect(screen.getByText(/position .*"x":"25.5"/)).toBeInTheDocument();
+        expect(screen.getByText(/position .*"x":"34.5"/)).toBeInTheDocument();
         fireEvent.click(screen.getByRole('button', { name: 'save' }));
 
         await vi.waitFor(() => expect(onClose).toHaveBeenCalled());
-        expect(patch.mutateAsync.mock.calls[0][0].input.layout.code.x).toBe(25.5);
+        expect(patch.mutateAsync.mock.calls[0][0].input.layout.code.x).toBe(34.5);
         expect(onSaved).toHaveBeenCalled();
     });
 
