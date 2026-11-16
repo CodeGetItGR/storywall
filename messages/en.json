@@ -1315,6 +1315,10 @@
             "theme": "Theme",
             "invitation": "Invitation"
         },
+        "navGroups": {
+            "event": "Event",
+            "people": "People"
+        },
         "invitation": {
             "notPublished": "Not published",
             "live": "Live",

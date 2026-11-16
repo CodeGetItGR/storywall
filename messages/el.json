@@ -1436,6 +1436,10 @@
             "theme": "Θέμα",
             "invitation": "Πρόσκληση"
         },
+        "navGroups": {
+            "event": "Η εκδήλωση",
+            "people": "Άτομα"
+        },
         "invitation": {
             "notPublished": "Δεν έχει δημοσιευτεί",
             "live": "Ενεργή",
