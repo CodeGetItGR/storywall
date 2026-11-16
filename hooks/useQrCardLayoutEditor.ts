@@ -23,6 +23,7 @@ import { resolveLocalizedText } from '@/lib/localizedText';
 import { giftQrCardLines, type QrCardLine, qrCardSampleFieldTexts } from '@/lib/qrCard';
 import {
     addField,
+    addLogo,
     elementRect,
     FEATURES_QR_CARD_LAYOUT,
     fieldElement,
@@ -38,11 +39,13 @@ import {
     qrCardLayoutOf,
     qrCardLineWording,
     removeField,
+    removeLogo,
     sameQrCardLayout,
     setCodeOptions,
     setFeaturesShown,
     setLinesOptions,
     setLineWording,
+    setLogoColor,
     setTitleOptions,
     setTitleShown,
     updateField,
@@ -202,6 +205,19 @@ export function useQrCardLayoutEditor({
         [changeField, selectedField],
     );
 
+    // The logo: brand colours, or one colour that starts as the card's text colour.
+    const handleLogoColorModeChange = useCallback(
+        (event: ChangeEvent<HTMLInputElement>) => {
+            const color = event.currentTarget.value === 'one' ? textColor : null;
+            setLayout((current) => setLogoColor(current, color));
+        },
+        [textColor],
+    );
+    const handleLogoColorChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {
+        const color = event.currentTarget.value.toUpperCase();
+        setLayout((current) => setLogoColor(current, color));
+    }, []);
+
     // Wording inputs are named <key>.<locale>, e.g. gift.el.
     const handleWordingChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {
         const [key, wordingLocale] = event.currentTarget.name.split('.') as [QrCardWordingKey, string];
@@ -221,9 +237,15 @@ export function useQrCardLayoutEditor({
     const addFixedField = useCallback(() => add('fixed'), [add]);
     const addHostField = useCallback(() => add('host'), [add]);
     const canAddField = layout.fields.length < QR_CARD_LAYOUT_LIMITS.fields;
+    // One logo a card: it's added and selected at once.
+    const addCardLogo = useCallback(() => {
+        setLayout((current) => addLogo(current));
+        setSelected('logo');
+    }, []);
 
     const removeSelected = useCallback(() => {
         if (selected === 'title') setLayout((current) => setTitleShown(current, false));
+        if (selected === 'logo') setLayout((current) => removeLogo(current));
         if (selected === 'features') setLayout((current) => setFeaturesShown(current, false));
         const id = selected ? fieldIdOf(selected) : null;
         if (id) setLayout((current) => removeField(current, id));
@@ -316,7 +338,10 @@ export function useQrCardLayoutEditor({
         handleFieldColorChange,
         handleFieldTextChange,
         handleWordingChange,
+        handleLogoColorModeChange,
+        handleLogoColorChange,
         canAddField,
+        addLogo: addCardLogo,
         addFixedField,
         addHostField,
         removeSelected,
