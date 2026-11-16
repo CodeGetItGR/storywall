@@ -279,7 +279,7 @@
                 "description": "Overview of your event"
             },
             "invitationsQr": {
-                "label": "Share links",
+                "label": "Invitations & QR codes",
                 "description": "QR codes and links guests can use to join",
                 "descriptionWithUpload": "QR codes and links guests can use to join or upload photos"
             }
@@ -1340,7 +1340,7 @@
             "billing": "Billing",
             "gift": "Given as a gift",
             "theme": "Theme",
-            "invitation": "Invitation"
+            "invitationsQr": "Invitations & QR codes"
         },
         "navGroups": {
             "event": "Event",

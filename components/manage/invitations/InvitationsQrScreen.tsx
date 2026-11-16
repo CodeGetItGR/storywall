@@ -95,7 +95,7 @@ export function InvitationsQrScreen() {
     // Hosts see their links inside the dashboard; a planner (QR_READ) keeps the standalone page.
     if (isHost) {
         return (
-            <ManagePageFrame active="shareLinks">
+            <ManagePageFrame active="invitationsQr">
                 <p className="mb-6 text-sm leading-relaxed text-ink-muted">{subtitle}</p>
                 {content}
             </ManagePageFrame>

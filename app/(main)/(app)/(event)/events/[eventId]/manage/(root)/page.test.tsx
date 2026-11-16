@@ -7,6 +7,9 @@ const mocks = vi.hoisted(() => ({
     resolveServerEventDetail: vi.fn(),
     serverGet: vi.fn(),
     serverGetOrNull: vi.fn(),
+    redirect: vi.fn(() => {
+        throw new Error('NEXT_REDIRECT');
+    }),
 }));
 
 vi.mock('@/lib/auth/serverEventContext', () => ({
@@ -16,6 +19,7 @@ vi.mock('@/lib/auth/serverEventContext', () => ({
 vi.mock('@/lib/api/serverFetch', () => ({ serverGet: mocks.serverGet, serverGetOrNull: mocks.serverGetOrNull }));
 vi.mock('@/i18n/serverLocale', () => ({ getServerLocale: async () => 'en' }));
 vi.mock('../PageClient', () => ({ default: () => null }));
+vi.mock('next/navigation', () => ({ redirect: mocks.redirect }));
 
 import Page from './page';
 
@@ -50,6 +54,14 @@ describe('ManagePage (server)', () => {
         mocks.resolveServerEventDetail.mockReset().mockResolvedValue(liveEvent);
         mocks.serverGet.mockReset().mockResolvedValue([]);
         mocks.serverGetOrNull.mockReset().mockResolvedValue(null);
+        mocks.redirect.mockClear();
+    });
+
+    it('sends the old Invitation tab to Invitations & QR codes', async () => {
+        await expect(visit({ tab: 'invitation' })).rejects.toThrow('NEXT_REDIRECT');
+
+        expect(mocks.redirect).toHaveBeenCalledWith('/events/e1/manage/qr');
+        expect(mocks.serverGet).not.toHaveBeenCalled();
     });
 
     it('seeds the gift, null when the event is not one', async () => {
