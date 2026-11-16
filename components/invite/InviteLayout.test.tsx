@@ -6,8 +6,10 @@ import type { EventThemeDto, EventThemeFontDto } from '@/lib/api/types';
 
 vi.mock('@/components/common/Logo', () => ({ Logo: () => <span data-testid="logo" /> }));
 vi.mock('@/components/common/ProtectedImage', () => ({
-    // eslint-disable-next-line @next/next/no-img-element
-    ProtectedImage: ({ src, alt, onError }: { src: string; alt: string; onError?: () => void }) => <img data-testid="hero" src={src} alt={alt} onError={onError} />,
+    ProtectedImage: ({ src, alt, onError }: { src: string; alt: string; onError?: () => void }) => (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img data-testid="hero" src={src} alt={alt} onError={onError} />
+    ),
 }));
 
 const THEME: EventThemeDto = {
@@ -119,5 +121,28 @@ describe('InviteLayout without a cover', () => {
 
         expect(screen.queryByTestId('hero')).toBeNull();
         expect(screen.getAllByTestId('logo')).toHaveLength(1);
+    });
+    // The QR forms: a short strip, the cover with the title on it, the logo only in the footer.
+    it('shows the cover in a short strip, without the theme art', () => {
+        render(
+            <InviteLayout coverImageSrc="https://r2.test/cover.jpg" coverImageAlt="" theme={THEME} eventTitle="Baptism" stripHero>
+                <p>body</p>
+            </InviteLayout>,
+        );
+
+        expect(screen.getByTestId('hero')).toHaveAttribute('src', 'https://r2.test/cover.jpg');
+        expect(screen.getByRole('heading', { name: 'Baptism' }).closest('.h-28')).not.toBeNull();
+        expect(screen.getAllByTestId('logo')).toHaveLength(1);
+    });
+
+    it('fills the strip with the brand gradient when there is no cover', () => {
+        render(
+            <InviteLayout coverImageSrc={null} coverImageAlt="" eventTitle="Baptism" stripHero>
+                <p>body</p>
+            </InviteLayout>,
+        );
+
+        expect(screen.queryByTestId('hero')).toBeNull();
+        expect(screen.getByRole('heading', { name: 'Baptism' }).closest('.bg-gradient-brand')).not.toBeNull();
     });
 });
