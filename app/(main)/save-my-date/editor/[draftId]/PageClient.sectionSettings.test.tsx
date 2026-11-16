@@ -139,6 +139,46 @@ describe('Invitation editor: section settings', () => {
         expect(program.type === 'program' && program.data.items.map((item) => item.label)).toEqual(['Μυστήριο', 'Δείπνο']);
     });
 
+    it('adds a question to the FAQ, shows it on the invitation and saves it', async () => {
+        await openEditor();
+        openSettings('FAQ');
+        const settings = panel('FAQ');
+
+        fireEvent.click(within(settings).getByRole('button', { name: 'Add question' }));
+        const question = within(settings).getByLabelText('Question');
+        fireEvent.change(question, { target: { value: 'Υπάρχει dress code;' } });
+        fireEvent.blur(question);
+        fireEvent.click(within(within(settings).getByRole('group', { name: 'Υπάρχει dress code;' })).getByRole('button', { name: 'Done' }));
+
+        expect(within(section('FAQ')).getByRole('button', { name: 'Υπάρχει dress code;' })).toBeInTheDocument();
+        await save();
+        const faq = storedSection('s-faq');
+        expect(faq.type === 'faq' && faq.data.items.map((item) => item.question)).toEqual([
+            'Υπάρχει πάρκινγκ;',
+            'Μπορώ να φέρω τα παιδιά μου;',
+            'Υπάρχει dress code;',
+        ]);
+    });
+
+    it('deletes a godparent from the settings, and Undo brings them back', async () => {
+        await openEditor();
+        openSettings('Godparents');
+        const settings = panel('Godparents');
+        const godparents = section('Godparents');
+        expect(within(godparents).getByText('Άννα')).toBeInTheDocument();
+
+        fireEvent.click(within(settings).getByRole('button', { name: 'Άννα' }));
+        fireEvent.click(within(settings).getByRole('button', { name: 'Delete' }));
+        expect(within(godparents).queryByText('Άννα')).not.toBeInTheDocument();
+        expect(within(settings).getByRole('button', { name: 'Add godparent' })).toBeInTheDocument();
+
+        fireEvent.click(screen.getByRole('button', { name: 'Undo' }));
+        expect(within(godparents).getByText('Άννα')).toBeInTheDocument();
+        await save();
+        const stored = storedSection('s-godparents');
+        expect(stored.type === 'godparents' && stored.data.godparents.map((person) => person.name)).toEqual(['Γιώργος', 'Άννα']);
+    });
+
     it('keeps a bad link out and saves a good one', async () => {
         await openEditor();
         openSettings('Accommodation');

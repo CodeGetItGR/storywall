@@ -18,6 +18,7 @@ export type SettingsGroup =
     | 'date'
     | 'gallery'
     | 'countdown'
+    | 'faqItems'
     | 'faq'
     | 'rsvp'
     | 'programItems'
@@ -28,6 +29,7 @@ export type SettingsGroup =
     | 'coupleContact'
     | 'locations'
     | 'dressCode'
+    | 'people'
     | 'buttons'
     | 'footer'
     | 'background'
@@ -38,7 +40,7 @@ const TYPE_GROUPS: Partial<Record<SectionType, SettingsGroup[]>> = {
     date: ['date'],
     gallery: ['gallery'],
     countdown: ['countdown'],
-    faq: ['faq'],
+    faq: ['faqItems', 'faq'],
     rsvp: ['rsvp'],
     program: ['programItems', 'programStyle'],
     programIcons: ['programItems', 'programStyle'],
@@ -47,6 +49,9 @@ const TYPE_GROUPS: Partial<Record<SectionType, SettingsGroup[]>> = {
     coupleContact: ['coupleContact'],
     locations: ['locations'],
     dressCode: ['dressCode'],
+    godparents: ['people'],
+    parentsSimple: ['people'],
+    weddingSponsors: ['people'],
 };
 
 // The groups one section's sheet shows, in order. The footer is the admin's

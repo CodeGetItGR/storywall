@@ -127,16 +127,6 @@ function removeTextStyles(section: Draft<InvitationSection>, prefix: string) {
     }
 }
 
-// Places to stay: their two links.
-export type StayLinks = { website?: string; mapUrl?: string };
-
-export function setStayLinks(id: string, itemId: string, links: StayLinks): DocumentRecipe {
-    return editSectionData(id, 'accommodation', (data) => {
-        const item = data.items.find((entry) => entry.id === itemId);
-        if (item) Object.assign(item, links);
-    });
-}
-
 // Contact links, of the contact section or one partner of the couple contact.
 export function setContactLink(id: string, key: ContactLinkKey, value: string): DocumentRecipe {
     return editSectionData(id, 'contact', (data) => {

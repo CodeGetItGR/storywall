@@ -4,6 +4,7 @@ import { applyDateLanguage } from '@/lib/invitation/dateDisplay';
 import { type InvitationDocument, invitationDocumentSchema } from '@/lib/invitation/document';
 import { documentLink } from '@/lib/invitation/documentLink';
 import { createInvitationEditorStore } from '@/lib/invitation/editorStore';
+import { updateListItem } from '@/lib/invitation/listEdits';
 import { customProgramIcon, iconUploadProblem, svgRasterSize } from '@/lib/invitation/programIconUpload';
 import { SAMPLE_SECTIONS, SAMPLE_THEME } from '@/lib/invitation/samples';
 import {
@@ -30,7 +31,6 @@ import {
     setLinkButton,
     setLocationMap,
     setPartnerContactLink,
-    setStayLinks,
     updateProgramItem,
 } from '@/lib/invitation/sectionSettingsEdits';
 import { programStyleView, readStyleNumber, upgradeProgramStyle, visibleStyleGroups } from '@/lib/invitation/sectionStyleFields';
@@ -62,7 +62,7 @@ describe('settingsGroups', () => {
             'effect',
             'transition',
         ]);
-        expect(settingsGroups(SAMPLE_SECTIONS.faq, 'admin', SAMPLE_THEME)).toEqual(['faq', 'background', 'effect', 'transition']);
+        expect(settingsGroups(SAMPLE_SECTIONS.faq, 'admin', SAMPLE_THEME)).toEqual(['faqItems', 'faq', 'background', 'effect', 'transition']);
     });
 
     it('shows a host the background only when the admin left them a choice', () => {
@@ -74,8 +74,8 @@ describe('settingsGroups', () => {
             ...SAMPLE_SECTIONS.faq,
             style: { ...SAMPLE_SECTIONS.faq.style, hostBackgrounds: { enabled: false, allowed: ['top' as const] } },
         };
-        expect(settingsGroups(allowed, 'host', SAMPLE_THEME)).toEqual(['faq', 'background']);
-        expect(settingsGroups(locked, 'host', SAMPLE_THEME)).toEqual(['faq']);
+        expect(settingsGroups(allowed, 'host', SAMPLE_THEME)).toEqual(['faqItems', 'faq', 'background']);
+        expect(settingsGroups(locked, 'host', SAMPLE_THEME)).toEqual(['faqItems', 'faq']);
     });
 
     it('keeps the footer to admins, without a transition', () => {
@@ -230,7 +230,7 @@ describe('links and colours', () => {
             { ...SAMPLE_SECTIONS.blank, elements: [{ id: 'l1', kind: 'link', text: 'Map', url: '' }] },
             SAMPLE_SECTIONS.footer,
         );
-        let next = run(doc, setStayLinks(SAMPLE_SECTIONS.accommodation.id, stayId, { website: 'https://hotel.gr' }));
+        let next = run(doc, updateListItem(SAMPLE_SECTIONS.accommodation.id, 'stays', stayId, { website: 'https://hotel.gr' }));
         next = run(next, setContactLink(SAMPLE_SECTIONS.contact.id, 'instagram', 'https://instagram.com/us'));
         next = run(next, setPartnerContactLink(SAMPLE_SECTIONS.coupleContact.id, 'partnerB', 'phone', '6911111111'));
         next = run(next, setLocationMap(SAMPLE_SECTIONS.locations.id, 'receptionMap', 'https://maps.app.goo.gl/x'));
