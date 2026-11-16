@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import type { InvitationElement } from '@/lib/invitation/elements';
 import type { PhotoFrameElement } from '@/lib/invitation/photoFrame';
 import type { PhotoSlot } from '@/lib/invitation/photoSlots';
+import type { ImageRef } from '@/lib/invitation/primitives';
 import type { SectionDecoration } from '@/lib/invitation/sections';
 
 // What the editor draws inside the invitation besides its texts: the drag handles
@@ -23,6 +24,8 @@ export type CanvasTools = {
     frameSettings?: (element: PhotoFrameElement) => ReactNode;
     // Over the photo band's photo: move it up and down.
     photoBand?: (sectionId: string, imageY: number) => ReactNode;
+    // In a gallery with no photos to show: add some. An empty gallery is drawn only when this is set.
+    gallery?: (sectionId: string, images: readonly ImageRef[]) => ReactNode;
     // Between the columns of a custom section.
     columnBreak?: (sectionId: string, elements: readonly InvitationElement[], breakId: string) => ReactNode;
     // The editor shows every section at its saved height. Guests see it only where it is
