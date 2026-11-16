@@ -14,7 +14,14 @@ let isHost = true;
 let accessMode: 'standard' | 'demoBuilder' | 'demoVisitor' = 'standard';
 const createEntry = vi.fn();
 const setHighlighted = vi.fn();
-let entries: Array<{ id: string; authorMemberId: string | null; canDelete: boolean; highlighted?: boolean | null }> = [];
+let entries: Array<{
+    id: string;
+    authorMemberId: string | null;
+    canDelete: boolean;
+    highlighted?: boolean | null;
+    message?: string | null;
+    audio?: { url: string; durationMs: number } | null;
+}> = [];
 
 vi.mock('@/hooks/useModuleCopy', () => {
     const copy = (moduleKey: string) => ({ name: moduleKey, description: `${moduleKey} description`, cardLabel: moduleKey, Icon: () => null });
@@ -41,10 +48,11 @@ vi.mock('@/hooks/useWishbook', () => ({
                 {
                     content: entries.map((entry) => ({
                         highlighted: false,
+                        message: 'Best wishes',
+                        audio: null,
                         ...entry,
                         eventId: 'event-1',
                         guestName: 'Guest',
-                        message: 'Best wishes',
                         createdAt: '2026-09-30T12:00:00Z',
                     })),
                     page: { totalElements: entries.length },
@@ -177,6 +185,31 @@ describe('Wishbook composer for hosts', () => {
         fireEvent.click(screen.getByRole('button', { name: 'addToWishbook' }));
 
         expect(createEntry).toHaveBeenCalledWith({ message: 'Congrats!', guestName: undefined, audio: null });
+    });
+});
+
+describe('Wishbook voice wishes for hosts', () => {
+    it('a host plays a voice wish', () => {
+        entries = [{ id: 'w1', authorMemberId: 'm2', canDelete: true, message: null, audio: { url: 'https://r2.test/a.m4a', durationMs: 42_000 } }];
+        render(<WishbookPage />);
+
+        expect(screen.getByRole('button', { name: 'play' })).toBeTruthy();
+        expect(screen.getByText('0:42')).toBeTruthy();
+    });
+
+    it('a voice-only row has no empty text line', () => {
+        entries = [{ id: 'w1', authorMemberId: 'm2', canDelete: true, message: null, audio: { url: 'https://r2.test/a.m4a', durationMs: 42_000 } }];
+        render(<WishbookPage />);
+
+        const row = screen.getByRole('article');
+        expect(row.querySelectorAll('p.whitespace-pre-wrap')).toHaveLength(0);
+    });
+
+    it('a written wish has no player', () => {
+        render(<WishbookPage />);
+
+        expect(screen.getByText('Best wishes')).toBeTruthy();
+        expect(screen.queryByRole('button', { name: 'play' })).toBeNull();
     });
 });
 

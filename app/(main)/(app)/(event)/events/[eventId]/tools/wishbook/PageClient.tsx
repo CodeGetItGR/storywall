@@ -13,6 +13,7 @@ import { ModuleUnavailableState } from '@/components/tools/ModuleUnavailableStat
 import { ToolEmptyState } from '@/components/tools/ToolEmptyState';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { MyWishesSection } from '@/components/wishbook/MyWishesSection';
+import { VoiceWishPlayer } from '@/components/wishbook/VoiceWishPlayer';
 import { WISHBOOK_BOOK_ID, WishbookBookPanel } from '@/components/wishbook/WishbookBookPanel';
 import { WishbookEntriesSkeleton } from '@/components/wishbook/WishbookSkeletons';
 import { WishComposer } from '@/components/wishbook/WishComposer';
@@ -235,7 +236,16 @@ export default function WishbookPage() {
                                         )}
                                     </div>
                                 </div>
-                                <p className="mt-3 text-sm leading-6 wrap-break-word whitespace-pre-wrap text-ink">{entry.message}</p>
+                                {/* Message */}
+                                {entry.message ? (
+                                    <p className="mt-3 text-sm leading-6 wrap-break-word whitespace-pre-wrap text-ink">{entry.message}</p>
+                                ) : null}
+                                {/* Recording */}
+                                {entry.audio ? (
+                                    <div className="mt-3">
+                                        <VoiceWishPlayer src={entry.audio.url} durationMs={entry.audio.durationMs} />
+                                    </div>
+                                ) : null}
                             </article>
                         ))}
                     </div>
