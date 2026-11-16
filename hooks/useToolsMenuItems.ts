@@ -153,6 +153,7 @@ const VENDOR_TOOL_KEYS: Partial<Record<string, VendorActionKey>> = {
 export function useHostMenuItems(): ToolMenuItem[] {
     const t = useTranslations('MobileTabBar.hostMenu');
     const activeEvent = useActiveEvent();
+    const isDemoVisitor = useContentAccessMode() === 'demoVisitor';
 
     // A suspended StoryWall shows only the suspended view: no host menu.
     if (!activeEvent || activeEvent.suspended) return [];
@@ -171,7 +172,8 @@ export function useHostMenuItems(): ToolMenuItem[] {
         { key: 'manage', href: routes.events.manage(activeEvent.id), icon: LayoutDashboard },
         { key: 'invitationsQr', href: routes.events.invitationsQr(activeEvent.id), icon: Ticket, hidden: isDeleted || isDraft || isLite },
         { key: 'vendors', href: routes.events.manageVendors(activeEvent.id), icon: Store, hidden: isDeleted || isDraft || !vendorsOn },
-        { key: 'announcement', href: routes.events.tools.announcement(activeEvent.id), icon: Megaphone, hidden: isDeleted || isDraft || !postsOn },
+        // The public demo has no announcement page.
+        { key: 'announcement', href: routes.events.tools.announcement(activeEvent.id), icon: Megaphone, hidden: isDeleted || isDraft || !postsOn || isDemoVisitor },
         { key: 'help', href: routes.events.manage(activeEvent.id, { tab: 'help' }), icon: HelpCircle, hidden: isDeleted },
     ];
 
