@@ -1,14 +1,16 @@
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { useMoreBelowHint } from '@/hooks/useMoreBelowHint';
+import { SEEN_MARGIN_PX, useMoreBelowHint } from '@/hooks/useMoreBelowHint';
 
 type Callback = (entries: Partial<IntersectionObserverEntry>[]) => void;
 let notify: Callback = () => {};
+let observerOptions: IntersectionObserverInit | undefined;
 
 class FakeObserver {
-    constructor(callback: Callback) {
+    constructor(callback: Callback, options?: IntersectionObserverInit) {
         notify = callback;
+        observerOptions = options;
     }
     observe() {}
     disconnect() {}
@@ -45,5 +47,16 @@ describe('useMoreBelowHint', () => {
         act(() => notify([below]));
 
         expect(result.current.isVisible).toBe(false);
+    });
+
+    // On a tall phone the section's heading can just peek in at the bottom edge, behind the hint itself.
+    it('only counts the target as seen once it clears the bottom band', () => {
+        const { result } = renderHook(() => useMoreBelowHint(target, true));
+
+        expect(observerOptions?.rootMargin).toBe(`0px 0px -${SEEN_MARGIN_PX}px 0px`);
+        act(() =>
+            notify([{ isIntersecting: false, boundingClientRect: { top: 790 } as DOMRect, rootBounds: { bottom: 800 - SEEN_MARGIN_PX } as DOMRect }]),
+        );
+        expect(result.current.isVisible).toBe(true);
     });
 });

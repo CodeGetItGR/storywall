@@ -6,12 +6,17 @@ import { CoupleContactSettings } from '@/components/saveMyDate/editor/settings/C
 import { DateSettings } from '@/components/saveMyDate/editor/settings/DateSettings';
 import { DressCodeSettings } from '@/components/saveMyDate/editor/settings/DressCodeSettings';
 import { EffectSettings, TransitionSettings } from '@/components/saveMyDate/editor/settings/EffectSettings';
+import { FaqItemsSettings } from '@/components/saveMyDate/editor/settings/FaqItemsSettings';
+import { FollowEventSettings } from '@/components/saveMyDate/editor/settings/FollowEventSettings';
 import { FooterSettings } from '@/components/saveMyDate/editor/settings/FooterSettings';
+import { GallerySettings } from '@/components/saveMyDate/editor/settings/GallerySettings';
 import { LinkButtonsSettings } from '@/components/saveMyDate/editor/settings/LinkButtonsSettings';
 import { LocationsSettings } from '@/components/saveMyDate/editor/settings/LocationsSettings';
+import { PeopleSettings } from '@/components/saveMyDate/editor/settings/PeopleSettings';
 import { ProgramItemsSettings } from '@/components/saveMyDate/editor/settings/ProgramItemsSettings';
 import { SectionStyleSettings } from '@/components/saveMyDate/editor/settings/SectionStyleSettings';
 import { StaysSettings } from '@/components/saveMyDate/editor/settings/StaysSettings';
+import type { PeopleSection } from '@/hooks/usePeopleSettings';
 import type { SectionOf, SettingsScope } from '@/hooks/useSectionSettingsPanel';
 import type { SectionType } from '@/lib/invitation/sections';
 import type { SettingsGroup } from '@/lib/invitation/sectionSettings';
@@ -34,6 +39,10 @@ function scopeOf<T extends SectionType>(scope: SettingsScope, type: T): Settings
     return scope.section.type === type ? (scope as SettingsScope<SectionOf<T>>) : null;
 }
 
+function peopleScope(scope: SettingsScope): SettingsScope<PeopleSection> | null {
+    return scopeOf(scope, 'godparents') ?? scopeOf(scope, 'weddingSponsors') ?? scopeOf(scope, 'parentsSimple');
+}
+
 function programScope(scope: SettingsScope): SettingsScope<SectionOf<'program'> | SectionOf<'programIcons'>> | null {
     return scopeOf(scope, 'program') ?? scopeOf(scope, 'programIcons');
 }
@@ -45,12 +54,22 @@ export function SectionSettingsGroups({ scope, groups }: SectionSettingsGroupsPr
 
 function SettingsGroupContent({ scope, group }: { scope: SettingsScope; group: SettingsGroup }) {
     switch (group) {
+        case 'follow':
+            return <FollowEventSettings scope={scope} />;
         case 'date': {
             const date = scopeOf(scope, 'date');
             return date && <DateSettings scope={date} />;
         }
+        case 'gallery': {
+            const gallery = scopeOf(scope, 'gallery');
+            return gallery && <GallerySettings scope={gallery} />;
+        }
         case 'countdown':
             return <SectionStyleSettings scope={scope} groups={COUNTDOWN_FIELDS} />;
+        case 'faqItems': {
+            const faq = scopeOf(scope, 'faq');
+            return faq && <FaqItemsSettings scope={faq} />;
+        }
         case 'faq':
             return <SectionStyleSettings scope={scope} groups={FAQ_FIELDS} />;
         case 'rsvp':
@@ -82,6 +101,10 @@ function SettingsGroupContent({ scope, group }: { scope: SettingsScope; group: S
         case 'dressCode': {
             const dressCode = scopeOf(scope, 'dressCode');
             return dressCode && <DressCodeSettings scope={dressCode} />;
+        }
+        case 'people': {
+            const people = peopleScope(scope);
+            return people && <PeopleSettings scope={people} />;
         }
         case 'buttons':
             return <LinkButtonsSettings scope={scope} />;

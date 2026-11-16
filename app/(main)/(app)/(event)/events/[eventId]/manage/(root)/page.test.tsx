@@ -28,6 +28,11 @@ const liveEvent = {
     modules: [{ moduleKey: 'rsvp', isAvailable: true, isEnabled: true }],
 };
 
+const journeyEvent = {
+    ...liveEvent,
+    modules: ['rsvp', 'wishlist', 'gallery', 'wishbook'].map((moduleKey) => ({ moduleKey, isAvailable: true, isEnabled: true })),
+};
+
 const themedEvent = { ...liveEvent, modules: [...liveEvent.modules, { moduleKey: 'theme', isAvailable: false, isEnabled: true }] };
 
 function visit(searchParams: { tab?: string; section?: string } = {}) {
@@ -88,6 +93,7 @@ describe('ManagePage (server)', () => {
         expect(seededKeys(await visit())).toEqual([
             ['events', 'e1', 'usage'],
             ['events', 'e1', 'gift'],
+            ['events', 'e1', 'qr-links'],
         ]);
     });
 
@@ -170,6 +176,50 @@ describe('ManagePage (server)', () => {
         );
 
         expect(seededKeys(await visit({ tab: 'theme' }))).toEqual(expect.arrayContaining([['events', 'e1', 'usage']]));
+    });
+
+    it("seeds the journey's reads on the overview of a live event", async () => {
+        mocks.resolveServerEventDetail.mockResolvedValue(journeyEvent);
+        mocks.serverGet.mockImplementation((path: string) => Promise.resolve(path.endsWith('/wishbook/count') ? 3 : []));
+
+        const element = await visit();
+
+        expect(mocks.serverGetOrNull).toHaveBeenCalledWith('/api/events/e1/gift-account', 'token-1');
+        expect(seededKeys(element)).toEqual(
+            expect.arrayContaining([
+                ['events', 'e1', 'gift-account'],
+                ['events', 'e1', 'qr-links'],
+                ['events', 'e1', 'media', 'summary'],
+                ['events', 'e1', 'wishbook', 'count'],
+            ]),
+        );
+    });
+
+    it("skips the journey's reads on another section", async () => {
+        mocks.resolveServerEventDetail.mockResolvedValue(journeyEvent);
+
+        await visit({ tab: 'rsvp' });
+
+        expect(mocks.serverGet).not.toHaveBeenCalledWith('/api/events/e1/qr-links', 'token-1');
+        expect(mocks.serverGet).not.toHaveBeenCalledWith('/api/events/e1/media/summary', 'token-1');
+        expect(mocks.serverGetOrNull).not.toHaveBeenCalledWith('/api/events/e1/gift-account', 'token-1');
+    });
+
+    it('leaves out the reads of modules the plan lacks', async () => {
+        await visit();
+
+        expect(mocks.serverGet).not.toHaveBeenCalledWith('/api/events/e1/media/summary', 'token-1');
+        expect(mocks.serverGet).not.toHaveBeenCalledWith('/api/events/e1/wishbook/count', 'token-1');
+        expect(mocks.serverGetOrNull).not.toHaveBeenCalledWith('/api/events/e1/gift-account', 'token-1');
+    });
+
+    it("skips the journey's reads for a draft event", async () => {
+        mocks.resolveServerEventDetail.mockResolvedValue({ ...journeyEvent, status: 'DRAFT' });
+
+        await visit();
+
+        expect(mocks.serverGet).not.toHaveBeenCalledWith('/api/events/e1/qr-links', 'token-1');
+        expect(mocks.serverGetOrNull).not.toHaveBeenCalledWith('/api/events/e1/gift-account', 'token-1');
     });
 
     it("prefetches nothing when Spring can't return the event", async () => {

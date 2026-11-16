@@ -10,6 +10,7 @@ import { useEditorLeave } from '@/hooks/useEditorLeave';
 import { useEditorSectionSettings } from '@/hooks/useEditorSectionSettings';
 import { useEditorTour } from '@/hooks/useEditorTour';
 import { useInvitationEditorStore } from '@/hooks/useInvitationEditorStore';
+import { useInvitationEventSync } from '@/hooks/useInvitationEventSync';
 import { usePhotoUploads } from '@/hooks/usePhotoUploads';
 import { usePublishInvitation } from '@/hooks/usePublishInvitation';
 import { useSectionActions } from '@/hooks/useSectionActions';
@@ -32,8 +33,9 @@ export function useInvitationEditor(draft: EditableDraft, uploadedFonts?: Invita
     );
     const { status, flush, savedRevision } = useDraftAutosave(editor.store, draft.id, draft.revision, themes.themeFor);
     const leave = useEditorLeave(flush);
-    const sections = useSectionActions(editor.store, editor.document, draft.eventType);
-    const sectionSettings = useEditorSectionSettings(editor.store, editor.document, shown, sections.setActiveId, uploadedFonts);
+    const eventSync = useInvitationEventSync(editor.store, draft.eventId, shown.media, editor.themeSlug);
+    const sections = useSectionActions(editor.store, editor.document, draft.eventType, 'host', eventSync.event, eventSync.samples);
+    const sectionSettings = useEditorSectionSettings(editor.store, editor.document, shown, sections.setActiveId, uploadedFonts, eventSync);
     const themeSwitch = useThemeSwitch({ store: editor.store, eventType: draft.eventType, current: themes.active, addTheme: themes.add });
     const [openPanel, setOpenPanel] = useState<EditorPanel | null>(null);
     const [isPreviewOpen, setIsPreviewOpen] = useState(false);
@@ -75,8 +77,13 @@ export function useInvitationEditor(draft: EditableDraft, uploadedFonts?: Invita
         document: editor.document,
         theme: shown.theme,
         themeName: themes.active.name,
-        // The draft's images and the ones uploaded since it opened.
+        // The draft's images, the ones uploaded since it opened, and the event's.
         media: sectionSettings.media,
+        // What the invitation follows from its event, once it has loaded; null for a draft on no event.
+        event: eventSync.event,
+        joinUrl: eventSync.joinUrl,
+        // Where the host changes what the event fills; null for a draft on no event.
+        fieldLinks: eventSync.fieldLinks,
         textColor: editor.document.overrides.textColor ?? shown.theme.colors.text,
         setTextColor: editor.setTextColor,
         canUndo: editor.canUndo,

@@ -24,7 +24,7 @@ import { useActiveEvent, useEventContextLoading, useIsHost } from '@/providers/E
 // non-host members the panel only ever shows their plain tool links (same
 // set MobileTabBar's member context menu shows), so every host-only
 // summary/fetch below is also gated on `isHost`.
-export function useRightContextPanel({ includeManageLinks = true }: { includeManageLinks?: boolean } = {}) {
+export function useRightContextPanel() {
     const activeEvent = useActiveEvent();
     const moduleCopy = useModuleCopy(activeEvent?.eventType);
     const isHost = useIsHost();
@@ -53,16 +53,12 @@ export function useRightContextPanel({ includeManageLinks = true }: { includeMan
     const wishbook = useWishbook(showWishbookSummary ? (activeEvent?.id ?? null) : null);
     const qrLinks = useEventQrLinks(showInvitationsQr ? (activeEvent?.id ?? null) : null);
 
-    // Same set the MobileTabBar's host context menu shows: dashboard + help,
+    // Same set the MobileTabBar's host context menu shows: dashboard,
     // plus every available tool except the guest self-RSVP flow (hosts answer
     // RSVPs from the dashboard's RSVP section, already linked in that menu).
     // The share links are excluded here — they get their own section below
     // instead of sitting in this flat list.
-    // `includeManageLinks: false` (used when this content is reused inside the
-    // manage page itself, e.g. its Overview tab) drops "Manage" (would self-link
-    // to the dashboard) and "Help" (already one click away in the manage nav).
-    let hostItemsForActions = useHostMenuItems().filter((item) => item.key !== 'invitationsQr');
-    if (!includeManageLinks) hostItemsForActions = hostItemsForActions.filter((item) => item.key !== 'manage' && item.key !== 'help');
+    const hostItemsForActions = useHostMenuItems().filter((item) => item.key !== 'invitationsQr');
     const toolItems = useToolsMenuItems();
     // The shared tools menu leaves the playlist out because MobileTabBar gives
     // it its own tab; the desktop host actions have no such tab, so add it here.
@@ -81,7 +77,7 @@ export function useRightContextPanel({ includeManageLinks = true }: { includeMan
     const actionItems = !isHost
         ? toolItems
         : isDraft
-          ? hostItemsForActions.filter((item) => item.key !== 'help')
+          ? hostItemsForActions
           : [...hostItemsForActions, ...toolItems.filter((item) => item.key !== 'rsvp'), ...playlistItems];
 
     const currentPlan = eventUsage ? findPlanByCode(appConfig?.planTiers ?? [], 'EVENT', eventUsage.planTier) : undefined;

@@ -27,6 +27,8 @@ interface InviteLayoutProps {
     heroTone?: 'muted' | 'plain';
     // A shorter hero, to leave room below (the QR choice page): a cover or illustration about 5% shorter, the plain logo hero shorter still.
     compactHero?: boolean;
+    // A short strip instead of the hero (the QR forms): the cover, or the brand gradient without one, with the title on it.
+    stripHero?: boolean;
     // Shown at the foot of the body, after some space, with the footer logo right under it.
     bottom?: ReactNode;
     // Floats over the hero's top-right corner (the QR page's language switcher).
@@ -44,11 +46,13 @@ export function InviteLayout({
     scroll = 'body',
     heroTone = 'muted',
     compactHero = false,
+    stripHero = false,
     bottom,
     corner,
     children,
 }: InviteLayoutProps) {
-    const { hero, handleIllustrationError } = useInviteHero(theme, coverImageSrc);
+    const { hero, handleIllustrationError } = useInviteHero(stripHero ? null : theme, coverImageSrc);
+    const heroKind = stripHero ? 'strip' : hero.kind;
 
     return (
         // One stacked column at every size: the hero on top, the actions below. Wider screens centre it.
@@ -61,7 +65,29 @@ export function InviteLayout({
             {/* Corner */}
             {corner ? <div className="absolute top-3 right-3 z-10 md:top-9 md:right-9">{corner}</div> : null}
 
-            {hero.kind === 'illustration' && (
+            {heroKind === 'strip' && (
+                // Strip mode: the cover cut short, or the brand gradient, with the title on it.
+                <div className="relative h-28 w-full shrink-0 overflow-hidden bg-gradient-brand md:h-32 md:rounded-3xl">
+                    {hero.kind === 'cover' && (
+                        <ProtectedImage
+                            src={hero.src}
+                            alt={coverImageAlt}
+                            fill
+                            sizes="(min-width: 768px) 576px, 100vw"
+                            className="object-cover"
+                            preload
+                            loading="eager"
+                        />
+                    )}
+                    <div className="absolute inset-0 bg-linear-to-t from-black/65 via-black/25 to-black/10" />
+                    <div className="absolute right-0 bottom-0 left-0 px-6 pb-4">
+                        <h1 className="truncate text-xl font-bold text-white md:text-2xl">{eventTitle}</h1>
+                        {eventSubtitle && <p className="mt-0.5 truncate text-sm text-white/80">{eventSubtitle}</p>}
+                    </div>
+                </div>
+            )}
+
+            {heroKind === 'illustration' && hero.kind === 'illustration' && (
                 // Illustration mode: the art sits clean on the theme colour and the title goes below it
                 // in dark ink. The cover-photo overlay (dark gradient, white title) would only muddy it.
                 <div
@@ -92,7 +118,7 @@ export function InviteLayout({
                 </div>
             )}
 
-            {hero.kind === 'cover' && (
+            {heroKind === 'cover' && hero.kind === 'cover' && (
                 <div
                     className={cn(
                         'relative w-full shrink-0 bg-gradient-brand md:overflow-hidden md:rounded-3xl',
@@ -116,17 +142,22 @@ export function InviteLayout({
                 </div>
             )}
 
-            {hero.kind === 'logo' && (
+            {heroKind === 'logo' && (
                 // Logo mode: no illustration and no cover, so the app logo stands in, with the title below it.
                 <div
                     className={cn(
                         'flex w-full shrink-0 flex-col items-center justify-center px-6 text-center md:rounded-3xl',
                         heroTone !== 'plain' && 'h-64 gap-6 bg-surface-muted md:h-80',
                         // The QR choice page keeps it short, so the join card starts on the first screen (KAN-213).
-                        heroTone === 'plain' && (compactHero ? 'h-44 gap-4 bg-background md:h-52' : 'h-56 gap-6 bg-background md:h-64'),
+                        heroTone === 'plain' && (compactHero ? 'h-36 gap-4 bg-background md:h-44' : 'h-56 gap-6 bg-background md:h-64'),
                     )}
                 >
-                    <Logo direction="col" iconClassName="h-12 w-auto" wordmarkClassName="h-6 w-auto" />
+                    {/* The short hero keeps the logo on one row: the mark beside the wordmark. */}
+                    {heroTone === 'plain' && compactHero ? (
+                        <Logo direction="row" className="gap-2" iconClassName="h-9 w-auto" wordmarkClassName="h-7 w-auto" />
+                    ) : (
+                        <Logo direction="col" iconClassName="h-12 w-auto" wordmarkClassName="h-6 w-auto" />
+                    )}
                     <div>
                         <h1 className="text-2xl font-bold text-balance text-ink md:text-3xl">{eventTitle}</h1>
                         {eventSubtitle && <p className="mx-auto mt-2 max-w-md text-sm text-ink-muted md:text-base">{eventSubtitle}</p>}
@@ -139,7 +170,7 @@ export function InviteLayout({
                 <div
                     className={cn(
                         'mx-auto flex w-full max-w-sm flex-1 flex-col px-6 pt-8',
-                        hero.kind === 'logo' && !actions && 'pb-[max(2rem,env(safe-area-inset-bottom))]',
+                        heroKind === 'logo' && !actions && 'pb-[max(2rem,env(safe-area-inset-bottom))]',
                     )}
                 >
                     {/* Body */}
@@ -156,7 +187,7 @@ export function InviteLayout({
                     {bottom && <div className="mt-auto pt-12">{bottom}</div>}
 
                     {/* Footer: the logo column already shows it */}
-                    {hero.kind !== 'logo' && (
+                    {heroKind !== 'logo' && (
                         <Logo
                             direction="row"
                             iconClassName="h-5 w-auto"

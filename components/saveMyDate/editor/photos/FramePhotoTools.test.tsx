@@ -125,6 +125,28 @@ describe('Frame photo tools', () => {
         expect(frameIn(store).zoom).toBeGreaterThan(1);
     });
 
+    it('counts every quick wheel notch', () => {
+        const store = renderCanvas();
+        const surface = screen.getByTestId('frame-photo-surface');
+        act(() => {
+            fireEvent.wheel(surface, { deltaY: -100 });
+            fireEvent.wheel(surface, { deltaY: -100 });
+        });
+        expect(frameIn(store).zoom).toBe(1.3);
+    });
+
+    it('leaves the wheel to the page at the zoom limits', () => {
+        const store = renderCanvas();
+        const surface = screen.getByTestId('frame-photo-surface');
+        // fireEvent returns false when the event was cancelled.
+        let scrolled = false;
+        act(() => {
+            scrolled = fireEvent.wheel(surface, { deltaY: 100 });
+        });
+        expect(scrolled).toBe(true);
+        expect(frameIn(store).zoom).toBe(1);
+    });
+
     it('gives hosts no frame lists, and hides a frame not chosen yet', () => {
         renderCanvas({ frame: { frameId: '' } });
         expect(screen.queryByRole('combobox')).not.toBeInTheDocument();

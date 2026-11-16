@@ -63,6 +63,7 @@ export function useFramePhotoTools(element: PhotoFrameElement, edit: Edit) {
     );
 
     const zoomKey = useRef('');
+    const wheelZoom = useRef<number>(FRAME_ZOOM.min);
 
     useGesture(
         {
@@ -84,9 +85,17 @@ export function useFramePhotoTools(element: PhotoFrameElement, edit: Edit) {
             onWheel: ({ first, delta: [, deltaY], event }) => {
                 // A trackpad pinch arrives as a wheel with Ctrl held; the pinch handles it.
                 if (event.ctrlKey) return;
+                if (first) {
+                    zoomKey.current = nextGestureKey(`frame-zoom:${id}`);
+                    wheelZoom.current = Math.max(FRAME_ZOOM.min, latest.current.zoom);
+                }
+                // Counted from the last step, not the drawn zoom, so quick notches all count.
+                const next = clampFrameZoom(wheelZoom.current - deltaY * WHEEL_ZOOM_PER_PX);
+                // At 1x or 3x the wheel scrolls the page instead.
+                if (next === wheelZoom.current) return;
                 event.preventDefault();
-                if (first) zoomKey.current = nextGestureKey(`frame-zoom:${id}`);
-                zoomTo(clampFrameZoom(latest.current.zoom - deltaY * WHEEL_ZOOM_PER_PX), zoomKey.current);
+                wheelZoom.current = next;
+                zoomTo(next, zoomKey.current);
             },
         },
         {

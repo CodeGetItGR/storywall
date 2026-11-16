@@ -13,9 +13,10 @@ interface QrJoinCardProps {
 }
 
 const PRIMARY_CLASS =
-    'flex min-h-11 items-center justify-center rounded-full bg-gradient-brand px-5 py-3 text-[15px] font-semibold text-white transition-opacity hover:opacity-90';
-const SECONDARY_CLASS =
-    'flex min-h-11 items-center justify-center rounded-full bg-background px-5 py-3 text-[15px] font-semibold text-ink transition-colors hover:bg-background/70';
+    'flex min-h-10 items-center justify-center rounded-full bg-gradient-brand px-5 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90';
+// Log-in is a plain link under the main button, so the card stays short.
+const LINK_CLASS =
+    'mx-auto inline-flex min-h-10 items-center px-3 text-sm font-semibold text-ink underline decoration-ink/30 underline-offset-4 transition-colors hover:decoration-ink';
 
 // The main choice on a scanned event code (KAN-213): what is inside the event, then the way in.
 export function QrJoinCard({ choice, href, coverSrc, title, accountHrefs }: QrJoinCardProps) {
@@ -37,10 +38,10 @@ export function QrJoinCard({ choice, href, coverSrc, title, accountHrefs }: QrJo
                     <AppLink href={accountHrefs.register} className={PRIMARY_CLASS}>
                         {tInvite('createAccount')}
                     </AppLink>
-                    <AppLink href={accountHrefs.login} className={SECONDARY_CLASS}>
+                    <p className="-mt-1 text-center text-xs text-ink-muted">{t('choices.freeAccount')}</p>
+                    <AppLink href={accountHrefs.login} className={LINK_CLASS}>
                         {tInvite('haveAccount')}
                     </AppLink>
-                    <p className="-mt-1 text-center text-xs text-ink-muted">{t('choices.freeAccount')}</p>
                 </>
             ) : (
                 <AppLink href={href} className={PRIMARY_CLASS}>
