@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
     addField,
+    addLogo,
     DEFAULT_QR_CARD_FEATURES,
     DEFAULT_QR_CARD_LAYOUT,
     DEFAULT_QR_CARD_TITLE,
@@ -12,7 +13,9 @@ import {
     handlePoint,
     isFieldComplete,
     isValidQrCardLayout,
+    logoHeight,
     moveElementTo,
+    QR_CARD_SAFE_AREA,
     qrCardElements,
     qrCardHitOrder,
     type QrCardLayout,
@@ -20,6 +23,7 @@ import {
     qrCardLineWording,
     rectsOverlap,
     removeField,
+    removeLogo,
     resizeElement,
     roundMm,
     sameQrCardLayout,
@@ -27,6 +31,7 @@ import {
     setFeaturesShown,
     setLinesOptions,
     setLineWording,
+    setLogoColor,
     setTitleOptions,
     setTitleShown,
     snapPosition,
@@ -45,6 +50,7 @@ describe('the default layout', () => {
             lines: { x: 8, y: 107, width: 89, height: 33, textSize: 5, align: 'center' },
             fields: [],
             features: null,
+            logo: null,
         });
         expect(isValidQrCardLayout(L)).toBe(true);
     });
@@ -60,6 +66,7 @@ describe('the layout with tiles', () => {
             lines: { x: 8, y: 70, width: 89, height: 8, textSize: 5, align: 'center' },
             fields: [],
             features: { x: 8, y: 79, width: 89, height: 61 },
+            logo: null,
         });
         expect(DEFAULT_QR_CARD_FEATURES).toEqual(F.features);
         expect(isValidQrCardLayout(F)).toBe(true);
@@ -140,7 +147,7 @@ describe('isValidQrCardLayout', () => {
 describe('qrCardLayoutOf', () => {
     it('falls back to the default, and reads a layout saved before fields as having none', () => {
         expect(qrCardLayoutOf(null)).toBe(L);
-        const { fields: _fields, ...old } = L;
+        const { fields: _fields, logo: _logo, ...old } = L;
         expect(qrCardLayoutOf(old)).toEqual(L);
     });
 
@@ -307,5 +314,77 @@ describe('line wording', () => {
 
     it('reads blank wording as the standard line', () => {
         expect(qrCardLineWording(setLineWording(L, 'join', 'en', '   '), 'join', 'en')).toBeNull();
+    });
+});
+
+describe('the logo', () => {
+    const withLogo = addLogo(L);
+
+    it('is added once, 45 mm wide and centred at the bottom when no band is clear, in the brand colours', () => {
+        expect(withLogo.logo).toEqual({ x: 30, y: 129.7, width: 45, color: null });
+        expect(addLogo(setTitleShown(L, false)).logo?.y).toBe(8);
+        expect(addLogo(withLogo)).toBe(withLogo);
+        expect(isValidQrCardLayout(withLogo)).toBe(true);
+    });
+
+    it('makes room under the tiles by shortening them, never below their smallest height', () => {
+        const both = addLogo(FEATURES_QR_CARD_LAYOUT);
+        expect(both.logo).toEqual({ x: 30, y: 129.7, width: 45, color: null });
+        expect(both.features).toEqual({ x: 8, y: 79, width: 89, height: 49.7 });
+        expect(isValidQrCardLayout(both)).toBe(true);
+        // Tiles already clear of the bottom stay as they are.
+        const short = { ...FEATURES_QR_CARD_LAYOUT, features: { x: 8, y: 79, width: 89, height: 30 } };
+        expect(addLogo(short).features).toEqual(short.features);
+        // Tiles that can't shrink that far keep their size, and the logo sits over them.
+        const low = { ...FEATURES_QR_CARD_LAYOUT, features: { x: 8, y: 110, width: 89, height: 30 } };
+        expect(addLogo(low).features).toEqual(low.features);
+    });
+
+    it('draws after the tiles and under the code', () => {
+        expect(qrCardElements(addLogo(FEATURES_QR_CARD_LAYOUT))).toEqual(['title', 'lines', 'features', 'logo', 'code']);
+    });
+
+    it('keeps its shape: 140 wide to 32 high', () => {
+        expect(elementRect(withLogo, 'logo')).toEqual({ x: 30, y: 129.7, width: 45, height: logoHeight(45) });
+        expect(logoHeight(140)).toBe(32);
+    });
+
+    it('draws between the fields and the code, and is named Logo', () => {
+        const both = addLogo(withText);
+        expect(qrCardElements(both)).toEqual(['title', 'lines', fieldElement('a'), 'logo', 'code']);
+        expect(elementName(both, 'logo')).toEqual({ key: 'logo', number: 0 });
+    });
+
+    it('takes one colour or goes back to the brand colours, and can be removed', () => {
+        expect(setLogoColor(withLogo, '#FFFFFF').logo?.color).toBe('#FFFFFF');
+        expect(setLogoColor(setLogoColor(withLogo, '#FFFFFF'), null).logo?.color).toBeNull();
+        expect(removeLogo(withLogo).logo).toBeNull();
+        expect(qrCardElements(removeLogo(withLogo))).not.toContain('logo');
+    });
+
+    it('resizes from a corner keeping its shape, and never past the safe area', () => {
+        const start = elementRect(withLogo, 'logo');
+        const grown = resizeElement(withLogo, 'logo', 'ne', start, 10, 0);
+        expect(grown.logo?.width).toBe(55);
+        expect(grown.logo!.y + logoHeight(55)).toBeCloseTo(start.y + start.height, 1);
+        // From x 30 the right edge stops at 97: 67 wide.
+        const huge = resizeElement(withLogo, 'logo', 'ne', start, 500, 0);
+        expect(huge.logo?.width).toBe(67);
+        expect(isValidQrCardLayout(huge)).toBe(true);
+        const small = resizeElement(withLogo, 'logo', 'sw', start, 500, -500);
+        expect(small.logo?.width).toBe(20);
+        expect(isValidQrCardLayout(small)).toBe(true);
+    });
+
+    it('moves to the bottom edge without its height poking out', () => {
+        const moved = moveElementTo(withLogo, 'logo', { x: 30, y: 200 });
+        const rect = elementRect(moved, 'logo');
+        expect(rect.y + rect.height).toBeLessThanOrEqual(QR_CARD_SAFE_AREA.bottom);
+        expect(roundMm(rect.y)).toBe(rect.y);
+        expect(isValidQrCardLayout(moved)).toBe(true);
+    });
+
+    it('rejects a width out of range', () => {
+        expect(isValidQrCardLayout({ ...withLogo, logo: { x: 30, y: 8, width: 19, color: null } })).toBe(false);
     });
 });

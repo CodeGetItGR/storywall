@@ -8,7 +8,7 @@ import type { QrCardLayoutEditorState } from '@/hooks/useQrCardLayoutEditor';
 const BUTTON_CLASS =
     'inline-flex h-8 items-center gap-1.5 rounded-md border border-border px-2.5 text-xs font-semibold text-ink hover:bg-canvas disabled:opacity-50';
 
-// Adding text to the card, and putting a removed title back.
+// Adding text or the logo to the card, and putting a removed title back.
 export function QrCardLayoutAddBar({ editor }: { editor: QrCardLayoutEditorState }) {
     const t = useTranslations('AdminPage.qrCards.layout');
 
@@ -24,6 +24,12 @@ export function QrCardLayoutAddBar({ editor }: { editor: QrCardLayoutEditorState
                     <Plus className="h-3.5 w-3.5" aria-hidden="true" />
                     {t('addHost')}
                 </button>
+                {editor.layout.logo === null && (
+                    <button type="button" onClick={editor.addLogo} className={BUTTON_CLASS}>
+                        <Plus className="h-3.5 w-3.5" aria-hidden="true" />
+                        {t('addLogo')}
+                    </button>
+                )}
                 {editor.layout.title === null && (
                     <button type="button" onClick={editor.restoreTitle} className={BUTTON_CLASS}>
                         <Plus className="h-3.5 w-3.5" aria-hidden="true" />

@@ -1,6 +1,7 @@
 import { InvitationElements } from '@/components/saveMyDate/invitation/InvitationElements';
 import { FamilyDecoration } from '@/components/saveMyDate/invitation/sections/family/FamilyDecoration';
 import { SectionText } from '@/components/saveMyDate/invitation/sections/SectionText';
+import { personHasContent, visibleItems } from '@/lib/invitation/listContent';
 import type { RenderContext, TextContrast } from '@/lib/invitation/render';
 import type { InvitationSection } from '@/lib/invitation/sections';
 
@@ -28,7 +29,7 @@ export function ParentsSimpleSection({ section, contrast, ctx }: ParentsSimpleSe
             <div className="family-block">
                 <SectionText section={section} path="godparentsTitle" value={data.godparentsTitle} tag="h3" className="family-title" contrast={contrast} ctx={ctx} />
                 <div className="family-godparents-simple-list">
-                    {data.godparents.map((godparent) => (
+                    {visibleItems(data.godparents, personHasContent, ctx).map((godparent) => (
                         <div key={godparent.id} className="family-godparent-simple-item">
                             <SectionText section={section} path={`godparents.${godparent.id}.name`} value={godparent.name} tag="h2" contrast={contrast} ctx={ctx} />
                         </div>
