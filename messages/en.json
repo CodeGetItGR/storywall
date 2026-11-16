@@ -1319,9 +1319,6 @@
             "storage": "{used} of {limit}"
         },
         "coverage": {
-            "openUntil": "Event open · closes {date}",
-            "closingIn": "Closing in {days, plural, one {# day} other {# days}}. Download your photos and videos",
-            "ended": "Event closed on {date}",
             "download": "Download all"
         },
         "title": "Host Dashboard",
@@ -1361,24 +1358,6 @@
             "artAlt": "Drawing of an online invitation",
             "upgradeBody": "Upgrade your plan to make an online invitation for this event.",
             "upgradePlan": "Upgrade plan"
-        },
-        "stats": {
-            "totalGuests": {
-                "label": "Members",
-                "sub": "Joined the event"
-            },
-            "daysToGo": {
-                "label": "Days to go",
-                "sub": "Until the event starts"
-            },
-            "invitations": {
-                "label": "Invitations",
-                "sub": "Sent so far"
-            },
-            "seats": {
-                "label": "Seats claimed",
-                "sub": "Across all RSVPs"
-            }
         },
         "rsvpBreakdown": {
             "attending": "Attending",
@@ -2367,10 +2346,6 @@
     },
     "HostOnboarding": {
         "steps": {
-            "section": {
-                "title": "Manage your event",
-                "body": "A few steps and everything's ready for your guests"
-            },
             "details": {
                 "title": "Event details",
                 "edit": "Edit event details",
@@ -2391,7 +2366,6 @@
             },
             "invitations": {
                 "title": "Invitations & QR codes",
-                "body": "Share your QR links with guests.",
                 "qr": "Go to QR links"
             }
         }
