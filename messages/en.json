@@ -1333,7 +1333,6 @@
             "upgradeBody": "Upgrade your plan to make an online invitation for this event.",
             "upgradePlan": "Upgrade plan"
         },
-        "sectionSwitcher": "Change section",
         "stats": {
             "totalGuests": {
                 "label": "Members",

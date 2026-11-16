@@ -59,10 +59,10 @@ export function useRightContextPanel({ includeManageLinks = true }: { includeMan
     // The share links are excluded here — they get their own section below
     // instead of sitting in this flat list.
     // `includeManageLinks: false` (used when this content is reused inside the
-    // manage page itself, e.g. its Overview tab) drops "Manage" (would self-link
-    // to the dashboard).
+    // manage page itself, e.g. its Overview tab) drops "Manage", which would link
+    // to the page you are on, and "Vendors", which is already in the dashboard's nav.
     let hostItemsForActions = useHostMenuItems().filter((item) => item.key !== 'invitationsQr');
-    if (!includeManageLinks) hostItemsForActions = hostItemsForActions.filter((item) => item.key !== 'manage');
+    if (!includeManageLinks) hostItemsForActions = hostItemsForActions.filter((item) => item.key !== 'manage' && item.key !== 'vendors');
     const toolItems = useToolsMenuItems();
     // The shared tools menu leaves the playlist out because MobileTabBar gives
     // it its own tab; the desktop host actions have no such tab, so add it here.
