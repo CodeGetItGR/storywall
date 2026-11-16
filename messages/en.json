@@ -1289,6 +1289,35 @@
         }
     },
     "ManagePage": {
+        "journey": {
+            "phases": {
+                "label": "Event phase",
+                "before": "Before",
+                "day": "On the day",
+                "after": "After",
+                "daysToGo": "{count, plural, one {# day to go} other {# days to go}}",
+                "done": "Done",
+                "today": "Today",
+                "from": "From {date}"
+            },
+            "getReady": "Get ready",
+            "afterEvent": "After the event",
+            "scheduleCard": "Add the parts of your day so guests know when to come.",
+            "sessions": "{count, plural, one {# session} other {# sessions}}",
+            "members": "{count} of {limit} members",
+            "seats": "{count, plural, one {# seat} other {# seats}}",
+            "allSet": {
+                "title": "All set",
+                "body": "Your guests have everything they need.",
+                "print": "Print QR codes"
+            },
+            "now": "Now",
+            "media": "{photos, plural, one {# image} other {# images}} · {videos, plural, one {# video} other {# videos}}",
+            "thankGuests": "Thank your guests",
+            "coverageEnds": "Coverage ends {date}",
+            "extend": "Extend",
+            "storage": "{used} of {limit}"
+        },
         "coverage": {
             "openUntil": "Event open · closes {date}",
             "closingIn": "Closing in {days, plural, one {# day} other {# days}}. Download your photos and videos",

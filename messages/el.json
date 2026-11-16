@@ -1412,6 +1412,35 @@
         }
     },
     "ManagePage": {
+        "journey": {
+            "phases": {
+                "label": "Φάση εκδήλωσης",
+                "before": "Πριν",
+                "day": "Την ημέρα",
+                "after": "Μετά",
+                "daysToGo": "{count, plural, one {Απομένει # ημέρα} other {Απομένουν # ημέρες}}",
+                "done": "Ολοκληρώθηκε",
+                "today": "Σήμερα",
+                "from": "Από {date}"
+            },
+            "getReady": "Προετοιμασία",
+            "afterEvent": "Μετά την εκδήλωση",
+            "scheduleCard": "Προσθέστε τα μέρη της ημέρας σας, ώστε οι καλεσμένοι να ξέρουν πότε να έρθουν.",
+            "sessions": "{count, plural, one {# ενότητα} other {# ενότητες}}",
+            "members": "{count} από {limit} μέλη",
+            "seats": "{count, plural, one {# θέση} other {# θέσεις}}",
+            "allSet": {
+                "title": "Όλα έτοιμα",
+                "body": "Οι καλεσμένοι σας έχουν ό,τι χρειάζονται.",
+                "print": "Εκτύπωση QR codes"
+            },
+            "now": "Τώρα",
+            "media": "{photos, plural, one {# φωτογραφία} other {# φωτογραφίες}} · {videos} βίντεο",
+            "thankGuests": "Ευχαριστήστε τους καλεσμένους σας",
+            "coverageEnds": "Η κάλυψη λήγει {date}",
+            "extend": "Παράταση",
+            "storage": "{used} από {limit}"
+        },
         "coverage": {
             "openUntil": "Εκδήλωση ανοιχτή · κλείνει {date}",
             "closingIn": "Κλείνει σε {days, plural, one {# ημέρα} other {# ημέρες}}. Κατεβάστε φωτογραφίες και βίντεο",
