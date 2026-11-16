@@ -9,6 +9,7 @@ import { endpoints } from '@/lib/api/endpoints';
 import type { Page } from '@/lib/api/pagination';
 import type { WishbookEntryEditDto, WishbookEntryRequestDto, WishbookEntryResponseDto } from '@/lib/api/types';
 import { LIVE_CONTENT_STALE_TIME } from '@/lib/queryClient';
+import { buildWishFormData } from '@/lib/wishbook/voice';
 
 export const WISHBOOK_PAGE_SIZE = 20;
 export const wishbookKeys = {
@@ -62,10 +63,16 @@ export function useMyWishes(eventId: string | null) {
     });
 }
 
+// A wish with a recording goes as multipart (KAN-219); a written-only one stays JSON.
+type CreateWishInput = WishbookEntryRequestDto & { audio?: Blob | null };
+
 export function useCreateWishbookEntry(eventId: string) {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: (input: WishbookEntryRequestDto) => api.post<WishbookEntryResponseDto>(endpoints.events.wishbook(eventId), input),
+        mutationFn: ({ audio, ...wish }: CreateWishInput) =>
+            audio
+                ? api.postForm<WishbookEntryResponseDto>(endpoints.events.wishbook(eventId), buildWishFormData(wish, audio))
+                : api.post<WishbookEntryResponseDto>(endpoints.events.wishbook(eventId), wish),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: wishbookKeys.list(eventId) });
             queryClient.invalidateQueries({ queryKey: wishbookKeys.count(eventId) });
@@ -73,13 +80,20 @@ export function useCreateWishbookEntry(eventId: string) {
     });
 }
 
+// audio replaces the recording; removeAudio drops it; neither keeps it. Always send the current text:
+// a missing message drops it.
+type EditWishInput = { entryId: string; audio?: Blob | null } & WishbookEntryEditDto;
+
 export function useEditWishbookEntry(eventId: string) {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: ({ entryId, message }: { entryId: string } & WishbookEntryEditDto) =>
-            api.put<WishbookEntryResponseDto>(endpoints.wishbook.byId(entryId), { message }),
+        mutationFn: ({ entryId, audio, ...wish }: EditWishInput) =>
+            audio
+                ? api.putForm<WishbookEntryResponseDto>(endpoints.wishbook.byId(entryId), buildWishFormData(wish, audio))
+                : api.put<WishbookEntryResponseDto>(endpoints.wishbook.byId(entryId), wish),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: wishbookKeys.mine(eventId) });
+            // A host-visible wish changed. The list key is a prefix of "mine": one invalidation refreshes both.
+            queryClient.invalidateQueries({ queryKey: wishbookKeys.list(eventId) });
         },
     });
 }
