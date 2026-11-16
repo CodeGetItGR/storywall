@@ -45,6 +45,9 @@ function renderGallery({ images = [photo('m-1'), photo('m-2')], value = slots() 
         fonts: [],
         draftId: 'draft-1',
         addUploaded: vi.fn(),
+        event: null,
+        eventSamples: null,
+        eventFieldLinks: null,
     };
     const wrap = (node: ReactNode) => (
         <NextIntlClientProvider locale="en" messages={en}>

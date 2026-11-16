@@ -3,6 +3,7 @@
 import { useTranslations } from 'next-intl';
 
 import { ActiveText } from '@/components/saveMyDate/editor/text/ActiveText';
+import { LockedActiveText } from '@/components/saveMyDate/editor/text/LockedActiveText';
 import { useTextEditing } from '@/components/saveMyDate/editor/text/TextEditingContext';
 import { useEditableText } from '@/hooks/useEditableText';
 import type { InvitationTextProps } from '@/lib/invitation/textEditing';
@@ -17,6 +18,22 @@ export function EditableText(props: InvitationTextProps) {
     // A date part left empty still shows the date's own text, so it is not an empty box.
     const shown = display ?? value;
     const isEmpty = shown.trim() === '';
+
+    // The event fills its words (KAN-84): open for its look only.
+    if (text.isActive && edit.lock) {
+        return (
+            <LockedActiveText
+                key="locked"
+                textKey={text.key}
+                tag={Tag}
+                className={className}
+                style={style}
+                value={shown}
+                onElement={edit.setElement}
+                onDone={text.done}
+            />
+        );
+    }
 
     if (text.isActive) {
         return (

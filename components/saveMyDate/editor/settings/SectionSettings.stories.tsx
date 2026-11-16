@@ -27,6 +27,18 @@ async function openSheet() {
 
 export const DateSection: Story = {};
 
+// A photo that shows the event's cover: the switch comes first, and turning it off keeps the invitation's own photo.
+export const FollowingTheEvent: Story = {
+    args: { sectionId: 's-photo', followsEvent: true },
+    play: async ({ globals }) => {
+        const sheet = await openSheet();
+        const toggle = sheet.getByRole('switch', { name: copyFor(globals).InvitationEditor.sectionSettings.followEvent });
+        await expect(toggle).toBeChecked();
+        await userEvent.click(toggle);
+        await expect(toggle).not.toBeChecked();
+    },
+};
+
 export const Countdown: Story = { args: { sectionId: 's-countdown' } };
 
 export const Faq: Story = { args: { sectionId: 's-faq' } };
@@ -58,6 +70,41 @@ export const ProgramMomentOpen: Story = {
         const sheet = await openSheet();
         await userEvent.click(sheet.getByRole('button', { name: /Μυστήριο/ }));
         await expect(sheet.getByRole('group', { name: copy.moment })).toBeVisible();
+    },
+};
+
+// The program on the event's schedule (KAN-84): no new moments here, a note says where to change them.
+export const ProgramFromTheEvent: Story = {
+    args: { sectionId: 's-program', onEvent: true },
+    play: async ({ globals }) => {
+        const copy = copyFor(globals).InvitationEditor;
+        const sheet = await openSheet();
+        await expect(sheet.getByRole('link', { name: copy.eventLock.schedule })).toHaveAttribute('href', '/events/evt-wedding/tools/schedule');
+        await expect(sheet.queryByRole('button', { name: copy.sectionSettings.addMoment })).toBeNull();
+    },
+};
+
+// A moment of the event's schedule: its icon still changes here, its words on the schedule.
+export const ProgramIconsMomentFromTheEvent: Story = {
+    args: { sectionId: 's-programIcons', onEvent: true },
+    play: async ({ globals }) => {
+        const copy = copyFor(globals).InvitationEditor;
+        const sheet = await openSheet();
+        await userEvent.click(sheet.getByRole('button', { name: /Δεξίωση/ }));
+        await expect(sheet.getByRole('group', { name: copy.sectionSettings.moment })).toBeVisible();
+        await expect(sheet.queryByLabelText(copy.sectionSettings.time)).toBeNull();
+        await expect(sheet.queryByRole('button', { name: copy.delete })).toBeNull();
+    },
+};
+
+// The event's places: each says where to change it instead of offering its map link.
+export const LocationsFromTheEvent: Story = {
+    args: { sectionId: 's-locations', onEvent: true },
+    play: async ({ globals }) => {
+        const copy = copyFor(globals).InvitationEditor.eventLock;
+        const sheet = await openSheet();
+        await expect(sheet.getByRole('link', { name: copy.settings })).toHaveAttribute('href', '/events/evt-wedding/manage?tab=settings');
+        await expect(sheet.getByRole('link', { name: copy.schedule })).toHaveAttribute('href', '/events/evt-wedding/tools/schedule');
     },
 };
 
