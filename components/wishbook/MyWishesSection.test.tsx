@@ -18,6 +18,13 @@ const entry: WishbookEntryResponseDto = {
     highlighted: null,
 };
 
+const voiceOnly: WishbookEntryResponseDto = {
+    ...entry,
+    id: 'w2',
+    message: null,
+    audio: { url: 'https://r2.test/a.m4a', durationMs: 42_000 },
+};
+
 const base = { entries: [entry], isLoading: false, hasNextPage: false, isFetchingNextPage: false, onLoadMore: vi.fn(), canEdit: true };
 
 afterEach(cleanup);
@@ -44,6 +51,26 @@ describe('MyWishesSection', () => {
 
         expect(screen.getByText('Wishing you every happiness')).toBeTruthy();
         expect(screen.queryByRole('button', { name: /edit/ })).toBeNull();
+    });
+
+    it('shows a voice wish as a mic and its length on an editable row', () => {
+        render(<MyWishesSection {...base} entries={[voiceOnly]} onSelect={vi.fn()} />);
+
+        expect(screen.getByText('0:42')).toBeTruthy();
+        expect(screen.queryByRole('button', { name: 'play' })).toBeNull();
+        expect(screen.getByRole('button', { name: /edit/ })).toBeTruthy();
+    });
+
+    it('plays a voice wish on a read-only row', () => {
+        render(<MyWishesSection {...base} canEdit={false} entries={[voiceOnly]} onSelect={vi.fn()} />);
+
+        expect(screen.getByRole('button', { name: 'play' })).toBeTruthy();
+    });
+
+    it('draws no empty text line for a voice-only wish', () => {
+        const { container } = render(<MyWishesSection {...base} entries={[voiceOnly]} onSelect={vi.fn()} />);
+
+        expect(container.querySelectorAll('.line-clamp-2')).toHaveLength(0);
     });
 
     it('renders nothing when the guest has no wishes', () => {

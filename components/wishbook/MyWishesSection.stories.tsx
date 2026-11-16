@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 import { fn } from 'storybook/test';
 
+import { STORY_VOICE_WISH_URL } from '@/.storybook/fixtures';
 import { MyWishesSection } from '@/components/wishbook/MyWishesSection';
 
 const entries = [
@@ -28,6 +29,13 @@ const entries = [
     },
 ];
 
+// One written wish, one recorded only, one with both.
+const voiceEntries = [
+    entries[1],
+    { ...entries[0], id: 'wish-3', message: null, audio: { url: STORY_VOICE_WISH_URL, durationMs: 42_000 }, createdAt: '2026-06-14T20:00:00Z' },
+    { ...entries[0], id: 'wish-4', audio: { url: STORY_VOICE_WISH_URL, durationMs: 9_000 }, createdAt: '2026-06-14T19:00:00Z' },
+];
+
 const meta = {
     title: 'Wishbook/MyWishesSection',
     component: MyWishesSection,
@@ -48,3 +56,5 @@ export const Editable: Story = {};
 export const ReadOnly: Story = { args: { canEdit: false } };
 export const WithMore: Story = { args: { hasNextPage: true } };
 export const Loading: Story = { args: { isLoading: true, entries: [] } };
+export const VoiceWish: Story = { args: { entries: voiceEntries } };
+export const VoiceWishReadOnly: Story = { args: { entries: voiceEntries, canEdit: false } };
