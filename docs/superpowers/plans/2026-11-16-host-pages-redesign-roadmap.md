@@ -38,6 +38,8 @@ Pieces 3–9 and 11 only need piece 1. They can be built in any order once it is
   - The setup steps sit on the Overview in their current look until piece 2 turns them into the journey.
 - **2 Overview**
   - The Announcement quick tool and stop link to the current announcement page until piece 10 points them at the composer.
+  - Built 2026-11-16. Changes from the plan: Playlist uses the lucide `Music` icon, because `public/icons/music.svg` is the bottom bar's plain dark icon, not a gradient one. The current stop shows its action once: as a coral line on the path, with the button in its card.
+  - The floating Overview button above "+" with a steps-left badge is its own ticket, KAN-236.
 - **3 Invitations & QR codes**
   - The scan page gets a live invitation as one more choice. The scan page's own design is out of scope.
   - Check whether the backend already returns what the scan page needs. If it doesn't, add a guestwall-be ticket and release it first.
