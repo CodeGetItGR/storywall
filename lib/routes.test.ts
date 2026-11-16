@@ -46,7 +46,7 @@ describe('routes.events for a registered demo event id', () => {
     });
 
     it('manage() with a tab param includes it in the query string', () => {
-        expect(routes.events.manage('real-event-id', { tab: 'help' })).toBe('/events/real-event-id/manage?tab=help');
+        expect(routes.events.manage('real-event-id', { tab: 'billing' })).toBe('/events/real-event-id/manage?tab=billing');
     });
 
     it('rsvpReport() carries no param by default (manage origin)', () => {

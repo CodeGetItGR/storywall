@@ -194,6 +194,7 @@ export function storySession(overrides: Partial<EventSessionResponseDto> = {}): 
         endAt: null,
         locationName: 'Agios Nikolaos church',
         mapsUrl: null,
+        locationAddress: null,
         displayOrder: 0,
         isMain: true,
         isSecondary: false,

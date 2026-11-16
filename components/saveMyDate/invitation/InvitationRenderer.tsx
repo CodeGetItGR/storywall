@@ -26,6 +26,8 @@ type InvitationRendererProps = {
     uploadedFonts?: InvitationFontDto[];
     // Sends a guest's RSVP reply; leave it out where nothing should be saved.
     sendRsvp?: RsvpSender;
+    // The event's guest link, for the "Join the event" button.
+    joinUrl?: string;
     // The editor draws hidden sections too, so the host can show them again.
     showHidden?: boolean;
     // The editor puts its tools around each section.
@@ -45,12 +47,13 @@ export function InvitationRenderer({
     hostPreset,
     uploadedFonts = [],
     sendRsvp,
+    joinUrl,
     showHidden = false,
     wrapSection,
     renderText,
     canvasTools,
 }: InvitationRendererProps) {
-    const ctx = { ...buildRenderContext(document, theme, media, hostPreset, sendRsvp), renderText, canvasTools };
+    const ctx = { ...buildRenderContext(document, theme, media, hostPreset, sendRsvp), joinUrl, renderText, canvasTools };
     const fontFaces = uploadedFontFaceCss(uploadedFonts, [document, theme, hostPreset]);
 
     return (

@@ -1,4 +1,7 @@
 import type { AdminEventActivityDto, AdminEventActivityHour } from '@/lib/api/types';
+import { localDay } from '@/lib/datetime';
+
+export { localDay } from '@/lib/datetime';
 
 // Hours arrive as local wall-clock strings ("2026-06-14T23:00") in the event's time zone, so every
 // helper here works on those strings and on UTC calendar arithmetic. No Date is ever read in the
@@ -65,11 +68,6 @@ function nextDay(day: string): string {
 
 export function activeDays(hours: AdminEventActivityHour[]): string[] {
     return [...new Set(hours.map((row) => dayOf(row.hour)))].sort();
-}
-
-export function localDay(instant: string, timeZone: string): string {
-    // en-CA formats as yyyy-mm-dd.
-    return new Intl.DateTimeFormat('en-CA', { timeZone, year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date(instant));
 }
 
 function totalsByDay(hours: AdminEventActivityHour[]): Map<string, KindCounts> {

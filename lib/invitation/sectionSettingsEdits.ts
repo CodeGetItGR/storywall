@@ -2,6 +2,7 @@ import type { Draft } from 'immer';
 
 import type { ContactLinkKey } from '@/lib/invitation/contactLinks';
 import { applyDateLanguage, type DateLanguage } from '@/lib/invitation/dateDisplay';
+import { moveById } from '@/lib/invitation/listEdits';
 import { DATE_DISPLAY_STYLES, type InvitationSection, type SectionType } from '@/lib/invitation/sections';
 import { type DocumentRecipe, editSection, editSectionData, type SectionData, type StylePatch, writeStyle } from '@/lib/invitation/sectionSettings';
 import { upgradeProgramStyle } from '@/lib/invitation/sectionStyleFields';
@@ -121,20 +122,19 @@ export function deleteProgramItem(id: string, itemId: string): DocumentRecipe {
     });
 }
 
+// Moves a moment to where another one is.
+export function moveProgramItem(id: string, itemId: string, overId: string): DocumentRecipe {
+    return editSection(id, (section) => {
+        if (section.type !== 'program' && section.type !== 'programIcons') return;
+        const moved = moveById(section.data.items as Draft<ProgramItem>[], itemId, overId);
+        if (moved) section.data.items = moved as typeof section.data.items;
+    });
+}
+
 function removeTextStyles(section: Draft<InvitationSection>, prefix: string) {
     for (const path of Object.keys(section.textStyles)) {
         if (path.startsWith(prefix)) delete section.textStyles[path];
     }
-}
-
-// Places to stay: their two links.
-export type StayLinks = { website?: string; mapUrl?: string };
-
-export function setStayLinks(id: string, itemId: string, links: StayLinks): DocumentRecipe {
-    return editSectionData(id, 'accommodation', (data) => {
-        const item = data.items.find((entry) => entry.id === itemId);
-        if (item) Object.assign(item, links);
-    });
 }
 
 // Contact links, of the contact section or one partner of the couple contact.
@@ -164,6 +164,13 @@ export type LocationMapKey = (typeof LOCATION_PLACES)[number]['map'];
 export function setLocationMap(id: string, key: LocationMapKey, url: string): DocumentRecipe {
     return editSectionData(id, 'locations', (data) => {
         data[key] = url;
+    });
+}
+
+// Whether the section shows the welcome place between the ceremony and the reception.
+export function setWelcomeEnabled(id: string, enabled: boolean): DocumentRecipe {
+    return editSectionData(id, 'locations', (data) => {
+        data.welcomeEnabled = enabled;
     });
 }
 
