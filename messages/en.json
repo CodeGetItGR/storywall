@@ -1356,7 +1356,6 @@
             "liveUntil": "Live until {date}",
             "edit": "Edit",
             "extend": "Extend",
-            "qrAlt": "QR code for the invitation",
             "empty": "No invitation yet.",
             "chooseTheme": "Choose a theme",
             "artAlt": "Drawing of an online invitation",
