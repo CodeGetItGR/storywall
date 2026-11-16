@@ -52,12 +52,14 @@ export function WishEditSheet({ editor, maxLength }: { editor: WishEditor; maxLe
                         <span className="text-xs text-ink-faint">{t('charactersLeft', { current: editor.draft.length, max: maxLength })}</span>
 
                         {/* Recording */}
-                        <VoiceRecorder
-                            recorder={editor.recorder}
-                            disabled={editor.isSaving}
-                            existing={editor.existingAudio}
-                            onRemoveExisting={editor.removeExisting}
-                        />
+                        <div className="px-1 py-3">
+                            <VoiceRecorder
+                                recorder={editor.recorder}
+                                disabled={editor.isSaving}
+                                existing={editor.existingAudio}
+                                onRemoveExisting={editor.removeExisting}
+                            />
+                        </div>
 
                         {/* Error */}
                         {editor.saveError ? (

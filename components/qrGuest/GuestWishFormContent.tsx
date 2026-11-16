@@ -60,7 +60,9 @@ export function GuestWishFormContent({ form }: { form: GuestWishFormState }) {
             </div>
 
             {/* Recording */}
-            <VoiceRecorder recorder={form.recorder} disabled={form.isPending} />
+            <div className="px-1 py-2">
+                <VoiceRecorder recorder={form.recorder} disabled={form.isPending} />
+            </div>
 
             {/* Name */}
             <div>

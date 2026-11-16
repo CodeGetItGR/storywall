@@ -10,11 +10,12 @@ import { formatClipDuration, MAX_RECORDING_MS } from '@/lib/wishbook/voice';
 
 // White pills, like the guest pages' other secondary buttons; 44 px tall for a thumb.
 const PILL =
-    'inline-flex min-h-11 items-center gap-2 whitespace-nowrap rounded-full px-3.5 text-sm font-semibold transition-colors disabled:opacity-40';
+    'inline-flex min-h-11 items-center gap-2 whitespace-nowrap rounded-full px-4 text-sm font-semibold transition-colors disabled:opacity-40';
 const SECONDARY = `${PILL} border border-border bg-background text-ink hover:bg-primary-light/40`;
-// Icon-only, so the player, "Record again" and remove fit on one row on a phone.
-const REMOVE =
-    'flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-rose-600 transition-colors hover:bg-rose-50 disabled:opacity-40';
+// Icon-only round buttons beside the player, so they all fit on one row on a phone.
+const ICON = 'flex h-11 w-11 shrink-0 items-center justify-center rounded-full transition-colors disabled:opacity-40';
+const RECORD_AGAIN = `${ICON} border border-border bg-background text-ink hover:bg-primary-light/40`;
+const REMOVE = `${ICON} text-rose-600 hover:bg-rose-50`;
 
 type Props = {
     recorder: VoiceRecorderState;
@@ -57,24 +58,33 @@ export function VoiceRecorder({ recorder, disabled = false, existing = null, onR
 
     if (playback) {
         return (
-            <div className="flex flex-wrap items-start gap-1.5">
+            <div className="flex items-center justify-between gap-4">
                 {/* Playback */}
                 <VoiceWishPlayer src={playback.url} durationMs={playback.durationMs} />
 
                 {/* Actions */}
-                <button type="button" onClick={start} disabled={disabled} className={SECONDARY}>
-                    <RotateCcw className="h-4 w-4" aria-hidden="true" />
-                    {t('recordAgain')}
-                </button>
-                <button
-                    type="button"
-                    onClick={finished ? recorder.discard : onRemoveExisting}
-                    disabled={disabled}
-                    aria-label={t('removeRecording')}
-                    className={REMOVE}
-                >
-                    <Trash2 className="h-4 w-4" aria-hidden="true" />
-                </button>
+                <div className="flex items-center gap-3">
+                    <button
+                        type="button"
+                        onClick={start}
+                        disabled={disabled}
+                        aria-label={t('recordAgain')}
+                        title={t('recordAgain')}
+                        className={RECORD_AGAIN}
+                    >
+                        <RotateCcw className="h-4 w-4" aria-hidden="true" />
+                    </button>
+                    <button
+                        type="button"
+                        onClick={finished ? recorder.discard : onRemoveExisting}
+                        disabled={disabled}
+                        aria-label={t('removeRecording')}
+                        title={t('removeRecording')}
+                        className={REMOVE}
+                    >
+                        <Trash2 className="h-4 w-4" aria-hidden="true" />
+                    </button>
+                </div>
             </div>
         );
     }

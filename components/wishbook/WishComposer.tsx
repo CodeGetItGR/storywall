@@ -29,7 +29,7 @@ export function WishComposer({ composer, maxMessageLength }: Props) {
     }
 
     return (
-        <form onSubmit={composer.submit} className="mt-8 space-y-4">
+        <form onSubmit={composer.submit} className="mt-8 space-y-6">
             {/* Message */}
             <textarea
                 id="wishbook-message"
@@ -44,7 +44,9 @@ export function WishComposer({ composer, maxMessageLength }: Props) {
             />
 
             {/* Recording */}
-            <VoiceRecorder recorder={composer.recorder} disabled={composer.isSending} />
+            <div className="px-1">
+                <VoiceRecorder recorder={composer.recorder} disabled={composer.isSending} />
+            </div>
 
             {/* Send */}
             <div className="flex items-center justify-between gap-3">
