@@ -43,6 +43,7 @@ Pieces 3–9 and 11 only need piece 1. They can be built in any order once it is
 - **3 Invitations & QR codes**
   - The scan page gets a live invitation as one more choice. The scan page's own design is out of scope.
   - The scan answer lacks the invitation: guestwall-be ticket KAN-239 adds `invitationSlug`, merged to backend staging before the frontend PR.
+  - Built 2026-11-16 (storywall #365, backend guestwall-be #166). Changes from the plan: the "QR code" heading over the code was dropped (owner approved). The scan page with a live invitation was not checked live; tests and the `WithInvitation` story cover it.
 - **11 Danger zone**
   - Decide what "Download all" opens (the gallery download, or a new export) before building it.
 
