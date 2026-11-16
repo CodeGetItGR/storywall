@@ -9483,7 +9483,6 @@
         "musicTab": "DJ",
         "manage": {
             "title": "Vendors",
-            "back": "Back",
             "unavailable": "Vendors aren't part of this event's plan.",
             "invite": "Invite a vendor",
             "inviteTitle": "Invite a vendor",

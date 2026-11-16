@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl';
 import { ShareLanguageNote } from '@/components/manage/invitations/ShareLanguageNote';
 import { ShareLinkPanel } from '@/components/manage/invitations/ShareLinkPanel';
 import { QrLinksListSkeleton } from '@/components/manage/ManageSkeletons';
+import { ManagePageFrame } from '@/components/manage/nav/ManagePageFrame';
 import { UsagePanel } from '@/components/plan/UsagePanel';
 import { useEventRouteContext } from '@/components/routing/EventRouteGate';
 import { ModulePageShell } from '@/components/tools/ModulePageShell';
@@ -45,6 +46,62 @@ export function InvitationsQrScreen() {
     // The guest code lives on a lite event's home. Both are left out of this list and its count.
     const shareQrLinks = qrLinks.filter(isInvitationQrLink);
 
+    // The join code also uploads when the plan has photo uploads (KAN-208).
+    const subtitle = isGalleryQrFeatureEnabled(activeEvent?.modules) ? tPage('subtitleWithUpload') : tPage('subtitle');
+
+    const content = isLoading ? (
+        <QrLinksListSkeleton />
+    ) : (
+        <>
+            {eventUsage && (
+                <div className="mb-8">
+                    <UsagePanel
+                        title={t('invitations.capacity.title')}
+                        planName={currentPlan?.name ?? eventUsage.planTier}
+                        nextPlanName={isFull ? nextUpgradeOption?.planTierName : undefined}
+                        upgradeHref={routes.events.manage(eventId, { tab: 'billing' })}
+                        items={[
+                            {
+                                key: 'members',
+                                used: memberCount,
+                                limit: memberLimit,
+                                percent: eventUsage.memberPercent,
+                                valueLabel: memberLimit === null ? `${memberCount}` : `${memberCount} / ${memberLimit}`,
+                            },
+                        ]}
+                    />
+                </div>
+            )}
+
+            {isHost && !isWritable && (
+                <p className="mb-3 rounded-2xl bg-surface-muted px-4 py-3 text-sm leading-relaxed text-ink-muted">{t('qr.readOnly')}</p>
+            )}
+
+            {/* Share links */}
+            <div className="flex flex-col divide-y divide-border [&>*]:py-8 [&>*:first-child]:pt-0">
+                {shareQrLinks.map((qrLink) => {
+                    const stats = qrLinkStats.find((row) => row.qrLinkId === qrLink.id);
+                    return <ShareLinkPanel key={qrLink.id} eventId={eventId} qrLink={qrLink} stats={stats} canWrite={canWrite} />;
+                })}
+            </div>
+
+            {/* Link language */}
+            {shareQrLinks.length > 0 && <ShareLanguageNote />}
+
+            {shareQrLinks.length === 0 && <ToolEmptyState title={t('qr.emptyTitle')} body={t('qr.emptyBody')} icon={QrCode} className="py-8" />}
+        </>
+    );
+
+    // Hosts see their links inside the dashboard; a planner (QR_READ) keeps the standalone page.
+    if (isHost) {
+        return (
+            <ManagePageFrame active="shareLinks">
+                <p className="mb-6 text-sm leading-relaxed text-ink-muted">{subtitle}</p>
+                {content}
+            </ManagePageFrame>
+        );
+    }
+
     return (
         <ModulePageShell
             maxWidth="2xl"
@@ -52,61 +109,9 @@ export function InvitationsQrScreen() {
             icon={QrCode}
             backLabel={tPage('back')}
             backHref={routes.events.feed(eventId)}
-            // The join code also uploads when the plan has photo uploads (KAN-208).
-            subtitle={isGalleryQrFeatureEnabled(activeEvent?.modules) ? tPage('subtitleWithUpload') : tPage('subtitle')}
+            subtitle={subtitle}
         >
-            {isLoading ? (
-                <QrLinksListSkeleton />
-            ) : (
-                <>
-                    {eventUsage && (
-                        <div className="mb-8">
-                            <UsagePanel
-                                title={t('invitations.capacity.title')}
-                                planName={currentPlan?.name ?? eventUsage.planTier}
-                                nextPlanName={isFull ? nextUpgradeOption?.planTierName : undefined}
-                                upgradeHref={routes.events.manage(eventId, { tab: 'billing' })}
-                                items={[
-                                    {
-                                        key: 'members',
-                                        used: memberCount,
-                                        limit: memberLimit,
-                                        percent: eventUsage.memberPercent,
-                                        valueLabel: memberLimit === null ? `${memberCount}` : `${memberCount} / ${memberLimit}`,
-                                    },
-                                ]}
-                            />
-                        </div>
-                    )}
-
-                    {isHost && !isWritable && (
-                        <p className="mb-3 rounded-2xl bg-surface-muted px-4 py-3 text-sm leading-relaxed text-ink-muted">{t('qr.readOnly')}</p>
-                    )}
-
-                    {/* Share links */}
-                    <div className="flex flex-col divide-y divide-border [&>*]:py-8 [&>*:first-child]:pt-0">
-                        {shareQrLinks.map((qrLink) => {
-                            const stats = qrLinkStats.find((row) => row.qrLinkId === qrLink.id);
-                            return (
-                                <ShareLinkPanel
-                                    key={qrLink.id}
-                                    eventId={eventId}
-                                    qrLink={qrLink}
-                                    stats={stats}
-                                    canWrite={canWrite}
-                                />
-                            );
-                        })}
-                    </div>
-
-                    {/* Link language */}
-                    {shareQrLinks.length > 0 && <ShareLanguageNote />}
-
-                    {shareQrLinks.length === 0 && (
-                        <ToolEmptyState title={t('qr.emptyTitle')} body={t('qr.emptyBody')} icon={QrCode} className="py-8" />
-                    )}
-                </>
-            )}
+            {content}
         </ModulePageShell>
     );
 }

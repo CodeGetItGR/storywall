@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { InvitationsQrScreen } from '@/components/manage/invitations/InvitationsQrScreen';
 
 vi.mock('next-intl', () => ({ useTranslations: () => (key: string) => key }));
+vi.mock('@/components/manage/nav/ManagePageFrame', () => ({ ManagePageFrame: ({ children }: { children: React.ReactNode }) => <>{children}</> }));
 vi.mock('@/components/tools/ModulePageShell', () => ({ ModulePageShell: ({ children }: { children: React.ReactNode }) => <div>{children}</div> }));
 const ctx = vi.hoisted(() => ({ isHost: false }));
 vi.mock('@/components/routing/EventRouteGate', () => ({
