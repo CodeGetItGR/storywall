@@ -2,7 +2,8 @@ import { describe, expect, it } from 'vitest';
 
 import type { EventSessionResponseDto } from '@/lib/api/types';
 import { addDays, daysBetween, localDay } from '@/lib/datetime';
-import { currentPhase, phaseOfDay, primaryDay, sessionsByPhase, sessionStates } from '@/lib/eventJourney';
+import { currentPhase, journeyPrintHref, phaseOfDay, primaryDay, sessionsByPhase, sessionStates } from '@/lib/eventJourney';
+import { routes } from '@/lib/routes';
 
 const tz = 'Europe/Athens';
 
@@ -89,5 +90,18 @@ describe('sessionStates', () => {
     });
     it('leaves an untimed session upcoming', () => {
         expect(sessionStates([session('x', null)], tz, new Date('2026-12-12T19:00:00Z'))).toEqual(['upcoming']);
+    });
+});
+
+describe('journeyPrintHref', () => {
+    function withModules(modules: { moduleKey: string; isEnabled: boolean; isAvailable: boolean }[]) {
+        return { id: 'e1', status: 'ACTIVE', deletedAt: null, modules } as never;
+    }
+
+    it('opens the gallery on a lite event', () => {
+        expect(journeyPrintHref(withModules([{ moduleKey: 'gallery', isEnabled: true, isAvailable: true }]))).toBe(routes.events.tools.gallery('e1'));
+    });
+    it('opens the QR links on a full event', () => {
+        expect(journeyPrintHref(withModules([{ moduleKey: 'posts', isEnabled: true, isAvailable: true }]))).toBe(routes.events.invitationsQr('e1'));
     });
 });

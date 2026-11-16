@@ -55,12 +55,8 @@ vi.mock('@/hooks/useEventOverviewPlan', () => ({
         wishlistAvailable: false,
     }),
 }));
-vi.mock('@/hooks/useRightContextPanel', () => ({ useRightContextPanel: () => ({}) }));
-vi.mock('@/components/layout/right-context-panel/HostContextSections', () => ({ HostContextSections: () => null }));
-vi.mock('@/components/manage/CoverageStatusStrip', () => ({ CoverageStatusStrip: () => null }));
-vi.mock('@/components/manage/help/EventSetupSteps', () => ({ EventSetupSteps: () => null }));
+vi.mock('@/components/manage/overview/OverviewJourney', () => ({ OverviewJourney: () => null }));
 vi.mock('@/components/manage/ManageSkeletons', () => ({ ManageDraftOverviewSkeleton: () => null }));
-vi.mock('@/components/ui/MetricStrip', () => ({ MetricStrip: () => null }));
 vi.mock('@/components/manage/OverviewDraftPanel', () => ({
     OverviewDraftPanel: ({ themeSection }: { themeSection?: ReactNode }) => <div data-testid="draft-panel">{themeSection}</div>,
 }));
@@ -74,8 +70,6 @@ function renderDraft(modules: Partial<EventModuleResponseDto>[]) {
         <OverviewTab
             event={event}
             memberCount={0}
-            daysToGo={10}
-            pendingCoHostInvitationCount={0}
             seatsClaimed={null}
             eventUsage={null}
             planTiers={[]}

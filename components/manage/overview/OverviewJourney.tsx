@@ -10,8 +10,7 @@ import { useDayJourney } from '@/hooks/useDayJourney';
 import { useEventJourneyPhase } from '@/hooks/useEventJourneyPhase';
 import { useOverviewPlanLine } from '@/hooks/useOverviewPlanLine';
 import type { EventDetailResponseDto, EventUsageResponseDto } from '@/lib/api/types';
-import { isLiteEvent } from '@/lib/liteEvents';
-import { routes } from '@/lib/routes';
+import { journeyPrintHref } from '@/lib/eventJourney';
 
 /** Gathers the journey for a live event and hands it to the view. */
 export function OverviewJourney({
@@ -40,7 +39,7 @@ export function OverviewJourney({
             steps={phase.steps}
             selected={phase.selected}
             onSelectPhase={phase.select}
-            before={{ ...before, printHref: isLiteEvent(event) ? routes.events.tools.gallery(event.id) : routes.events.invitationsQr(event.id) }}
+            before={{ ...before, printHref: journeyPrintHref(event) }}
             day={day}
             after={after}
             planLine={planLine}

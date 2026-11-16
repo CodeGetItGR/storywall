@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo } from 'react';
 
 import { DeletedEventManageScreen } from '@/components/manage/DeletedEventManageScreen';
 import { InvitationTab } from '@/components/manage/invitation/InvitationTab';
@@ -16,7 +16,6 @@ import { useManageNav } from '@/hooks/useManageNav';
 import { useManageSectionRoute } from '@/hooks/useManageSectionRoute';
 import { useEventRsvps } from '@/hooks/useRsvps';
 import { useEventUsage } from '@/hooks/useUsage';
-import { countPendingCoHostInvitations } from '@/lib/eventInvitations';
 import { isEventWritable } from '@/lib/eventLifecycle';
 import { attendingGuestPeople } from '@/lib/rsvpGuests';
 
@@ -51,20 +50,9 @@ export function ManageScreen() {
     const { data: eventUsage = null, isLoading: usageLoading } = useEventUsage(isHost && !isDeleted ? eventId : null);
     const onlineInvitation = useEventOnlineInvitation(activeEvent, { enabled: section === 'invitation' });
 
-    const overviewLoading = membersLoading || invitationsLoading || rsvpsLoading || usageLoading;
+    const overviewLoading = membersLoading || rsvpsLoading || usageLoading;
     const rsvpTabLoading = membersLoading || rsvpsLoading;
     const membersTabLoading = membersLoading || invitationsLoading || usageLoading;
-
-    const [daysToGo, setDaysToGo] = useState(() =>
-        Math.max(0, activeEvent ? Math.ceil((new Date(activeEvent.schedule.startAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24)) : 0),
-    );
-
-    useEffect(() => {
-        if (activeEvent) {
-            // eslint-disable-next-line react-hooks/set-state-in-effect
-            setDaysToGo(Math.max(0, Math.ceil((new Date(activeEvent.schedule.startAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24))));
-        }
-    }, [activeEvent]);
 
     // The overview's seats: people coming, counted like the RSVP report (guests
     // only, attending only), so the two never disagree.
@@ -81,8 +69,6 @@ export function ManageScreen() {
                     <OverviewTab
                         event={activeEvent}
                         memberCount={members.length}
-                        daysToGo={daysToGo}
-                        pendingCoHostInvitationCount={countPendingCoHostInvitations(invitations)}
                         seatsClaimed={rsvpAvailable ? seatsClaimed : null}
                         eventUsage={eventUsage}
                         planTiers={appConfig?.planTiers ?? []}

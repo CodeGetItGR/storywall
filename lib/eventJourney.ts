@@ -1,6 +1,8 @@
 import type { EventDetailResponseDto, EventSessionResponseDto } from '@/lib/api/types';
 import { addDays, localDay } from '@/lib/datetime';
 import type { JourneyIconKey } from '@/lib/journeyIcons';
+import { isLiteEvent } from '@/lib/liteEvents';
+import { routes } from '@/lib/routes';
 
 export type JourneyPhase = 'before' | 'day' | 'after';
 export const JOURNEY_PHASES: JourneyPhase[] = ['before', 'day', 'after'];
@@ -88,4 +90,9 @@ export function sessionStates(sessions: EventSessionResponseDto[], timeZone: str
 /** The day after the primary day: where the After phase starts. */
 export function afterStartDay(event: JourneyEvent): string {
     return addDays(primaryDay(event), 1);
+}
+
+/** Where the All set card's print button goes: a lite event has no QR links, so it opens the gallery. */
+export function journeyPrintHref(event: EventDetailResponseDto): string {
+    return isLiteEvent(event) ? routes.events.tools.gallery(event.id) : routes.events.invitationsQr(event.id);
 }
