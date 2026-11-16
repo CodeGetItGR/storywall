@@ -45,8 +45,8 @@ other's wishes"), which no longer holds.
   in `EventHost`, which includes co-hosts. A member who is not a host gets 403. Demo access keeps working as it
   does today for the demo builder and demo visitors.
 - New `GET /api/events/{eventId}/wishbook/mine`: the caller's own non-deleted wishes, newest first, paged like the
-  host list. Membership required. Matched on `authorUserId` = the caller's account, so it does not depend on the
-  membership row.
+  host list. Membership required. Matched on the caller's membership or on `authorUserId` = the caller's account,
+  so a wish written before the account was attached still counts as theirs.
 - New `PUT /api/wishbook/{entryId}`: the author edits the message. Only the author; hosts cannot edit someone
   else's words. Same availability rule as writing (`requireAvailable`: the event must be `ACTIVE`). Keeps
   `highlightedAt`. Calls `WishbookBookInvalidator` so a built book is marked out of date.
