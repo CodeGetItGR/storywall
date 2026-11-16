@@ -50,7 +50,10 @@ describe('useBeforeJourney', () => {
 
     it('gives the current schedule stop its card', () => {
         const schedule = renderHook(() => useBeforeJourney(event(), counts, now)).result.current.stops[2];
-        expect(schedule.card).toEqual({ body: 'journey.scheduleCard', action: { label: 'steps.schedule.edit', href: routes.events.tools.schedule('e1') } });
+        expect(schedule.card).toEqual({
+            body: 'journey.scheduleCard',
+            action: { label: 'steps.schedule.edit', href: routes.events.tools.schedule('e1') },
+        });
     });
 
     it('shows the RSVP answers and seats as chips', () => {

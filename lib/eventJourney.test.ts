@@ -7,7 +7,17 @@ import { currentPhase, phaseOfDay, primaryDay, sessionsByPhase, sessionStates } 
 const tz = 'Europe/Athens';
 
 function session(id: string, startAt: string | null, endAt: string | null = null, extra: Partial<EventSessionResponseDto> = {}) {
-    return { id, title: id, startAt, endAt, isMain: false, isSecondary: false, deletedAt: null, displayOrder: 0, ...extra } as EventSessionResponseDto;
+    return {
+        id,
+        title: id,
+        startAt,
+        endAt,
+        isMain: false,
+        isSecondary: false,
+        deletedAt: null,
+        displayOrder: 0,
+        ...extra,
+    } as EventSessionResponseDto;
 }
 
 function event(sessions: EventSessionResponseDto[], startAt = '2026-12-12T16:00:00Z') {

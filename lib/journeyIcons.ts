@@ -1,17 +1,7 @@
 import { CalendarDays, Clock, Gem, type LucideIcon, Megaphone, PencilLine, QrCode } from 'lucide-react';
 
 export type JourneyIconKey =
-    | 'details'
-    | 'rsvp'
-    | 'schedule'
-    | 'gift'
-    | 'invitations'
-    | 'session'
-    | 'media'
-    | 'wishbook'
-    | 'announcement'
-    | 'playlist'
-    | 'plan';
+    'details' | 'rsvp' | 'schedule' | 'gift' | 'invitations' | 'session' | 'media' | 'wishbook' | 'announcement' | 'playlist' | 'plan';
 
 export type JourneyIcon = { kind: 'image'; src: string } | { kind: 'lucide'; icon: LucideIcon };
 

@@ -42,7 +42,9 @@ export function useBeforeJourney(event: EventDetailResponseDto, counts: JourneyC
               { key: 'attending', label: `${event.rsvpSummary.attending} ${tr('rsvpSummary.attending')}`, tone: 'success' },
               { key: 'declined', label: `${event.rsvpSummary.declined} ${tr('rsvpSummary.declined')}`, tone: 'neutral' },
               { key: 'noResponse', label: `${event.rsvpSummary.noResponse} ${tr('rsvpSummary.noResponse')}`, tone: 'warn' },
-              ...(counts.seatsClaimed === null ? [] : [{ key: 'seats', label: tj('journey.seats', { count: counts.seatsClaimed }), tone: 'neutral' as const }]),
+              ...(counts.seatsClaimed === null
+                  ? []
+                  : [{ key: 'seats', label: tj('journey.seats', { count: counts.seatsClaimed }), tone: 'neutral' as const }]),
           ]
         : [];
 

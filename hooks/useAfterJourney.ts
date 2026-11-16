@@ -33,7 +33,15 @@ export function useAfterJourney(event: EventDetailResponseDto, planName: string 
         status: states[index] === 'done' ? 'done' : 'upcoming',
         href: routes.events.tools.schedule(event.id),
         detail: item.startAt
-            ? formatDate(locale, item.startAt, { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', hour12: false, timeZone })
+            ? formatDate(locale, item.startAt, {
+                  weekday: 'short',
+                  day: 'numeric',
+                  month: 'short',
+                  hour: '2-digit',
+                  minute: '2-digit',
+                  hour12: false,
+                  timeZone,
+              })
             : undefined,
     }));
 
@@ -67,15 +75,16 @@ export function useAfterJourney(event: EventDetailResponseDto, planName: string 
             href: announcement.href,
             detail: t('journey.thankGuests'),
         },
-        planName && coverageEndsAt && {
-            key: 'plan',
-            title: planName,
-            icon: 'plan',
-            status: 'upcoming',
-            href: billingHref,
-            detail: t('journey.coverageEnds', { date: formatDate(locale, coverageEndsAt, { day: 'numeric', month: 'short', timeZone }) }),
-            links: [{ key: 'extend', label: t('journey.extend'), href: billingHref }],
-        },
+        planName &&
+            coverageEndsAt && {
+                key: 'plan',
+                title: planName,
+                icon: 'plan',
+                status: 'upcoming',
+                href: billingHref,
+                detail: t('journey.coverageEnds', { date: formatDate(locale, coverageEndsAt, { day: 'numeric', month: 'short', timeZone }) }),
+                links: [{ key: 'extend', label: t('journey.extend'), href: billingHref }],
+            },
     ];
 
     return { stops: [...sessionStops, ...extras.filter((stop): stop is JourneyStopModel => Boolean(stop))] };

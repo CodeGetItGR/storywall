@@ -49,7 +49,11 @@ export function PhaseStepper({ steps, selected, onSelect }: { steps: PhaseStep[]
             {/* Track */}
             <span aria-hidden="true" className="absolute top-[0.4rem] right-2 left-2 h-1 rounded-full bg-[#f0e2d2]/70" />
             {/* Progress */}
-            <span aria-hidden="true" className="bg-gradient-logo absolute top-[0.4rem] left-2 h-1 max-w-[calc(100%-1rem)] rounded-full" style={{ width: progressWidth(steps) }} />
+            <span
+                aria-hidden="true"
+                className="absolute top-[0.4rem] left-2 h-1 max-w-[calc(100%-1rem)] rounded-full bg-gradient-logo"
+                style={{ width: progressWidth(steps) }}
+            />
             {steps.map((step) => (
                 <PhaseButton key={step.phase} step={step} selected={step.phase === selected} onSelect={onSelect} />
             ))}
