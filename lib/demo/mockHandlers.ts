@@ -450,6 +450,20 @@ export function createDemoHandlers(session: DemoSession, appOrigin: string | nul
         })),
 
         // --- Wishbook ---
+        // A visitor's own wishes are the ones written in this browser (the create handler's ids).
+        http.get(`${API_BASE_URL}/api/events/:eventId/wishbook/mine`, ({ request }) => {
+            const page = Number(new URL(request.url).searchParams.get('page') ?? '0');
+            const items = db
+                .list('wishbook')
+                .filter((wish) => wish.id.startsWith('demo-wishbook'))
+                .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+            return HttpResponse.json(toPage(items, page, 20));
+        }),
+        http.put(`${API_BASE_URL}/api/wishbook/:id`, async ({ params, request }) => {
+            const body = (await request.json()) as { message?: string };
+            const updated = db.update('wishbook', params.id as string, (wish) => ({ ...wish, message: String(body.message ?? wish.message) }));
+            return updated ? HttpResponse.json(updated) : new HttpResponse(null, { status: 404 });
+        }),
         ...buildPageHandlers(db, 'wishbook', '/api/events/:eventId/wishbook', 20),
         http.get(`${API_BASE_URL}/api/events/:eventId/wishbook/count`, () => HttpResponse.json(db.list('wishbook').length)),
         buildCreateHandler(db, 'wishbook', '/api/events/:eventId/wishbook', (body) => ({
