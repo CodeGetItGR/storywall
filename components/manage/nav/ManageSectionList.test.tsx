@@ -13,7 +13,7 @@ afterEach(cleanup);
 
 const groups: ManageNavGroup[] = [
     { key: 'event', items: ['overview', 'settings', 'billing'] },
-    { key: 'people', items: ['rsvp', 'shareLinks'] },
+    { key: 'people', items: ['rsvp', 'invitationsQr'] },
 ];
 
 function renderList(props: Partial<Parameters<typeof ManageSectionList>[0]> = {}) {

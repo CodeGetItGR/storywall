@@ -2,11 +2,13 @@ import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { QrLandingChoices } from '@/components/qrLanding/QrLandingChoices';
+import { invitationPublicUrl } from '@/lib/invitation/publication';
 import type { QrEventDetails, QrLandingPlan } from '@/lib/qrLanding';
+import { SITE_URL } from '@/lib/seo';
 
 vi.mock('next-intl', () => ({ useTranslations: () => (key: string) => key }));
 
-const GUEST_PLAN: QrLandingPlan = { choices: ['join', 'upload', 'wish'], joinInviteToken: 'inv', uploadToken: 'up', wishToken: 'wish' };
+const GUEST_PLAN: QrLandingPlan = { choices: ['join', 'upload', 'wish'], joinInviteToken: 'inv', uploadToken: 'up', wishToken: 'wish', invitationSlug: null };
 
 function renderChoices(plan: QrLandingPlan, isSignedIn = false, eventId: string | null = 'e1', details: QrEventDetails | null = null) {
     return render(
@@ -62,7 +64,7 @@ describe('QrLandingChoices', () => {
     });
 
     it('shows a member the card with Open the event', () => {
-        renderChoices({ choices: ['open', 'upload', 'wishbook'], joinInviteToken: 'inv', uploadToken: 'up', wishToken: null }, true);
+        renderChoices({ choices: ['open', 'upload', 'wishbook'], joinInviteToken: 'inv', uploadToken: 'up', wishToken: null, invitationSlug: null }, true);
 
         expect(screen.getByRole('link', { name: 'choices.open' })).toBeInTheDocument();
         expect(screen.getByText('choices.eventHint')).toBeInTheDocument();
@@ -71,10 +73,18 @@ describe('QrLandingChoices', () => {
     });
 
     it('shows a lite guest code as plain rows, without a card or a label', () => {
-        renderChoices({ choices: ['upload', 'wish'], joinInviteToken: null, uploadToken: 'self', wishToken: 'self' }, false, null);
+        renderChoices({ choices: ['upload', 'wish'], joinInviteToken: null, uploadToken: 'self', wishToken: 'self', invitationSlug: null }, false, null);
 
         expect(screen.queryByRole('img', { name: 'preview.feed' })).toBeNull();
         expect(screen.queryByText('choices.noAccount')).toBeNull();
         expect(screen.getByText('choices.uploadLine')).toBeInTheDocument();
+    });
+
+    // KAN-225: the live invitation opens on the invite host.
+    it('links See the invitation to the published invitation', () => {
+        renderChoices({ choices: ['join', 'invitation'], joinInviteToken: 'inv', uploadToken: null, wishToken: null, invitationSlug: 'maria-nikos' });
+
+        expect(screen.getByRole('link', { name: /choices\.invitation/ })).toHaveAttribute('href', invitationPublicUrl(SITE_URL, 'maria-nikos'));
+        expect(screen.getByRole('img', { name: 'choices.invitation' })).toBeInTheDocument();
     });
 });

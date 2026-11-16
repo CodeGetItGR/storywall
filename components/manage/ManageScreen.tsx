@@ -3,7 +3,6 @@
 import { useMemo } from 'react';
 
 import { DeletedEventManageScreen } from '@/components/manage/DeletedEventManageScreen';
-import { InvitationTab } from '@/components/manage/invitation/InvitationTab';
 import { ManageMembersSkeleton, ManageOverviewSkeleton, ManageRsvpSkeleton } from '@/components/manage/ManageSkeletons';
 import { ManageShell } from '@/components/manage/nav/ManageShell';
 import { ThemePicker } from '@/components/manage/ThemePicker';
@@ -11,7 +10,6 @@ import { useEventRouteContext } from '@/components/routing/EventRouteGate';
 import { useAppConfig } from '@/hooks/useAppConfig';
 import { useEventInvitations } from '@/hooks/useEventInvitations';
 import { useEventMembers } from '@/hooks/useEventMembers';
-import { useEventOnlineInvitation } from '@/hooks/useEventOnlineInvitation';
 import { useManageNav } from '@/hooks/useManageNav';
 import { useManageSectionRoute } from '@/hooks/useManageSectionRoute';
 import { useEventRsvps } from '@/hooks/useRsvps';
@@ -48,7 +46,6 @@ export function ManageScreen() {
     const { data: rsvps = [], isLoading: rsvpsLoading } = useEventRsvps(rsvpAvailable ? activeHostEventId : null);
     const { data: invitations = [], isLoading: invitationsLoading } = useEventInvitations(activeHostEventId);
     const { data: eventUsage = null, isLoading: usageLoading } = useEventUsage(isHost && !isDeleted ? eventId : null);
-    const onlineInvitation = useEventOnlineInvitation(activeEvent, { enabled: section === 'invitation' });
 
     const overviewLoading = membersLoading || rsvpsLoading || usageLoading;
     const rsvpTabLoading = membersLoading || rsvpsLoading;
@@ -121,8 +118,6 @@ export function ManageScreen() {
             {section === 'settings' && <SettingsTab event={activeEvent} canWrite={canEditDetails} canUploadCover={canWrite} />}
 
             {section === 'theme' && <ThemePicker event={activeEvent} canWrite={canEditDetails} showHeading={false} />}
-
-            {section === 'invitation' && <InvitationTab invitation={onlineInvitation} />}
 
             {section === 'gift' &&
                 (giftSection.isLoading ? (

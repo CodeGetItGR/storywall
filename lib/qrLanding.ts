@@ -3,11 +3,14 @@ import { getPublicLandingPath } from '@/i18n/publicLocale';
 import type { EventInvitationPreviewDto, QrLinkResolutionDto } from '@/lib/api/types';
 import type { Campaign } from '@/lib/campaignVisits';
 import { formatEventDateParts } from '@/lib/datetime';
+import { invitationPublicUrl } from '@/lib/invitation/publication';
 import { routes } from '@/lib/routes';
+import { SITE_URL } from '@/lib/seo';
 
 // What a scanned event code can offer (KAN-208). Join, upload and wish come from the codes themselves;
 // a signed-in member gets Open the event in place of Join, and the event's wishbook when it has one.
-export type QrLandingChoice = 'join' | 'open' | 'upload' | 'wish' | 'wishbook';
+// The event's online invitation, while guests can open it, comes right after Join or Open (KAN-225).
+export type QrLandingChoice = 'join' | 'open' | 'invitation' | 'upload' | 'wish' | 'wishbook';
 
 // The forms the page opens in place. The other choices are links to other pages.
 export type QrLandingForm = 'upload' | 'wish';
@@ -18,6 +21,8 @@ export interface QrLandingPlan {
     joinInviteToken: string | null;
     uploadToken: string | null;
     wishToken: string | null;
+    // The published invitation's link name, while guests can open it.
+    invitationSlug: string | null;
 }
 
 export interface QrLandingVisitor {
@@ -25,7 +30,7 @@ export interface QrLandingVisitor {
     hasWishbook: boolean;
 }
 
-const NO_PLAN: QrLandingPlan = { choices: [], joinInviteToken: null, uploadToken: null, wishToken: null };
+const NO_PLAN: QrLandingPlan = { choices: [], joinInviteToken: null, uploadToken: null, wishToken: null, invitationSlug: null };
 
 // The choices one active event code offers this visitor, in display order.
 export function qrLandingPlan(resolution: QrLinkResolutionDto | null | undefined, visitor: QrLandingVisitor): QrLandingPlan {
@@ -43,11 +48,13 @@ export function qrLandingPlan(resolution: QrLinkResolutionDto | null | undefined
     const choices: QrLandingChoice[] = [];
     if (visitor.isMember) choices.push('open');
     else if (joinInviteToken) choices.push('join');
+    const invitationSlug = resolution.invitationSlug ?? null;
+    if (invitationSlug) choices.push('invitation');
     if (uploadToken) choices.push('upload');
     if (visitor.isMember && visitor.hasWishbook) choices.push('wishbook');
     else if (wishToken) choices.push('wish');
 
-    return { choices, joinInviteToken, uploadToken, wishToken };
+    return { choices, joinInviteToken, uploadToken, wishToken, invitationSlug };
 }
 
 // The choice that opens the event gets the big card with the feed preview (KAN-213); the rest are rows below it.
@@ -92,6 +99,7 @@ export function qrLandingChoiceHref(choice: QrLandingChoice, plan: QrLandingPlan
     if (choice === 'join') return plan.joinInviteToken ? routes.inviteToken(plan.joinInviteToken) : null;
     if (choice === 'open') return eventId ? routes.events.feed(eventId) : null;
     if (choice === 'wishbook') return eventId ? routes.events.tools.wishbook(eventId) : null;
+    if (choice === 'invitation') return plan.invitationSlug ? invitationPublicUrl(SITE_URL, plan.invitationSlug) : null;
     return null;
 }
 
