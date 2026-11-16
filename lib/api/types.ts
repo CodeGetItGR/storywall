@@ -3218,6 +3218,9 @@ export interface QrLinkResolutionDto {
     // The token a wish from this scan goes through, without an account: the code's own, or the event's join
     // code's. Missing when the event takes no wishes, and from a backend older than this field.
     wishToken?: string;
+    // The event's online invitation while guests can open it (KAN-239): same rule as the event's own
+    // invitationSlug. Missing when there is none, and from a backend older than this field.
+    invitationSlug?: string | null;
 }
 
 // POST /api/qr/{token}/wishes: a wish left through a GUEST code, with no account. See

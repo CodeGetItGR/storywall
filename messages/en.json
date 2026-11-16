@@ -644,6 +644,7 @@
         "choices": {
             "join": "Join the event",
             "open": "Open the event",
+            "invitation": "See the invitation",
             "eventHint": "See what guests share",
             "joinLine": "See everyone's photos, share yours and join in on the day.",
             "freeAccount": "Free account, in a few seconds",

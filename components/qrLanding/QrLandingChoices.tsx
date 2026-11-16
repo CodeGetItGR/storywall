@@ -35,6 +35,7 @@ interface QrLandingChoicesProps {
 const ICONS: Record<QrLandingChoice, string> = {
     join: '/icons/balloon.svg',
     open: '/icons/home.svg',
+    invitation: '/landing/wedding/icons/invitation.webp',
     upload: '/icons/camera.svg',
     wish: '/icons/wishbook.svg',
     wishbook: '/icons/wishbook.svg',
@@ -57,6 +58,7 @@ export function QrLandingChoices({ plan, eventId, onChoose, coverSrc, eventTitle
     const label = (choice: QrLandingChoice) => {
         if (choice === 'join') return t('choices.join');
         if (choice === 'open') return t('choices.open');
+        if (choice === 'invitation') return t('choices.invitation');
         if (choice === 'upload') return t('guestCode.uploadButton');
         return t('guestCode.wishButton');
     };
