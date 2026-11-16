@@ -1,6 +1,7 @@
 import { type Ref, useId, useMemo } from 'react';
 
 import { QrCardFeatureTiles } from '@/components/qrCard/features/QrCardFeatureTiles';
+import { QrCardLogo } from '@/components/qrCard/QrCardLogo';
 import { themeFontFamily } from '@/lib/eventTheme';
 import {
     layoutField,
@@ -46,8 +47,8 @@ function CardText({ text, fill, look }: { text: PlacedText; fill: string; look: 
 }
 
 // One card in A6 millimetres: artwork (or white) full-bleed, then the title, the lines and the added fields,
-// the picture tiles, and the code on top (on a white panel unless the layout turns it off), where the layout
-// puts them. The tiles draw after the fields and below the code.
+// the picture tiles, the logo, and the code on top (on a white panel unless the layout turns it off), where the
+// layout puts them. The tiles and the logo draw after the fields and below the code.
 // `fields` is each added field's text by id (see qrCardFieldTexts). Print and the PNG/PDF export
 // reuse this exact node at A6 or A5, so it draws with attributes only (no classes inside). The whole card
 // is one image to assistive tech, named by its <title>.
@@ -128,6 +129,8 @@ export function QrCardSvg({
             {layout.features && featureTexts && features.length > 0 && (
                 <QrCardFeatureTiles features={features} box={layout.features} texts={featureTexts} labelColor={style.textColor} ids={ids} />
             )}
+            {/* Logo */}
+            {layout.logo && <QrCardLogo logo={layout.logo} />}
             {/* Code */}
             {box.panel && <rect x={box.x} y={box.y} width={box.size} height={box.size} rx={box.radius} fill="#FFFFFF" />}
             <path data-qr-code="" d={code.d} transform={`translate(${codeX} ${codeY}) scale(${cell})`} fill={style.codeColor} />
