@@ -355,4 +355,5 @@ export const api = {
     // Multipart upload — apiFetch detects the FormData body and omits
     // Content-Type so the browser can set its own boundary.
     postForm: <T>(path: string, formData: FormData, options?: RequestInit) => apiFetch<T>(path, { ...options, method: 'POST', body: formData }),
+    putForm: <T>(path: string, formData: FormData, options?: RequestInit) => apiFetch<T>(path, { ...options, method: 'PUT', body: formData }),
 };

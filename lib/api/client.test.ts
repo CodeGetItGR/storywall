@@ -121,6 +121,20 @@ describe('api request headers', () => {
         expect(sentContentType(fetchMock, 2)).toBeUndefined();
     });
 
+    it('sends FormData as a PUT with no Content-Type, so the browser sets the boundary', async () => {
+        const fetchMock = stubJsonResponse();
+        const formData = new FormData();
+        formData.append('audio', new Blob(['x']), 'wish.webm');
+
+        await api.putForm('/api/wishbook/w1', formData);
+
+        const [path, init] = fetchMock.mock.calls[0] as unknown as [string, RequestInit];
+        expect(path).toContain('/api/wishbook/w1');
+        expect(init.method).toBe('PUT');
+        expect(init.body).toBe(formData);
+        expect(sentContentType(fetchMock, 0)).toBeUndefined();
+    });
+
     it('labels a JSON body as JSON', async () => {
         const fetchMock = stubJsonResponse();
 
