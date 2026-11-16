@@ -1533,7 +1533,6 @@
             "share": "Share",
             "sections": {
                 "link": "Link",
-                "qr": "QR code",
                 "linkNote": "Share this link to invite guests to your Storywall."
             }
         },
