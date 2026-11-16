@@ -169,8 +169,8 @@ describe('syncWithEvent', () => {
             ceremonyAddress: 'Ρόδος',
             reception: 'Κτήμα Ρόδων',
             receptionMap: 'https://maps.google.com/?q=rodon',
-            // A session without an address: the sample's, which belonged to the sample place, goes.
-            receptionAddress: '',
+            // A session without an address: the invitation's own stays.
+            receptionAddress: 'Ρόδος',
         });
         expect(coverOf(document)).toMatchObject({ photo: { source: 'event', mediaId: 'm-cover' }, imageWidth: 1600, imageHeight: 1000 });
         for (const type of ['top', 'coupleNames', 'date', 'rsvp', 'programIcons', 'locations'] as const) {
@@ -295,9 +295,55 @@ describe('syncWithEvent', () => {
         expect(find(document, 'locations').data).toMatchObject({ ceremony: 'Άγιος Νικόλαος', reception: 'Κτήμα' });
     });
 
-    it('drops a map link the format would refuse', () => {
+    it('never writes a map link the format would refuse, and leaves that link to the host', () => {
         const sessions = eventData().sessions!.map((session) => (session.isMain ? { ...session, mapsUrl: 'javascript:alert(1)' } : session));
-        expect(find(synced(sampleDocument(), eventData({ sessions })), 'locations').data.ceremonyMap).toBe('');
+        const event = eventData({ sessions });
+        expect(find(synced(sampleDocument(), event), 'locations').data.ceremonyMap).toBe('https://maps.google.com/?q=Rhodes');
+        expect(placeFieldLock('ceremonyMap', event)).toBeNull();
+    });
+
+    it("keeps the host's address and map link of a place until the event has its own", () => {
+        const sessions = eventData().sessions!.map((session) => ({ ...session, mapsUrl: null }));
+        const typed = edited(sampleDocument(), (draft) => {
+            const places = draft.sections.find((section) => section.type === 'locations');
+            if (places?.type === 'locations') {
+                places.data.receptionAddress = 'Φαληράκι';
+                places.data.receptionMap = 'https://maps.google.com/?q=faliraki';
+            }
+        });
+        const event = eventData({ sessions, location: { name: 'Κτήμα Ρόδων', address: null, mapsUrl: null } });
+        const places = find(synced(typed, event), 'locations').data;
+
+        expect(places).toMatchObject({
+            ceremony: 'Άγιος Νικόλαος',
+            ceremonyAddress: 'Παραλία Ρόδου',
+            ceremonyMap: 'https://maps.google.com/?q=Rhodes',
+            reception: 'Κτήμα Ρόδων',
+            receptionAddress: 'Φαληράκι',
+            receptionMap: 'https://maps.google.com/?q=faliraki',
+        });
+        expect(placeFieldLock('ceremony', event)).toBe('settings');
+        expect(placeFieldLock('ceremonyAddress', event)).toBeNull();
+        expect(placeFieldLock('ceremonyMap', event)).toBeNull();
+        expect(placeFieldLock('reception', event)).toBe('schedule');
+        expect(placeFieldLock('receptionAddress', event)).toBeNull();
+        expect(placeFieldLock('receptionMap', event)).toBeNull();
+    });
+
+    it("writes the event's date words into a date the host took over, even when the day is the same", () => {
+        const owned = produce(synced(sampleDocument()), (draft) => {
+            const date = draft.sections.find((section) => section.type === 'date');
+            if (date?.type === 'date') {
+                date.link = { source: 'event', enabled: false };
+                date.data.monthName = 'Τρυγητής';
+                date.data.day = 'Μεγάλη μέρα';
+            }
+        });
+        const date = find(synced(owned), 'date');
+        expect(date.link).toEqual({ source: 'event', enabled: true });
+        expect(date.data).toMatchObject({ iso: '2027-08-29T19:30', monthName: 'Αύγουστος', day: 'Κυριακή' });
+        // The published page shows the same words.
+        expect(find(resolveLinkedSections(owned, eventData()), 'date').data).toMatchObject({ monthName: 'Αύγουστος', day: 'Κυριακή' });
     });
 
     it('links a section the host took over again, with the event in it', () => {
@@ -546,7 +592,11 @@ describe('locked fields', () => {
 
     it('locks each place once the event has it', () => {
         expect(placeFieldLock('ceremonyMap', eventData())).toBe('settings');
-        expect(placeFieldLock('receptionAddress', eventData())).toBe('schedule');
+        expect(placeFieldLock('receptionMap', eventData())).toBe('schedule');
+        // The reception's session has no address of its own.
+        expect(placeFieldLock('receptionAddress', eventData())).toBeNull();
+        const sessions = eventData().sessions!.map((session) => ({ ...session, locationAddress: 'Λίνδος' }));
+        expect(placeFieldLock('receptionAddress', eventData({ sessions }))).toBe('schedule');
         expect(placeFieldLock('receptionMap', eventData({ eventType: 'BIRTHDAY' }))).toBeNull();
         expect(placeFieldLock('ceremony', eventData({ sessions: [], location: { name: null, address: null, mapsUrl: null } }))).toBeNull();
         expect(placeFieldLock('welcomeMap', eventData())).toBeNull();

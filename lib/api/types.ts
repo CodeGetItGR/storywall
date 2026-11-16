@@ -1033,6 +1033,8 @@ export interface AdminProvisionScheduleItem {
     startAt?: string;
     endAt?: string;
     locationName?: string;
+    // Added 2026-11-16 (KAN-84).
+    locationAddress?: string;
     mapsUrl?: string;
     // The reception venue of a wedding or baptism; at most one.
     isSecondary?: boolean;

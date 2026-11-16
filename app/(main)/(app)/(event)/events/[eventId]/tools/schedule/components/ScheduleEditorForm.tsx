@@ -349,7 +349,9 @@ export function ScheduleEditorForm({
                                 maxLength={limits.locationNameMaxLength}
                                 value={locationName}
                                 onChange={handleLocationNameChange}
-                                className="w-full rounded-2xl border border-border/70 bg-background px-4 py-3 text-sm text-ink transition outline-none placeholder:text-ink-faint focus:border-primary/40 focus:ring-4 focus:ring-primary/10"
+                                // The main session mirrors the event's place, which changes in the event's settings.
+                                disabled={isMainSession}
+                                className="w-full rounded-2xl border border-border/70 bg-background px-4 py-3 text-sm text-ink transition outline-none placeholder:text-ink-faint focus:border-primary/40 focus:ring-4 focus:ring-primary/10 disabled:cursor-not-allowed disabled:opacity-60"
                                 placeholder={t('host.placeholders.locationName')}
                             />
                         </FormFieldLabel>
@@ -364,7 +366,8 @@ export function ScheduleEditorForm({
                                 maxLength={limits.urlMaxLength}
                                 value={mapsUrl}
                                 onChange={handleMapsUrlChange}
-                                className="w-full rounded-2xl border border-border/70 bg-background px-4 py-3 text-sm text-ink transition outline-none placeholder:text-ink-faint focus:border-primary/40 focus:ring-4 focus:ring-primary/10"
+                                disabled={isMainSession}
+                                className="w-full rounded-2xl border border-border/70 bg-background px-4 py-3 text-sm text-ink transition outline-none placeholder:text-ink-faint focus:border-primary/40 focus:ring-4 focus:ring-primary/10 disabled:cursor-not-allowed disabled:opacity-60"
                                 placeholder={t('host.placeholders.mapsUrl')}
                             />
                         </FormFieldLabel>
@@ -382,7 +385,8 @@ export function ScheduleEditorForm({
                             maxLength={limits.locationAddressMaxLength}
                             value={locationAddress}
                             onChange={handleLocationAddressChange}
-                            className="w-full rounded-2xl border border-border/70 bg-background px-4 py-3 text-sm text-ink transition outline-none placeholder:text-ink-faint focus:border-primary/40 focus:ring-4 focus:ring-primary/10"
+                            disabled={isMainSession}
+                            className="w-full rounded-2xl border border-border/70 bg-background px-4 py-3 text-sm text-ink transition outline-none placeholder:text-ink-faint focus:border-primary/40 focus:ring-4 focus:ring-primary/10 disabled:cursor-not-allowed disabled:opacity-60"
                             placeholder={tAddress('placeholders.locationAddress')}
                         />
                     </FormFieldLabel>

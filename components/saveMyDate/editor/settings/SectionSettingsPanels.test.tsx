@@ -217,7 +217,7 @@ describe('Locked by the event', () => {
         startAt: '2027-07-12T15:30:00Z',
         rsvp: null,
         cover: null,
-        location: { name: 'Agios Nikolaos', address: 'Plaka', mapsUrl: null },
+        location: { name: 'Agios Nikolaos', address: 'Plaka', mapsUrl: 'https://maps.google.com/?q=agios' },
         sessions: [
             {
                 id: 'ses-1',
@@ -226,7 +226,7 @@ describe('Locked by the event', () => {
                 startAt: '2027-07-12T15:30:00Z',
                 locationName: 'Agios Nikolaos',
                 locationAddress: 'Plaka',
-                mapsUrl: null,
+                mapsUrl: 'https://maps.google.com/?q=agios',
                 displayOrder: 0,
                 isMain: true,
                 isSecondary: false,
@@ -252,6 +252,13 @@ describe('Locked by the event', () => {
         expect(screen.getByRole('link', { name: en.InvitationEditor.eventLock.settings })).toHaveAttribute('href', '/events/e1/manage?tab=settings');
         // No reception on the event: its map link stays the host's.
         expect(screen.getAllByLabelText(en.InvitationEditor.sectionSettings.mapLink)).toHaveLength(1);
+    });
+
+    it('keeps the map link of a place the event has no map for', () => {
+        const sessions = event.sessions!.map((session) => ({ ...session, mapsUrl: null }));
+        renderIn(<LocationsSettings scope={scopeFor('locations', { event: { ...event, sessions, location: { ...event.location, mapsUrl: null } } }).scope} />);
+        expect(screen.queryByRole('link', { name: en.InvitationEditor.eventLock.settings })).toBeNull();
+        expect(screen.getAllByLabelText(en.InvitationEditor.sectionSettings.mapLink)).toHaveLength(2);
     });
 });
 

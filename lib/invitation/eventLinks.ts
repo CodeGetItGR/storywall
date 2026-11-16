@@ -100,16 +100,16 @@ function sortedSessions(sessions: InvitationEventSession[]): InvitationEventSess
     return [...sessions].sort((a, b) => a.displayOrder - b.displayOrder || start(a) - start(b));
 }
 
-type Place = { name: string; address: string; mapsUrl: string | null };
+type Place = { name: string; address: string | null; mapsUrl: string | null };
 
 // The ceremony's place from the event: the main session's, else the event's own. Null when it has none. The main
 // session mirrors the event's place, so the event's address stands in for a backend that sends none.
 function ceremonyPlace(event: InvitationEventData): Place | null {
     const main = (event.sessions ?? []).find((session) => session.isMain && session.locationName);
     if (main?.locationName) {
-        return { name: main.locationName, address: main.locationAddress ?? event.location.address ?? '', mapsUrl: main.mapsUrl };
+        return { name: main.locationName, address: main.locationAddress ?? event.location.address, mapsUrl: main.mapsUrl };
     }
-    if (event.location.name) return { name: event.location.name, address: event.location.address ?? '', mapsUrl: event.location.mapsUrl };
+    if (event.location.name) return { name: event.location.name, address: event.location.address, mapsUrl: event.location.mapsUrl };
     return null;
 }
 
@@ -117,7 +117,7 @@ function ceremonyPlace(event: InvitationEventData): Place | null {
 function receptionPlace(event: InvitationEventData): Place | null {
     if (!RECEPTION_EVENT_TYPES.has(event.eventType)) return null;
     const session = (event.sessions ?? []).find((item) => item.isSecondary && item.locationName);
-    return session?.locationName ? { name: session.locationName, address: session.locationAddress ?? '', mapsUrl: session.mapsUrl } : null;
+    return session?.locationName ? { name: session.locationName, address: session.locationAddress ?? null, mapsUrl: session.mapsUrl } : null;
 }
 
 // A link the format accepts, else none.
@@ -215,19 +215,27 @@ function applyCover(frame: Draft<PhotoFrame>, cover: InvitationEventCover) {
     frame.imageY = 50;
 }
 
-// Each place the event has: its name, address and map link.
+type PlaceField = (typeof CEREMONY_FIELDS)[number] | (typeof RECEPTION_FIELDS)[number];
+
+// The event's value for each detail of the places, or nothing where the event has none: the host's stays.
+function placeValues(event: InvitationEventData): Partial<Record<PlaceField, string>> {
+    const values: Partial<Record<PlaceField, string>> = {};
+    const fill = (place: Place | null, [name, address, map]: readonly [PlaceField, PlaceField, PlaceField]) => {
+        if (!place) return;
+        values[name] = place.name;
+        if (place.address?.trim()) values[address] = place.address.trim();
+        const link = mapLink(place.mapsUrl);
+        if (link) values[map] = link;
+    };
+    fill(ceremonyPlace(event), CEREMONY_FIELDS);
+    fill(receptionPlace(event), RECEPTION_FIELDS);
+    return values;
+}
+
+// Each detail of a place the event has a value for: its name, address or map link, each on its own.
 function applyPlaces(section: Draft<SectionOf<'locations'>>, event: InvitationEventData) {
-    const ceremony = ceremonyPlace(event);
-    if (ceremony) {
-        section.data.ceremony = ceremony.name;
-        section.data.ceremonyAddress = ceremony.address;
-        section.data.ceremonyMap = mapLink(ceremony.mapsUrl);
-    }
-    const reception = receptionPlace(event);
-    if (reception) {
-        section.data.reception = reception.name;
-        section.data.receptionAddress = reception.address;
-        section.data.receptionMap = mapLink(reception.mapsUrl);
+    for (const [field, value] of Object.entries(placeValues(event)) as [PlaceField, string][]) {
+        if (section.data[field] !== value) section.data[field] = value;
     }
 }
 
@@ -294,10 +302,14 @@ function applySection(section: Draft<Section>, event: InvitationEventData, langu
             break;
         case 'date': {
             const iso = event.startAt ? localDateTime(event.startAt, event.timezone) : null;
-            // The words are written again only when the date moves, as a language change writes them.
-            if (iso && iso !== section.data.iso) {
-                section.data.iso = iso;
-                applyDateLanguage(section.data, section.data.displayLanguage);
+            if (!iso) break;
+            // The words are the event's date in the date's language, even where the host typed others before the
+            // section was linked again. Only what differs is written, so a second sync changes nothing.
+            const expected = { ...section.data, iso };
+            applyDateLanguage(expected, section.data.displayLanguage);
+            section.data.iso = iso;
+            for (const word of DATE_WORDS) {
+                if (section.data[word] !== expected[word]) section.data[word] = expected[word] as string;
             }
             break;
         }
@@ -486,13 +498,12 @@ export function textLock(
     }
 }
 
-// A place's name, address or map link is locked once the event has that place. The ceremony is the event's own
-// place (or its main session, which mirrors it); the reception is a session of the schedule.
+// A place's name, address or map link is locked once the event has a value for that detail; until then the host
+// types it. The ceremony is the event's own place (or its main session, which mirrors it); the reception is a
+// session of the schedule.
 export function placeFieldLock(field: string, event: InvitationEventData | null): EventFieldSource | null {
-    if (!event) return null;
-    if ((CEREMONY_FIELDS as readonly string[]).includes(field)) return ceremonyPlace(event) ? 'settings' : null;
-    if ((RECEPTION_FIELDS as readonly string[]).includes(field)) return receptionPlace(event) ? 'schedule' : null;
-    return null;
+    if (!event || !(field in placeValues(event))) return null;
+    return (CEREMONY_FIELDS as readonly string[]).includes(field) ? 'settings' : 'schedule';
 }
 
 // Whether the program's rows are the event's sessions, so they can't be added, removed or retyped here.

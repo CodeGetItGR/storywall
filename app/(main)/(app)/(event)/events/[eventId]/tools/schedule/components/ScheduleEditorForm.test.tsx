@@ -89,3 +89,17 @@ describe('ScheduleEditorForm address', () => {
         );
     });
 });
+
+describe('ScheduleEditorForm on the main session', () => {
+    it("keeps the event's place read-only, as it changes in the event's settings", () => {
+        renderForm(session({ id: 's1', isMain: true, isSecondary: false }));
+        expect(addressInput()).toBeDisabled();
+        expect(screen.getByPlaceholderText('SchedulePage.host.placeholders.locationName')).toBeDisabled();
+        expect(screen.getByPlaceholderText('SchedulePage.host.placeholders.mapsUrl')).toBeDisabled();
+    });
+
+    it('lets the host type the place of another session', () => {
+        renderForm(session());
+        expect(addressInput()).toBeEnabled();
+    });
+});
