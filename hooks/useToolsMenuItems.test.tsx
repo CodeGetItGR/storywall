@@ -369,12 +369,19 @@ describe('vendor tools in the menu', () => {
 describe('vendor entries in the host menu', () => {
     beforeEach(() => {
         mocks.isHost = true;
+        mocks.accessMode = 'standard';
     });
 
     it('adds Vendors and Announcement for a live event with the module', () => {
         mocks.activeEvent = vendorEvent();
         const keys = renderHook(() => useHostMenuItems()).result.current.map((item) => item.key);
         expect(keys).toEqual(expect.arrayContaining(['vendors', 'announcement']));
+    });
+
+    it('hides Announcement for a demo visitor', () => {
+        mocks.activeEvent = vendorEvent();
+        mocks.accessMode = 'demoVisitor';
+        expect(renderHook(() => useHostMenuItems()).result.current.map((item) => item.key)).not.toContain('announcement');
     });
 
     it('hides Announcement when the posts module is off', () => {
