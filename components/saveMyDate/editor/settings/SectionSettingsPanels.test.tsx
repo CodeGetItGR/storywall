@@ -20,6 +20,7 @@ import { sampleDraftDto } from '@/lib/invitation/sampleDraft';
 import type { InvitationSection } from '@/lib/invitation/sections';
 import { type DocumentRecipe, settingsGroups } from '@/lib/invitation/sectionSettings';
 import { COUNTDOWN_FIELDS } from '@/lib/invitation/sectionStyleFields';
+import { keyboardDrag, layOut } from '@/lib/testing/keyboardDrag';
 import en from '@/messages/en.json';
 
 function renderIn(node: ReactNode) {
@@ -241,6 +242,19 @@ describe('Locked by the event', () => {
         expect(screen.getByRole('link', { name: en.InvitationEditor.eventLock.schedule })).toHaveAttribute('href', '/events/e1/tools/schedule');
     });
 
+    it("keeps the event's moments in the schedule's order", () => {
+        renderIn(<ProgramItemsSettings scope={scopeFor('programIcons', { event }).scope} />);
+        expect(screen.queryByRole('button', { name: en.InvitationEditor.sectionSettings.reorder })).toBeNull();
+    });
+
+    it('moves moments while the event has no schedule', async () => {
+        const { scope, edited } = scopeFor('programIcons', { event: { ...event, sessions: null } });
+        renderIn(<ProgramItemsSettings scope={scope} />);
+        layOut(screen.getAllByRole('listitem'));
+        await keyboardDrag(screen.getAllByRole('button', { name: en.InvitationEditor.sectionSettings.reorder })[0], ['ArrowDown']);
+        expect(edited().data.items.map((item) => item.id)).toEqual(['p2', 'p1', 'p3']);
+    });
+
     it('adds moments while the event has no schedule', () => {
         renderIn(<ProgramItemsSettings scope={scopeFor('programIcons', { event: { ...event, sessions: null } }).scope} />);
         expect(screen.getByRole('button', { name: en.InvitationEditor.sectionSettings.addMoment })).toBeInTheDocument();
@@ -259,6 +273,29 @@ describe('Locked by the event', () => {
         renderIn(<LocationsSettings scope={scopeFor('locations', { event: { ...event, sessions, location: { ...event.location, mapsUrl: null } } }).scope} />);
         expect(screen.queryByRole('link', { name: en.InvitationEditor.eventLock.settings })).toBeNull();
         expect(screen.getAllByLabelText(en.InvitationEditor.sectionSettings.mapLink)).toHaveLength(2);
+    });
+});
+
+describe('LocationsSettings', () => {
+    it('shows the welcome place with its switch, and hides it again', () => {
+        const copy = en.InvitationEditor.sectionSettings;
+        const { scope, edit, edited } = scopeFor('locations');
+        const { rerender } = renderIn(<LocationsSettings scope={scope} />);
+        const welcome = screen.getByRole('switch', { name: copy.showWelcome });
+        expect(welcome).not.toBeChecked();
+        expect(screen.getAllByLabelText(copy.mapLink)).toHaveLength(2);
+
+        fireEvent.click(welcome);
+        expect(edit).toHaveBeenCalledOnce();
+        expect(edited().data.welcomeEnabled).toBe(true);
+
+        rerender(
+            <NextIntlClientProvider locale="en" messages={en}>
+                <LocationsSettings scope={{ ...scope, section: edited() }} />
+            </NextIntlClientProvider>,
+        );
+        expect(screen.getByRole('switch', { name: copy.showWelcome })).toBeChecked();
+        expect(screen.getAllByLabelText(copy.mapLink)).toHaveLength(3);
     });
 });
 

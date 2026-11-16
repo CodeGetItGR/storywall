@@ -26,6 +26,7 @@ const TILE_BUTTON =
 // One photo of the gallery list: a handle to drag it, and buttons to change or delete it.
 export function GalleryPhotoTile({ photo, index, percent, canPick, onReplace, onDelete }: GalleryPhotoTileProps) {
     const t = useTranslations('InvitationEditor.photos');
+    const tSettings = useTranslations('InvitationEditor.sectionSettings');
     const { setNodeRef, handleRef, handleProps, style, isDragging, inputRef, pick, onFile, remove } = useGalleryPhotoTile({
         id: photo.id,
         index,
@@ -50,8 +51,8 @@ export function GalleryPhotoTile({ photo, index, percent, canPick, onReplace, on
             {/* Actions */}
             <button
                 type="button"
-                aria-label={t('gallery.reorder')}
-                title={t('gallery.reorder')}
+                aria-label={tSettings('reorder')}
+                title={tSettings('reorder')}
                 className={cn(TILE_BUTTON, 'top-1 left-1 cursor-grab touch-none')}
                 ref={handleRef}
                 {...handleProps}

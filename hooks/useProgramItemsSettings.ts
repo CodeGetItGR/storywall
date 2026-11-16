@@ -10,13 +10,14 @@ import {
     addProgramItem,
     deleteProgramItem,
     MAX_PROGRAM_ITEMS,
+    moveProgramItem,
     type ProgramItemPatch,
     updateProgramItem,
 } from '@/lib/invitation/sectionSettingsEdits';
 
 export type ProgramSection = SectionOf<'program'> | SectionOf<'programIcons'>;
 
-// The program's moments: rows, one open at a time, added at the end. Once they are the event's sessions (KAN-84)
+// The program's moments: rows, one open at a time, added at the end and dragged to another place. Once they are the event's sessions (KAN-84)
 // the host changes them on the schedule; only their icons change here.
 export function useProgramItemsSettings({ section, edit, event, eventFieldLinks }: SettingsScope<ProgramSection>) {
     const items = section.data.items as ProgramSection['data']['items'];
@@ -43,6 +44,8 @@ export function useProgramItemsSettings({ section, edit, event, eventFieldLinks 
         [close, edit, section.id],
     );
 
+    const reorder = useCallback((itemId: string, overId: string) => edit(moveProgramItem(section.id, itemId, overId)), [edit, section.id]);
+
     const lock = programLock(section, event);
 
     return {
@@ -52,6 +55,8 @@ export function useProgramItemsSettings({ section, edit, event, eventFieldLinks 
         canAdd: items.length < MAX_PROGRAM_ITEMS,
         add,
         update,
+        // The event's sessions keep the schedule's order, so locked rows don't move.
+        reorder: lock ? null : reorder,
         remove,
         item: selected.item,
         open,
