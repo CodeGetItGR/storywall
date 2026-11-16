@@ -22,7 +22,8 @@ const stops: JourneyStopModel[] = [
         icon: 'schedule',
         status: 'current',
         href: '/schedule',
-        detail: 'No sessions yet',
+        highlight: 'Add sessions',
+        links: [],
         card: { body: 'Add the parts of your day', action: { label: 'Add sessions', href: '/schedule' } },
     },
     { key: 'gift', title: 'Gift account', icon: 'gift', status: 'upcoming', href: '/gifts', detail: 'Add gift account' },
@@ -53,15 +54,65 @@ describe('JourneyPath', () => {
         const mobile = screen.getByTestId('journey-mobile');
         expect(within(mobile).getAllByText('Schedule')).toHaveLength(1);
         expect(within(mobile).getByRole('link', { name: 'Schedule' })).toHaveAttribute('href', '/schedule');
-        expect(within(mobile).getAllByText('No sessions yet')).toHaveLength(1);
     });
 
-    it('keeps the stop on the desktop path and leaves its icon and line out of the card', () => {
+    it('says the action once on small screens, as the card button and not as a coral line', () => {
         render(<JourneyPath label="Get ready" stops={stops} end="day" endLabel="On the day" />);
-        // One circle and one line on each path; none repeated in the desktop card.
+        const mobile = screen.getByTestId('journey-mobile');
+        expect(within(mobile).getAllByText('Add sessions')).toHaveLength(1);
+        expect(within(mobile).getByText('Add sessions').closest('a')).toHaveAttribute('href', '/schedule');
+    });
+
+    it('keeps the stop on the desktop path with its coral line, and leaves its icon and line out of the card', () => {
+        render(<JourneyPath label="Get ready" stops={stops} end="day" endLabel="On the day" />);
+        // One circle on each path; the action is the phone button, the desktop coral line and the desktop button.
         expect(screen.getAllByRole('img', { name: 'Schedule' })).toHaveLength(2);
-        expect(screen.getAllByText('No sessions yet')).toHaveLength(2);
+        expect(screen.getAllByText('Add sessions')).toHaveLength(3);
+        expect(screen.getAllByRole('link', { name: 'Add sessions' })).toHaveLength(2);
         expect(screen.getAllByRole('heading', { name: 'Schedule' })).toHaveLength(2);
+    });
+
+    it("shows a current stop's links and chips in its small-screen card", () => {
+        const details: JourneyStopModel[] = [
+            {
+                key: 'details',
+                title: 'Event details',
+                icon: 'details',
+                status: 'current',
+                href: '/settings',
+                highlight: 'Edit event details',
+                chips: [{ key: 'attending', label: '42 attending', tone: 'success' }],
+                links: [{ key: 'venue', label: 'Add venue details', href: '/schedule?section=venue-session' }],
+                card: { action: { label: 'Edit event details', href: '/settings' } },
+            },
+        ];
+        render(<JourneyPath label="Get ready" stops={details} end="day" endLabel="On the day" />);
+        const mobile = screen.getByTestId('journey-mobile');
+        expect(within(mobile).getByRole('link', { name: 'Add venue details' })).toHaveAttribute('href', '/schedule?section=venue-session');
+        expect(within(mobile).getByText('42 attending')).toBeInTheDocument();
+        expect(within(mobile).getAllByText('Edit event details')).toHaveLength(1);
+    });
+
+    it("shows a current stop's remaining line in its small-screen card only", () => {
+        const invitations: JourneyStopModel[] = [
+            {
+                key: 'invitations',
+                title: 'Invitations & QR codes',
+                icon: 'invitations',
+                status: 'current',
+                href: '/qr',
+                highlight: 'Go to QR links',
+                detail: '58 of 100 members',
+                links: [],
+                card: { action: { label: 'Go to QR links', href: '/qr' } },
+            },
+        ];
+        render(<JourneyPath label="Get ready" stops={invitations} end="day" endLabel="On the day" />);
+        const mobile = screen.getByTestId('journey-mobile');
+        expect(within(mobile).getAllByText('58 of 100 members')).toHaveLength(1);
+        expect(within(mobile).getAllByText('Go to QR links')).toHaveLength(1);
+        // The phone card and the desktop path label; not the desktop card.
+        expect(screen.getAllByText('58 of 100 members')).toHaveLength(2);
     });
 
     it('shows a current image stop inside its circle', () => {

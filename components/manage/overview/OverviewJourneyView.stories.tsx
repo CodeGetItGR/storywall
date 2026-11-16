@@ -69,7 +69,8 @@ const beforeStops: JourneyStopModel[] = [
         icon: 'schedule',
         status: 'current',
         href: scheduleHref,
-        links: [{ key: 'schedule', label: 'Add sessions', href: scheduleHref }],
+        highlight: 'Add sessions',
+        links: [],
         card: { body: 'Add the parts of your day so guests know when to come.', action: { label: 'Add sessions', href: scheduleHref } },
     },
     {
@@ -78,7 +79,7 @@ const beforeStops: JourneyStopModel[] = [
         icon: 'gift',
         status: 'upcoming',
         href: giftHref,
-        links: [{ key: 'gifts', label: 'Add gift account', href: giftHref }],
+        links: [{ key: 'action', label: 'Add gift account', href: giftHref }],
     },
     {
         key: 'invitations',
@@ -87,7 +88,7 @@ const beforeStops: JourneyStopModel[] = [
         status: 'upcoming',
         href: qrHref,
         detail: '58 of 100 members',
-        links: [{ key: 'qr', label: 'Go to QR links', href: qrHref }],
+        links: [{ key: 'action', label: 'Go to QR links', href: qrHref }],
     },
 ];
 

@@ -1,13 +1,15 @@
 import type { ReactNode } from 'react';
 
+import { JourneyStopExtras } from '@/components/manage/overview/JourneyStopExtras';
 import { AppLink } from '@/components/ui/AppLink';
 import type { JourneyStopModel } from '@/lib/eventJourney';
 import { cn } from '@/lib/utils';
 
 /**
  * The current stop, opened up. `beside`: next to its circle on small screens, standing in for the
- * stop's own text (linked title and line). `under`: below the desktop path, where the stop keeps its
- * label, so only the title, body, action and aside show.
+ * stop's own text (linked title, line, chips and links). `under`: below the desktop path, where the
+ * stop keeps its label, so only the title, body, action and aside show. Neither shows `highlight`:
+ * a carded stop's coral line is its action, which the button already says.
  */
 export function JourneyStopCard({ stop, placement, aside }: { stop: JourneyStopModel; placement: 'beside' | 'under'; aside?: ReactNode }) {
     if (!stop.card) return null;
@@ -27,6 +29,9 @@ export function JourneyStopCard({ stop, placement, aside }: { stop: JourneyStopM
                 </h3>
                 {beside && stop.detail && <p className="text-sm text-ink-muted">{stop.detail}</p>}
                 {stop.card.body && <p className="text-sm text-ink-muted">{stop.card.body}</p>}
+                {/* Chips and links (small screens) */}
+                {beside && <JourneyStopExtras stop={stop} />}
+                {/* Action */}
                 <AppLink
                     href={stop.card.action.href}
                     className={cn(

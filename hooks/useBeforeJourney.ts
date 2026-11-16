@@ -14,7 +14,30 @@ import { routes } from '@/lib/routes';
 
 export type JourneyCounts = { memberCount: number; memberLimit: number | null; seatsClaimed: number | null };
 
-type SetupStop = Omit<JourneyStopModel, 'status' | 'card'> & { complete: boolean; action: { label: string; href: string }; cardBody?: string };
+type SetupAction = { label: string; href: string };
+
+// `detail` and `links` hold only what isn't the action. `actionLine` says where the action shows
+// while the stop isn't current: as its plain line, as a link under it, or nowhere.
+type SetupStop = Omit<JourneyStopModel, 'status' | 'card' | 'highlight'> & {
+    complete: boolean;
+    action: SetupAction;
+    actionLine: 'detail' | 'link' | null;
+    cardBody?: string;
+};
+
+/**
+ * A setup stop's lines. The current stop puts its action in the coral line (as on C1) and keeps
+ * the rest, since its card's button says the action too; other stops show it in `actionLine`.
+ */
+function setupLines(
+    { detail, links = [], action, actionLine }: SetupStop,
+    current: boolean,
+): Pick<JourneyStopModel, 'highlight' | 'detail' | 'links'> {
+    if (current) return { highlight: action.label, detail, links };
+    if (actionLine === 'detail') return { detail: action.label, links };
+    if (actionLine === 'link') return { detail, links: [...links, { key: 'action', ...action }] };
+    return { detail, links };
+}
 
 /** The Before journey: setup stops in order, then sessions dated before the primary day. */
 export function useBeforeJourney(event: EventDetailResponseDto, counts: JourneyCounts, now: Date = new Date()) {
@@ -57,7 +80,7 @@ export function useBeforeJourney(event: EventDetailResponseDto, counts: JourneyC
             complete: progress.details,
             action: { label: t('steps.details.edit'), href: settingsHref },
             // The title already opens Settings, so "Edit event details" is its plain line (as on C1), not a second link.
-            detail: t('steps.details.edit'),
+            actionLine: 'detail',
             links: hasVenueConvention
                 ? [
                       {
@@ -75,8 +98,8 @@ export function useBeforeJourney(event: EventDetailResponseDto, counts: JourneyC
             href: rsvpHref,
             complete: progress.rsvp,
             action: { label: t('steps.rsvp.edit'), href: rsvpHref },
+            actionLine: progress.rsvp ? null : 'link',
             chips: rsvpChips,
-            links: progress.rsvp ? [] : [{ key: 'rsvp', label: t('steps.rsvp.edit'), href: rsvpHref }],
         },
         {
             key: 'schedule',
@@ -86,8 +109,8 @@ export function useBeforeJourney(event: EventDetailResponseDto, counts: JourneyC
             complete: progress.schedule,
             action: { label: t('steps.schedule.edit'), href: scheduleHref },
             cardBody: tj('journey.scheduleCard'),
+            actionLine: progress.schedule ? null : 'link',
             detail: progress.schedule ? tj('journey.sessions', { count: sessions.length }) : undefined,
-            links: progress.schedule ? [] : [{ key: 'schedule', label: t('steps.schedule.edit'), href: scheduleHref }],
         },
         wishlistOn && {
             key: 'giftAccount',
@@ -96,7 +119,7 @@ export function useBeforeJourney(event: EventDetailResponseDto, counts: JourneyC
             href: giftHref,
             complete: progress.giftAccount,
             action: { label: t('steps.giftAccount.edit'), href: giftHref },
-            links: progress.giftAccount ? [] : [{ key: 'gifts', label: t('steps.giftAccount.edit'), href: giftHref }],
+            actionLine: progress.giftAccount ? null : 'link',
         },
         !isLiteEvent(event) && {
             key: 'invitations',
@@ -105,16 +128,18 @@ export function useBeforeJourney(event: EventDetailResponseDto, counts: JourneyC
             href: qrHref,
             complete: progress.invitations,
             action: { label: t('steps.invitations.qr'), href: qrHref },
+            actionLine: progress.invitations ? null : 'link',
             detail: membersLine,
-            links: progress.invitations ? [] : [{ key: 'qr', label: t('steps.invitations.qr'), href: qrHref }],
         },
     ];
 
     const present = setup.filter((stop): stop is SetupStop => Boolean(stop));
     const currentIndex = present.findIndex((stop) => !stop.complete);
-    const setupStops: JourneyStopModel[] = present.map(({ complete, action, cardBody, ...stop }, index) => {
+    const setupStops: JourneyStopModel[] = present.map((stop, index) => {
+        const { complete, action, actionLine: _actionLine, cardBody, ...rest } = stop;
         const status = complete ? 'done' : index === currentIndex ? 'current' : 'upcoming';
-        return { ...stop, status, card: status === 'current' ? { body: cardBody, action } : undefined };
+        const current = status === 'current';
+        return { ...rest, ...setupLines(stop, current), status, card: current ? { body: cardBody, action } : undefined };
     });
 
     const earlier = sessionsByPhase(event).before;

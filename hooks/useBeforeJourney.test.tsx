@@ -56,6 +56,69 @@ describe('useBeforeJourney', () => {
         });
     });
 
+    it("puts the current stop's action in its coral line and leaves it out of its other lines", () => {
+        const schedule = renderHook(() => useBeforeJourney(event(), counts, now)).result.current.stops[2];
+        expect(schedule).toMatchObject({ highlight: 'steps.schedule.edit', links: [] });
+        expect(schedule.detail).toBeUndefined();
+    });
+
+    it('keeps the venue link on a current event details stop, with the action only in its coral line', () => {
+        progress.value = { details: false, rsvp: false, giftAccount: false, schedule: false, invitations: false };
+        const details = renderHook(() => useBeforeJourney(event(), counts, now)).result.current.stops[0];
+        expect(details.status).toBe('current');
+        expect(details.highlight).toBe('steps.details.edit');
+        expect(details.detail).toBeUndefined();
+        expect(details.links).toEqual([
+            { key: 'venue', label: 'steps.details.venueAdd', href: routes.events.tools.schedule('e1', { section: 'venue-session' }) },
+        ]);
+    });
+
+    it('keeps the chips on a current RSVP stop and drops its action link', () => {
+        progress.value = { details: true, rsvp: false, giftAccount: false, schedule: false, invitations: false };
+        const rsvp = renderHook(() => useBeforeJourney(event(), counts, now)).result.current.stops[1];
+        expect(rsvp).toMatchObject({ status: 'current', highlight: 'steps.rsvp.edit', links: [] });
+        expect(rsvp.chips).toHaveLength(4);
+    });
+
+    it('keeps the members line on a current invitations stop and moves Go to QR links to its coral line', () => {
+        progress.value = { details: true, rsvp: true, giftAccount: true, schedule: true, invitations: false };
+        const invitations = renderHook(() => useBeforeJourney(event(), counts, now)).result.current.stops[4];
+        expect(invitations).toMatchObject({
+            status: 'current',
+            highlight: 'steps.invitations.qr',
+            detail: 'journey.members:{"count":58,"limit":100}',
+            links: [],
+        });
+    });
+
+    it('keeps the lines of stops that are not current', () => {
+        const stops = renderHook(() => useBeforeJourney(event(), counts, now)).result.current.stops;
+        const lines = stops
+            .filter((stop) => stop.status !== 'current')
+            .map(({ key, highlight, detail, links }) => ({ key, highlight, detail, links: links?.map(({ label, href }) => ({ label, href })) }));
+        expect(lines).toEqual([
+            {
+                key: 'details',
+                highlight: undefined,
+                detail: 'steps.details.edit',
+                links: [{ label: 'steps.details.venueAdd', href: routes.events.tools.schedule('e1', { section: 'venue-session' }) }],
+            },
+            { key: 'rsvp', highlight: undefined, detail: undefined, links: [] },
+            {
+                key: 'giftAccount',
+                highlight: undefined,
+                detail: undefined,
+                links: [{ label: 'steps.giftAccount.edit', href: routes.events.tools.gifts('e1') }],
+            },
+            {
+                key: 'invitations',
+                highlight: undefined,
+                detail: 'journey.members:{"count":58,"limit":100}',
+                links: [{ label: 'steps.invitations.qr', href: routes.events.invitationsQr('e1') }],
+            },
+        ]);
+    });
+
     it('shows the RSVP answers and seats as chips', () => {
         const rsvp = renderHook(() => useBeforeJourney(event(), counts, now)).result.current.stops[1];
         expect(rsvp.chips?.map((chip) => chip.key)).toEqual(['attending', 'declined', 'noResponse', 'seats']);
