@@ -112,15 +112,18 @@ for the author's own wish (Part 1 already limits who receives wishes at all).
    under a second, so this runs in the request; there is no queue and no "processing" state.
 5. Store the object privately in R2 under its own prefix. Follow `MediaFileUploadTransaction`'s rule: if the wish
    transaction rolls back after the upload, delete the object.
-6. On `PUT` with a new recording or `removeAudio`, the old object is not deleted directly. It is handed to the
-   purge path, like every other removal.
+6. On `PUT` with a new recording or `removeAudio`, the old object is deleted only after the change commits
+   (see Storage cleanup).
 
-Storage cleanup — required, not optional:
+Storage cleanup — required, not optional (owner decisions 2026-11-16):
 
-- `MediaPurgeService` deletes wish audio when the event or the account is deleted, and when a removed wish is
-  purged.
-- `OrphanedObjectSweepService` must know wish audio keys. Without this it treats live recordings as orphans and
-  deletes them.
+- Recordings live under their own prefix `wishbook-audio/{eventId}/`, not under `events/`.
+  `OrphanedObjectSweepService` lists only `events/`, so it never sees them and can't delete a live one.
+- A replaced or removed recording, and the recording of a deleted wish, is deleted right after the change
+  commits. A failed delete is logged; the file goes with the event purge.
+- `MediaPurgeService` clears the event's prefix when the event is purged.
+- Account deletion deletes the account's recordings. A wish with text keeps its text; a voice-only wish is
+  removed.
 
 The QR endpoint keeps its existing rate limits. A recording counts as one wish.
 
