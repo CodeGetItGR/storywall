@@ -2,10 +2,12 @@ import { describe, expect, it } from 'vitest';
 
 import {
     addField,
+    DEFAULT_QR_CARD_FEATURES,
     DEFAULT_QR_CARD_LAYOUT,
     DEFAULT_QR_CARD_TITLE,
     elementName,
     elementRect,
+    FEATURES_QR_CARD_LAYOUT,
     fieldElement,
     handlePoint,
     isFieldComplete,
@@ -22,6 +24,7 @@ import {
     roundMm,
     sameQrCardLayout,
     setCodeOptions,
+    setFeaturesShown,
     setLinesOptions,
     setLineWording,
     setTitleOptions,
@@ -41,8 +44,57 @@ describe('the default layout', () => {
             code: { x: 20.5, y: 40, size: 64, panel: true, radius: 4 },
             lines: { x: 8, y: 107, width: 89, height: 33, textSize: 5, align: 'center' },
             fields: [],
+            features: null,
         });
         expect(isValidQrCardLayout(L)).toBe(true);
+    });
+});
+
+const F = FEATURES_QR_CARD_LAYOUT;
+
+describe('the layout with tiles', () => {
+    it('puts a smaller code above the tiles, and is valid', () => {
+        expect(F).toEqual({
+            title: { x: 8, y: 10, width: 89, height: 11, maxSize: 7.5, align: 'center' },
+            code: { x: 29.5, y: 22, size: 46, panel: true, radius: 4 },
+            lines: { x: 8, y: 70, width: 89, height: 8, textSize: 5, align: 'center' },
+            fields: [],
+            features: { x: 8, y: 79, width: 89, height: 61 },
+        });
+        expect(DEFAULT_QR_CARD_FEATURES).toEqual(F.features);
+        expect(isValidQrCardLayout(F)).toBe(true);
+    });
+
+    it('draws the tiles above the fields and below the code', () => {
+        const withField = addField(F, { id: 'a', kind: 'fixed', color: '#000000' });
+        expect(qrCardElements(withField)).toEqual(['title', 'lines', 'field:a', 'features', 'code']);
+        expect(elementRect(F, 'features')).toEqual({ x: 8, y: 79, width: 89, height: 61 });
+    });
+
+    it('needs the box inside the safe area and at least 40 × 25', () => {
+        expect(isValidQrCardLayout({ ...F, features: { x: 8, y: 80, width: 89, height: 61 } })).toBe(false);
+        expect(isValidQrCardLayout({ ...F, features: { x: 8, y: 79, width: 39.9, height: 61 } })).toBe(false);
+        expect(isValidQrCardLayout({ ...F, features: { x: 8, y: 79, width: 89, height: 24.9 } })).toBe(false);
+        expect(isValidQrCardLayout({ ...F, features: { x: 8, y: 79, width: 40, height: 25 } })).toBe(true);
+    });
+
+    it('resizes no smaller than 40 × 25, and moves inside the safe area', () => {
+        const start = elementRect(F, 'features');
+        const shrunk = resizeElement(F, 'features', 'se', start, -80, -80);
+        expect(shrunk.features).toEqual({ x: 8, y: 79, width: 40, height: 25 });
+        expect(moveElementTo(shrunk, 'features', { x: 90, y: 200 }).features).toEqual({ x: 57, y: 115, width: 40, height: 25 });
+    });
+
+    it('can be removed and put back at its spot', () => {
+        const removed = setFeaturesShown(F, false);
+        expect(removed.features).toBeNull();
+        expect(qrCardElements(removed)).not.toContain('features');
+        expect(setFeaturesShown(removed, true).features).toEqual(DEFAULT_QR_CARD_FEATURES);
+        expect(setFeaturesShown(F, true)).toBe(F);
+    });
+
+    it('is named as its own element', () => {
+        expect(elementName(F, 'features')).toEqual({ key: 'features', number: 0 });
     });
 });
 
@@ -90,6 +142,14 @@ describe('qrCardLayoutOf', () => {
         expect(qrCardLayoutOf(null)).toBe(L);
         const { fields: _fields, ...old } = L;
         expect(qrCardLayoutOf(old)).toEqual(L);
+    });
+
+    it('reads a saved box, a missing one as none, and falls back to the layout it is given', () => {
+        expect(qrCardLayoutOf({ ...F }).features).toEqual(F.features);
+        const { features: _features, ...old } = F;
+        expect(qrCardLayoutOf(old).features).toBeNull();
+        expect(qrCardLayoutOf(null, F)).toBe(F);
+        expect(qrCardLayoutOf(undefined)).toBe(L);
     });
 });
 

@@ -20,7 +20,7 @@ import { useQrCardLayoutEditor } from '@/hooks/useQrCardLayoutEditor';
 import { useQrCardLook } from '@/hooks/useQrCardLook';
 import { ApiError } from '@/lib/api/client';
 import type { AdminQrCardTemplateDto } from '@/lib/api/types';
-import { DEFAULT_QR_CARD_LAYOUT } from '@/lib/qrCardLayout';
+import { DEFAULT_QR_CARD_FEATURES, DEFAULT_QR_CARD_LAYOUT, FEATURES_QR_CARD_LAYOUT } from '@/lib/qrCardLayout';
 
 const LINEN: AdminQrCardTemplateDto = {
     id: 't1',
@@ -78,9 +78,9 @@ beforeEach(() => {
 });
 
 describe('useQrCardLayoutEditor', () => {
-    it('starts on the default layout, clean, nothing selected', () => {
+    it('starts on the layout with the pictures, clean, nothing selected', () => {
         const { result } = renderEditor();
-        expect(result.current.layout).toEqual(DEFAULT_QR_CARD_LAYOUT);
+        expect(result.current.layout).toEqual(FEATURES_QR_CARD_LAYOUT);
         expect(result.current.dirty).toBe(false);
         expect(result.current.selected).toBeNull();
     });
@@ -89,9 +89,9 @@ describe('useQrCardLayoutEditor', () => {
         const { result } = renderEditor();
         act(() => result.current.select('code'));
         act(() => result.current.handleKeyDown(key('ArrowRight')));
-        expect(result.current.layout.code.x).toBe(21);
+        expect(result.current.layout.code.x).toBe(30);
         act(() => result.current.handleKeyDown(key('ArrowRight', { shiftKey: true })));
-        expect(result.current.layout.code.x).toBe(26);
+        expect(result.current.layout.code.x).toBe(35);
         expect(result.current.dirty).toBe(true);
     });
 
@@ -99,7 +99,7 @@ describe('useQrCardLayoutEditor', () => {
         const { result } = renderEditor();
         act(() => result.current.select('code'));
         act(() => result.current.handleKeyDown(key('ArrowRight', { target: document.createElement('input') })));
-        expect(result.current.layout.code.x).toBe(20.5);
+        expect(result.current.layout.code.x).toBe(29.5);
     });
 
     it('Escape deselects first, then closes when clean', () => {
@@ -130,11 +130,11 @@ describe('useQrCardLayoutEditor', () => {
         expect(result.current.layout.lines.align).toBe('right');
     });
 
-    it('resets to the default layout', () => {
+    it('resets to the layout with the pictures', () => {
         const { result } = renderEditor();
         act(() => result.current.handleLinesAlignChange(alignEvent('right')));
         act(() => result.current.reset());
-        expect(result.current.layout).toEqual(DEFAULT_QR_CARD_LAYOUT);
+        expect(result.current.layout).toEqual(FEATURES_QR_CARD_LAYOUT);
     });
 
     it('saves the layout, hands back the template and closes', async () => {
@@ -222,6 +222,17 @@ describe('useQrCardLayoutEditor', () => {
         act(() => result.current.restoreTitle());
         expect(result.current.layout.title).toEqual(DEFAULT_QR_CARD_LAYOUT.title);
         expect(result.current.selected).toBe('title');
+    });
+
+    it('removes the pictures and puts them back', () => {
+        const { result } = renderEditor();
+        act(() => result.current.select('features'));
+        act(() => result.current.removeSelected());
+        expect(result.current.layout.features).toBeNull();
+        expect(result.current.selected).toBeNull();
+        act(() => result.current.restoreFeatures());
+        expect(result.current.layout.features).toEqual(DEFAULT_QR_CARD_FEATURES);
+        expect(result.current.selected).toBe('features');
     });
 
     it('saves the look with the layout, only what changed, then uploads the artwork', async () => {
