@@ -1,13 +1,14 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 
 import type { SectionOf, SettingsScope } from '@/hooks/useSectionSettingsPanel';
 import { placeFieldLock } from '@/lib/invitation/eventLinks';
-import { LOCATION_PLACES, setLocationMap } from '@/lib/invitation/sectionSettingsEdits';
+import { LOCATION_PLACES, setLocationMap, setWelcomeEnabled } from '@/lib/invitation/sectionSettingsEdits';
 
-// The places the section shows (the welcome only when it's on), each with its map link.
+// The places the section shows (the welcome only when it's on), each with its map link,
+// and the switch that shows or hides the welcome.
 // A place the event has (KAN-84) is changed on the event: its link says where.
 export function useLocationsSettings({ section, edit, event, eventFieldLinks }: SettingsScope<SectionOf<'locations'>>) {
     const t = useTranslations('InvitationEditor.sectionSettings.places');
@@ -29,5 +30,7 @@ export function useLocationsSettings({ section, edit, event, eventFieldLinks }: 
         [data, edit, event, eventFieldLinks, section.id, t],
     );
 
-    return { places };
+    const setWelcome = useCallback((enabled: boolean) => edit(setWelcomeEnabled(section.id, enabled)), [edit, section.id]);
+
+    return { places, welcome: data.welcomeEnabled, setWelcome };
 }
