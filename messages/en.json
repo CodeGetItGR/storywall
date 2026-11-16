@@ -2353,15 +2353,12 @@
                 "venueEdit": "Edit venue details"
             },
             "rsvp": {
-                "title": "RSVP",
                 "edit": "Set RSVP deadline"
             },
             "giftAccount": {
-                "title": "Gift account",
                 "edit": "Add gift account"
             },
             "schedule": {
-                "title": "Schedule",
                 "edit": "Add sessions"
             },
             "invitations": {
