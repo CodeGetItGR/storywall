@@ -24,6 +24,14 @@ export function RsvpDeadlineCard({ eventId, rsvpDeadline, startAt, canWrite }: R
     const countdown = rsvpCountdown(rsvpDeadline, startAt);
     const date = formatDate(locale, countdown.target, { day: 'numeric', month: 'long', year: 'numeric' });
 
+    function openSheet() {
+        setEditing(true);
+    }
+
+    function closeSheet() {
+        setEditing(false);
+    }
+
     return (
         <section className="flex items-center gap-3 rounded-[20px] bg-surface-muted px-4 py-3.5">
             {/* Icon */}
@@ -44,7 +52,7 @@ export function RsvpDeadlineCard({ eventId, rsvpDeadline, startAt, canWrite }: R
                 <button
                     type="button"
                     aria-label={t('editDeadline')}
-                    onClick={() => setEditing(true)}
+                    onClick={openSheet}
                     className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-background text-ink-muted transition-colors hover:text-ink focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:outline-none"
                 >
                     <Pencil className="h-4 w-4" aria-hidden="true" />
@@ -52,7 +60,7 @@ export function RsvpDeadlineCard({ eventId, rsvpDeadline, startAt, canWrite }: R
             )}
 
             {/* Sheet */}
-            <RsvpDeadlineSheet eventId={eventId} rsvpDeadline={rsvpDeadline} open={editing} onCloseAction={() => setEditing(false)} />
+            <RsvpDeadlineSheet eventId={eventId} rsvpDeadline={rsvpDeadline} open={editing} onCloseAction={closeSheet} />
         </section>
     );
 }

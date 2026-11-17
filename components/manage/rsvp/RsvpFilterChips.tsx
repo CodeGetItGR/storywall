@@ -26,25 +26,46 @@ export function RsvpFilterChips({ filter, counts, guestCount, onChangeAction }: 
 
     return (
         <div role="group" aria-label={t('rsvpGuests.title')} className="flex flex-wrap gap-2">
-            {filters.map(({ key, labelKey }) => {
-                const active = key === filter;
-                return (
-                    <button
-                        key={key}
-                        type="button"
-                        aria-pressed={active}
-                        onClick={() => onChangeAction(key)}
-                        className={cn(
-                            'inline-flex min-h-9 items-center gap-1.5 rounded-full px-3 text-[13px] font-bold whitespace-nowrap transition-colors focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:outline-none',
-                            active ? 'bg-ink text-white' : 'bg-background text-ink-muted ring-1 ring-border ring-inset hover:text-ink',
-                        )}
-                    >
-                        {/* The space keeps the name "All 110" for screen readers; flex drops it visually. */}
-                        {t(labelKey)}{' '}
-                        <span className="opacity-70">{key === 'all' ? guestCount : counts[key]}</span>
-                    </button>
-                );
-            })}
+            {filters.map(({ key, labelKey }) => (
+                <FilterChip
+                    key={key}
+                    filterKey={key}
+                    label={t(labelKey)}
+                    count={key === 'all' ? guestCount : counts[key]}
+                    active={key === filter}
+                    onSelectAction={onChangeAction}
+                />
+            ))}
         </div>
+    );
+}
+
+type FilterChipProps = {
+    filterKey: RosterFilter;
+    label: string;
+    count: number;
+    active: boolean;
+    onSelectAction: (filter: RosterFilter) => void;
+};
+
+function FilterChip({ filterKey, label, count, active, onSelectAction }: FilterChipProps) {
+    function handleClick() {
+        onSelectAction(filterKey);
+    }
+
+    return (
+        <button
+            type="button"
+            aria-pressed={active}
+            onClick={handleClick}
+            className={cn(
+                'inline-flex min-h-9 items-center gap-1.5 rounded-full px-3 text-[13px] font-bold whitespace-nowrap transition-colors focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:outline-none',
+                active ? 'bg-ink text-white' : 'bg-background text-ink-muted ring-1 ring-border ring-inset hover:text-ink',
+            )}
+        >
+            {/* The space keeps the name "All 110" for screen readers; flex drops it visually. */}
+            {label}{' '}
+            <span className="opacity-70">{count}</span>
+        </button>
     );
 }

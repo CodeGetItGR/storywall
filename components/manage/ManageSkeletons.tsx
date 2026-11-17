@@ -4,16 +4,6 @@ import { MetricStripSkeleton } from '@/components/ui/MetricStrip';
 import { Skeleton, SkeletonStatus } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 
-function SubTabsSkeleton({ count }: { count: number }) {
-    return (
-        <div className="flex w-full items-center justify-center gap-4">
-            {Array.from({ length: count }).map((_, index) => (
-                <Skeleton key={index} className="h-4 w-16 rounded-full" />
-            ))}
-        </div>
-    );
-}
-
 function MemberRowSkeleton() {
     return (
         <div className="flex items-center gap-3 border-b border-border/70 py-3 last:border-b-0">
@@ -114,28 +104,27 @@ export function RsvpReportSkeleton() {
 
 export function ManageRsvpSkeleton() {
     return (
-        <div className="flex flex-col gap-7">
-            {/* Sub-tabs */}
-            <SubTabsSkeleton count={3} />
-
-            {/* Countdown */}
-            <div className="flex items-start gap-3">
-                <Skeleton className="h-10 w-10 shrink-0 rounded-full" />
-                <div className="space-y-2">
-                    <Skeleton className="h-3 w-24 rounded-full" />
-                    <Skeleton className="h-3.5 w-40 rounded-full" />
-                </div>
-            </div>
-
+        <SkeletonStatus className="flex flex-col gap-6">
             {/* Deadline */}
-            <div className="space-y-2">
-                <Skeleton className="h-3 w-28 rounded-full" />
-                <Skeleton className="h-11 w-full max-w-sm rounded-2xl" />
+            <Skeleton className="h-[68px] w-full rounded-[20px]" />
+
+            {/* Numbers */}
+            <div className="grid grid-cols-4 gap-2">
+                {Array.from({ length: 4 }).map((_, index) => (
+                    <Skeleton key={index} className="h-[58px] rounded-2xl" />
+                ))}
             </div>
 
-            {/* Report */}
+            {/* Reports */}
+            <div className="flex gap-2 overflow-hidden">
+                {Array.from({ length: 2 }).map((_, index) => (
+                    <Skeleton key={index} className="h-[84px] w-[200px] shrink-0 rounded-[18px]" />
+                ))}
+            </div>
+
+            {/* Attendance */}
             <RsvpReportSkeleton />
-        </div>
+        </SkeletonStatus>
     );
 }
 
