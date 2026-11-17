@@ -1092,7 +1092,17 @@
                 "preview": "Preview",
                 "timeZone": "Time zone: {zone}",
                 "addressPlaceholder": "e.g. 123 Kifisias Ave, Athens",
-                "receptionLater": "You can add the reception venue later."
+                "receptionLater": "You can add the reception venue later.",
+                "liteArt": {
+                    "gallery": "A QR card your guests scan to upload their photos",
+                    "wishbook": "Your guests' wishes, saved in your wishbook",
+                    "both": "Your guests' photos in your gallery and their wishes in your wishbook",
+                    "wishSofia": "Wishing you health and joy, always!",
+                    "wishGiorgos": "Thanks for everything! We had a wonderful time.",
+                    "cardDate": "Saturday, 20 June 2026",
+                    "cardPlace": "Santorini",
+                    "cardDescription": "Share your photos from our day"
+                }
             },
             "theme": {
                 "heading": "Choose a look",

@@ -6,7 +6,7 @@ import { withAppContext } from '@/.storybook/appContext';
 import { copyFor } from '@/.storybook/copy';
 import { storyUser, storyWizardAppConfig, storyWizardPlans } from '@/.storybook/fixtures';
 import { CreateEventWizard } from '@/components/event/create/wizard/CreateEventWizard';
-import type { EventTypeConvention } from '@/lib/api/types';
+import type { EventTypeConvention, PlanTierResponseDto } from '@/lib/api/types';
 import { clearCreateEventWizardDraft, writeCreateEventWizardDraft } from '@/lib/createEventWizardDraft';
 import { rememberCodeSentAt } from '@/lib/emailCode';
 import { EMPTY_GIFT_DETAILS } from '@/lib/gift';
@@ -165,3 +165,27 @@ export const AccountCodeWrong: Story = {
         await userEvent.type(await within(canvasElement).findByLabelText(copy.label), '123456');
     },
 };
+
+// Lite plans: the QR plan from the shared fixture, plus a Wishbook and a Bundle plan, none asking for a date or place.
+const LITE_REQUIREMENTS = { takesGuests: false, needsSchedule: false, needsVenue: false };
+const QR_PLAN = storyWizardPlans.find((plan) => plan.code === 'QR')!;
+const LITE_PLANS = [
+    { ...QR_PLAN, requirements: LITE_REQUIREMENTS },
+    { ...QR_PLAN, id: 'plan-WISHBOOK', code: 'WISHBOOK', name: 'WISHBOOK', moduleKeys: ['wishbook'], requirements: LITE_REQUIREMENTS },
+    { ...QR_PLAN, id: 'plan-BUNDLE', code: 'BUNDLE', name: 'BUNDLE', moduleKeys: ['gallery', 'wishbook'], requirements: LITE_REQUIREMENTS },
+] as PlanTierResponseDto[];
+
+// A lite plan's details step.
+function liteDetails(plan: 'QR' | 'WISHBOOK' | 'BUNDLE'): Story {
+    return {
+        parameters: nav({ step: 'details', type: 'wedding', plan }),
+        beforeEach({ msw }) {
+            msw.use(http.get(PLANS_URL, () => HttpResponse.json([...storyWizardPlans.filter((entry) => entry.code !== 'QR'), ...LITE_PLANS])));
+            return seed('details', 'WEDDING', plan)();
+        },
+    };
+}
+
+export const LiteQr = liteDetails('QR');
+export const LiteWishbook = liteDetails('WISHBOOK');
+export const LiteBundle = liteDetails('BUNDLE');
