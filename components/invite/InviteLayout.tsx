@@ -129,7 +129,7 @@ export function InviteLayout({
 
             {heroKind === 'logo' && (
                 // Logo mode: no illustration and no cover, so the app logo stands in, with the title below it.
-                <div className="flex h-64 w-full shrink-0 flex-col items-center justify-center gap-6 bg-surface-muted px-6 text-center md:h-80 md:rounded-3xl">
+                <div className="flex h-64 w-full shrink-0 flex-col items-center justify-center gap-6 bg-background px-6 text-center md:h-80 md:rounded-3xl">
                     <Logo direction="col" iconClassName="h-12 w-auto" wordmarkClassName="h-6 w-auto" />
                     <div>
                         <h1 className="text-2xl font-bold text-balance text-ink md:text-3xl">{eventTitle}</h1>

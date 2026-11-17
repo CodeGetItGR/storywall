@@ -14,9 +14,10 @@ interface QrJoinCardProps {
 
 const PRIMARY_CLASS =
     'flex min-h-10 items-center justify-center rounded-full bg-gradient-brand px-5 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90';
-// Log-in is a plain link under the main button, so the card stays short.
+// Log-in is a plain link under the main button, so the card stays short. The negative margin keeps
+// its tap area full height without the extra space showing above and below it.
 const LINK_CLASS =
-    'mx-auto inline-flex min-h-10 items-center px-3 text-sm font-semibold text-ink underline decoration-ink/30 underline-offset-4 transition-colors hover:decoration-ink';
+    'mx-auto -my-2.5 inline-flex min-h-10 items-center px-3 text-sm font-semibold text-ink underline decoration-ink/30 underline-offset-4 transition-colors hover:decoration-ink';
 
 // The main choice on a scanned event code (KAN-213): what is inside the event, then the way in.
 export function QrJoinCard({ choice, href, coverSrc, title, accountHrefs }: QrJoinCardProps) {
