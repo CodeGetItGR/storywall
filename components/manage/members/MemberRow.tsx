@@ -1,5 +1,5 @@
 import { Flag, Trash2, UserCog } from 'lucide-react';
-import { type ReactNode, useCallback } from 'react';
+import { useCallback } from 'react';
 
 import { RoleChip } from '@/components/memberRoles/RoleChip';
 import Avatar from '@/components/ui/avatar';
@@ -7,6 +7,8 @@ import { useMemberAvatarUrl } from '@/hooks/useMemberAvatarUrl';
 import { useMemberRoleLabel } from '@/hooks/useMemberRoleLabel';
 import type { EventMemberResponseDto } from '@/lib/api/types';
 import { avatarColorFromId, initialsFromName } from '@/lib/utils';
+
+import { MemberIdentity } from './MemberIdentity';
 
 type MemberRowProps = {
     canModerate: boolean;
@@ -114,21 +116,5 @@ export function MemberRow({
                 </div>
             )}
         </li>
-    );
-}
-
-// The avatar + name block: a button when the host can edit this member's role.
-function MemberIdentity({ onClick, label, children }: { onClick?: () => void; label: string; children: ReactNode }) {
-    if (!onClick) return <div className="flex min-w-0 flex-1 items-center gap-3">{children}</div>;
-
-    return (
-        <button
-            type="button"
-            onClick={onClick}
-            aria-label={label}
-            className="flex min-h-11 min-w-0 flex-1 items-center gap-3 rounded-xl text-left transition-colors hover:bg-surface-muted/60"
-        >
-            {children}
-        </button>
     );
 }
