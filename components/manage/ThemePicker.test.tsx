@@ -176,6 +176,23 @@ describe('ThemePicker', () => {
         expect(container.querySelector('style')?.textContent).toContain('theme-great-vibes');
     });
 
+    it("previews the event's title on every card, with the theme name under it", () => {
+        state();
+        render(<ThemePicker event={{ id: 'e1', title: '  Maria & Nikos ' } as EventDetailResponseDto} canWrite />);
+        for (const radio of screen.getAllByRole('radio')) {
+            expect(within(radio).getAllByText('Maria & Nikos').length).toBeGreaterThan(0);
+        }
+        const dino = screen.getByRole('radio', { name: 'Dino' });
+        expect(within(dino).getByText('Dino')).toHaveClass('text-xs', 'text-ink-muted');
+        expect(within(screen.getByRole('radio', { name: 'none' })).getByText('none')).toHaveClass('text-xs');
+    });
+
+    it('shows just the theme name when the event title is blank', () => {
+        state();
+        render(<ThemePicker event={{ id: 'e1', title: '   ' } as EventDetailResponseDto} canWrite />);
+        expect(within(screen.getByRole('radio', { name: 'Dino' })).getByText('Dino')).toHaveClass('event-heading');
+    });
+
     it('announces saving and saved in a polite status region', () => {
         state({ isSaving: true });
         const { rerender } = render(<ThemePicker event={{ id: 'e1' } as EventDetailResponseDto} canWrite />);
