@@ -106,7 +106,7 @@ export function ThemePresetOption({
                 {/* Plain page: "No theme" previews the event title as the page shows it without a theme */}
                 {presetId === null && previewTitle !== undefined && (
                     <span aria-hidden="true" className="absolute inset-0 flex items-center justify-center p-3">
-                        <span className="line-clamp-3 text-center alegreya-light text-xl leading-tight break-words text-balance text-ink">
+                        <span className="line-clamp-3 text-center alegreya-light text-xl leading-tight text-balance break-words text-ink">
                             {previewTitle}
                         </span>
                     </span>

@@ -196,9 +196,7 @@ describe('ThemePresetRadioGroup layout', () => {
     });
 
     it('keeps the event-creation step on two square cards per row', () => {
-        render(
-            <ThemePresetRadioGroup options={[preset('a')]} labelledBy="heading" disabled={false} size="large" onSelectAction={vi.fn()} />,
-        );
+        render(<ThemePresetRadioGroup options={[preset('a')]} labelledBy="heading" disabled={false} size="large" onSelectAction={vi.fn()} />);
         const group = screen.getByRole('radiogroup');
         expect(group).toHaveClass('grid-cols-2');
         expect(group).not.toHaveClass('lg:grid-cols-4');
