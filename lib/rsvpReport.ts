@@ -1,27 +1,11 @@
 import type { RsvpReportCategoryDto, RsvpReportGroupDto, RsvpReportType } from '@/lib/api/types';
-import { formatDate } from '@/lib/datetime';
+import { formatDate, getDaysUntil } from '@/lib/datetime';
 import { routes } from '@/lib/routes';
 
 export const RSVP_REPORT_TYPES: RsvpReportType[] = ['STATISTICS', 'FULL_LIST', 'ATTENDING_ONLY', 'WITH_CHILDREN'];
 
 export function isRsvpReportType(value: string): value is RsvpReportType {
     return (RSVP_REPORT_TYPES as string[]).includes(value);
-}
-
-// Lives here, not in hooks/useRsvpSubTab, so both the client hook and the
-// server pages' prefetch gate can share one pure resolver without lib/
-// importing from hooks/.
-export type RsvpSubTab = 'stats' | 'list' | 'reports';
-
-const RSVP_SUB_TABS: RsvpSubTab[] = ['stats', 'list', 'reports'];
-
-// Mirrors what URLSearchParams.get('section') returns (a single string or
-// null) and what Next's searchParams gives a repeated query param (an array,
-// taking its first value). Anything else, including a section neither page
-// knows, falls back to the default sub-tab.
-export function resolveRsvpSubTab(section: string | string[] | null | undefined): RsvpSubTab {
-    const value = Array.isArray(section) ? section[0] : section;
-    return typeof value === 'string' && (RSVP_SUB_TABS as string[]).includes(value) ? (value as RsvpSubTab) : 'stats';
 }
 
 // eventDate is a plain yyyy-MM-dd in the event's own timezone. It parses as UTC
@@ -35,15 +19,23 @@ export function reportSectionKey(section: RsvpReportCategoryDto | RsvpReportGrou
     return `${section.attending}|${section.comingSessionIds.join(',')}|${section.noAnswerSessionIds.join(',')}`;
 }
 
-// Which screen RsvpTab (and its Reports list) is rendered from, so a report
-// link can carry it back for Close (see resolveRsvpReportCloseHref).
-export type RsvpReportOrigin = 'manage' | 'tools' | 'vendor';
+// Which screen a report link comes from, so Close can go back there
+// (see resolveRsvpReportCloseHref). The host's RSVP page is the default.
+export type RsvpReportOrigin = 'manage' | 'vendor';
 
-// Where a report page's Close (useRsvpReportPage) sends the host, based on the
+// Where a report page's Close (useRsvpReportPage) sends the user, from the
 // `from` search param the report link carried (see routes.events.rsvpReport).
-// An allowlist: anything but the known origins falls back to Manage.
+// An allowlist: anything but a planner's vendor page goes back to the RSVP page
+// (old from=tools links included: Tools > RSVP now redirects there, KAN-227).
 export function resolveRsvpReportCloseHref(eventId: string, from: string | null): string {
-    if (from === 'tools') return routes.events.tools.rsvp(eventId, { section: 'reports' });
     if (from === 'vendor') return routes.events.tools.vendorMe(eventId);
-    return routes.events.manage(eventId, { tab: 'rsvp', section: 'reports' });
+    return routes.events.manage(eventId, { tab: 'rsvp' });
+}
+
+export type RsvpCountdown = { labelKey: 'deadlineLabel' | 'eventDateLabel'; target: string; daysLeft: number };
+
+// The RSVP page's countdown: to the deadline, or to the event when none is set.
+export function rsvpCountdown(rsvpDeadline: string | null, startAt: string, now: Date = new Date()): RsvpCountdown {
+    const target = rsvpDeadline ?? startAt;
+    return { labelKey: rsvpDeadline ? 'deadlineLabel' : 'eventDateLabel', target, daysLeft: getDaysUntil(target, now) ?? 0 };
 }
