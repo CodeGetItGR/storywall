@@ -4,15 +4,21 @@ import { useTranslations } from 'next-intl';
 import { useCallback, useMemo } from 'react';
 
 import { AddonsSettingsSkeleton } from '@/components/plan/AddonsSettingsSkeleton';
+import { FeatureAddonsSection } from '@/components/plan/FeatureAddonsSection';
 import { StoragePackPurchase } from '@/components/plan/StoragePackPurchase';
 import { BackButton } from '@/components/ui/BackButton';
 import { PageErrorState } from '@/components/ui/PageErrorState';
 import { useAppConfig } from '@/hooks/useAppConfig';
 import { useEventBilling } from '@/hooks/useBilling';
+import { useFeatureAddons } from '@/hooks/useFeatureAddons';
 import { usePurchaseBlock } from '@/hooks/usePurchaseBlock';
+import type { EventAddonDto } from '@/lib/api/types';
+import { addonsStorageArea } from '@/lib/featureAddons';
 import { scopedPlans } from '@/lib/planTiers';
 import { routes } from '@/lib/routes';
 import { useRouteEventId } from '@/providers/EventProvider';
+
+const EMPTY_ADDONS: EventAddonDto[] = [];
 
 export default function EventAddonsSettingsBoundary() {
     // From the event context, not the URL: the demo serves this page under /demo/{type}.
@@ -44,6 +50,19 @@ export default function EventAddonsSettingsBoundary() {
         [appConfig.data?.paidServices, currentPlan],
     );
 
+    const featureAddons = useFeatureAddons({
+        eventId,
+        eventStatus: data?.eventStatus ?? null,
+        plan: currentPlan,
+        ownedAddons: data?.addons ?? EMPTY_ADDONS,
+    });
+    const storageArea = addonsStorageArea({
+        eventStatus: data?.eventStatus ?? null,
+        storagePackCount: storagePacks.length,
+        featuresOffered: featureAddons.isOffered,
+        featuresSettled: !featureAddons.isLoading && !featureAddons.modulesFailed,
+    });
+
     if (appConfig.isLoading || billing.isLoading) {
         return <AddonsSettingsSkeleton />;
     }
@@ -71,16 +90,21 @@ export default function EventAddonsSettingsBoundary() {
             </section>
 
             {/* Storage packs */}
-            <div className="mt-8">
-                {data.eventStatus === 'ACTIVE' && storagePacks.length > 0 ? (
-                    <StoragePackPurchase eventId={eventId} services={storagePacks} purchaseBlock={purchaseBlock} />
-                ) : (
-                    <div>
-                        <h2 className="text-sm font-bold text-ink">{tBilling('storagePacks.title')}</h2>
-                        <p className="mt-1 text-sm leading-relaxed text-ink-muted">{data.eventStatus === 'ACTIVE' ? t('empty') : t('inactive')}</p>
-                    </div>
-                )}
-            </div>
+            {storageArea && (
+                <div className="mt-8">
+                    {storageArea === 'purchase' ? (
+                        <StoragePackPurchase eventId={eventId} services={storagePacks} purchaseBlock={purchaseBlock} />
+                    ) : (
+                        <div>
+                            <h2 className="text-sm font-bold text-ink">{tBilling('storagePacks.title')}</h2>
+                            <p className="mt-1 text-sm leading-relaxed text-ink-muted">{storageArea === 'empty' ? t('empty') : t('inactive')}</p>
+                        </div>
+                    )}
+                </div>
+            )}
+
+            {/* Features */}
+            <FeatureAddonsSection state={featureAddons} className={storageArea ? 'mt-10' : 'mt-8'} />
         </main>
     );
 }

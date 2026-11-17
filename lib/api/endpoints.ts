@@ -171,6 +171,8 @@ export const endpoints = {
         usage: (eventId: string) => `/api/events/${eventId}/usage`,
         billing: (eventId: string) => `/api/events/${eventId}/billing`,
         addons: (eventId: string) => `/api/events/${eventId}/addons`,
+        // A draft's opt-in, primary host only (KAN-82).
+        addon: (eventId: string, code: string) => `/api/events/${eventId}/addons/${encodeURIComponent(code)}`,
         giftAccount: (eventId: string) => `/api/events/${eventId}/gift-account`,
         // Gift mode: GET/PUT the handover, POST issues (or reissues) its claim card.
         gift: (eventId: string) => `/api/events/${eventId}/gift`,
@@ -207,6 +209,7 @@ export const endpoints = {
         upgradeCheckout: (eventId: string) => `/api/events/${eventId}/upgrade-checkout`,
         upgradeOptions: (eventId: string) => `/api/events/${eventId}/upgrade-options`,
         storageCheckout: (eventId: string) => `/api/events/${eventId}/storage-checkout`,
+        addonCheckout: (eventId: string) => `/api/events/${eventId}/addon-checkout`,
         extensionOptions: (eventId: string) => `/api/events/${eventId}/extension-options`,
         extensionCheckout: (eventId: string) => `/api/events/${eventId}/extension-checkout`,
         withdrawalPreview: (eventId: string) => `/api/events/${eventId}/withdrawal-preview`,

@@ -5,6 +5,8 @@ import { demoEventBasePath } from '@/lib/demo/demoRouting';
 type RouteQueryValue = string | number | boolean | null | undefined;
 
 export type CheckoutIntent = 'upgrade' | 'storage' | 'extension';
+// The Add-ons page opens with this feature add-on already ticked (KAN-82).
+export const ADDONS_PRESELECT_PARAM = 'add';
 // 'billing' is kept as an alias for the plan section so existing links keep working.
 export type ManageTab =
     'billing' | 'coverage' | 'danger' | 'gift' | 'invitation' | 'members' | 'orders' | 'overview' | 'plan' | 'rsvp' | 'settings' | 'theme';
@@ -106,7 +108,8 @@ export const routes = {
         calendar: (eventId: string, session?: string | null) => withQuery(`${eventBasePath(eventId)}/calendar`, { session }),
         location: (eventId: string, role?: 'main' | 'secondary' | null) => `${eventBasePath(eventId)}/location${role ? `/${role}` : ''}`,
         feed: (eventId: string, params: { post?: string | null; sheet?: 'role' | null } = {}) => withQuery(`${eventBasePath(eventId)}/feed`, params),
-        settingsAddons: (eventId: string) => `${eventBasePath(eventId)}/settings/addons`,
+        settingsAddons: (eventId: string, { add }: { add?: string | null } = {}) =>
+            withQuery(`${eventBasePath(eventId)}/settings/addons`, { [ADDONS_PRESELECT_PARAM]: add }),
         // code: the plan (upgrade) or paid service (storage); option: the upgrade's or extension's coverage option id.
         checkoutReview: (eventId: string, intent: CheckoutIntent, { code, option }: { code?: string | null; option?: string | null } = {}) =>
             withQuery(`${eventBasePath(eventId)}/checkout/review`, { intent, code, option }),

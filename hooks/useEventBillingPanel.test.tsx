@@ -9,6 +9,7 @@ const mocks = vi.hoisted(() => ({
     useEventBilling: vi.fn(),
     useUpgradeOptions: vi.fn(),
     useEventUsage: vi.fn(),
+    useEventModules: vi.fn(),
 }));
 
 vi.mock('@/hooks/useAppConfig', () => ({ useAppConfig: mocks.useAppConfig }));
@@ -17,6 +18,7 @@ vi.mock('@/hooks/useBilling', () => ({
     useUpgradeOptions: mocks.useUpgradeOptions,
 }));
 vi.mock('@/hooks/useUsage', () => ({ useEventUsage: mocks.useEventUsage }));
+vi.mock('@/hooks/useEventModules', () => ({ useEventModules: mocks.useEventModules }));
 
 const billingData: EventBillingResponseDto = {
     eventStatus: 'ACTIVE',
@@ -64,6 +66,7 @@ describe('useEventBillingPanel', () => {
         mocks.useEventBilling.mockReturnValue(queryResult(billingData));
         mocks.useUpgradeOptions.mockReturnValue(queryResult([upgradeOption]));
         mocks.useEventUsage.mockReturnValue(queryResult(undefined));
+        mocks.useEventModules.mockReturnValue(queryResult([]));
     });
 
     it('uses the server-provided eligible target even when the global catalog cannot resolve it', () => {
@@ -143,5 +146,53 @@ describe('useEventBillingPanel', () => {
         expect(result.current.upgradeTargets).toEqual([]);
         expect(result.current.hasError).toBe(false);
         expect(result.current.derived?.canManageAddons).toBe(false);
+    });
+    describe('feature add-ons (KAN-82)', () => {
+        const plan = {
+            id: 'plan-sig',
+            code: 'WEDDING_SIGNATURE',
+            scope: 'EVENT',
+            isPublic: true,
+            isAssignable: true,
+            sortOrder: 1,
+            moduleKeys: ['posts'],
+        };
+        const rsvpUnlock = {
+            id: 'svc-rsvp',
+            code: 'RSVP',
+            kind: 'MODULE_UNLOCK',
+            isPublic: true,
+            isAssignable: true,
+            grantsModuleKey: 'rsvp',
+            planTierIds: [],
+            sortOrder: 0,
+        };
+        const config = { planTiers: [plan], paidServices: [rsvpUnlock], modules: [{ moduleKey: 'rsvp', isEnabled: true, sortOrder: 0 }] };
+
+        it('lets a draft manage add-ons when its plan sells a feature', () => {
+            mocks.useAppConfig.mockReturnValue(queryResult(config));
+            mocks.useEventBilling.mockReturnValue(queryResult({ ...billingData, eventStatus: 'DRAFT' }));
+
+            const { result } = renderHook(() => useEventBillingPanel('event-1', { canPurchase: true }));
+
+            expect(result.current.derived).toMatchObject({ canManageAddons: true, hasFeatureAddons: true });
+        });
+
+        it('offers nothing once the event already has the feature', () => {
+            mocks.useAppConfig.mockReturnValue(queryResult(config));
+            mocks.useEventModules.mockReturnValue(queryResult([{ moduleKey: 'rsvp', isEnabled: true }]));
+
+            const { result } = renderHook(() => useEventBillingPanel('event-1', { canPurchase: true }));
+
+            expect(result.current.derived?.hasFeatureAddons).toBe(false);
+        });
+
+        it('keeps a draft without features away from the Add-ons page', () => {
+            mocks.useEventBilling.mockReturnValue(queryResult({ ...billingData, eventStatus: 'DRAFT' }));
+
+            const { result } = renderHook(() => useEventBillingPanel('event-1', { canPurchase: true }));
+
+            expect(result.current.derived).toMatchObject({ canManageAddons: false, hasFeatureAddons: false });
+        });
     });
 });

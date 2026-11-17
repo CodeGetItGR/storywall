@@ -14,6 +14,7 @@ const invitation = (state: Partial<EventOnlineInvitation> = {}): EventOnlineInvi
     planMissing: false,
     locked: false,
     addOnHref: null,
+    addOnPrice: null,
     canExtend: true,
     editHref: '/save-my-date/editor/draft-1',
     planHref: '/events/evt-story/manage?tab=plan',
