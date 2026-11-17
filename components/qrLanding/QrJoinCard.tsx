@@ -30,7 +30,7 @@ export function QrJoinCard({ choice, href, coverSrc, title, accountHrefs }: QrJo
             <QrJoinPreview coverSrc={coverSrc} title={title} />
 
             {/* Line */}
-            <p className="text-[13px] leading-snug text-ink-muted">{choice === 'join' ? t('choices.joinLine') : t('choices.eventHint')}</p>
+            <p className="text-center text-[13px] leading-snug text-ink-muted">{choice === 'join' ? t('choices.joinLine') : t('choices.eventHint')}</p>
 
             {/* Actions */}
             {showAccountButtons ? (
