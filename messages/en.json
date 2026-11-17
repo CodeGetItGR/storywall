@@ -1360,7 +1360,9 @@
             "chooseTheme": "Choose a theme",
             "artAlt": "Drawing of an online invitation",
             "upgradeBody": "Upgrade your plan to make an online invitation for this event.",
-            "upgradePlan": "Upgrade plan"
+            "upgradePlan": "Upgrade plan",
+            "addOn": "Add the invitation · {price}",
+            "addOnBody": "Add it to your plan or upgrade to make an online invitation for this event."
         },
         "rsvpBreakdown": {
             "attending": "Attending",
@@ -1870,6 +1872,7 @@
                 "RENEWAL": "Renewal",
                 "UPGRADE": "Upgrade",
                 "STORAGE_PACK": "Storage pack",
+                "MODULE_UNLOCK": "Add-ons",
                 "EXTENSION": "Coverage extension"
             },
             "upgradeCoverage": "Plan upgrade. Coverage unchanged.",
@@ -1945,7 +1948,17 @@
         "title": "Paid add-ons",
         "subtitle": "Add optional paid services for this event.",
         "empty": "No paid add-ons are available for this plan right now.",
-        "inactive": "Paid add-ons can be changed after the event is active."
+        "inactive": "Extra storage can be added after the event is active.",
+        "features": {
+            "title": "Add features",
+            "price": "{price} once",
+            "total": "Total: {amount}",
+            "pay": "Pay {amount}",
+            "add": "Add",
+            "remove": "Remove",
+            "draftNote": "Paid with the plan.",
+            "paused": "Add-ons are paused while your withdrawal is under review."
+        }
     },
     "CheckoutReviewPage": {
         "back": "Go back",
@@ -2021,6 +2034,7 @@
             "title": "Right of withdrawal",
             "body": "Under EU consumer law, you normally have 14 days to change your mind about a paid service. To publish and start using this plan right away, you need to ask for immediate start and acknowledge that doing so affects your withdrawal rights.",
             "storageBody": "Under EU consumer law, you normally have 14 days to change your mind about a paid service. To get the extra storage right away, you need to ask for immediate start and acknowledge that doing so affects your withdrawal rights.",
+            "addonsBody": "Under EU consumer law, you normally have 14 days to change your mind about a paid service. To use the added features right away, you need to ask for immediate start and acknowledge that doing so affects your withdrawal rights.",
             "requestsImmediateStartLabel": "Start providing this service immediately",
             "requestsImmediateStartCaption": "Rather than waiting out the 14-day period first.",
             "acknowledgesWithdrawalTermsLabel": "I understand this affects my right to a full refund",
@@ -2944,7 +2958,8 @@
                 "ACTIVATION": "Activation",
                 "UPGRADE": "Upgrade",
                 "EXTENSION": "Extension",
-                "STORAGE_PACK": "Storage pack"
+                "STORAGE_PACK": "Storage pack",
+                "MODULE_UNLOCK": "Add-ons"
             },
             "buyerType": {
                 "CONSUMER": "Consumer",
@@ -5068,6 +5083,7 @@
                     "ACTIVATION": "Activation",
                     "UPGRADE": "Upgrade",
                     "STORAGE_PACK": "Storage pack",
+                    "MODULE_UNLOCK": "Add-ons",
                     "EXTENSION": "Extension"
                 },
                 "refunds": "Refunds",

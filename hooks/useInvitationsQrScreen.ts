@@ -8,6 +8,7 @@ import { useIsPrimaryHost } from '@/hooks/useIsPrimaryHost';
 import { useEventQrLinks, useEventQrLinkStats } from '@/hooks/useQrLinks';
 import { useEventUsage } from '@/hooks/useUsage';
 import { isEventWritable, isModuleAvailable } from '@/lib/eventLifecycle';
+import { saveMyDateAddon } from '@/lib/featureAddons';
 import { offersOnlineInvitation } from '@/lib/invitation/invitationEvent';
 import { guestChoiceRows } from '@/lib/invitationsQr';
 import { findPlanByCode } from '@/lib/planTiers';
@@ -27,14 +28,16 @@ export function useInvitationsQrScreen() {
     const { data: appConfig } = useAppConfig();
     // The invitation row needs the host's drafts, so a planner never asks for them.
     const showInvitation = isHost && offersOnlineInvitation(activeEvent.eventType);
-    const invitation = useEventOnlineInvitation(activeEvent, { enabled: showInvitation });
+    const currentPlan = eventUsage ? findPlanByCode(appConfig?.planTiers ?? [], 'EVENT', eventUsage.planTier) : undefined;
+    // The invitation sold as an add-on on this plan, offered next to the upgrade (KAN-82).
+    const invitationAddOn = saveMyDateAddon(appConfig?.paidServices ?? [], appConfig?.modules ?? [], currentPlan);
+    const invitation = useEventOnlineInvitation(activeEvent, { enabled: showInvitation, addOn: invitationAddOn });
 
     const isWritable = isEventWritable(activeEvent?.status);
     const canWrite = isHost && isWritable;
     const memberLimit = eventUsage?.memberLimit ?? null;
     const memberCount = eventUsage?.memberCount ?? 0;
     const isFull = memberLimit !== null && memberCount >= memberLimit;
-    const currentPlan = eventUsage ? findPlanByCode(appConfig?.planTiers ?? [], 'EVENT', eventUsage.planTier) : undefined;
     const nextUpgradeOption = upgradeOptions[0];
     const isLoading = qrLinksLoading || statsLoading || usageLoading || upgradesLoading || (showInvitation && invitation.isLoading);
     // The gallery upload code isn't listed: scanning the join code offers uploading too (KAN-208).

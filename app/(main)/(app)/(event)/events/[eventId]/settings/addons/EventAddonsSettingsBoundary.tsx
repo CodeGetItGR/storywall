@@ -4,15 +4,20 @@ import { useTranslations } from 'next-intl';
 import { useCallback, useMemo } from 'react';
 
 import { AddonsSettingsSkeleton } from '@/components/plan/AddonsSettingsSkeleton';
+import { FeatureAddonsSection } from '@/components/plan/FeatureAddonsSection';
 import { StoragePackPurchase } from '@/components/plan/StoragePackPurchase';
 import { BackButton } from '@/components/ui/BackButton';
 import { PageErrorState } from '@/components/ui/PageErrorState';
 import { useAppConfig } from '@/hooks/useAppConfig';
 import { useEventBilling } from '@/hooks/useBilling';
+import { useFeatureAddons } from '@/hooks/useFeatureAddons';
 import { usePurchaseBlock } from '@/hooks/usePurchaseBlock';
+import type { EventAddonDto } from '@/lib/api/types';
 import { scopedPlans } from '@/lib/planTiers';
 import { routes } from '@/lib/routes';
 import { useRouteEventId } from '@/providers/EventProvider';
+
+const EMPTY_ADDONS: EventAddonDto[] = [];
 
 export default function EventAddonsSettingsBoundary() {
     // From the event context, not the URL: the demo serves this page under /demo/{type}.
@@ -43,6 +48,13 @@ export default function EventAddonsSettingsBoundary() {
             ),
         [appConfig.data?.paidServices, currentPlan],
     );
+
+    const featureAddons = useFeatureAddons({
+        eventId,
+        eventStatus: data?.eventStatus ?? null,
+        plan: currentPlan,
+        ownedAddons: data?.addons ?? EMPTY_ADDONS,
+    });
 
     if (appConfig.isLoading || billing.isLoading) {
         return <AddonsSettingsSkeleton />;
@@ -81,6 +93,9 @@ export default function EventAddonsSettingsBoundary() {
                     </div>
                 )}
             </div>
+
+            {/* Features */}
+            <FeatureAddonsSection state={featureAddons} className="mt-10" />
         </main>
     );
 }

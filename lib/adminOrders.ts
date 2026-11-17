@@ -34,7 +34,7 @@ export function formatOrdersHash(orderId: string | null): string {
 }
 
 export const ORDER_STATUSES: OrderStatus[] = ['PAID', 'PENDING', 'REFUNDED', 'FAILED', 'CANCELLED'];
-export const ORDER_KINDS: OrderKind[] = ['ACTIVATION', 'UPGRADE', 'EXTENSION', 'STORAGE_PACK'];
+export const ORDER_KINDS: OrderKind[] = ['ACTIVATION', 'UPGRADE', 'EXTENSION', 'STORAGE_PACK', 'MODULE_UNLOCK'];
 export const BUYER_TYPES: BuyerType[] = ['CONSUMER', 'BUSINESS'];
 export const PAYMENT_PROVIDERS: PaymentProviderKey[] = ['STRIPE', 'MANUAL'];
 

@@ -18,8 +18,8 @@ export function WithdrawalConsentSection({
     onAcknowledgesWithdrawalTermsChangeAction,
     className = CONSENT_CARD_CLASS,
 }: {
-    // The intro names what starts immediately: a plan by default, or a storage pack.
-    bodyKey?: 'body' | 'storageBody';
+    // The intro names what starts immediately: a plan by default, a storage pack, or feature add-ons.
+    bodyKey?: 'body' | 'storageBody' | 'addonsBody';
     requestsImmediateStart: boolean;
     acknowledgesWithdrawalTerms: boolean;
     staleTerms: boolean;

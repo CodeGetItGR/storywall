@@ -5,8 +5,10 @@ import { useCallback, useMemo, useState } from 'react';
 
 import { useAppConfig } from '@/hooks/useAppConfig';
 import { useEventBilling, useUpgradeOptions } from '@/hooks/useBilling';
+import { useEventModules } from '@/hooks/useEventModules';
 import { useEventUsage } from '@/hooks/useUsage';
 import { billingCurrency, formatBillingDate, newestBillingOrder, paidBillingTotal } from '@/lib/billing';
+import { featureAddonMode, featureAddonOffers } from '@/lib/featureAddons';
 import { scopedPlans } from '@/lib/planTiers';
 
 const ORDER_PREVIEW_COUNT = 6;
@@ -51,6 +53,22 @@ export function useEventBillingPanel(eventId: string, { isDeleted = false, canPu
                   ),
         [appConfigQuery.data?.paidServices, currentPlan, isDeleted],
     );
+    // Feature add-ons the Add-ons page sells this event (KAN-82); a draft can add them too.
+    const eventModules = useEventModules(isDeleted ? null : eventId);
+    const featureAddonCount = useMemo(
+        () =>
+            isDeleted
+                ? 0
+                : featureAddonOffers({
+                      paidServices: appConfigQuery.data?.paidServices ?? [],
+                      platformModules: appConfigQuery.data?.modules ?? [],
+                      plan: currentPlan,
+                      eventModules: eventModules.data ?? [],
+                      ownedAddons: data?.addons ?? [],
+                      mode: featureAddonMode(data?.eventStatus),
+                  }).length,
+        [appConfigQuery.data?.modules, appConfigQuery.data?.paidServices, currentPlan, data?.addons, data?.eventStatus, eventModules.data, isDeleted],
+    );
     const insights = useMemo(() => {
         if (!data) return null;
 
@@ -78,11 +96,12 @@ export function useEventBillingPanel(eventId: string, { isDeleted = false, canPu
         const visibleOrders = showAllOrders ? data.orders : data.orders.slice(0, ORDER_PREVIEW_COUNT);
 
         return {
-            canManageAddons: data.eventStatus === 'ACTIVE' && paidAddonOffers.length > 0,
+            canManageAddons: (data.eventStatus === 'ACTIVE' && paidAddonOffers.length > 0) || featureAddonCount > 0,
+            hasFeatureAddons: featureAddonCount > 0,
             visibleOrders,
             hiddenOrderCount: data.orders.length - visibleOrders.length,
         };
-    }, [data, insights, paidAddonOffers.length, showAllOrders]);
+    }, [data, featureAddonCount, insights, paidAddonOffers.length, showAllOrders]);
 
     return {
         data,
