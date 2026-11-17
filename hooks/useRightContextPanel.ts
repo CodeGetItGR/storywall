@@ -11,8 +11,8 @@ import { useEventQrLinks } from '@/hooks/useQrLinks';
 import { type ToolMenuItem, useHostMenuItems, useToolsMenuItems } from '@/hooks/useToolsMenuItems';
 import { useEventUsage } from '@/hooks/useUsage';
 import { useWishbook } from '@/hooks/useWishbook';
+import { eventCapabilities } from '@/lib/eventCapabilities';
 import { isEventDeleted } from '@/lib/eventLifecycle';
-import { isLiteEvent } from '@/lib/liteEvents';
 import { findPlanByCode } from '@/lib/planTiers';
 import { isInvitationQrLink } from '@/lib/qrLinks';
 import { routes } from '@/lib/routes';
@@ -46,7 +46,7 @@ export function useRightContextPanel() {
     const showMediaSummary = isLiveHost && availableModuleKeys.has('gallery');
     const showWishbookSummary = isLiveHost && availableModuleKeys.has('wishbook');
     // A lite event has no upload or share links: its one guest code sits in the home's quick actions.
-    const showsLinks = isLiveHost && !isLiteEvent(activeEvent);
+    const showsLinks = isLiveHost && Boolean(eventCapabilities(activeEvent)?.showsShareLinks);
     const showInvitationsQr = showsLinks;
 
     const gallerySummary = useGallerySummary(activeEvent?.id ?? null, showMediaSummary);

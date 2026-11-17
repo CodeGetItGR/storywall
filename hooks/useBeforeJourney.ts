@@ -7,7 +7,8 @@ import { useModuleCopy } from '@/hooks/useModuleCopy';
 import type { EventDetailResponseDto } from '@/lib/api/types';
 import { getCreateEventCatalogEntry } from '@/lib/createEventCatalog';
 import { formatDate } from '@/lib/datetime';
-import { type JourneyChip, type JourneyStopModel, sessionsByPhase, sessionStates, setupStepKeys } from '@/lib/eventJourney';
+import { eventCapabilities } from '@/lib/eventCapabilities';
+import { type JourneyChip, type JourneyStopModel, journeyTimeZone, sessionsByPhase, sessionStates, setupStepKeys } from '@/lib/eventJourney';
 import { routes } from '@/lib/routes';
 
 export type JourneyCounts = { memberCount: number; memberLimit: number | null; seatsClaimed: number | null };
@@ -45,9 +46,11 @@ export function useBeforeJourney(event: EventDetailResponseDto, counts: JourneyC
     const locale = useLocale();
     const moduleCopy = useModuleCopy(event.eventType);
     const sessions = (event.sessions ?? []).filter((item) => !item.deletedAt);
-    const progress = useHelpProgress({ eventId: event.id, title: event.title, schedule: event.schedule, location: event.location, sessions });
+    const progress = useHelpProgress({ eventId: event.id, title: event.title, schedule: event.schedule, location: event.location, sessions, showsDetails: eventCapabilities(event)?.showsDetailsSettings ?? true });
 
-    const hasVenueConvention = Boolean(getCreateEventCatalogEntry(event.eventType)?.secondarySessionTitleKey);
+    // A lite event takes no guests, so it has no schedule or venue session to set up.
+    const takesGuests = eventCapabilities(event)?.takesGuests ?? true;
+    const hasVenueConvention = takesGuests && Boolean(getCreateEventCatalogEntry(event.eventType)?.secondarySessionTitleKey);
     const hasVenue = sessions.some((item) => item.isSecondary);
     // The same stop list the floating Overview button counts (KAN-236).
     const present = new Set(setupStepKeys(event));
@@ -100,7 +103,7 @@ export function useBeforeJourney(event: EventDetailResponseDto, counts: JourneyC
             actionLine: progress.rsvp ? null : 'link',
             chips: rsvpChips,
         },
-        {
+        present.has('schedule') && {
             key: 'schedule',
             title: moduleCopy('schedule').name,
             icon: 'schedule',
@@ -142,7 +145,7 @@ export function useBeforeJourney(event: EventDetailResponseDto, counts: JourneyC
     });
 
     const earlier = sessionsByPhase(event).before;
-    const states = sessionStates(earlier, event.schedule.timezone, now);
+    const states = sessionStates(earlier, journeyTimeZone(event), now);
     const sessionStops: JourneyStopModel[] = earlier.map((item, index) => ({
         key: `session-${item.id}`,
         title: item.title,
@@ -157,7 +160,7 @@ export function useBeforeJourney(event: EventDetailResponseDto, counts: JourneyC
                   hour: '2-digit',
                   minute: '2-digit',
                   hour12: false,
-                  timeZone: event.schedule.timezone,
+                  timeZone: journeyTimeZone(event),
               })
             : undefined,
     }));

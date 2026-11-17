@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
+import { planRequirementsOf } from '@/lib/__fixtures__/planRequirements';
 import { accountEmailChange, accountEmailChangeErrorKey, adminAccountsPath, eligibleProvisioningPlans } from '@/lib/adminAccountProvisioning';
 import { ApiError } from '@/lib/api/client';
 import type { PlanTierResponseDto } from '@/lib/api/types';
@@ -30,8 +31,11 @@ function plan(overrides: Partial<PlanTierResponseDto>): PlanTierResponseDto {
         moduleConfigs: null,
         eventTypeKey: 'WEDDING',
         sharedGroupKey: null,
-        initialOptions: [{ id: 'option-6', kind: 'INITIAL', months: 6, priceAmountMinor: 4_900, promoPriceAmountMinor: null, sortOrder: 0, active: true }],
+        initialOptions: [
+            { id: 'option-6', kind: 'INITIAL', months: 6, priceAmountMinor: 4_900, promoPriceAmountMinor: null, sortOrder: 0, active: true },
+        ],
         extensionOptions: [],
+        requirements: planRequirementsOf(overrides.moduleKeys ?? []),
         ...overrides,
     };
 }
@@ -53,7 +57,18 @@ describe('admin account provisioning', () => {
             plan({
                 id: 'retired-durations',
                 initialOptions: [
-                    { ...{ id: 'option-6', kind: 'INITIAL', months: 6, priceAmountMinor: 4_900, promoPriceAmountMinor: null, sortOrder: 0, active: true }, active: false },
+                    {
+                        ...{
+                            id: 'option-6',
+                            kind: 'INITIAL',
+                            months: 6,
+                            priceAmountMinor: 4_900,
+                            promoPriceAmountMinor: null,
+                            sortOrder: 0,
+                            active: true,
+                        },
+                        active: false,
+                    },
                 ],
             }),
         ];

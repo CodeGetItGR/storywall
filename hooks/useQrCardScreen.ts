@@ -11,7 +11,7 @@ import { useQrCardFeatureTexts } from '@/hooks/useQrCardFeatureTexts';
 import { useQrCardTemplates } from '@/hooks/useQrCardTemplates';
 import { useEventQrLinks } from '@/hooks/useQrLinks';
 import type { QrCardTemplateDto } from '@/lib/api/types';
-import { eventHomeHref } from '@/lib/liteEvents';
+import { eventCapabilities, eventHomeHref } from '@/lib/eventCapabilities';
 import { type QrCardLine, qrCardLineKey } from '@/lib/qrCard';
 import { qrCardFeatures } from '@/lib/qrCardFeatures';
 import { routes } from '@/lib/routes';
@@ -39,7 +39,7 @@ export function useQrCardScreen() {
     const status: QrCardScreenStatus =
         links.isLoading || templates.isLoading ? 'loading' : !qrLink || qrLink.status === 'REVOKED' ? 'missing' : 'ready';
 
-    const lineKey = qrLink ? qrCardLineKey(qrLink.targetType, activeEvent.modules) : null;
+    const lineKey = qrLink ? qrCardLineKey(qrLink.targetType, eventCapabilities(activeEvent)?.guestCodeActions ?? []) : null;
     const designer = useQrCardDesigner({
         templates: templates.data?.templates ?? NO_TEMPLATES,
         defaults: { title: activeEvent.title, line: lineKey ? t(`lines.${lineKey}`) : '' },

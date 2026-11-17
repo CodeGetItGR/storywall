@@ -10,7 +10,7 @@ import { useDayJourney } from '@/hooks/useDayJourney';
 import { useEventJourneyPhase } from '@/hooks/useEventJourneyPhase';
 import { useOverviewPlanLine } from '@/hooks/useOverviewPlanLine';
 import type { EventDetailResponseDto, EventUsageResponseDto } from '@/lib/api/types';
-import { journeyPrintHref } from '@/lib/eventJourney';
+import { hasEventDate, journeyPrintHref } from '@/lib/eventJourney';
 
 /** Gathers the journey for a live event and hands it to the view. */
 export function OverviewJourney({
@@ -43,6 +43,7 @@ export function OverviewJourney({
             day={day}
             after={after}
             planLine={planLine}
+            undated={!hasEventDate(event)}
         />
     );
 }

@@ -12,7 +12,7 @@ type RsvpTabProps = {
     eventId: string;
     members: RosterMember[];
     rsvps: RosterRsvp[];
-    startAt: string;
+    startAt: string | null;
     rsvpDeadline: string | null;
     canWrite: boolean;
 };
