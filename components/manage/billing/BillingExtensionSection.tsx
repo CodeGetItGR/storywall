@@ -35,7 +35,7 @@ export function BillingExtensionSection({
     if (!visible) return null;
 
     return (
-        <TargetedSection id={EXTEND_COVERAGE_SECTION_ID} className="flex flex-col gap-2.5 rounded-[22px]">
+        <TargetedSection id={EXTEND_COVERAGE_SECTION_ID} className="@container flex flex-col gap-2.5 rounded-[22px]">
             {/* Heading */}
             <h2 id="billing-extend-title" className="text-base font-bold text-ink">
                 {t('title')}
@@ -49,8 +49,8 @@ export function BillingExtensionSection({
                 <p className="text-sm text-ink-muted">{t('ended')}</p>
             ) : (
                 <>
-                    {/* Lengths */}
-                    <div role="radiogroup" aria-labelledby="billing-extend-title" onKeyDown={handleKeyDown} className="grid grid-cols-3 gap-2">
+                    {/* Lengths: three tiles when the section has room, stacked rows in a narrow column */}
+                    <div role="radiogroup" aria-labelledby="billing-extend-title" onKeyDown={handleKeyDown} className="grid grid-cols-1 gap-2 @xs:grid-cols-3">
                         {rows.map((row) => {
                             const isSelected = row.id === selected.id;
                             return (
@@ -63,7 +63,7 @@ export function BillingExtensionSection({
                                     tabIndex={isSelected ? 0 : -1}
                                     onClick={handlePick}
                                     className={cn(
-                                        'focus-ring flex min-h-16 flex-col items-center justify-center gap-0.5 rounded-[16px] px-1 text-ink transition-colors',
+                                        'focus-ring flex min-h-12 items-center justify-between gap-2 rounded-[16px] px-4 text-ink transition-colors @xs:min-h-16 @xs:flex-col @xs:justify-center @xs:gap-0.5 @xs:px-1',
                                         isSelected ? 'bg-primary-light shadow-[inset_0_0_0_2px_var(--color-primary)]' : 'bg-surface-muted hover:bg-surface-muted/70',
                                     )}
                                 >

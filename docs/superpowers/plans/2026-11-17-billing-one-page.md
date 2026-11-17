@@ -37,7 +37,7 @@ Create:
 - `hooks/useBillingPlanCard.ts` (+ test): kept-until label and the storage/members meters (replaces `useBillingPlanFacts`' facts; keeps `useBillingDiscountLine`).
 - `components/manage/billing/BillingUsageMeter.tsx`: label, `used / limit`, bar.
 - `components/manage/billing/BillingPlanCard.tsx` (+ test, + stories): replaces `BillingPlanSummary`.
-- `components/manage/billing/BillingOrderRow.tsx` (+ stories): one order row.
+- `components/manage/billing/BillingOrderRow.tsx`: one order row (stories live in `BillingOrdersPanel.stories.tsx`).
 - `components/manage/billing/PlanRemovedModules.tsx`: the red list (replaces `PlanUpgradeModules`).
 - Stories: `BillingUpgradeRow.stories.tsx`, `BillingExtensionSection.stories.tsx`, `BillingAddonsSection.stories.tsx`.
 
@@ -59,14 +59,14 @@ Delete:
 
 ## Tasks
 
-- [ ] 1. Old links: `parseManageSection` aliases + test; prefetch on the manage page.
-- [ ] 2. Your plan card: hook + meter + card + stories/test; delete the old summary.
-- [ ] 3. Upgrade card: row hook, card, removed-modules list, stories; delete `compare.moduleChanges`.
-- [ ] 4. Extend coverage tiles: hook selection, component, test, stories.
-- [ ] 5. Paid add-ons rows + stories.
-- [ ] 6. Order rows: row component, panel, test, stories; delete `orders.columns`.
-- [ ] 7. `BillingTab` two-column layout, skeleton, test.
-- [ ] 8. `npx tsc --noEmit`, `npx eslint .`, `npx vitest run`; signed-in check at 375 and 1280, English and Greek.
+- [x] 1. Old links: `parseManageSection` aliases + test; prefetch on the manage page.
+- [x] 2. Your plan card: hook + meter + card + stories/test; delete the old summary.
+- [x] 3. Upgrade card: row hook, card, removed-modules list, stories; delete `compare.moduleChanges`.
+- [x] 4. Extend coverage tiles: hook selection, component, test, stories.
+- [x] 5. Paid add-ons rows + stories.
+- [x] 6. Order rows: row component, panel, test, stories; delete `orders.columns`.
+- [x] 7. `BillingTab` two-column layout, skeleton, test.
+- [x] 8. `npx tsc --noEmit`, `npx eslint .`, `npx vitest run`; signed-in check at 375 and 1280, English and Greek.
 
 ## Commands
 
