@@ -33,12 +33,9 @@ describe('routes.events for a registered demo event id', () => {
         expect(routes.events.tools.rsvp(DEMO_EVENT_ID)).toBe('/demo/wedding/tools/rsvp');
     });
 
-    it('tools.rsvp() with a section param resolves under /demo', () => {
-        expect(routes.events.tools.rsvp(DEMO_EVENT_ID, { section: 'reports' })).toBe('/demo/wedding/tools/rsvp?section=reports');
-    });
 
     it('rsvpReport() with from resolves under /demo', () => {
-        expect(routes.events.rsvpReport(DEMO_EVENT_ID, 'FULL_LIST', 'tools')).toBe('/demo/wedding/manage/rsvp/reports/FULL_LIST?from=tools');
+        expect(routes.events.rsvpReport(DEMO_EVENT_ID, 'FULL_LIST', 'vendor')).toBe('/demo/wedding/manage/rsvp/reports/FULL_LIST?from=vendor');
     });
 
     it('a real event id is unaffected', () => {

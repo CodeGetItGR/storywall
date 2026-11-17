@@ -1699,7 +1699,6 @@
             }
         },
         "openDashboard": "Άνοιγμα πίνακα",
-        "rsvpOverview": "Επισκόπηση RSVP",
         "usage": {
             "eventTitle": "Χρήση πλάνου"
         },
@@ -1751,6 +1750,9 @@
             "all": "Όλοι",
             "empty": "Κανένας καλεσμένος με αυτό το φίλτρο."
         },
+        "rsvpGuests": {
+            "title": "Καλεσμένοι"
+        },
         "rsvpDuplicate": {
             "label": "Πιθανή διπλή απάντηση",
             "hint": "Ίδιο τηλέφωνο με άλλη απάντηση",
@@ -1784,11 +1786,6 @@
             "removeFailed": "Δεν ήταν δυνατή η αφαίρεση του μέλους. Δοκιμάστε ξανά.",
             "moreFor": "Περισσότερες επιλογές για {name}"
         },
-        "rsvpTabs": {
-            "stats": "Στατιστικά",
-            "list": "Λίστα",
-            "reports": "Αναφορές"
-        },
         "rsvpStats": {
             "daysToGo": "{count, plural, one {# ημέρα απομένει} other {# ημέρες απομένουν}}",
             "deadlineLabel": "Προθεσμία RSVP",
@@ -1798,7 +1795,8 @@
             "adults": "Ενήλικες",
             "kids": "Παιδιά",
             "byCategory": "Παρουσία ανά κατηγορία",
-            "deadlineField": "Προθεσμία RSVP"
+            "deadlineField": "Προθεσμία RSVP",
+            "editDeadline": "Επεξεργασία προθεσμίας RSVP"
         },
         "rsvpReport": {
             "people": "{count, plural, one {# άτομο} other {# άτομα}}",
@@ -1823,7 +1821,6 @@
         },
         "rsvpReports": {
             "title": "Αναφορές RSVP",
-            "description": "Ανοίξτε μια αναφορά για να την εκτυπώσετε ή να την κατεβάσετε ως PDF.",
             "types": {
                 "STATISTICS": {
                     "label": "Αναφορά στατιστικών",

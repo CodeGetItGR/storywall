@@ -6,8 +6,8 @@ import { useCallback } from 'react';
 import type { MediaCollection } from '@/lib/api/types';
 import { replacePageUrl } from '@/lib/overlayHistory';
 
-// The gallery tab lives in ?album=pro. Written with a plain history replace (like
-// useRsvpSubTab) so a tab click never re-runs the server page.
+// The gallery tab lives in ?album=pro. Written with a plain history replace
+// so a tab click never re-runs the server page.
 export function useGalleryAlbum() {
     const pathname = usePathname();
     const searchParams = useSearchParams();

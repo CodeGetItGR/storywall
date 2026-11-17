@@ -81,10 +81,11 @@ export const routes = {
         giftCard: (eventId: string) => `${eventBasePath(eventId)}/manage/gift/card`,
         // `from` records where the report was opened from so Close (useRsvpReportPage)
         // can return there; omitted (manage) is the default and carries no param.
-        rsvpReport: (eventId: string, reportType: RsvpReportType, from?: 'tools' | 'vendor') =>
+        rsvpReport: (eventId: string, reportType: RsvpReportType, from?: 'vendor') =>
             withQuery(`${eventBasePath(eventId)}/manage/rsvp/reports/${reportType}`, { from }),
         tools: {
-            rsvp: (eventId: string, params: { section?: string | null } = {}) => withQuery(`${eventBasePath(eventId)}/tools/rsvp`, params),
+            // Only redirects now (KAN-227): hosts land on manage?tab=rsvp. Kept for old links.
+            rsvp: (eventId: string) => `${eventBasePath(eventId)}/tools/rsvp`,
             rsvpSubmit: (eventId: string, attending?: 'attending' | 'not-attending' | null) =>
                 withQuery(`${eventBasePath(eventId)}/tools/rsvp/submit`, { attending }),
             gallery: (eventId: string) => `${eventBasePath(eventId)}/tools/gallery`,
