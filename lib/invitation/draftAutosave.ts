@@ -23,6 +23,12 @@ export type DraftAutosaveOptions<D> = {
     onStatus: (status: SaveStatus) => void;
     onSaved?: (revision: number, document: D) => void;
     retryDelayMs?: number;
+    // Saves only when flush() is called: changes wait, marked unsaved, for an explicit Save.
+    manual?: boolean;
+    // A refusal because the stored copy is newer. Drafts by default.
+    isStale?: (error: unknown) => boolean;
+    // A refusal that trying again won't fix (gone, or no longer theirs). Drafts by default.
+    isLost?: (error: unknown) => boolean;
 };
 
 export type DraftAutosave = {
@@ -39,6 +45,9 @@ export type DraftAutosave = {
 
 export function createDraftAutosave<D>(options: DraftAutosaveOptions<D>): DraftAutosave {
     const retryDelayMs = options.retryDelayMs ?? RETRY_DELAY_MS;
+    const manual = options.manual === true;
+    const isStale = options.isStale ?? isStaleRevision;
+    const isLost = options.isLost ?? isLostDraftError;
     const initial = options.saved ?? options.read();
     let revision = options.revision;
     let savedChangeCount = initial.changeCount;
@@ -73,6 +82,7 @@ export function createDraftAutosave<D>(options: DraftAutosaveOptions<D>): DraftA
 
     const schedule = () => {
         clearDebounce();
+        if (manual) return;
         debounceTimer = setTimeout(() => {
             debounceTimer = null;
             void run();
@@ -121,9 +131,9 @@ export function createDraftAutosave<D>(options: DraftAutosaveOptions<D>): DraftA
                 accept(saved.revision, document, changeCount);
                 return true;
             } catch (error) {
-                if (isStaleRevision(error)) return resolveStale(document, changeCount);
+                if (isStale(error)) return resolveStale(document, changeCount);
                 if (!isTransientSaveError(error) || tries >= AUTOSAVE_RETRIES) {
-                    gaveUp = isLostDraftError(error);
+                    gaveUp = isLost(error);
                     setStatus('error');
                     return false;
                 }
@@ -141,7 +151,7 @@ export function createDraftAutosave<D>(options: DraftAutosaveOptions<D>): DraftA
         }
         // A failed save is tried again by the safety timer, not straight away.
         if (status === 'error') {
-            if (gaveUp) {
+            if (gaveUp || manual) {
                 if (safetyTimer) clearInterval(safetyTimer);
                 safetyTimer = null;
             } else if (!safetyTimer) {

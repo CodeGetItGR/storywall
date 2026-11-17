@@ -7,8 +7,8 @@ import { hasInAppPrevious } from '@/lib/inAppHistory';
 import { routes } from '@/lib/routes';
 
 // The editor's back button: saves first, and asks before leaving changes that couldn't be saved.
-// It goes to the previous page in the app, or home when the editor was opened from outside.
-export function useEditorLeave(flush: () => Promise<boolean>) {
+// It goes to the previous page in the app, or `fallbackHref` (home) when the editor was opened from outside.
+export function useEditorLeave(flush: () => Promise<boolean>, fallbackHref: string = routes.home) {
     const router = useRouter();
     const [isConfirming, setIsConfirming] = useState(false);
     const [isLeaving, setIsLeaving] = useState(false);
@@ -16,8 +16,8 @@ export function useEditorLeave(flush: () => Promise<boolean>) {
     const leave = useCallback(() => {
         setIsConfirming(false);
         if (hasInAppPrevious()) router.back();
-        else router.push(routes.home);
-    }, [router]);
+        else router.push(fallbackHref);
+    }, [fallbackHref, router]);
 
     const back = useCallback(async () => {
         setIsLeaving(true);

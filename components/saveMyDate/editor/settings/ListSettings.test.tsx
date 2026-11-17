@@ -11,6 +11,7 @@ import type { PeopleSection } from '@/hooks/usePeopleSettings';
 import type { SectionOf, SettingsScope } from '@/hooks/useSectionSettingsPanel';
 import { LIST_DRAG_MESSAGES, useSortableDrag } from '@/hooks/useSortableDrag';
 import type { InvitationDocument } from '@/lib/invitation/document';
+import { draftImageUploader } from '@/lib/invitation/editorUploads';
 import { SAMPLE_DOCUMENT, SAMPLE_SECTIONS, SAMPLE_THEME } from '@/lib/invitation/samples';
 import type { InvitationSection } from '@/lib/invitation/sections';
 import type { DocumentRecipe } from '@/lib/invitation/sectionSettings';
@@ -38,7 +39,7 @@ function Harness({ initial, children }: { initial: InvitationDocument; children:
         theme: SAMPLE_THEME,
         media: (id) => `/media/${id}.jpg`,
         fonts: [],
-        draftId: 'draft-1',
+        uploadImage: draftImageUploader('draft-1'),
         addUploaded: vi.fn(),
         event: null,
         eventSamples: null,

@@ -103,6 +103,7 @@ describe('InvitationThemesPanel', () => {
         expect(current.openDrawer).toHaveBeenCalledWith('t1');
         expect(current.openPreview).toHaveBeenCalledWith('t1');
         expect(current.openCreate).toHaveBeenCalled();
+        expect(screen.getByRole('link', { name: 'editDesign:Γάμος 001' })).toHaveAttribute('href', '/admin/save-my-date/themes/t1/editor');
     });
 
     it('moves a theme with its arrows once they are on, and says why they are off', () => {
