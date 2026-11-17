@@ -1628,6 +1628,9 @@
             "all": "All",
             "empty": "No guests match this filter."
         },
+        "rsvpGuests": {
+            "title": "Guests"
+        },
         "rsvpDuplicate": {
             "label": "Possible duplicate",
             "hint": "Same phone as another reply",
@@ -1659,7 +1662,8 @@
             "adults": "Adults",
             "kids": "Children",
             "byCategory": "Attendance by category",
-            "deadlineField": "RSVP deadline"
+            "deadlineField": "RSVP deadline",
+            "editDeadline": "Edit RSVP deadline"
         },
         "rsvpReport": {
             "people": "{count, plural, one {# person} other {# people}}",

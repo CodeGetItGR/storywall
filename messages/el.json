@@ -1751,6 +1751,9 @@
             "all": "Όλοι",
             "empty": "Κανένας καλεσμένος με αυτό το φίλτρο."
         },
+        "rsvpGuests": {
+            "title": "Καλεσμένοι"
+        },
         "rsvpDuplicate": {
             "label": "Πιθανή διπλή απάντηση",
             "hint": "Ίδιο τηλέφωνο με άλλη απάντηση",
@@ -1798,7 +1801,8 @@
             "adults": "Ενήλικες",
             "kids": "Παιδιά",
             "byCategory": "Παρουσία ανά κατηγορία",
-            "deadlineField": "Προθεσμία RSVP"
+            "deadlineField": "Προθεσμία RSVP",
+            "editDeadline": "Επεξεργασία προθεσμίας RSVP"
         },
         "rsvpReport": {
             "people": "{count, plural, one {# άτομο} other {# άτομα}}",
