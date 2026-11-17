@@ -181,3 +181,27 @@ describe('ThemePresetRadioGroup fonts and title colour', () => {
         expect(styles[0].textContent).toContain('/api/theme-fonts/great-vibes/1.woff2');
     });
 });
+
+describe('ThemePresetRadioGroup layout', () => {
+    it('lays the Theme page out 2 per row on phones, 3 on tablets and 4 on desktop', () => {
+        renderGroup([NONE, preset('a')]);
+        expect(screen.getByRole('radiogroup')).toHaveClass('grid-cols-2', 'sm:grid-cols-3', 'lg:grid-cols-4', 'gap-2.5');
+    });
+
+    it('gives the Theme page cards 18px corners and a 100px art box (120px on desktop)', () => {
+        renderGroup([preset('a')]);
+        const card = screen.getByRole('radio', { name: 'Preset a' });
+        expect(card).toHaveClass('rounded-[18px]');
+        expect(card.firstElementChild).toHaveClass('h-25', 'lg:h-30', 'rounded-md');
+    });
+
+    it('keeps the event-creation step on two square cards per row', () => {
+        render(
+            <ThemePresetRadioGroup options={[preset('a')]} labelledBy="heading" disabled={false} size="large" onSelectAction={vi.fn()} />,
+        );
+        const group = screen.getByRole('radiogroup');
+        expect(group).toHaveClass('grid-cols-2');
+        expect(group).not.toHaveClass('lg:grid-cols-4');
+        expect(screen.getByRole('radio', { name: 'Preset a' }).firstElementChild).toHaveClass('aspect-square');
+    });
+});
