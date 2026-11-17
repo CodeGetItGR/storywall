@@ -1,10 +1,11 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import type { MouseEvent } from 'react';
+import { type ChangeEvent, type MouseEvent, useState } from 'react';
 
 import { AdminField, adminInputClass } from '@/components/admin/AdminField';
 import { useLocalizedText } from '@/hooks/useLocalizedText';
+import { usePlanNameWarning } from '@/hooks/usePlanNameWarning';
 import type { PlanTierResponseDto, PlatformEventTypeResponseDto } from '@/lib/api/types';
 
 const SIBLING_CHIP = 'rounded-full bg-status-neutral-wash px-1.5 py-0.5 font-bold text-status-neutral';
@@ -25,6 +26,12 @@ export function PlanEditorDetailsSection({
     const t = useTranslations('AdminPage');
     const localizedText = useLocalizedText();
     const eventType = eventTypes.find((item) => item.eventTypeKey === plan.eventTypeKey);
+    const [name, setName] = useState(plan.name);
+    const nameWarning = usePlanNameWarning(name);
+
+    function handleNameChange(event: ChangeEvent<HTMLInputElement>) {
+        setName(event.target.value);
+    }
 
     function eventTypeLabel(eventTypeKey: string | null) {
         const match = eventTypes.find((item) => item.eventTypeKey === eventTypeKey);
@@ -41,8 +48,8 @@ export function PlanEditorDetailsSection({
             {/* Details */}
             <h4 className="mb-3 text-sm font-bold text-ink">{t('plans.sections.details')}</h4>
             <div className="grid grid-cols-2 gap-3">
-                <AdminField label={t('fields.name')} required className="col-span-2">
-                    <input name="name" defaultValue={plan.name} required maxLength={100} className={adminInputClass()} />
+                <AdminField label={t('fields.name')} required hint={nameWarning} hintTone="warn" className="col-span-2">
+                    <input name="name" defaultValue={plan.name} onChange={handleNameChange} required maxLength={100} className={adminInputClass()} />
                 </AdminField>
                 <AdminField label={t('fields.description')} optional className="col-span-2">
                     <input name="description" defaultValue={plan.description ?? ''} className={adminInputClass()} />

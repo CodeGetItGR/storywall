@@ -394,3 +394,11 @@ describe('ThemePresetDrawer heading font', () => {
         expect(screen.queryByText('headingFontEmpty')).toBeNull();
     });
 });
+
+describe('ThemePresetDrawer illustration picker', () => {
+    it('anchors the hidden file input to its label, so focusing it does not shift the drawer', () => {
+        state();
+        renderDrawer();
+        expect(document.querySelector('input[type="file"]')?.closest('label')).toHaveClass('relative');
+    });
+});

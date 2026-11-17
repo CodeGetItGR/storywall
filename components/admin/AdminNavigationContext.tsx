@@ -4,7 +4,6 @@ import {
     BarChart3,
     Bug,
     CalendarDays,
-    ChartLine,
     ChartNoAxesCombined,
     Flag,
     Footprints,
@@ -41,7 +40,7 @@ import {
 import { useTranslations } from 'next-intl';
 import { createContext, type ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
-import { adminHomeTab, canOpenAdminTab, resolveAdminTab } from '@/lib/adminAccess';
+import { adminHomeTab, canOpenAdminTab, movedSaveMyDateHashTarget, resolveAdminTab } from '@/lib/adminAccess';
 import { COLLABORATIONS_HASH_ROOT, isCollaborationsHash } from '@/lib/adminCollaborationsRouting';
 import { DEMO_EVENTS_HASH_ROOT, isDemoEventsHash } from '@/lib/adminDemoEventsRouting';
 import { EVENTS_HASH_ROOT, isEventsHash } from '@/lib/adminEvents';
@@ -49,6 +48,7 @@ import { isOrdersHash, ORDERS_HASH_ROOT } from '@/lib/adminOrders';
 import { isOutreachHash, OUTREACH_HASH_ROOT } from '@/lib/adminOutreachRouting';
 import { isPartnerApplicationsHash, PARTNER_APPLICATIONS_HASH_ROOT } from '@/lib/adminPartnerApplicationsRouting';
 import { isPlansHash, PLANS_HASH_ROOT } from '@/lib/adminPlansRouting';
+import { CAMPAIGNS_HASH_ROOT, isRecordHash } from '@/lib/adminRecordRouting';
 import { isWithdrawalsHash, WITHDRAWALS_HASH_ROOT } from '@/lib/adminWithdrawalsRouting';
 import type { PlatformRole } from '@/lib/api/types';
 import { pushPageEntry, replacePageUrl } from '@/lib/overlayHistory';
@@ -84,7 +84,6 @@ export type AdminTab =
     | 'vendorMessages'
     | 'errorEvents'
     | 'appReviews'
-    | 'campaignOverview'
     | 'campaigns'
     | 'siteNotices'
     | 'auditLog'
@@ -136,7 +135,6 @@ const HASH_TO_TAB: Record<string, AdminTab> = {
     '#vendor-messages': 'vendorMessages',
     '#errors': 'errorEvents',
     '#reviews': 'appReviews',
-    '#campaign-overview': 'campaignOverview',
     '#campaigns': 'campaigns',
     '#site-notices': 'siteNotices',
     '#audit-log': 'auditLog',
@@ -169,8 +167,7 @@ const TAB_TO_HASH: Record<AdminTab, string> = {
     orders: ORDERS_HASH_ROOT,
     withdrawals: WITHDRAWALS_HASH_ROOT,
     accounts: '#accounts',
-    campaignOverview: '#campaign-overview',
-    campaigns: '#campaigns',
+    campaigns: CAMPAIGNS_HASH_ROOT,
     reports: '#reports',
     bugReports: '#bug-reports',
     vendorMessages: '#vendor-messages',
@@ -194,6 +191,12 @@ const AdminNavigationContext = createContext<
     | undefined
 >(undefined);
 
+// The old Campaign overview and Discount campaigns pages are part of Campaigns now. Their addresses,
+// a discount campaign's page included, open Campaigns.
+function isRetiredCampaignHash(hash: string): boolean {
+    return hash === '#campaign-overview' || isRecordHash('#discount-campaigns', hash);
+}
+
 // `#plans/...`, `#collaborations/...`, `#withdrawals/...`, `#events/...` and `#orders/...` carry their own sub-route, parsed by
 // the section itself; legacy `#event-plans`, `#modules`, `#event-types` land
 // on Plans too so old links keep working.
@@ -208,6 +211,8 @@ function hashTab(): AdminTab | null {
     if (isWithdrawalsHash(hash)) return 'withdrawals';
     if (isOrdersHash(hash)) return 'orders';
     if (isEventsHash(hash)) return 'events';
+    if (isRecordHash(CAMPAIGNS_HASH_ROOT, hash)) return 'campaigns';
+    if (isRetiredCampaignHash(hash)) return 'campaigns';
     return HASH_TO_TAB[hash] ?? null;
 }
 
@@ -231,10 +236,16 @@ export function AdminNavigationProvider({ children, role = 'ADMIN' }: { children
 
     useEffect(() => {
         function syncFromHash() {
+            // Save my date's themes moved to their own page; an old link opens it there.
+            const moved = movedSaveMyDateHashTarget(role, window.location.hash);
+            if (moved) {
+                window.location.replace(moved);
+                return;
+            }
             const shown = hashTab();
             const next = currentHashTab(role);
-            // A hidden section's link is rewritten, so Back doesn't return to it.
-            if (shown !== next) replacePageUrl(TAB_TO_HASH[next]);
+            // A hidden section's link, or an old campaign page's, is rewritten, so Back doesn't return to it.
+            if (shown !== next || isRetiredCampaignHash(window.location.hash)) replacePageUrl(TAB_TO_HASH[next]);
             setTabState(next);
         }
 
@@ -281,7 +292,6 @@ export function AdminNavigationProvider({ children, role = 'ADMIN' }: { children
             { key: 'discountCodes', label: t('discountCodes'), icon: TicketPercent },
             { key: 'guestOffer', label: t('guestOffer'), icon: Gift },
             { key: 'appReviews', label: t('appReviews'), icon: Star },
-            { key: 'campaignOverview', label: t('campaignOverview'), icon: ChartLine },
             { key: 'campaigns', label: t('campaigns'), icon: Link2 },
             { key: 'partnerApplications', label: t('partnerApplications'), icon: Inbox },
             { key: 'collaborations', label: t('collaborations'), icon: Handshake },

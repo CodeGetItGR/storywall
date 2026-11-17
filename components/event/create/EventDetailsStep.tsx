@@ -1,6 +1,7 @@
 'use client';
 
 import { useLocale, useTranslations } from 'next-intl';
+import type { ReactNode } from 'react';
 
 import { EventGiftFields } from '@/components/event/create/EventGiftFields';
 import { EventTimezoneField } from '@/components/event/create/EventTimezoneField';
@@ -12,7 +13,17 @@ import { useCreateEventFieldLabels } from '@/hooks/useCreateEventFieldLabels';
 import { formatDate } from '@/lib/datetime';
 import { useCreateEventForm } from '@/providers/createEvent/CreateEventFormContext';
 
-export function EventDetailsStep() {
+type EventDetailsStepProps = {
+    // Replaces today's time zone field (the wizard shows a one-line summary instead).
+    timezoneField?: ReactNode;
+    // The coverage hint under the date ("Coverage starts…", "Photos kept until…"). Errors always show.
+    showScheduleHint?: boolean;
+    addressPlaceholder?: string;
+    // A line under the venue fields (the wizard's reception note).
+    locationNote?: ReactNode;
+};
+
+export function EventDetailsStep({ timezoneField, showScheduleHint = true, addressPlaceholder, locationNote }: EventDetailsStepProps = {}) {
     const t = useTranslations('CreateEventPage');
     const locale = useLocale();
     const {
@@ -57,7 +68,7 @@ export function EventDetailsStep() {
                     />
                     {scheduleError ? (
                         <span className="text-xs text-rose-500">{scheduleError}</span>
-                    ) : projectedCoverage ? (
+                    ) : !showScheduleHint ? null : projectedCoverage ? (
                         <span className="text-xs text-ink-muted">
                             {t('coverageProjection', { endsAt: formatDate(locale, projectedCoverage.coverageEndsAt, { dateStyle: 'medium' }) })}
                         </span>
@@ -67,13 +78,15 @@ export function EventDetailsStep() {
                 </FormFieldLabel>
 
                 {/* Timezone */}
-                <EventTimezoneField
-                    label={t('fields.timezone')}
-                    value={timezone}
-                    options={timezoneOptions}
-                    error={timezoneError}
-                    onChangeAction={onTimezoneChange}
-                />
+                {timezoneField ?? (
+                    <EventTimezoneField
+                        label={t('fields.timezone')}
+                        value={timezone}
+                        options={timezoneOptions}
+                        error={timezoneError}
+                        onChangeAction={onTimezoneChange}
+                    />
+                )}
 
                 {/* Location */}
                 <div className="grid gap-3 sm:grid-cols-2">
@@ -95,12 +108,13 @@ export function EventDetailsStep() {
                             maxLength={limits.locationAddressMaxLength}
                             value={locationAddress}
                             onChange={onLocationAddressChange}
-                            placeholder={t('placeholders.locationAddress')}
+                            placeholder={addressPlaceholder ?? t('placeholders.locationAddress')}
                             className="rounded-xl bg-surface-muted px-4 py-3 text-sm text-ink transition outline-none placeholder:text-ink-faint focus:ring-2 focus:ring-primary/30"
                         />
                         {locationAddressError && <span className="text-xs text-rose-500">{locationAddressError}</span>}
                     </FormFieldLabel>
                 </div>
+                {locationNote}
                 <FormFieldLabel label={t('fields.mapsUrl')} optional>
                     <input
                         type="url"

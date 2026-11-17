@@ -1,38 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import type { EventModuleResponseDto, QrLinkResolutionDto, QrLinkResponseDto } from '@/lib/api/types';
-import {
-    findAutoInviteQrLink,
-    findGuestQrLink,
-    getQrRedirectPath,
-    isGalleryOpenToGuests,
-    isInvitationQrLink,
-    isMemberArchiveEnabled,
-} from '@/lib/qrLinks';
-
-const active = (targetType: QrLinkResolutionDto['targetType'], inviteToken?: string): QrLinkResolutionDto => ({
-    status: 'ACTIVE',
-    targetType,
-    inviteToken,
-});
-
-describe('getQrRedirectPath', () => {
-    // The invite page shows the event first and then asks whether the guest has an account.
-    it('sends a scanner of the join link to the invite page', () => {
-        expect(getQrRedirectPath(active('EVENT_JOIN', 'tok'))).toBe('/invite/tok');
-    });
-
-    it('sends a personal invitation to the invite page', () => {
-        expect(getQrRedirectPath(active('INVITATION', 'tok'))).toBe('/invite/tok');
-    });
-
-    it('does not redirect a gallery upload link, a link without a token, or one that is not active', () => {
-        expect(getQrRedirectPath(active('MEDIA_UPLOAD'))).toBeNull();
-        expect(getQrRedirectPath(active('EVENT_JOIN'))).toBeNull();
-        expect(getQrRedirectPath({ ...active('EVENT_JOIN', 'tok'), status: 'REVOKED' })).toBeNull();
-        expect(getQrRedirectPath(undefined)).toBeNull();
-    });
-});
+import type { EventModuleResponseDto, QrLinkResponseDto } from '@/lib/api/types';
+import { findAutoInviteQrLink, findGuestQrLink, isGalleryOpenToGuests, isInvitationQrLink, isMemberArchiveEnabled } from '@/lib/qrLinks';
 
 function gallery(isAvailable: boolean, configuration: Record<string, unknown> | null): EventModuleResponseDto[] {
     return [{ moduleKey: 'gallery', isAvailable, configuration } as EventModuleResponseDto];
@@ -91,10 +60,9 @@ describe('findGuestQrLink', () => {
 
 describe('isInvitationQrLink', () => {
     // The gallery upload code and the guest code bring no one into the event.
-    it('counts join links and personal invitations only', () => {
+    it('counts join links only', () => {
         const link = (targetType: QrLinkResponseDto['targetType']) => ({ id: targetType, targetType, status: 'ACTIVE' }) as QrLinkResponseDto;
         expect(isInvitationQrLink(link('EVENT_JOIN'))).toBe(true);
-        expect(isInvitationQrLink(link('INVITATION'))).toBe(true);
         expect(isInvitationQrLink(link('MEDIA_UPLOAD'))).toBe(false);
         expect(isInvitationQrLink(link('GUEST'))).toBe(false);
     });

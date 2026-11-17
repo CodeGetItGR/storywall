@@ -42,7 +42,7 @@ vi.mock('@/hooks/useAppConfig', () => ({
 vi.mock('@/hooks/useAuth', () => ({ useAuth: () => ({ isAuthenticated: true, user: { emailVerified: true } }) }));
 vi.mock('@/hooks/useBilling', () => ({ usePreviewCreateEventCode: () => ({ reset: vi.fn(), mutateAsync: vi.fn(), isPending: false }) }));
 vi.mock('@/hooks/useCreateEventGift', () => ({
-    useCreateEventGift: () => ({ isValid: mocks.giftValid, isSaving: false, reset: vi.fn(), saveToDraft: vi.fn(async () => {}) }),
+    useCreateEventGift: () => ({ isValid: mocks.giftValid, isGift: false, details: { value: null }, isSaving: false, reset: vi.fn(), saveToDraft: vi.fn(async () => {}) }),
 }));
 vi.mock('@/hooks/useEvent', () => ({
     useCreateEvent: () => ({ mutateAsync: mocks.create, reset: vi.fn(), error: null, isPending: false }),

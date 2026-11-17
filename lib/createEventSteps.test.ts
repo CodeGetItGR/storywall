@@ -9,6 +9,8 @@ import {
     parseCreateEventStep,
     resolveCreateEventStep,
     resolveCreateEventType,
+    stepAfter,
+    stepBefore,
     visibleCreateEventSteps,
 } from '@/lib/createEventSteps';
 import { eventTypeSlug } from '@/lib/eventTypeSlug';
@@ -39,20 +41,20 @@ describe('createEventSteps', () => {
     });
 
     it('shows the theme step between details and overview only when available', () => {
-        expect(visibleCreateEventSteps(true, true)).toEqual(['type', 'plan', 'details', 'theme', 'overview']);
-        expect(visibleCreateEventSteps(false, true)).toEqual(['type', 'plan', 'details', 'overview']);
+        expect(visibleCreateEventSteps(true, false, true)).toEqual(['type', 'plan', 'details', 'theme', 'overview']);
+        expect(visibleCreateEventSteps(false, false, true)).toEqual(['type', 'plan', 'details', 'overview']);
     });
 
     it('drops the details step for a plan that does not ask for them', () => {
-        expect(visibleCreateEventSteps(false, false)).toEqual(['type', 'plan', 'overview']);
-        expect(visibleCreateEventSteps(true, false)).toEqual(['type', 'plan', 'theme', 'overview']);
+        expect(visibleCreateEventSteps(false, false, false)).toEqual(['type', 'plan', 'overview']);
+        expect(visibleCreateEventSteps(true, false, false)).toEqual(['type', 'plan', 'theme', 'overview']);
     });
 
     it('moves between the steps shown, staying put at either end', () => {
-        const lite = visibleCreateEventSteps(false, false);
+        const lite = visibleCreateEventSteps(false, false, false);
         expect(adjacentCreateEventStep(lite, 'plan', 1)).toBe('overview');
         expect(adjacentCreateEventStep(lite, 'overview', -1)).toBe('plan');
-        expect(adjacentCreateEventStep(visibleCreateEventSteps(false, true), 'plan', 1)).toBe('details');
+        expect(adjacentCreateEventStep(visibleCreateEventSteps(false, false, true), 'plan', 1)).toBe('details');
         expect(adjacentCreateEventStep(lite, 'type', -1)).toBe('type');
         expect(adjacentCreateEventStep(lite, 'overview', 1)).toBe('overview');
     });
@@ -105,5 +107,27 @@ describe('createEventSteps', () => {
         expect(resolveCreateEventType(['BABY_SHOWER', 'WEDDING'], 'REUNION', null)).toBe('WEDDING');
         expect(resolveCreateEventType(['BABY_SHOWER', 'REUNION'], null, null)).toBe('BABY_SHOWER');
         expect(resolveCreateEventType([], null, 'reunion')).toBe('WEDDING');
+    });
+});
+
+describe('visibleCreateEventSteps with the account step', () => {
+    it('puts account between theme and review', () => {
+        expect(visibleCreateEventSteps(true, true)).toEqual(['type', 'plan', 'details', 'theme', 'account', 'overview']);
+        expect(visibleCreateEventSteps(false, true)).toEqual(['type', 'plan', 'details', 'account', 'overview']);
+        expect(visibleCreateEventSteps(false, false)).toEqual(['type', 'plan', 'details', 'overview']);
+    });
+});
+
+describe('stepAfter and stepBefore', () => {
+    const steps = ['type', 'plan', 'details', 'account', 'overview'] as const;
+
+    it('moves along the shown steps', () => {
+        expect(stepAfter('details', steps)).toBe('account');
+        expect(stepAfter('overview', steps)).toBeNull();
+        expect(stepBefore('overview', steps, false)).toBe('account');
+    });
+
+    it('steps back over the account step once it is done', () => {
+        expect(stepBefore('overview', steps, true)).toBe('details');
     });
 });

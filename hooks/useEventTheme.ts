@@ -17,13 +17,14 @@ export const eventThemeKeys = {
 // GET /api/theme-presets?eventType= — the creation form's theme step, before the
 // event exists. Empty for a type without themes; callers pass null when the chosen
 // plan doesn't list the theme module. Already in display order; don't re-sort.
-export function useThemePresetsForType(eventType: string | null) {
+// Public: the old flow asks only signed in; the wizard asks signed out too, so guests get the theme step.
+export function useThemePresetsForType(eventType: string | null, allowSignedOut = false) {
     const { isAuthenticated } = useAuth();
 
     return useQuery({
         queryKey: eventThemeKeys.presetsForType(eventType ?? ''),
         queryFn: () => api.get<ThemePresetDto[]>(endpoints.themePresets.byEventType(eventType!)),
-        enabled: Boolean(eventType) && isAuthenticated,
+        enabled: Boolean(eventType) && (isAuthenticated || allowSignedOut),
     });
 }
 

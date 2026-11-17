@@ -1,5 +1,5 @@
 import type { CoverageOptionResponseDto, EventTypeConvention, ModuleKey, PlanScope, PlanTierResponseDto } from '@/lib/api/types';
-import { activePromoPriceMinor, discountedAmountMinor, isPlanDiscountActive, promotedOptionAmountMinor } from '@/lib/billing';
+import { promotedAmount, promotedOption } from '@/lib/billing';
 import { formatBytes, numberFormat } from '@/lib/format';
 
 export function scopedPlans(plans: PlanTierResponseDto[], scope: PlanScope): PlanTierResponseDto[] {
@@ -66,26 +66,13 @@ export function getPlanPriceDetails(plan: PlanTierResponseDto): PlanPriceDetails
 function optionPriceDetails(plan: PlanTierResponseDto, option: CoverageOptionResponseDto): PlanPriceDetails | null {
     if (!plan.priceCurrency) return null;
 
-    return {
-        amountMinor: promotedOptionAmountMinor(option, plan),
-        listAmountMinor: option.priceAmountMinor,
-        currency: plan.priceCurrency,
-        discountActive: activePromoPriceMinor(option, plan) !== null || isPlanDiscountActive(plan),
-        discountLabel: plan.discountLabel,
-    };
+    return { ...promotedOption(option, plan), listAmountMinor: option.priceAmountMinor, currency: plan.priceCurrency };
 }
 
 function priceDetails(plan: PlanTierResponseDto, listAmountMinor: number | null): PlanPriceDetails | null {
     if (listAmountMinor === null || !plan.priceCurrency) return null;
 
-    const discountActive = isPlanDiscountActive(plan);
-    return {
-        amountMinor: discountedAmountMinor(listAmountMinor, plan),
-        listAmountMinor,
-        currency: plan.priceCurrency,
-        discountActive,
-        discountLabel: plan.discountLabel,
-    };
+    return { ...promotedAmount(listAmountMinor, plan), listAmountMinor, currency: plan.priceCurrency };
 }
 
 function formatPlanAmount(plan: PlanTierResponseDto, locale?: string): string | null {

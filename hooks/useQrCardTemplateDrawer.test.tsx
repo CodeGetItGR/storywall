@@ -6,8 +6,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { useQrCardTemplateDrawer } from '@/hooks/useQrCardTemplateDrawer';
 import { ApiError } from '@/lib/api/client';
 import type { AdminQrCardTemplateDto } from '@/lib/api/types';
-import { PLAIN_QR_CARD_STYLE } from '@/lib/qrCard';
-import { DEFAULT_QR_CARD_LAYOUT, DEFAULT_QR_CARD_TITLE } from '@/lib/qrCardLayout';
+import { PLAIN_FEATURES_QR_CARD_STYLE } from '@/lib/qrCard';
+import { DEFAULT_QR_CARD_LAYOUT, DEFAULT_QR_CARD_TITLE, FEATURES_QR_CARD_LAYOUT } from '@/lib/qrCardLayout';
 
 const mocks = vi.hoisted(() => ({
     create: vi.fn(),
@@ -90,7 +90,7 @@ describe('useQrCardTemplateDrawer', () => {
     it('previews the saved layout, or the default without one', () => {
         const layout = { ...DEFAULT_QR_CARD_LAYOUT, title: { ...DEFAULT_QR_CARD_TITLE, align: 'left' as const } };
         expect(renderDrawer({ ...LINEN, layout }).result.current.previewStyle.layout).toEqual(layout);
-        expect(renderDrawer(LINEN).result.current.previewStyle.layout).toEqual(DEFAULT_QR_CARD_LAYOUT);
+        expect(renderDrawer(LINEN).result.current.previewStyle.layout).toEqual(FEATURES_QR_CARD_LAYOUT);
     });
 
     it('does not save an invalid draft and shows what is missing', async () => {
@@ -104,7 +104,7 @@ describe('useQrCardTemplateDrawer', () => {
         const onDoneAction = vi.fn();
         mocks.create.mockResolvedValue({ ...LINEN, artworkUrl: null });
         const { result } = renderDrawer(null, onDoneAction);
-        expect(result.current.previewStyle).toBe(PLAIN_QR_CARD_STYLE);
+        expect(result.current.previewStyle).toBe(PLAIN_FEATURES_QR_CARD_STYLE);
 
         act(() => result.current.handleFieldChange(field('nameEn', 'Linen')));
         act(() => result.current.handleFieldChange(field('nameEl', 'Λινό')));

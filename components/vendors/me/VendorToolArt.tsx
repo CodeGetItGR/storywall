@@ -1,5 +1,5 @@
 import { Check, Clock, Heart, Megaphone, Music2, Pencil, QrCode } from 'lucide-react';
-import type { ReactElement } from 'react';
+import type { ReactElement, ReactNode } from 'react';
 
 import { cn } from '@/lib/utils';
 import type { VendorToolKey } from '@/lib/vendors';
@@ -10,8 +10,17 @@ export function VendorToolArt({ tool }: { tool: VendorToolKey }) {
     const Art = ART[tool];
 
     return (
-        <div aria-hidden="true" className={cn('relative flex size-18 shrink-0 items-center justify-center overflow-hidden rounded-2xl', WASH[tool])}>
+        <ArtTile wash={WASH[tool]}>
             <Art />
+        </ArtTile>
+    );
+}
+
+// The tinted square a drawing sits in. The vendor pages reuse it for their own drawings.
+export function ArtTile({ children, wash }: { children: ReactNode; wash: string }) {
+    return (
+        <div aria-hidden="true" className={cn('relative flex size-18 shrink-0 items-center justify-center overflow-hidden rounded-2xl', wash)}>
+            {children}
         </div>
     );
 }
@@ -25,10 +34,10 @@ const WASH: Record<VendorToolKey, string> = {
 };
 
 // A paper card the drawings sit on.
-const PAPER = 'rounded-md bg-card shadow-sm ring-1 ring-ink/5';
+export const PAPER = 'rounded-md bg-card shadow-sm ring-1 ring-ink/5';
 
 // Three time slots on a sheet, one being edited.
-function ScheduleArt() {
+export function ScheduleArt() {
     return (
         <>
             <div className={cn(PAPER, 'flex w-12 -rotate-3 flex-col gap-1.5 p-1.5')}>
@@ -50,7 +59,7 @@ function ScheduleArt() {
 }
 
 // A megaphone with a message going out.
-function AnnouncementArt() {
+export function AnnouncementArt() {
     return (
         <>
             <div className={cn(PAPER, 'absolute top-3 right-2 flex w-9 rotate-6 flex-col gap-1 rounded-lg rounded-bl-none p-1.5')}>
@@ -65,7 +74,7 @@ function AnnouncementArt() {
 }
 
 // A guest list with replies ticked.
-function RsvpReportArt() {
+export function RsvpReportArt() {
     return (
         <div className={cn(PAPER, 'flex w-13 rotate-2 flex-col gap-1.5 p-1.5')}>
             {[true, true, false].map((yes, i) => (
@@ -87,7 +96,7 @@ function RsvpReportArt() {
 }
 
 // A printed QR card standing on a table.
-function QrArt() {
+export function QrArt() {
     return (
         <>
             <div className={cn(PAPER, 'absolute top-3 left-3.5 h-11 w-9 -rotate-8 bg-card/70')} />
@@ -100,7 +109,7 @@ function QrArt() {
 }
 
 // Song requests stacking up, one with likes.
-function LiveRequestsArt() {
+export function LiveRequestsArt() {
     return (
         <div className="flex w-13 flex-col gap-1">
             {[true, false].map((liked, i) => (

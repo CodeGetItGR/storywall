@@ -9,6 +9,6 @@ export default defineConfig({
         setupFiles: ['./vitest.setup.ts'],
         globals: false,
         // Agent worktrees under .claude/ are full copies of the repo.
-        exclude: [...configDefaults.exclude, '.claude/**'],
+        exclude: [...configDefaults.exclude, '.claude/**', 'visual-output/**'],
     },
 });

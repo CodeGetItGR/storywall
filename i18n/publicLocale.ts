@@ -72,6 +72,35 @@ export function isQrWeddingPath(pathname: string | null): boolean {
     return locales.some((locale) => QR_WEDDING_PATHS[locale] === pathname);
 }
 
+// The Save my date theme catalogue, one URL per language, and one page per theme under it. Same rules as
+// the partner page's slugs. The theme slugs are the backend's, the same in both languages.
+export const INVITATION_CATALOGUE_PATHS: Record<Locale, string> = {
+    en: '/invitations',
+    el: '/el/prosklitiria',
+};
+
+export function getInvitationCataloguePath(locale: Locale): string {
+    return INVITATION_CATALOGUE_PATHS[locale];
+}
+
+export function getInvitationThemePath(slug: string, locale: Locale): string {
+    return `${INVITATION_CATALOGUE_PATHS[locale]}/${slug}`;
+}
+
+// The catalogue (themeSlug null) or theme page a URL shows, and in which language. Null for every other path.
+export function invitationPageForPath(pathname: string | null): { locale: Locale; themeSlug: string | null } | null {
+    if (!pathname) return null;
+    for (const locale of locales) {
+        const base = INVITATION_CATALOGUE_PATHS[locale];
+        if (pathname === base) return { locale, themeSlug: null };
+        if (pathname.startsWith(`${base}/`)) {
+            const themeSlug = pathname.slice(base.length + 1);
+            if (themeSlug && !themeSlug.includes('/')) return { locale, themeSlug };
+        }
+    }
+    return null;
+}
+
 // The contact and legal pages: the English path, and the same path under /el for Greek.
 // Each page lives once at its English path; proxy.ts renders the Greek URL from it in Greek.
 export const LEGAL_PAGE_PATHS = [
@@ -115,6 +144,7 @@ export function publicPageLocale(pathname: string): Locale | null {
             (locale) => pathname === getPublicLandingPath(locale) || pathname === FOR_BUSINESS_PATHS[locale] || pathname === QR_WEDDING_PATHS[locale],
         ) ??
         vendorPageForPath(pathname)?.locale ??
+        invitationPageForPath(pathname)?.locale ??
         null
     );
 }
@@ -125,6 +155,10 @@ export function publicTwinPath(pathname: string | null, target: Locale): string 
     if (isForBusinessPath(pathname)) return getForBusinessPath(target);
     const vendorPage = vendorPageForPath(pathname);
     if (vendorPage) return getVendorPagePath(vendorPage.type, target);
+    const invitationPage = invitationPageForPath(pathname);
+    if (invitationPage) {
+        return invitationPage.themeSlug ? getInvitationThemePath(invitationPage.themeSlug, target) : getInvitationCataloguePath(target);
+    }
     const legalPage = pathname ? legalPageForPath(pathname) : null;
     if (legalPage) return getLegalPagePath(legalPage.path, target);
     return null;

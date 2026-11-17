@@ -15,7 +15,7 @@ import { PlanEditorPricingSection } from '@/components/admin/PlanEditorPricingSe
 import { PlanSaveSummary } from '@/components/admin/PlanSaveSummary';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { usePlanEditorCard, type UsePlanEditorCardArgs } from '@/hooks/usePlanEditorCard';
-import { adminErrorMessageKey } from '@/lib/adminUtils';
+import { adminErrorMessageKey, adminServerDetail } from '@/lib/adminUtils';
 
 function noop() {}
 
@@ -83,7 +83,7 @@ export function PlanEditorCard(props: UsePlanEditorCardArgs) {
                     </form>
 
                     {/* Error */}
-                    {editor.error && <p className="mt-3 text-sm text-status-danger">{t(`errors.${adminErrorMessageKey(editor.error)}`)}</p>}
+                    {editor.error && <p className="mt-3 text-sm text-status-danger">{adminServerDetail(editor.error) ?? t(`errors.${adminErrorMessageKey(editor.error)}`)}</p>}
                 </div>
             </div>
 
