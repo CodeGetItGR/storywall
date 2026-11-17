@@ -44,7 +44,11 @@ export function visibleManageNav(
 // Sections named after a module show that module's name for the event type.
 export const manageSectionModuleKeys: Partial<Record<ManageSection, string>> = { rsvp: 'rsvp', theme: 'theme' };
 
+// Older links name Billing's former parts; they all open Billing.
+const BILLING_ALIASES = new Set(['plan', 'orders', 'coverage']);
+
 export function parseManageSection(value: string | null): ManageSection {
+    if (value !== null && BILLING_ALIASES.has(value)) return 'billing';
     return manageSections.find((section) => section === value) ?? 'overview';
 }
 
