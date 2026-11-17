@@ -1854,13 +1854,6 @@
             "coverageRange": "{from} to {until}",
             "coverageThrough": "Covers through {date}",
             "empty": "No orders yet. Activation will appear here after checkout starts.",
-            "columns": {
-                "kind": "Type",
-                "status": "Status",
-                "coverage": "Coverage",
-                "date": "Date",
-                "amount": "Amount"
-            },
             "kind": {
                 "ACTIVATION": "Activation",
                 "RENEWAL": "Renewal",
