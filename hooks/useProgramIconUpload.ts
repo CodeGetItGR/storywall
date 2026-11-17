@@ -3,28 +3,24 @@
 import { useMutation } from '@tanstack/react-query';
 import { type ChangeEvent, useCallback, useState } from 'react';
 
-import { api } from '@/lib/api/client';
-import { endpoints } from '@/lib/api/endpoints';
+import type { ImageUploader } from '@/lib/invitation/editorUploads';
 import {
     type CustomProgramIcon,
     customProgramIcon,
     type IconUploadProblem,
     iconUploadProblem,
-    type InvitationDraftImageDto,
     isSvgFile,
     svgToPng,
 } from '@/lib/invitation/programIconUpload';
 
-// Uploads a program row's own icon to the draft and hands back the icon to store.
-export function useProgramIconUpload(draftId: string, onUploaded: (icon: CustomProgramIcon, url: string, mediaId: string) => void) {
+// Uploads a program row's own icon (to the draft, or the admin's theme) and hands back the icon to store.
+export function useProgramIconUpload(uploadImage: ImageUploader, onUploaded: (icon: CustomProgramIcon, url: string, mediaId: string) => void) {
     const [problem, setProblem] = useState<IconUploadProblem | null>(null);
 
     const upload = useMutation({
         mutationFn: async (file: File) => {
             const isSvg = isSvgFile(file);
-            const body = new FormData();
-            body.append('file', isSvg ? await svgToPng(file) : file);
-            const saved = await api.postForm<InvitationDraftImageDto>(endpoints.invitationDrafts.images(draftId), body);
+            const saved = await uploadImage(isSvg ? await svgToPng(file) : file);
             return { saved, icon: customProgramIcon(saved.mediaId, file.name, isSvg) };
         },
         onSuccess: ({ saved, icon }) => onUploaded(icon, saved.url, saved.mediaId),

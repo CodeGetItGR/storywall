@@ -1,26 +1,22 @@
 'use client';
 
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo } from 'react';
 
 import { useAutoPublish } from '@/hooks/useAutoPublish';
 import { useDraftAutosave } from '@/hooks/useDraftAutosave';
 import { useDraftClaim } from '@/hooks/useDraftClaim';
 import { useDraftThemes } from '@/hooks/useDraftThemes';
 import { useEditorLeave } from '@/hooks/useEditorLeave';
-import { useEditorSectionSettings } from '@/hooks/useEditorSectionSettings';
 import { useEditorTour } from '@/hooks/useEditorTour';
+import { useEditorWorkspace } from '@/hooks/useEditorWorkspace';
 import { useInvitationEditorStore } from '@/hooks/useInvitationEditorStore';
 import { useInvitationEventSync } from '@/hooks/useInvitationEventSync';
 import { usePhotoUploads } from '@/hooks/usePhotoUploads';
 import { usePublishInvitation } from '@/hooks/usePublishInvitation';
-import { useSectionActions } from '@/hooks/useSectionActions';
 import { useThemeSwitch } from '@/hooks/useThemeSwitch';
-import { useUndoShortcuts } from '@/hooks/useUndoShortcuts';
-import { useUnsavedChangesWarning } from '@/hooks/useUnsavedChangesWarning';
 import type { EditableDraft } from '@/lib/invitation/drafts';
+import { draftImageUploader } from '@/lib/invitation/editorUploads';
 import type { InvitationFontDto } from '@/lib/invitation/uploadedFonts';
-
-export type EditorPanel = 'assets' | 'settings';
 
 // Everything the editor shell shows and does for one open draft.
 export function useInvitationEditor(draft: EditableDraft, uploadedFonts?: InvitationFontDto[]) {
@@ -34,51 +30,40 @@ export function useInvitationEditor(draft: EditableDraft, uploadedFonts?: Invita
     const { status, flush, savedRevision } = useDraftAutosave(editor.store, draft.id, draft.revision, themes.themeFor);
     const leave = useEditorLeave(flush);
     const eventSync = useInvitationEventSync(editor.store, draft.eventId, shown.media, editor.themeSlug);
-    const sections = useSectionActions(editor.store, editor.document, draft.eventType, 'host', eventSync.event, eventSync.samples);
-    const sectionSettings = useEditorSectionSettings(editor.store, editor.document, shown, sections.setActiveId, uploadedFonts, eventSync);
+    // The draft's images with the event's on top; new ones go to the draft.
+    const source = useMemo(
+        () => ({ theme: shown.theme, media: eventSync.media, uploadImage: draftImageUploader(draft.id) }),
+        [draft.id, eventSync.media, shown.theme],
+    );
+    const workspace = useEditorWorkspace({
+        editor,
+        eventType: draft.eventType,
+        source,
+        events: eventSync,
+        uploadedFonts,
+        status,
+        flush,
+        previewSavesFirst: true,
+    });
     const themeSwitch = useThemeSwitch({ store: editor.store, eventType: draft.eventType, current: themes.active, addTheme: themes.add });
-    const [openPanel, setOpenPanel] = useState<EditorPanel | null>(null);
-    const [isPreviewOpen, setIsPreviewOpen] = useState(false);
-    const [isSaving, setIsSaving] = useState(false);
     const claim = useDraftClaim(draft.id);
     const publishing = usePublishInvitation({ draftId: draft.id, eventId: draft.eventId, flush, revision: savedRevision, claim });
     const tour = useEditorTour();
-    const photos = usePhotoUploads({ draftId: draft.id, store: editor.store, addUploaded: sectionSettings.addUploaded, claim });
+    const photos = usePhotoUploads({ draftId: draft.id, store: editor.store, addUploaded: workspace.sectionSettings.addUploaded, claim });
 
     useAutoPublish(publishing.start);
 
-    useUndoShortcuts(editor.undo, editor.redo);
-    useUnsavedChangesWarning(status !== 'saved');
-
-    // Preview waits for the save first; publishing does the same in usePublishInvitation.
-    const saveFirst = useCallback(
-        async (then: (saved: boolean) => void) => {
-            setIsSaving(true);
-            const saved = await flush();
-            setIsSaving(false);
-            then(saved);
-        },
-        [flush],
-    );
-
-    const openPreview = useCallback(() => saveFirst(() => setIsPreviewOpen(true)), [saveFirst]);
-    const closePreview = useCallback(() => setIsPreviewOpen(false), []);
-    const retrySave = useCallback(() => void flush(), [flush]);
-    const closePanel = useCallback(() => setOpenPanel(null), []);
     // On phones the theme panel is a sheet: it closes so the picker isn't stacked on it.
+    const { setOpenPanel } = workspace;
     const { open: openSwitch } = themeSwitch;
     const openThemeSwitch = useCallback(() => {
         setOpenPanel(null);
         openSwitch();
-    }, [openSwitch]);
+    }, [openSwitch, setOpenPanel]);
 
     return {
-        store: editor.store,
-        document: editor.document,
-        theme: shown.theme,
+        ...workspace,
         themeName: themes.active.name,
-        // The draft's images, the ones uploaded since it opened, and the event's.
-        media: sectionSettings.media,
         // What the invitation follows from its event, once it has loaded; null for a draft on no event.
         event: eventSync.event,
         joinUrl: eventSync.joinUrl,
@@ -86,24 +71,10 @@ export function useInvitationEditor(draft: EditableDraft, uploadedFonts?: Invita
         fieldLinks: eventSync.fieldLinks,
         textColor: editor.document.overrides.textColor ?? shown.theme.colors.text,
         setTextColor: editor.setTextColor,
-        canUndo: editor.canUndo,
-        canRedo: editor.canRedo,
-        undo: editor.undo,
-        redo: editor.redo,
-        status,
-        retrySave,
-        isBusy: isSaving || leave.isLeaving || publishing.isBusy,
-        openPanel,
-        setOpenPanel,
-        closePanel,
-        isPreviewOpen,
-        openPreview,
-        closePreview,
+        isBusy: workspace.isSaving || leave.isLeaving || publishing.isBusy,
         publishing,
         tour,
         leave,
-        sections,
-        sectionSettings,
         themeSwitch,
         openThemeSwitch,
         photos,

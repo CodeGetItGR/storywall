@@ -14,6 +14,7 @@ import { StyleFields } from '@/components/saveMyDate/editor/settings/StyleFields
 import type { SectionOf, SettingsScope } from '@/hooks/useSectionSettingsPanel';
 import type { InvitationDocument } from '@/lib/invitation/document';
 import { readEditableDraft } from '@/lib/invitation/drafts';
+import { draftImageUploader } from '@/lib/invitation/editorUploads';
 import { eventFieldLinks } from '@/lib/invitation/eventData';
 import type { InvitationEventData } from '@/lib/invitation/eventLinks';
 import { sampleDraftDto } from '@/lib/invitation/sampleDraft';
@@ -65,7 +66,7 @@ function scopeFor<T extends InvitationSection['type']>(
         theme,
         media: draft.media,
         fonts: [],
-        draftId: draft.id,
+        uploadImage: draftImageUploader(draft.id),
         addUploaded: vi.fn(),
         event,
         eventSamples: null,

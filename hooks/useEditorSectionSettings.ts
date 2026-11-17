@@ -8,40 +8,46 @@ import { useSectionSettings } from '@/hooks/useSectionSettings';
 import { useSectionSettingsPanel } from '@/hooks/useSectionSettingsPanel';
 import { useUploadedMedia } from '@/hooks/useUploadedMedia';
 import type { InvitationDocument } from '@/lib/invitation/document';
-import type { EditableDraft } from '@/lib/invitation/drafts';
 import type { InvitationEditorStore } from '@/lib/invitation/editorStore';
+import type { ImageUploader } from '@/lib/invitation/editorUploads';
 import type { EventFieldLinks } from '@/lib/invitation/eventData';
 import type { InvitationEventData, SampleSections } from '@/lib/invitation/eventLinks';
 import type { MediaResolver } from '@/lib/invitation/render';
+import type { ThemeDesign } from '@/lib/invitation/theme';
 import type { InvitationFontDto } from '@/lib/invitation/uploadedFonts';
 
 // Where the side panels dock beside the canvas (EditorDockedPanel).
 export const DOCKED_PANELS_QUERY = '(min-width: 1101px)';
+
+// What the open draft or theme gives the settings: its look, its images (a draft's with its
+// event's on top) and where new ones go.
+export type SectionSettingsSource = { theme: ThemeDesign; media: MediaResolver; uploadImage: ImageUploader };
+
+// What the invitation follows from its event (useInvitationEventSync). A theme, or a draft on no event, has none.
+export type SectionSettingsEvents = { event: InvitationEventData | null; samples?: SampleSections | null; fieldLinks?: EventFieldLinks | null };
+
+const NO_EVENT: SectionSettingsEvents = { event: null };
 
 // The section settings sheet of the editor: which section is open, the images
 // uploaded meanwhile, and whether it docks beside the canvas.
 export function useEditorSectionSettings(
     store: InvitationEditorStore,
     document: InvitationDocument,
-    draft: EditableDraft,
+    source: SectionSettingsSource,
     activate: (id: string) => void,
     uploadedFonts?: InvitationFontDto[],
-    // The draft's images with the event's on top (useInvitationEventSync), and what the event tells the invitation.
-    events: { media: MediaResolver; event: InvitationEventData | null; samples?: SampleSections | null; fieldLinks?: EventFieldLinks | null } = {
-        media: draft.media,
-        event: null,
-    },
+    events: SectionSettingsEvents = NO_EVENT,
 ) {
     const mode = useEditorMode();
-    const uploads = useUploadedMedia(events.media);
-    const settings = useSectionSettings(store, document, draft.theme, mode);
+    const uploads = useUploadedMedia(source.media);
+    const settings = useSectionSettings(store, document, source.theme, mode);
     const isDocked = useMediaQuery(DOCKED_PANELS_QUERY);
     const panel = useSectionSettingsPanel(settings, {
         document,
-        theme: draft.theme,
+        theme: source.theme,
         media: uploads.media,
         uploadedFonts,
-        draftId: draft.id,
+        uploadImage: source.uploadImage,
         addUploaded: uploads.addUploaded,
         event: events.event,
         eventSamples: events.samples ?? null,
