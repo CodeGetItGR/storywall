@@ -1,270 +1,35 @@
 'use client';
 
-import { Plus, UserCog, Users } from 'lucide-react';
-import { useSearchParams } from 'next/navigation';
-import { useLocale, useTranslations } from 'next-intl';
-import { useCallback, useMemo, useState } from 'react';
+import { useTranslations } from 'next-intl';
+import { useCallback } from 'react';
 
-import { CoHostInvitationRow } from '@/components/manage/invitations/CoHostInvitationRow';
-import { CreateCoHostInvitationForm } from '@/components/manage/invitations/CreateCoHostInvitationForm';
-import { ShareLanguageNote } from '@/components/manage/invitations/ShareLanguageNote';
 import { MemberRoleSheet } from '@/components/manage/members/MemberRoleSheet';
-import { UsagePanel } from '@/components/plan/UsagePanel';
 import { ReportTargetModal } from '@/components/reports/ReportTargetModal';
-import { ToolEmptyState } from '@/components/tools/ToolEmptyState';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
-import { type SubTabItem, SubTabs } from '@/components/ui/SubTabs';
-import { useAppConfig } from '@/hooks/useAppConfig';
-import { useUpgradeOptions } from '@/hooks/useBilling';
-import { useCoHostCapacity } from '@/hooks/useCoHostCapacity';
-import { useMemberModeration } from '@/hooks/useMemberModeration';
-import { useMemberRoleSheet } from '@/hooks/useMemberRoleSheet';
-import { useActiveModuleCopy } from '@/hooks/useModuleCopy';
-import { usePromoteCoHost } from '@/hooks/usePromoteCoHost';
-import type {
-    EventHostResponseDto,
-    EventInvitationResponseDto,
-    EventMemberResponseDto,
-    EventModuleResponseDto,
-    EventUsageResponseDto,
-    PlanTierResponseDto,
-} from '@/lib/api/types';
-import { formatDate } from '@/lib/datetime';
-import { selectCoHostInvitations } from '@/lib/eventInvitations';
-import { canManageMemberRoles } from '@/lib/memberRoles';
-import { findPlanByCode } from '@/lib/planTiers';
-import { routes } from '@/lib/routes';
-import { useActiveEvent, useActiveMember } from '@/providers/EventProvider';
+import { type MembersPanelProps, useMembersPage } from '@/hooks/useMembersPage';
 
-import { CoHostManagementList } from './CoHostManagementList';
-import { MemberRow } from './MemberRow';
+import { CurrentHostsSection } from './CurrentHostsSection';
+import { MembersList } from './MembersList';
+import { MembersUsageTiles } from './MembersUsageTiles';
 import { PromoteCoHostModal } from './PromoteCoHostModal';
 
-type MembersSubTab = 'members' | 'coHosts';
-
-type MembersPanelProps = {
-    canModerate: boolean;
-    canWrite: boolean;
-    eventId: string;
-    members: EventMemberResponseDto[];
-    invitations: EventInvitationResponseDto[];
-    eventUsage: EventUsageResponseDto | null;
-    planTiers: PlanTierResponseDto[];
-    eventModules: EventModuleResponseDto[];
-    hosts: EventHostResponseDto[];
-    isPrimaryHost: boolean;
-};
-
-export function MembersPanel({
-    canModerate,
-    canWrite,
-    eventId,
-    members,
-    invitations,
-    eventUsage,
-    planTiers,
-    eventModules,
-    hosts,
-    isPrimaryHost,
-}: MembersPanelProps) {
-    const t = useTranslations('ManagePage');
+export function MembersPanel(props: MembersPanelProps) {
     const tMembers = useTranslations('ManagePage.members');
-    const tRoles = useTranslations('MemberRoles');
-    const locale = useLocale();
-    const { data: appConfig } = useAppConfig();
-    const activeMember = useActiveMember();
-    const searchParams = useSearchParams();
-    const requestedTab = searchParams.get('section');
-    const coHostsName = useActiveModuleCopy('co_hosts').name;
-    const coHostsAvailable = eventModules.find((module_) => module_.moduleKey === 'co_hosts')?.isAvailable ?? false;
-    const [tab, setTab] = useState<MembersSubTab>(requestedTab === 'coHosts' && coHostsAvailable ? 'coHosts' : 'members');
-    const [showCreate, setShowCreate] = useState(false);
-
-    const moderation = useMemberModeration(eventId, canModerate);
-    const activeEvent = useActiveEvent();
-    const roleSheet = useMemberRoleSheet(members);
-    const canManageRoles = canManageMemberRoles(activeEvent, canModerate);
-    const { data: upgradeOptions = [] } = useUpgradeOptions(eventId, isPrimaryHost);
+    const page = useMembersPage(props);
+    const { moderation, roleSheet, promoteFlow } = page;
     const handleConfirmRemove = useCallback(() => moderation.confirmRemove(tMembers('removeFailed')), [moderation, tMembers]);
-    const canReport = canModerate && Boolean(appConfig?.reportTargetTypes?.includes('MEMBER'));
-
-    const tabs = useMemo<SubTabItem<MembersSubTab>[]>(
-        () => [
-            { key: 'members', icon: Users, label: tMembers('title') },
-            ...(coHostsAvailable ? [{ key: 'coHosts' as const, icon: UserCog, label: coHostsName }] : []),
-        ],
-        [tMembers, coHostsAvailable, coHostsName],
-    );
-
-    const memberLimit = eventUsage?.memberLimit ?? null;
-    const memberCount = eventUsage?.memberCount ?? 0;
-    const isFull = memberLimit !== null && memberCount >= memberLimit;
-    const currentPlan = eventUsage ? findPlanByCode(planTiers, 'EVENT', eventUsage.planTier) : undefined;
-    const nextUpgradeOption = upgradeOptions[0];
-    const nextPlan = nextUpgradeOption ? findPlanByCode(planTiers, 'EVENT', nextUpgradeOption.planTierCode) : undefined;
-    const upgradeHref = routes.events.manage(eventId, { tab: 'billing' });
-    const coHostCapacity = useCoHostCapacity(hosts, currentPlan, nextPlan, activeEvent?.modules);
-
-    const canCreate = canWrite && !isFull && !coHostCapacity.isFull;
-    // Promoting takes no member seat (they are already in), only a co-host one.
-    const canPromote = canWrite && coHostsAvailable && !coHostCapacity.isFull;
-    const promoteFlow = usePromoteCoHost(eventId);
-
-    const handleTabSelect = useCallback((next: MembersSubTab) => {
-        setTab(next);
-        setShowCreate(false);
-    }, []);
-
-    const handleShowCreate = useCallback(() => {
-        if (!canCreate) return;
-        setShowCreate(true);
-    }, [canCreate]);
-
-    const handleHideCreate = useCallback(() => {
-        setShowCreate(false);
-    }, []);
-
-    const showCoHosts = tab === 'coHosts';
-    const coHostInvitations = useMemo(() => selectCoHostInvitations(invitations), [invitations]);
+    const notices = [page.membersFullNotice, page.coHostsFullNotice].filter((notice): notice is string => Boolean(notice));
 
     return (
-        <div className="flex flex-col">
-            {/* Panels */}
-            {tabs.length > 1 && <SubTabs tabs={tabs} active={tab} onSelectAction={handleTabSelect} className="mb-4" />}
+        <div className="flex flex-col gap-6">
+            {/* Usage */}
+            <MembersUsageTiles members={page.memberUsage} coHosts={page.coHostUsage} notices={notices} />
 
-            {/* Capacity */}
-            {showCoHosts && eventUsage && (
-                <div className="mb-4">
-                    <UsagePanel
-                        title={t('invitations.capacity.coHostsTitle')}
-                        planName={currentPlan?.name ?? eventUsage.planTier}
-                        nextPlanName={isFull || coHostCapacity.isFull ? nextUpgradeOption?.planTierName : undefined}
-                        upgradeHref={upgradeHref}
-                        items={[
-                            {
-                                key: 'members',
-                                used: memberCount,
-                                limit: memberLimit,
-                                percent: eventUsage.memberPercent,
-                                valueLabel: memberLimit === null ? `${memberCount}` : `${memberCount} / ${memberLimit}`,
-                            },
-                            {
-                                key: 'coHosts',
-                                used: coHostCapacity.used,
-                                limit: coHostCapacity.limit,
-                                percent: coHostCapacity.percent,
-                                valueLabel: coHostCapacity.valueLabel,
-                            },
-                        ]}
-                    />
-                    {canWrite && isFull && (
-                        <p className="mt-2 text-xs leading-relaxed text-amber-700">
-                            {nextPlan
-                                ? nextPlan.maxMembers === null
-                                    ? t('invitations.full.noticeWithUnlimitedUpgrade', { plan: nextPlan.name })
-                                    : t('invitations.full.noticeWithUpgrade', { plan: nextPlan.name, seats: nextPlan.maxMembers })
-                                : t('invitations.full.notice')}
-                        </p>
-                    )}
-                    {canWrite && coHostCapacity.fullNotice && (
-                        <p className="mt-2 text-xs leading-relaxed text-amber-700">{coHostCapacity.fullNotice}</p>
-                    )}
-                </div>
-            )}
+            {/* Current hosts */}
+            <CurrentHostsSection page={page} />
 
-            {/* Members list */}
-            {tab === 'members' && (
-                <>
-                    {members.length === 0 ? (
-                        <div className="flex flex-col items-center py-14 text-center">
-                            <div className="flex h-11 w-11 items-center justify-center rounded-full bg-surface-muted text-ink-faint">
-                                <Users className="h-5 w-5" aria-hidden="true" />
-                            </div>
-                            <p className="mt-3 text-sm font-semibold text-ink">{tMembers('emptyTitle')}</p>
-                            <p className="mt-1 text-sm text-ink-muted">{tMembers('emptyBody')}</p>
-                        </div>
-                    ) : (
-                        <ul>
-                            {members.map((member) => (
-                                <MemberRow
-                                    key={member.id}
-                                    member={member}
-                                    canPromote={canPromote && member.role !== 'HOST' && member.userId !== null}
-                                    canRemove={canModerate && member.role !== 'HOST'}
-                                    canReport={canReport && member.id !== activeMember?.id}
-                                    joinedLabel={tMembers('joined', { date: formatDate(locale, member.joinedAt, { dateStyle: 'medium' }) })}
-                                    moreLabel={tMembers('moreFor', { name: member.displayName })}
-                                    eventTypeKey={activeEvent?.eventType ?? null}
-                                    editRoleLabel={tRoles('host.edit', { name: member.displayName })}
-                                    onEditRoleAction={canManageRoles && !member.isFeatured ? roleSheet.open : undefined}
-                                    onPromoteAction={promoteFlow.requestForMember}
-                                    onReportAction={moderation.requestReport}
-                                    onRemoveAction={moderation.requestRemove}
-                                    promoteLabel={tMembers('promote')}
-                                    reportLabel={tMembers('report')}
-                                    removeLabel={tMembers('remove')}
-                                />
-                            ))}
-                        </ul>
-                    )}
-                </>
-            )}
-
-            {/* Co-hosts */}
-            {showCoHosts && (
-                <>
-                    {/* Co-host management */}
-                    <CoHostManagementList canManage={isPrimaryHost && canWrite} eventId={eventId} hosts={hosts} members={members} />
-
-                    {/* Co-host invitations */}
-                    <div className="mb-3 flex items-center justify-between">
-                        <p className="text-xs text-ink-muted">{t('invitations.coHosts.summary', { count: coHostInvitations.length })}</p>
-                        {!showCreate && canCreate && (
-                            <button
-                                type="button"
-                                onClick={handleShowCreate}
-                                className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold text-white transition-opacity bg-gradient-brand hover:opacity-90"
-                            >
-                                <Plus className="h-3.5 w-3.5" />
-                                {t('invitations.coHosts.cta')}
-                            </button>
-                        )}
-                    </div>
-
-                    {!canWrite && (
-                        <p className="mb-3 rounded-2xl bg-surface-muted px-4 py-3 text-sm leading-relaxed text-ink-muted">
-                            {t('invitations.readOnly')}
-                        </p>
-                    )}
-
-                    {canCreate && !showCreate && (
-                        <div className="mb-4 rounded-md bg-surface-muted/50 px-4 py-3">
-                            <p className="text-sm font-semibold text-ink">{t('invitations.coHosts.guideTitle')}</p>
-                            <p className="mt-1 text-xs leading-relaxed text-ink-muted">{t('invitations.coHosts.guideBody')}</p>
-                        </div>
-                    )}
-
-                    {showCreate && canCreate && <CreateCoHostInvitationForm eventId={eventId} onDoneAction={handleHideCreate} />}
-
-                    <div className="flex flex-col divide-y divide-border">
-                        {coHostInvitations.map((invitation) => (
-                            <CoHostInvitationRow key={invitation.id} eventId={eventId} invitation={invitation} canWrite={canWrite} />
-                        ))}
-                    </div>
-
-                    {/* Link language */}
-                    {coHostInvitations.length > 0 && <ShareLanguageNote className="mt-2" />}
-
-                    {coHostInvitations.length === 0 && !showCreate && (
-                        <ToolEmptyState
-                            title={t('invitations.coHosts.emptyTitle')}
-                            body={t('invitations.coHosts.emptyBody')}
-                            icon={UserCog}
-                            className="py-8"
-                        />
-                    )}
-                </>
-            )}
+            {/* Members */}
+            <MembersList page={page} />
 
             {/* Remove member confirmation */}
             <ConfirmActionModal
@@ -287,13 +52,13 @@ export function MembersPanel({
             <PromoteCoHostModal flow={promoteFlow} />
 
             {/* Role sheet */}
-            {roleSheet.member && <MemberRoleSheet eventId={eventId} member={roleSheet.member} onCloseAction={roleSheet.close} />}
+            {roleSheet.member && <MemberRoleSheet eventId={props.eventId} member={roleSheet.member} onCloseAction={roleSheet.close} />}
 
             {/* Report member */}
             {moderation.memberToReport && (
                 <ReportTargetModal
                     open
-                    eventId={eventId}
+                    eventId={props.eventId}
                     targetType="MEMBER"
                     targetId={moderation.memberToReport.id}
                     targetName={moderation.memberToReport.displayName}

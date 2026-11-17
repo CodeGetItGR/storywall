@@ -141,12 +141,21 @@ export function ManageRsvpSkeleton() {
 
 export function ManageMembersSkeleton() {
     return (
-        <SkeletonStatus className="flex flex-col">
-            {/* Sub-tabs */}
-            <SubTabsSkeleton count={2} />
+        <SkeletonStatus className="flex flex-col gap-6">
+            {/* Usage */}
+            <Skeleton className="h-[86px] w-full rounded-[20px]" />
+
+            {/* Current hosts */}
+            <div>
+                <Skeleton className="mb-2 h-4 w-32 rounded-full" />
+                {Array.from({ length: 2 }).map((_, index) => (
+                    <MemberRowSkeleton key={index} />
+                ))}
+            </div>
 
             {/* Members list */}
-            <div className="mt-4">
+            <div>
+                <Skeleton className="mb-2 h-4 w-24 rounded-full" />
                 {Array.from({ length: 6 }).map((_, index) => (
                     <MemberRowSkeleton key={index} />
                 ))}

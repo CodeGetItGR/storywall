@@ -1,7 +1,7 @@
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import type { EventMemberResponseDto } from '@/lib/api/types';
+import type { EventHostResponseDto, EventMemberResponseDto } from '@/lib/api/types';
 
 import { MembersPanel } from './MembersPanel';
 
@@ -18,7 +18,6 @@ vi.mock('@/hooks/useModuleCopy', () => {
     };
 });
 vi.mock('next-intl', () => ({ useTranslations: () => (key: string) => key, useLocale: () => 'en' }));
-vi.mock('next/navigation', () => ({ useSearchParams: () => new URLSearchParams() }));
 vi.mock('@/hooks/useAppConfig', () => ({ useAppConfig: () => ({ data: { reportTargetTypes: ['MEMBER'] } }) }));
 vi.mock('@/hooks/useBilling', () => ({ useUpgradeOptions: () => ({ data: [] }) }));
 vi.mock('@/hooks/useCoHostCapacity', () => ({
@@ -46,12 +45,12 @@ vi.mock('@/providers/EventProvider', () => ({
     useActiveMember: () => (activeMemberId ? { id: activeMemberId } : null),
     useActiveEvent: () => null,
 }));
-vi.mock('@/components/manage/invitations/CoHostInvitationRow', () => ({ CoHostInvitationRow: () => null }));
 vi.mock('@/components/manage/invitations/CreateCoHostInvitationForm', () => ({ CreateCoHostInvitationForm: () => null }));
 vi.mock('@/components/manage/invitations/ShareLanguageNote', () => ({ ShareLanguageNote: () => null }));
-vi.mock('@/components/plan/UsagePanel', () => ({ UsagePanel: () => null }));
 vi.mock('@/components/reports/ReportTargetModal', () => ({ ReportTargetModal: () => null }));
-vi.mock('./CoHostManagementList', () => ({ CoHostManagementList: () => null }));
+vi.mock('@/hooks/useMemberRoleSheet', () => ({ useMemberRoleSheet: () => ({ member: null, open: vi.fn(), close: vi.fn() }) }));
+vi.mock('./CurrentHostsSection', () => ({ CurrentHostsSection: () => null }));
+vi.mock('./MembersUsageTiles', () => ({ MembersUsageTiles: () => null }));
 
 function member(id: string, displayName: string, role: 'HOST' | 'ATTENDEE' = 'HOST', userId: string | null = `u-${id}`): EventMemberResponseDto {
     return {
@@ -64,7 +63,7 @@ function member(id: string, displayName: string, role: 'HOST' | 'ATTENDEE' = 'HO
     } as unknown as EventMemberResponseDto;
 }
 
-function renderPanel(members = [member('m1', 'Me'), member('m2', 'Other')]) {
+function renderPanel(members = [member('m1', 'Me'), member('m2', 'Other')], hosts: EventHostResponseDto[] = []) {
     return render(
         <MembersPanel
             canModerate
@@ -75,7 +74,7 @@ function renderPanel(members = [member('m1', 'Me'), member('m2', 'Other')]) {
             eventUsage={null}
             planTiers={[]}
             eventModules={[{ moduleKey: 'co_hosts', isAvailable: true } as never]}
-            hosts={[]}
+            hosts={hosts}
             isPrimaryHost
         />,
     );
@@ -126,5 +125,14 @@ describe('Make co-host action', () => {
         fireEvent.click(within(row('Guest')).getByRole('button', { name: 'moreFor' }));
         await screen.findByRole('menuitem', { name: 'report' });
         expect(screen.queryByRole('menuitem', { name: 'promote' })).toBeNull();
+    });
+});
+
+describe('Members list', () => {
+    it('leaves out members who are hosts', () => {
+        renderPanel([member('m1', 'Me'), member('m2', 'Other')], [{ id: 'h1', memberId: 'm1', displayOrder: 0 } as EventHostResponseDto]);
+
+        expect(screen.queryByText('Me')).toBeNull();
+        expect(screen.getByText('Other')).toBeTruthy();
     });
 });
