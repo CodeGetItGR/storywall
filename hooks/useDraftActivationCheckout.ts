@@ -21,7 +21,10 @@ const ACTIVATION_QUOTE = { kind: 'ACTIVATION' } as const;
  * the "come back later and pay" and "returned from a cancelled Stripe
  * session" entry points. Mirrors the wizard's own checkout call.
  */
-export function useDraftActivationCheckout(eventId: string, { quoteEnabled, startAt }: { quoteEnabled: boolean; startAt: string | null }) {
+export function useDraftActivationCheckout(
+    eventId: string,
+    { quoteEnabled, startAt, returnTo }: { quoteEnabled: boolean; startAt: string | null; returnTo?: string },
+) {
     const checkout = useCheckout(eventId);
     const queryClient = useQueryClient();
     const consent = useWithdrawalConsent();
@@ -58,7 +61,8 @@ export function useDraftActivationCheckout(eventId: string, { quoteEnabled, star
                 termsVersion: consent.termsVersion,
             });
             trackFlow({ name: 'Checkout Open', from: 'draft' });
-            navigateToCheckout(eventId, response);
+            // Paying brings the host back to returnTo when one is given (Publish's add-on step).
+            navigateToCheckout(eventId, response, undefined, returnTo);
         } catch (checkoutError) {
             trackFlow({ name: 'Checkout Error', from: 'draft', code: flowErrorCode(checkoutError) });
             if (consent.handleCheckoutError(checkoutError)) return;
@@ -74,7 +78,7 @@ export function useDraftActivationCheckout(eventId: string, { quoteEnabled, star
                 startAt,
             });
         }
-    }, [checkout, collaborationCode, consent, eventId, partnerBranding, queryClient, startAt, toErrorMessage]);
+    }, [checkout, collaborationCode, consent, eventId, partnerBranding, queryClient, returnTo, startAt, toErrorMessage]);
 
     const currentFailure = failure && failure.startAt === startAt ? failure : null;
     // The quote answers 3035 too, so a passed date shows before the host tries to pay.

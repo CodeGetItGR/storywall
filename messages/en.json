@@ -10444,6 +10444,7 @@
         "open": "Open",
         "planMissingTitle": "Your plan doesn't include the invitation.",
         "planEndedTitle": "Your event's plan has ended.",
+        "addOnTitle": "Add the invitation to your plan",
         "seePlan": "See plan",
         "notNow": "Not now",
         "signInTitle": "Sign in to publish",

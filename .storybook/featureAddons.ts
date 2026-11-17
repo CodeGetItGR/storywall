@@ -1,4 +1,5 @@
 import type { FeatureAddons } from '@/hooks/useFeatureAddons';
+import type { InvitationAddonCheckout } from '@/hooks/useInvitationAddonStep';
 import type { PaidServiceResponseDto } from '@/lib/api/types';
 
 // Feature add-ons (KAN-82) as the Add-ons page's section sees them, for stories and component tests.
@@ -88,4 +89,30 @@ export function storyFeatureAddonsReady(overrides: Partial<FeatureAddons> = {}):
         canPay: true,
         ...overrides,
     });
+}
+
+// Publish's add-on step (KAN-82) on a live event: Save my date included, RSVP not yet ticked.
+export function storyAddonStepCheckout(overrides: Partial<InvitationAddonCheckout> = {}): InvitationAddonCheckout {
+    return {
+        step: {
+            mode: 'checkout',
+            saveMyDate: { service: storySaveMyDateAddon, added: false },
+            rsvp: { service: storyRsvpAddon, added: false },
+        },
+        rsvpTicked: false,
+        handleRsvpChange: noop,
+        totalMinor: storySaveMyDateAddon.priceAmountMinor,
+        currency: 'EUR',
+        consent: storyFeatureAddons().consent,
+        canSubmit: false,
+        isPending: false,
+        error: null,
+        submit: (event) => event.preventDefault(),
+        ...overrides,
+    };
+}
+
+// The same step with both boxes checked.
+export function storyAddonStepReady(overrides: Partial<InvitationAddonCheckout> = {}): InvitationAddonCheckout {
+    return storyAddonStepCheckout({ consent: storyFeatureAddonsReady().consent, canSubmit: true, ...overrides });
 }
