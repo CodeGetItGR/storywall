@@ -1,22 +1,25 @@
+import { Package } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 
-import Section from '@/components/manage/Section';
 import { AppLink } from '@/components/ui/AppLink';
 import type { BillingData } from '@/hooks/useEventBillingPanel';
 import { formatMoney } from '@/lib/billing';
 import { routes } from '@/lib/routes';
 
-/** The add-ons this event owns, next to the one way to change them. */
+/** The add-ons this event owns, then the one way to change them. */
 export function BillingAddonsSection({
     eventId,
     addons,
     currency,
     canManage,
+    hasFeatureAddons = false,
 }: {
     eventId: string;
     addons: BillingData['addons'];
     currency: string;
     canManage: boolean;
+    // Feature add-ons on offer: the link is about more than storage (KAN-82).
+    hasFeatureAddons?: boolean;
 }) {
     const t = useTranslations('EventPlanSettingsPage.addons');
     const locale = useLocale();
@@ -24,41 +27,48 @@ export function BillingAddonsSection({
     if (addons.length === 0 && !canManage) return null;
 
     return (
-        <Section
-            title={t('manageTitle')}
-            divider
-            action={
-                canManage && (
-                    <AppLink
-                        href={routes.events.settingsAddons(eventId)}
-                        className="inline-flex min-h-10 shrink-0 items-center justify-center rounded-full bg-surface-muted px-4 text-xs font-semibold text-ink"
-                    >
-                        {t(addons.length > 0 ? 'manageAction' : 'addStorage')}
-                    </AppLink>
-                )
-            }
-        >
+        <section aria-labelledby="billing-addons-title" className="flex flex-col gap-2.5">
+            {/* Heading */}
+            <h2 id="billing-addons-title" className="text-base font-bold text-ink">
+                {t('manageTitle')}
+            </h2>
+
             {/* Owned add-ons */}
             {addons.length > 0 ? (
-                <ul className="flex flex-wrap gap-2">
+                <ul className="flex flex-col gap-2">
                     {addons.map((addon, index) => (
                         <li
                             key={`${addon.code}-${addon.activatedAt}-${index}`}
-                            className="rounded-full bg-surface-muted px-2.5 py-1 text-xs font-semibold text-ink"
+                            className="flex items-center gap-3 rounded-[16px] bg-surface-muted px-3.5 py-3 text-sm font-semibold text-ink"
                         >
+                            <Package className="h-[19px] w-[19px] shrink-0 text-primary-dark" aria-hidden="true" />
                             {/* On a gift event, an add-on another host paid has no price */}
-                            {addon.priceAmountMinor === null
-                                ? t('itemGift', { name: addon.name })
-                                : t(addon.billingPeriod === 'ONE_TIME' ? 'itemOnce' : 'item', {
-                                      name: addon.name,
-                                      price: formatMoney(locale, addon.priceAmountMinor, currency),
-                                  })}
+                            <span className="min-w-0 flex-1">
+                                {addon.priceAmountMinor === null
+                                    ? t('itemGift', { name: addon.name })
+                                    : t(addon.billingPeriod === 'ONE_TIME' ? 'itemOnce' : 'item', {
+                                          name: addon.name,
+                                          price: formatMoney(locale, addon.priceAmountMinor, currency),
+                                      })}
+                            </span>
                         </li>
                     ))}
                 </ul>
             ) : (
                 <p className="text-sm text-ink-muted">{t('empty')}</p>
             )}
-        </Section>
+
+            {/* Action */}
+            {canManage && (
+                <div className="flex">
+                    <AppLink
+                        href={routes.events.settingsAddons(eventId)}
+                        className="inline-flex min-h-11 items-center justify-center rounded-full bg-white px-[18px] text-sm font-bold whitespace-nowrap text-primary-dark shadow-[inset_0_0_0_1.5px_#f2c2b2]"
+                    >
+                        {t(addons.length > 0 || hasFeatureAddons ? 'manageAction' : 'addStorage')}
+                    </AppLink>
+                </div>
+            )}
+        </section>
     );
 }

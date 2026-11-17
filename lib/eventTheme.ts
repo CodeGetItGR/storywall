@@ -84,3 +84,8 @@ export function canPickTheme(
     if (isEventDeleted(event) || event.suspended || isEventEnded(event, now)) return false;
     return event.modules?.some((module) => module.moduleKey === 'theme' && module.isEnabled) ?? false;
 }
+
+// The event title the theme cards preview, or undefined when it is blank (the cards then show just the theme name).
+export function themePreviewTitle(title: string | null | undefined): string | undefined {
+    return title?.trim() || undefined;
+}

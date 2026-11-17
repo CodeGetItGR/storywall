@@ -12,6 +12,7 @@ import { useWithdrawalConsent } from '@/hooks/useWithdrawalConsent';
 import { ERROR_CODES, getErrorCode } from '@/lib/api/errors';
 import type { CollaborationCodePreviewResponseDto } from '@/lib/api/types';
 import { navigateToCheckout } from '@/lib/billing';
+import { flowErrorCode, trackFlow } from '@/lib/flowTracking';
 
 const ACTIVATION_QUOTE = { kind: 'ACTIVATION' } as const;
 
@@ -56,8 +57,10 @@ export function useDraftActivationCheckout(eventId: string, { quoteEnabled, star
                 acknowledgesWithdrawalTerms: consent.acknowledgesWithdrawalTerms,
                 termsVersion: consent.termsVersion,
             });
+            trackFlow({ name: 'Checkout Open', from: 'draft' });
             navigateToCheckout(eventId, response);
         } catch (checkoutError) {
+            trackFlow({ name: 'Checkout Error', from: 'draft', code: flowErrorCode(checkoutError) });
             if (consent.handleCheckoutError(checkoutError)) return;
             // The draft's duration was retired: reload the plans and the draft so
             // the overview asks for another one.

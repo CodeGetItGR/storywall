@@ -65,8 +65,8 @@ describe('themeSaveMode', () => {
 describe('themeContentRequest', () => {
     it('sends the loaded details back with the edited content and revision', () => {
         const document = previewDocument();
-        const request = themeContentRequest(theme(), { design: PREVIEW_THEME, document }, 7);
-        expect(request).toMatchObject({ name: 'Garden', slug: 'garden', code: 'W001', ogImageAssetId: 'og', revision: 7 });
+        const request = themeContentRequest(theme(), { design: PREVIEW_THEME, document, shareImageId: 'og-2' }, 7);
+        expect(request).toMatchObject({ name: 'Garden', slug: 'garden', code: 'W001', ogImageAssetId: 'og-2', revision: 7 });
         // No sort order, so a move in the list since it loaded stays.
         expect(request).not.toHaveProperty('sortOrder');
         expect(request.design).toBe(PREVIEW_THEME);
@@ -97,7 +97,13 @@ describe('applyTypographyPreset', () => {
     });
 
     it('keeps the pairing button font when it has one', () => {
-        const next = produce(PREVIEW_THEME, (draft) => applyTypographyPreset(draft, produce(previewDocument(), () => {}), { ...PRESET, buttonFont: 'Lato' }));
+        const next = produce(PREVIEW_THEME, (draft) =>
+            applyTypographyPreset(
+                draft,
+                produce(previewDocument(), () => {}),
+                { ...PRESET, buttonFont: 'Lato' },
+            ),
+        );
         expect(next.fonts.button).toBe('Lato');
     });
 });

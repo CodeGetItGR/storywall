@@ -9,6 +9,7 @@ import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest
 import { storyEvent, storyModules } from '@/.storybook/fixtures';
 import { WithAuth } from '@/hooks/testAuthContext';
 import { useEventOnlineInvitation } from '@/hooks/useEventOnlineInvitation';
+import type { PaidServiceResponseDto } from '@/lib/api/types';
 import type { InvitationDraftSummaryDto } from '@/lib/invitation/drafts';
 import type { InvitationPublicationDto } from '@/lib/invitation/publication';
 import { takeStartIntent } from '@/lib/invitation/startIntent';
@@ -44,7 +45,7 @@ const publication = (state: Partial<InvitationPublicationDto> = {}): InvitationP
 
 const server = setupServer();
 
-function renderInvitation(target = event) {
+function renderInvitation(target = event, addOn: PaidServiceResponseDto | null = null) {
     const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
     const wrapper = ({ children }: { children: ReactNode }) => (
         <NextIntlClientProvider locale="en" messages={en}>
@@ -53,7 +54,7 @@ function renderInvitation(target = event) {
             </QueryClientProvider>
         </NextIntlClientProvider>
     );
-    return renderHook(() => useEventOnlineInvitation(target, { enabled: true }), { wrapper });
+    return renderHook(() => useEventOnlineInvitation(target, { enabled: true, addOn }), { wrapper });
 }
 
 describe('useEventOnlineInvitation', () => {
@@ -121,6 +122,19 @@ describe('useEventOnlineInvitation', () => {
         const published = renderInvitation(planless);
         await waitFor(() => expect(published.result.current.status).toBe('offline'));
         expect(published.result.current).toMatchObject({ planMissing: true, locked: false });
+    });
+
+    it('offers the invitation add-on sold on the plan, opening the Add-ons page with it ticked', async () => {
+        server.use(http.get(`${API}/api/invitation-drafts`, () => HttpResponse.json([])));
+        const addOn = { code: 'SAVE_MY_DATE', priceAmountMinor: 2900, priceCurrency: 'EUR' } as PaidServiceResponseDto;
+        const { result } = renderInvitation(storyEvent({ id: 'evt-1' }), addOn);
+
+        await waitFor(() => expect(result.current.isLoading).toBe(false));
+        expect(result.current).toMatchObject({
+            locked: true,
+            addOnHref: '/events/evt-1/settings/addons?add=SAVE_MY_DATE',
+            addOnPrice: '€29.00',
+        });
     });
 
     it('is not locked when the plan includes the invitation', async () => {

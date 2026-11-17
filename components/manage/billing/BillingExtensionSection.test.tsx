@@ -1,4 +1,4 @@
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { NextIntlClientProvider } from 'next-intl';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -51,15 +51,33 @@ beforeEach(() => {
 });
 
 describe('BillingExtensionSection', () => {
-    it('lists each option with its length, price and estimated end, linking to the checkout review', () => {
+    it('shows the length as a picked tile, its estimated end, and one button to the checkout review', () => {
         renderSection();
 
         expect(screen.getByText('Extend coverage')).toBeInTheDocument();
-        expect(screen.getByText('+3 months')).toBeInTheDocument();
+        expect(screen.getByRole('radio', { name: /\+3 months/ })).toHaveAttribute('aria-checked', 'true');
         expect(screen.getByText(/New end date: .*2099.*\(estimate\)/)).toBeInTheDocument();
         const link = screen.getByRole('link', { name: 'Extend coverage by 3 months, €15.00' });
         expect(link).toHaveAttribute('href', '/events/event-1/checkout/review?intent=extension&option=ext-3');
         expect(mocks.useExtensionOptions).toHaveBeenCalledWith('event-1', true);
+    });
+
+    it('picks the shortest length first and moves the estimate and the button to another pick', () => {
+        const six = { ...option, coverageOptionId: 'ext-6', months: 6, amountMinor: 2500, resultingCoverageEndsAt: '2099-07-01T00:00:00Z' };
+        mocks.useExtensionOptions.mockReturnValue(optionsResult([six, option]));
+        renderSection();
+
+        expect(screen.getAllByRole('link')).toHaveLength(1);
+        expect(screen.getByRole('radio', { name: /\+3 months/ })).toHaveAttribute('aria-checked', 'true');
+
+        fireEvent.click(screen.getByRole('radio', { name: /\+6 months/ }));
+
+        expect(screen.getByRole('radio', { name: /\+6 months/ })).toHaveAttribute('aria-checked', 'true');
+        expect(screen.getByText(/New end date: .*Jul.*2099/)).toBeInTheDocument();
+        expect(screen.getByRole('link', { name: 'Extend coverage by 6 months, €25.00' })).toHaveAttribute(
+            'href',
+            '/events/event-1/checkout/review?intent=extension&option=ext-6',
+        );
     });
 
     it.each([
