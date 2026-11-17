@@ -1815,7 +1815,6 @@
             "members": "Members",
             "limits": "Limits",
             "flags": "Flags",
-            "moduleChanges": "New modules",
             "removedModules": "No longer included",
             "moduleCount": "{count} modules",
             "noModuleChanges": "No new modules on this tier. The upgrade mainly increases limits.",
@@ -1857,13 +1856,6 @@
             "coverageRange": "{from} to {until}",
             "coverageThrough": "Covers through {date}",
             "empty": "No orders yet. Activation will appear here after checkout starts.",
-            "columns": {
-                "kind": "Type",
-                "status": "Status",
-                "coverage": "Coverage",
-                "date": "Date",
-                "amount": "Amount"
-            },
             "kind": {
                 "ACTIVATION": "Activation",
                 "RENEWAL": "Renewal",

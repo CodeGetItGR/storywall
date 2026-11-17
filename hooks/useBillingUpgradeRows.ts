@@ -20,22 +20,23 @@ export type BillingUpgradeRow = {
     // How much later coverage ends with the picked duration; 0 for none.
     monthsAdded: number;
     href: string;
+    // What the host pays now, as "{amount} now".
     priceLabel: string;
     buttonLabel: string;
     // Full upgrade name, duration and price, for screen readers: the visible label drops them.
     buttonAriaLabel: string;
     listPriceLabel: string | null;
     discountLabel: string | null;
+    // The new limits and how many features the target adds, as the card's check lines.
     chips: string[];
-    addedModuleKeys: string[];
+    // Features the current plan has that the target drops, listed in red.
     removedModuleKeys: string[];
 };
 
 /**
  * One compact, fully labelled row per upgrade target, priced at the duration
  * picked on it (the shortest until one is). Chips show the new limits and how
- * many features the target adds; the module lists stay available for the row's
- * "What changes" disclosure.
+ * many features the target adds; features the target drops are listed apart.
  */
 export function useBillingUpgradeRows({
     eventId,
@@ -63,7 +64,7 @@ export function useBillingUpgradeRows({
             if (!duration) return [];
 
             const diff = currentPlan && plan ? buildPlanUpgradeDiff(currentPlan, plan) : null;
-            const priceLabel = formatMoney(locale, duration.payableAmountMinor, entry.currency);
+            const amount = formatMoney(locale, duration.payableAmountMinor, entry.currency);
 
             const chips = (diff?.limitChanges ?? []).map((change) => {
                 // No difference against an unlimited side: there is nothing to subtract.
@@ -87,18 +88,17 @@ export function useBillingUpgradeRows({
                     durationId: duration.coverageOptionId,
                     monthsAdded: duration.monthsAdded,
                     href: routes.events.checkoutReview(eventId, 'upgrade', { code: entry.planTierCode, option: duration.coverageOptionId }),
-                    priceLabel,
+                    priceLabel: t('compare.upgradeDueNow', { amount }),
                     buttonLabel: t('upgrade.cta'),
                     buttonAriaLabel: t('upgrade.buttonAria', {
                         plan: entry.planTierName,
                         duration: tDurations('months', { count: duration.months }),
-                        amount: priceLabel,
+                        amount,
                     }),
                     listPriceLabel:
                         duration.gapAmountMinor !== duration.payableAmountMinor ? formatMoney(locale, duration.gapAmountMinor, entry.currency) : null,
                     discountLabel: entry.discountLabel ?? null,
                     chips,
-                    addedModuleKeys: diff?.addedModuleKeys ?? [],
                     removedModuleKeys: diff?.removedModuleKeys ?? [],
                 },
             ];

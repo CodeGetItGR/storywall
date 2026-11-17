@@ -1,47 +1,56 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 import { expect, within } from 'storybook/test';
 
+import { withAppContext } from '@/.storybook/appContext';
 import { copyFor } from '@/.storybook/copy';
+import { storyHostMember } from '@/.storybook/fixtures';
 import { BillingAddonsSection } from '@/components/manage/billing/BillingAddonsSection';
 
-// The billing tab's add-ons row and its link to the Add-ons page.
 const meta = {
     title: 'Manage/Billing/BillingAddonsSection',
     component: BillingAddonsSection,
     decorators: [
         (Story) => (
-            <div className="max-w-3xl bg-white p-5">
+            <div className="max-w-[390px] p-4">
                 <Story />
             </div>
         ),
+        withAppContext,
     ],
-    args: { eventId: 'evt-story', addons: [], currency: 'EUR', canManage: true },
+    parameters: { app: { member: storyHostMember } },
+    args: {
+        eventId: 'evt-billing',
+        currency: 'EUR',
+        canManage: true,
+        addons: [{ code: 'STORAGE_20GB', name: 'Extra 20 GB', priceAmountMinor: 1500, billingPeriod: 'ONE_TIME', activatedAt: '2026-10-02T10:00:00Z' }],
+    },
 } satisfies Meta<typeof BillingAddonsSection>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-// Only storage is on offer.
-export const StorageOnly: Story = {
-    play: async ({ canvasElement, globals }) => {
-        const copy = copyFor(globals);
-        await expect(within(canvasElement).getByRole('link', { name: copy.EventPlanSettingsPage.addons.addStorage })).toBeVisible();
-    },
-};
-
-// Feature add-ons are on offer too (KAN-82).
-export const WithFeatureAddons: Story = {
-    args: { hasFeatureAddons: true },
-    play: async ({ canvasElement, globals }) => {
-        const copy = copyFor(globals);
-        await expect(within(canvasElement).getByRole('link', { name: copy.EventPlanSettingsPage.addons.manageAction })).toBeVisible();
-    },
-};
-
-// An add-on already bought.
+// One owned add-on and the Manage add-ons button.
 export const Owned: Story = {
-    args: {
-        hasFeatureAddons: true,
-        addons: [{ code: 'RSVP', name: 'RSVP', priceAmountMinor: 900, billingPeriod: 'ONE_TIME', activatedAt: '2026-06-10T10:00:00Z' }],
+    play: async ({ canvasElement, globals }) => {
+        const canvas = within(canvasElement);
+        await expect(canvas.getByRole('link', { name: copyFor(globals).EventPlanSettingsPage.addons.manageAction })).toBeVisible();
+    },
+};
+
+// Nothing bought yet, only storage on offer: the line and Add storage.
+export const Empty: Story = {
+    args: { addons: [] },
+    play: async ({ canvasElement, globals }) => {
+        const canvas = within(canvasElement);
+        await expect(canvas.getByRole('link', { name: copyFor(globals).EventPlanSettingsPage.addons.addStorage })).toBeVisible();
+    },
+};
+
+// Nothing bought yet, feature add-ons on offer too (KAN-82): Manage add-ons.
+export const WithFeatureAddons: Story = {
+    args: { addons: [], hasFeatureAddons: true },
+    play: async ({ canvasElement, globals }) => {
+        const canvas = within(canvasElement);
+        await expect(canvas.getByRole('link', { name: copyFor(globals).EventPlanSettingsPage.addons.manageAction })).toBeVisible();
     },
 };
