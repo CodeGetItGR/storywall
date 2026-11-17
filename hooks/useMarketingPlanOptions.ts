@@ -1,9 +1,12 @@
 'use client';
 
+import { useLocale } from 'next-intl';
 import { useMemo } from 'react';
 
 import { useMemberRoleCatalog } from '@/hooks/useAppConfig';
+import { useCampaignPriceClock } from '@/hooks/useCampaignPriceClock';
 import { usePlanMarketingCopy } from '@/hooks/usePlanMarketingCopy';
+import type { Locale } from '@/i18n/config';
 import type { AppMediaConfigDto, PlanTierResponseDto, PlatformModuleResponseDto } from '@/lib/api/types';
 import { buildLandingRow, type LandingPlan } from '@/lib/landingPricing';
 import { splitLitePlans } from '@/lib/planTiers';
@@ -25,7 +28,7 @@ const NONE: MarketingPlanOptions = { full: [], lite: [] };
 
 // The plans as picker cards: full and lite plans are separate rows, each rolling a card up into the previous one in it.
 export function useMarketingPlanOptions({
-    plans,
+    plans: allPlans,
     modules,
     media,
 }: {
@@ -35,6 +38,9 @@ export function useMarketingPlanOptions({
 }): MarketingPlanOptions {
     const { copy, moduleName } = usePlanMarketingCopy();
     const memberRoles = useMemberRoleCatalog();
+    const locale = useLocale() as Locale;
+    // Prices change when a campaign starts or ends, so the cards are rebuilt then.
+    const plans = useCampaignPriceClock(allPlans) ?? allPlans;
 
     return useMemo(() => {
         if (!media) return NONE;
@@ -43,12 +49,12 @@ export function useMarketingPlanOptions({
         // With no full plans, the lite ones are the whole picker.
         const hasFull = split.full.length > 0;
         const row = (rowPlans: PlanTierResponseDto[], featuredIndex: number | null): MarketingPlanOption[] =>
-            buildLandingRow(rowPlans, modules, media, moduleName, copy, memberRoles).map((entry, index) => ({
+            buildLandingRow(rowPlans, modules, media, moduleName, copy, locale, memberRoles).map((entry, index) => ({
                 ...entry,
                 featured: index === featuredIndex,
             }));
         const full = row(hasFull ? split.full : split.lite, 1);
         const lite = hasFull ? row(split.lite, null) : [];
         return { full, lite };
-    }, [copy, media, memberRoles, moduleName, modules, plans]);
+    }, [copy, locale, media, memberRoles, moduleName, modules, plans]);
 }

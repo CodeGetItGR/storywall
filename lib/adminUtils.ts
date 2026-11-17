@@ -1,3 +1,4 @@
+import { ApiError } from '@/lib/api/client';
 import { ERROR_CODES, getErrorCode } from '@/lib/api/errors';
 
 export type AdminErrorMessageKey =
@@ -27,6 +28,13 @@ export type AdminErrorMessageKey =
     | 'collaborationEarningNotPayable'
     | 'collaboratorPayoutDetailsIncomplete'
     | 'campaignLinkTaken'
+    | 'discountCampaignInvalid'
+    | 'discountCampaignOverlap'
+    | 'discountCampaignPriceTooLow'
+    | 'discountCampaignLinkNameTaken'
+    | 'campaignDiscountAdminOnly'
+    | 'campaignLinkMoveDiscount'
+    | 'campaignClosedForLinks'
     | 'collaboratorBrandingIncomplete'
     | 'methodNotAllowed'
     | 'coverageOptionInvalid'
@@ -71,6 +79,16 @@ export function checked(formData: FormData, key: string): boolean {
     return formData.has(key);
 }
 
+// 5207: a plan or duration change a live or scheduled discount campaign would make too cheap to
+// charge. The server names the campaign in the admin's language, so its text is shown as it is. Not in
+// ERROR_CODES, which needs a client message per code; this one only ever shows the server's.
+const DISCOUNT_CAMPAIGN_PLAN_PRICE_TOO_LOW = 5207;
+
+export function adminServerDetail(error: unknown): string | null {
+    if (getErrorCode(error) !== DISCOUNT_CAMPAIGN_PLAN_PRICE_TOO_LOW) return null;
+    return (error instanceof ApiError && error.problem?.detail) || null;
+}
+
 export function adminErrorMessageKey(error: unknown): AdminErrorMessageKey {
     const code = getErrorCode(error);
     if (code === ERROR_CODES.PLAN_TIER_IN_USE) return 'planInUse';
@@ -106,6 +124,16 @@ export function adminErrorMessageKey(error: unknown): AdminErrorMessageKey {
     // Mark-paid refused: a partner in the batch lacks business/payout details or a VIES-valid VAT number.
     if (code === ERROR_CODES.COLLABORATOR_PAYOUT_DETAILS_INCOMPLETE) return 'collaboratorPayoutDetailsIncomplete';
     if (code === ERROR_CODES.CAMPAIGN_LINK_TAKEN) return 'campaignLinkTaken';
+    if (code === ERROR_CODES.DISCOUNT_CAMPAIGN_INVALID) return 'discountCampaignInvalid';
+    if (code === ERROR_CODES.DISCOUNT_CAMPAIGN_OVERLAP) return 'discountCampaignOverlap';
+    if (code === ERROR_CODES.DISCOUNT_CAMPAIGN_PRICE_TOO_LOW) return 'discountCampaignPriceTooLow';
+    if (code === ERROR_CODES.DISCOUNT_CAMPAIGN_LINK_NAME_TAKEN) return 'discountCampaignLinkNameTaken';
+    // A campaign's own codes reuse the discount campaign wording, which says the same.
+    if (code === ERROR_CODES.CAMPAIGN_INVALID) return 'discountCampaignInvalid';
+    if (code === ERROR_CODES.CAMPAIGN_DISCOUNT_ADMIN_ONLY) return 'campaignDiscountAdminOnly';
+    if (code === ERROR_CODES.CAMPAIGN_LINK_MOVE_DISCOUNT) return 'campaignLinkMoveDiscount';
+    if (code === ERROR_CODES.CAMPAIGN_CLOSED_FOR_LINKS) return 'campaignClosedForLinks';
+    if (code === ERROR_CODES.CAMPAIGN_LINK_NAME_TAKEN) return 'discountCampaignLinkNameTaken';
     // Enabling, or clearing a field of an enabled partner, while the card would be incomplete.
     if (code === ERROR_CODES.COLLABORATOR_BRANDING_INCOMPLETE) return 'collaboratorBrandingIncomplete';
     if (code === ERROR_CODES.METHOD_NOT_ALLOWED) return 'methodNotAllowed';

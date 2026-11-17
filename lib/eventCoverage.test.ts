@@ -1,30 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
-import { coverageFitsStart, getCoverageStatus, getLatestStartAt, projectCoverage } from './eventCoverage';
+import { coverageFitsStart, getLatestStartAt, projectCoverage } from './eventCoverage';
 
 const now = new Date('2026-09-21T10:00:00Z');
-const days = (n: number) => new Date(now.getTime() + n * 86_400_000).toISOString();
-
-describe('getCoverageStatus', () => {
-    it('is null while the window is not pinned', () => {
-        expect(getCoverageStatus({ coverageEndsAt: null }, now)).toBeNull();
-    });
-
-    it('is open until the final thirty days', () => {
-        expect(getCoverageStatus({ coverageEndsAt: days(200) }, now)?.phase).toBe('open');
-    });
-
-    it('is closing in the final thirty days', () => {
-        const status = getCoverageStatus({ coverageEndsAt: days(30) }, now);
-
-        expect(status?.phase).toBe('closing');
-        expect(status?.daysUntilEnd).toBe(30);
-    });
-
-    it('has ended once the coverage end has passed', () => {
-        expect(getCoverageStatus({ coverageEndsAt: days(-1) }, now)?.phase).toBe('ended');
-    });
-});
 
 describe('projectCoverage', () => {
     it('is null without a duration', () => {

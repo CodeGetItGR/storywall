@@ -7,7 +7,7 @@ type RouteQueryValue = string | number | boolean | null | undefined;
 export type CheckoutIntent = 'upgrade' | 'storage' | 'extension';
 // 'billing' is kept as an alias for the plan section so existing links keep working.
 export type ManageTab =
-    'billing' | 'coverage' | 'danger' | 'gift' | 'help' | 'members' | 'orders' | 'overview' | 'plan' | 'rsvp' | 'settings' | 'theme';
+    'billing' | 'coverage' | 'danger' | 'gift' | 'invitation' | 'members' | 'orders' | 'overview' | 'plan' | 'rsvp' | 'settings' | 'theme';
 
 // The demo event lives outside the real /events/{eventId} tree (which proxy.ts protects
 // behind a real session) — see docs/superpowers/plans/2026-09-05-demo-event.md, design note 1.
@@ -43,6 +43,12 @@ export const routes = {
     demoUpload: (eventTypeSlug: string) => `/demo/${eventTypeSlug}/upload`,
     demoGallery: (eventTypeSlug: string) => `/demo/${eventTypeSlug}/tools/gallery`,
     invite: '/invite',
+    // The Save my date editor: a draft, or a new draft from a theme.
+    saveMyDateEditor: (draftId: string) => `/save-my-date/editor/${draftId}`,
+    // The editor, going on to publish as soon as it opens (back from signing in or paying).
+    saveMyDateEditorPublish: (draftId: string) => withQuery(`/save-my-date/editor/${draftId}`, { publish: 1 }),
+    saveMyDateEditorStart: (themeSlug: string) => withQuery('/save-my-date/editor', { theme: themeSlug }),
+    saveMyDatePreview: (themeSlug: string) => withQuery('/save-my-date/preview', { theme: themeSlug }),
     home: '/home',
     profile: '/profile',
     // The vendor's page across their events (spec 2026-11-01). /partner redirects here.
@@ -82,7 +88,6 @@ export const routes = {
             rsvpSubmit: (eventId: string, attending?: 'attending' | 'not-attending' | null) =>
                 withQuery(`${eventBasePath(eventId)}/tools/rsvp/submit`, { attending }),
             gallery: (eventId: string) => `${eventBasePath(eventId)}/tools/gallery`,
-            galleryQr: (eventId: string) => `${eventBasePath(eventId)}/tools/gallery/qr`,
             playlist: (eventId: string) => `${eventBasePath(eventId)}/tools/playlist`,
             quiz: (eventId: string) => `${eventBasePath(eventId)}/tools/quiz`,
             heOrShe: (eventId: string) => `${eventBasePath(eventId)}/tools/he-or-she`,
@@ -108,6 +113,15 @@ export const routes = {
         checkoutCancelled: (eventId: string) => `${eventBasePath(eventId)}/checkout/cancelled`,
     },
     admin: '/admin',
+    // Admin only, and only where Save my date shows (lib/saveMyDateRelease.ts).
+    saveMyDateAdmin: {
+        root: '/admin/save-my-date',
+        themes: '/admin/save-my-date/themes',
+        themeEditor: (themeId: string) => `/admin/save-my-date/themes/${themeId}/editor`,
+        fonts: '/admin/save-my-date/fonts',
+        fontPairings: '/admin/save-my-date/font-pairings',
+        texts: '/admin/save-my-date/texts',
+    },
     reportContent: '/report-content',
     notifications: '/notifications',
     // Public. No version: the current terms; a paid order links the version it acknowledged.
@@ -121,6 +135,8 @@ export const routes = {
     // Public.
     contact: '/contact',
     inviteToken: (token: string) => `/invite/${token}`,
+    // The page a scanned event code opens. choice opens one of its forms straight away.
+    qrCode: (token: string, params: { choice?: 'upload' } = {}) => withQuery(`/q/${token}`, params),
     // Public: where a gift card's QR leads.
     giftClaim: (token: string) => `/gift/${token}`,
     auth: {

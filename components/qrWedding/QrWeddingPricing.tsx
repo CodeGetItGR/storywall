@@ -9,7 +9,8 @@ import { routes } from '@/lib/routes';
 const TRUST_ITEM = "max-[761px]:before:hidden before:mx-3 before:content-['·'] first:before:hidden";
 
 // The wedding packages, every one with the QR code, and the payment reassurances under them.
-export async function QrWeddingPricing({ locale }: { locale: Locale }) {
+// soldAlone: a package with only the QR code is on sale.
+export async function QrWeddingPricing({ locale, soldAlone }: { locale: Locale; soldAlone: boolean }) {
     const t = await getTranslations({ locale, namespace: 'QrWeddingPage.pricing' });
 
     return (
@@ -27,10 +28,10 @@ export async function QrWeddingPricing({ locale }: { locale: Locale }) {
                     className="m-0 [font-family:var(--editorial)] text-[clamp(40.5px,4.275vw,70.5px)] leading-[.9] font-normal tracking-[-0.055em] max-[761px]:mt-6 max-[761px]:text-[clamp(44px,12vw,62px)]"
                     id="qr-wedding-pricing-title"
                 >
-                    {t('title')}
+                    {t(soldAlone ? 'title' : 'titleIncluded')}
                 </h2>
                 <p className="mx-auto mt-6.25 max-w-155 font-[Arial,sans-serif] text-base leading-[1.55] max-[761px]:mt-4.5 max-[761px]:text-sm">
-                    {t('body')}
+                    {t(soldAlone ? 'body' : 'bodyIncluded')}
                 </p>
             </div>
 

@@ -10,17 +10,22 @@ import type { ProvisionEventForm } from '@/hooks/useProvisionEventForm';
 import type { ProvisionHost } from '@/lib/adminAccountProvisioning';
 import type { EventTypeConvention } from '@/lib/api/types';
 import { formatDate } from '@/lib/datetime';
+import { maskIban } from '@/lib/giftAccount';
 
 export function ProvisionEventReview({ form, host }: { form: ProvisionEventForm; host: ProvisionHost }) {
     const t = useTranslations('AdminPage.accounts.provision');
     const tAdmin = useTranslations('AdminPage');
+    const tSettings = useTranslations('ManagePage.settings.fields');
     const locale = useLocale();
     const localizedText = useLocalizedText();
     const fieldLabels = useCreateEventFieldLabels(form.selectedEventType as EventTypeConvention);
     const eventType = form.eventTypes.find((item) => item.eventTypeKey === form.selectedEventType);
     const hostName = [host.firstName, host.lastName].filter(Boolean).join(' ') || host.email || t('unnamedHost');
 
+    const subtitle = form.subtitle.trim();
     const description = form.description.trim();
+    const scheduleTitles = form.planHasSchedule ? form.schedule.items.map((item) => item.title.trim()) : [];
+    const gift = form.planHasGiftAccount ? form.giftAccount.toRequest() : undefined;
     const rsvpDeadline = form.planHasRsvp ? form.rsvpDeadline : '';
     const theme = form.selectedThemePreset;
 
@@ -28,9 +33,13 @@ export function ProvisionEventReview({ form, host }: { form: ProvisionEventForm;
     const rows: [string, string][] = [
         [t('reviewHost'), hostName],
         [fieldLabels.title, form.title.trim()],
+        ...(subtitle ? [[tSettings('subtitle'), subtitle] as [string, string]] : []),
         ...(description ? [[t('reviewDescription'), description] as [string, string]] : []),
         [t('reviewType'), eventType ? localizedText(eventType.name, eventType.eventTypeKey) : form.selectedEventType],
         [fieldLabels.startAt, formatDate(locale, form.startAt, { dateStyle: 'medium', timeStyle: 'short' })],
+        ...(form.endAt
+            ? [[tSettings('endAt'), formatDate(locale, form.endAt, { dateStyle: 'medium', timeStyle: 'short' })] as [string, string]]
+            : []),
         ...(rsvpDeadline
             ? [[t('reviewRsvpDeadline'), formatDate(locale, rsvpDeadline, { dateStyle: 'medium', timeStyle: 'short' })] as [string, string]]
             : []),
@@ -38,6 +47,8 @@ export function ProvisionEventReview({ form, host }: { form: ProvisionEventForm;
         [t('reviewDuration'), form.duration.selectedOption ? tAdmin('plans.columns.months', { count: form.duration.selectedOption.months }) : ''],
         ...(theme ? [[t('reviewTheme'), localizedText(theme.name, theme.key)] as [string, string]] : []),
         [t('reviewVisibility'), t(`visibilityOption.${form.visibility}`)],
+        ...(scheduleTitles.length > 0 ? [[t('scheduleSection'), scheduleTitles.join('\n')] as [string, string]] : []),
+        ...(gift ? [[t('giftSection'), `${maskIban(gift.iban)}\n${gift.accountHolder}`] as [string, string]] : []),
         // Vendors settings changed from the plan's.
         ...form.vendorSettings.changes.map((change) => [change.label, change.value] as [string, string]),
     ];

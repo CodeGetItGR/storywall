@@ -1,11 +1,14 @@
 'use client';
 
+import { useLocale } from 'next-intl';
 import { useMemo } from 'react';
 
 import { useAppConfig } from '@/hooks/useAppConfig';
+import { useCampaignPriceClock } from '@/hooks/useCampaignPriceClock';
 import { useLocalizedAppEventTypeCopy } from '@/hooks/useLocalizedAppEventTypeCopy';
 import { useLocalizedText } from '@/hooks/useLocalizedText';
 import { usePlanMarketingCopy } from '@/hooks/usePlanMarketingCopy';
+import type { Locale } from '@/i18n/config';
 import type { EventTypeConvention } from '@/lib/api/types';
 import { eventTypeSlug } from '@/lib/eventTypeSlug';
 import { resolveLandingCategoryPlans } from '@/lib/landingCategories';
@@ -36,9 +39,12 @@ export function useLandingPricingPlans(): LandingPricingPlans {
     const { copy, moduleName } = usePlanMarketingCopy();
     const localizedText = useLocalizedText();
     const eventTypeCopy = useLocalizedAppEventTypeCopy();
+    const locale = useLocale() as Locale;
+    // Prices change when a campaign starts or ends, so the plans are rebuilt then.
+    const planTiers = useCampaignPriceClock(data?.planTiers);
 
     return useMemo(() => {
-        if (!data) return { groups: null, defaultEventTypeId: null };
+        if (!data || !planTiers) return { groups: null, defaultEventTypeId: null };
 
         const seen = new Set<EventTypeConvention>();
         const groups = (data.landingCategories ?? [])
@@ -47,13 +53,13 @@ export function useLandingPricingPlans(): LandingPricingPlans {
                     if (seen.has(eventTypeKey)) return [];
                     seen.add(eventTypeKey);
                     // Only plans that get a card come back (see isLandingPlanOnSale).
-                    const { plans } = resolveLandingCategoryPlans(data.planTiers, [eventTypeKey], data.memberRolesByEventType);
+                    const { plans } = resolveLandingCategoryPlans(planTiers, [eventTypeKey], data.memberRolesByEventType);
                     // Each row rolls a card up into the previous one in it ("Everything in X"). A type with
                     // only lite plans shows them as its plans, with no teaser.
                     const split = splitLitePlans(plans);
                     const hasFull = split.full.length > 0;
                     const row = (rowPlans: typeof plans) =>
-                        buildLandingRow(rowPlans, data.modules, data.media, moduleName, copy, data.memberRolesByEventType).map(
+                        buildLandingRow(rowPlans, data.modules, data.media, moduleName, copy, locale, data.memberRolesByEventType).map(
                             (entry) => entry.presentation,
                         );
                     const landingPlans = row(hasFull ? split.full : split.lite);
@@ -76,5 +82,5 @@ export function useLandingPricingPlans(): LandingPricingPlans {
 
         const defaultEventTypeId = (groups.find((group) => group.isDefault) ?? groups[0])?.items[0]?.id ?? null;
         return { groups: groups.map(({ isDefault: _isDefault, ...group }) => group), defaultEventTypeId };
-    }, [data, copy, moduleName, localizedText, eventTypeCopy]);
+    }, [data, copy, moduleName, localizedText, eventTypeCopy, locale, planTiers]);
 }

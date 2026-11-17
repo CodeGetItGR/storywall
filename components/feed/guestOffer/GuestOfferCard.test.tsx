@@ -1,5 +1,4 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
-import type { ReactNode } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { GuestOfferDto } from '@/lib/api/types';
@@ -11,20 +10,18 @@ const close = vi.fn();
 const copyCode = vi.fn();
 const markDiscovered = vi.fn();
 let offer: GuestOfferDto | null = null;
+let campaign: { id: string; percent: number; startsAt: string; endsAt: string } | null = null;
 
-vi.mock('next-intl', () => {
-    const t = (key: string) => key;
-    t.rich = (key: string, values: Record<string, unknown>) => {
-        const pct = values.pct as (chunks: ReactNode) => ReactNode;
-        return (
-            <>
-                {key} {pct(`${values.percent as number}%`)}
-            </>
-        );
-    };
-    return { useTranslations: () => t, useLocale: () => 'en' };
-});
+vi.mock('next-intl', () => ({
+    useTranslations: () => (key: string, values?: { percent?: string }) => (values?.percent ? `${key}:${values.percent}` : key),
+    useLocale: () => 'en',
+}));
+vi.mock('@/components/ui/AppLink', () => ({
+    AppLink: ({ href, ...props }: { href: string } & React.AnchorHTMLAttributes<HTMLAnchorElement>) => <a href={href} {...props} />,
+}));
 vi.mock('@/components/common/Logo', () => ({ Logo: () => <span>StoryWall</span> }));
+vi.mock('@/hooks/useLiveDiscountCampaign', () => ({ useLiveDiscountCampaign: () => campaign }));
+vi.mock('@/components/siteNotices/CampaignCountdown', () => ({ CampaignCountdown: () => <span>countdown</span> }));
 vi.mock('@/hooks/useGuestOffer', () => ({
     useGuestOffer: () => ({
         offer,
@@ -42,10 +39,55 @@ vi.mock('@/hooks/useGuestOffer', () => ({
 describe('GuestOfferCard', () => {
     beforeEach(() => {
         offer = null;
+        campaign = null;
+        window.localStorage.clear();
+        window.sessionStorage.clear();
         vi.clearAllMocks();
     });
 
     afterEach(cleanup);
+
+    const live = { id: 'c1', percent: 20, startsAt: '2026-11-01T00:00:00Z', endsAt: '2026-11-08T00:00:00Z' };
+
+    it('replaces the claim with the campaign and a link to create an event', () => {
+        offer = { discountPercent: 15, code: null, endsAt: null };
+        campaign = live;
+        render(<GuestOfferCard eventId="e1" isHost={false} />);
+
+        expect(screen.queryByRole('button', { name: /claim/ })).not.toBeInTheDocument();
+        expect(screen.getByText('countdown')).toBeInTheDocument();
+        expect(screen.getByText('percentOff:20')).toBeInTheDocument();
+        expect(screen.queryByText('percentOff:15')).not.toBeInTheDocument();
+        expect(screen.getByRole('link', { name: 'getStarted' })).toHaveAttribute('href', '/events/new');
+    });
+
+    it('counts a tap on the create link', () => {
+        offer = { discountPercent: 15, code: null, endsAt: null };
+        campaign = live;
+        render(<GuestOfferCard eventId="e1" isHost={false} />);
+
+        fireEvent.click(screen.getByRole('link', { name: 'getStarted' }));
+
+        expect(markDiscovered).toHaveBeenCalledOnce();
+    });
+
+    it('keeps a code the guest already claimed', () => {
+        offer = { discountPercent: 15, code: 'ABC123', endsAt: null };
+        campaign = live;
+        render(<GuestOfferCard eventId="e1" isHost={false} />);
+
+        expect(screen.queryByText('countdown')).not.toBeInTheDocument();
+        expect(screen.queryByText(/percentOff/)).not.toBeInTheDocument();
+        expect(screen.getByRole('link', { name: 'getStarted' })).toHaveAttribute('href', '/events/new?code=ABC123');
+        expect(screen.getByRole('link', { name: /discover/ })).toBeInTheDocument();
+    });
+
+    it('shows the claim again once the campaign ends', () => {
+        offer = { discountPercent: 15, code: null, endsAt: null };
+        render(<GuestOfferCard eventId="e1" isHost={false} />);
+
+        expect(screen.getByRole('button', { name: /claim/ })).toBeInTheDocument();
+    });
 
     it('renders nothing when the card does not show', () => {
         const { container } = render(<GuestOfferCard eventId="e1" isHost={false} />);
@@ -60,7 +102,7 @@ describe('GuestOfferCard', () => {
         fireEvent.click(screen.getByRole('button', { name: /claim/ }));
 
         expect(claimCode).toHaveBeenCalledOnce();
-        expect(screen.getByText('15%')).toBeInTheDocument();
+        expect(screen.getByText('percentOff:15')).toBeInTheDocument();
         expect(screen.getByRole('link', { name: /discover/ })).toHaveAttribute(
             'href',
             '/?utm_source=storywall&utm_medium=feed&utm_campaign=guest-offer',
@@ -94,5 +136,75 @@ describe('GuestOfferCard', () => {
         fireEvent.click(screen.getByRole('button', { name: 'close' }));
 
         expect(close).toHaveBeenCalledOnce();
+    });
+
+    describe('strip', () => {
+        const seenBefore = () => window.localStorage.setItem('sw.guestOfferSeen.e1', '1');
+
+        it('opens on the first visit and remembers it was seen', () => {
+            offer = { discountPercent: 15, code: null, endsAt: null };
+            render(<GuestOfferCard eventId="e1" isHost={false} />);
+
+            expect(screen.getByRole('button', { name: /claim/ })).toBeInTheDocument();
+            expect(window.localStorage.getItem('sw.guestOfferSeen.e1')).toBe('1');
+        });
+
+        it('starts as a strip on a later visit and opens with a tap', () => {
+            seenBefore();
+            offer = { discountPercent: 15, code: null, endsAt: null };
+            render(<GuestOfferCard eventId="e1" isHost={false} />);
+
+            expect(screen.queryByRole('button', { name: /claim/ })).not.toBeInTheDocument();
+            expect(screen.getByText('percentOff:15')).toBeInTheDocument();
+            expect(screen.getByText('line')).toBeInTheDocument();
+
+            fireEvent.click(screen.getByRole('button', { name: /title/, expanded: false }));
+
+            expect(screen.getByRole('button', { name: /claim/ })).toBeInTheDocument();
+        });
+
+        it('shrinks back to the strip and stays that way for the visit', () => {
+            offer = { discountPercent: 15, code: null, endsAt: null };
+            render(<GuestOfferCard eventId="e1" isHost={false} />);
+
+            fireEvent.click(screen.getByRole('button', { name: 'showLess' }));
+            expect(screen.queryByRole('button', { name: /claim/ })).not.toBeInTheDocument();
+
+            cleanup();
+            render(<GuestOfferCard eventId="e1" isHost={false} />);
+            expect(screen.queryByRole('button', { name: /claim/ })).not.toBeInTheDocument();
+        });
+
+        it('keeps an opened card open when the guest comes back in the same visit', () => {
+            seenBefore();
+            offer = { discountPercent: 15, code: null, endsAt: null };
+            render(<GuestOfferCard eventId="e1" isHost={false} />);
+            fireEvent.click(screen.getByRole('button', { name: /title/, expanded: false }));
+
+            cleanup();
+            render(<GuestOfferCard eventId="e1" isHost={false} />);
+            expect(screen.getByRole('button', { name: /claim/ })).toBeInTheDocument();
+        });
+
+        it('shows a claimed code that can be copied from the strip', () => {
+            seenBefore();
+            offer = { discountPercent: 10, code: 'GS-7KQ4M2XR9P', endsAt: null };
+            render(<GuestOfferCard eventId="e1" isHost={false} />);
+
+            expect(screen.getByText('GS-7KQ4M2XR9P')).toBeInTheDocument();
+            fireEvent.click(screen.getByRole('button', { name: 'copy' }));
+
+            expect(copyCode).toHaveBeenCalledOnce();
+        });
+
+        it('closes from the strip', () => {
+            seenBefore();
+            offer = { discountPercent: 10, code: null, endsAt: null };
+            render(<GuestOfferCard eventId="e1" isHost={false} />);
+
+            fireEvent.click(screen.getByRole('button', { name: 'close' }));
+
+            expect(close).toHaveBeenCalledOnce();
+        });
     });
 });

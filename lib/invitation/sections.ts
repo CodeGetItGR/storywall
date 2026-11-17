@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { elementSchema } from '@/lib/invitation/elements';
 import {
     colorSchema,
+    eventLinkSchema,
     fontSchema,
     idSchema,
     imageRefSchema,
@@ -24,6 +25,8 @@ const borderWidth = z.number().min(0).max(40);
 const decorationSchema = z
     .object({ image: imageRefSchema, width: z.number().min(20).max(2000) })
     .strict();
+
+export type SectionDecoration = z.infer<typeof decorationSchema>;
 
 const namedPhotoSchema = z
     .object({ id: idSchema, name: text, photo: imageRefSchema.optional() })
@@ -319,6 +322,11 @@ export type SectionType = keyof typeof SECTION_DATA_SCHEMAS;
 
 export const SECTION_TYPES = Object.keys(SECTION_DATA_SCHEMAS) as SectionType[];
 
+// Sections whose fields can follow the invitation's event.
+export const LINKABLE_SECTION_TYPES: ReadonlySet<SectionType> = new Set([
+    'top', 'coupleNames', 'baby', 'date', 'rsvp', 'program', 'programIcons', 'locations', 'photo',
+]);
+
 // Sections that may appear more than once in one invitation.
 export const MULTI_INSTANCE_SECTION_TYPES: ReadonlySet<SectionType> = new Set(['blank', 'photo', 'photoFrame']);
 
@@ -329,11 +337,16 @@ function sectionSchemaFor<T extends SectionType>(type: T) {
             type: z.literal(type),
             name: shortTextSchema,
             visible: z.boolean(),
+            // Hidden by a theme switch because the new theme has no such section. Switching to a
+            // theme that has one shows it again; showing it by hand clears the mark.
+            hiddenByTheme: z.literal(true).optional(),
             locked: z.boolean(),
             data: SECTION_DATA_SCHEMAS[type],
             textStyles: z.record(z.string().max(200), textStyleSchema),
             elements: z.array(elementSchema).max(100),
             style: sectionStyleSchema,
+            // Only on LINKABLE_SECTION_TYPES.
+            link: eventLinkSchema.optional(),
         })
         .strict();
 }
@@ -363,6 +376,9 @@ export const sectionSchema = sectionUnion.superRefine((section, ctx) => {
     }
     if (breaks > 1) {
         ctx.addIssue({ code: 'custom', path: ['elements'], message: 'Only one column break per section' });
+    }
+    if (section.link && !LINKABLE_SECTION_TYPES.has(section.type)) {
+        ctx.addIssue({ code: 'custom', path: ['link'], message: 'This section cannot follow the event' });
     }
 }) as unknown as z.ZodType<InvitationSection>;
 

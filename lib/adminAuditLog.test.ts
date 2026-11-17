@@ -14,6 +14,8 @@ import {
     isUuid,
 } from '@/lib/adminAuditLog';
 import type { AdminAuditAction } from '@/lib/api/types';
+import el from '@/messages/el.json';
+import en from '@/messages/en.json';
 
 const EVENT_ID = '3f2b1c4d-5e6f-4a7b-8c9d-0e1f2a3b4c5d';
 
@@ -22,6 +24,13 @@ describe('audit actions', () => {
         expect(new Set(AUDIT_ACTIONS).size).toBe(AUDIT_ACTIONS.length);
         expect(AUDIT_ACTIONS).toContain('EVENT_MODULE_CONFIG_SET');
         expect(AUDIT_ACTIONS).toContain('PLAN_MODULE_CONFIG_CHANGED');
+    });
+
+    it('labels every action in both languages', () => {
+        for (const action of AUDIT_ACTIONS) {
+            expect(en.AdminPage.auditLog.actions, action).toHaveProperty(action);
+            expect(el.AdminPage.auditLog.actions, action).toHaveProperty(action);
+        }
     });
 
     it('tells an action from any other text', () => {

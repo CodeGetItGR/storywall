@@ -86,7 +86,13 @@ describe('getPostRegisterRedirectPath', () => {
         expect(getPostRegisterRedirectPath('USER', false, '/events/event-1/feed')).toBe('/home');
     });
 
+    it('follows a create form link without an invite, keeping the picked plan', () => {
+        const link = '/events/new?step=details&type=wedding&plan=START';
+        expect(getPostRegisterRedirectPath('USER', false, link)).toBe(link);
+    });
+
     it('keeps the admin landing page for an administrator', () => {
+        expect(getPostRegisterRedirectPath('ADMIN', false, '/events/new')).toBe('/admin');
         expect(getPostRegisterRedirectPath('ADMIN', false)).toBe('/admin');
     });
 });

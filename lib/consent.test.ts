@@ -43,14 +43,17 @@ describe('consent cookie', () => {
 describe('clearAdCookies', () => {
     afterEach(expireAll);
 
-    it("removes Google Ads' cookies and nothing else", () => {
+    it("removes Google Ads' and the Meta Pixel's cookies and nothing else", () => {
         document.cookie = '_gcl_aw=GCL.1.abc; Path=/';
         document.cookie = '_gcl_au=1.1.2; Path=/';
+        document.cookie = '_fbp=fb.1.123.456; Path=/';
+        document.cookie = '_fbc=fb.1.123.abc; Path=/';
         document.cookie = 'NEXT_LOCALE=el; Path=/';
 
         clearAdCookies();
 
         expect(document.cookie).not.toContain('_gcl_');
+        expect(document.cookie).not.toContain('_fb');
         expect(document.cookie).toContain('NEXT_LOCALE=el');
     });
 });

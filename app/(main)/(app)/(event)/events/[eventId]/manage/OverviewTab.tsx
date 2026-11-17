@@ -1,14 +1,9 @@
-import { useTranslations } from 'next-intl';
-
 import { InviartOverviewSection } from '@/components/inviart/InviartOverviewSection';
-import { HostContextSections } from '@/components/layout/right-context-panel/HostContextSections';
-import { CoverageStatusStrip } from '@/components/manage/CoverageStatusStrip';
 import { ManageDraftOverviewSkeleton } from '@/components/manage/ManageSkeletons';
+import { OverviewJourney } from '@/components/manage/overview/OverviewJourney';
 import { OverviewDraftPanel } from '@/components/manage/OverviewDraftPanel';
 import { ThemePicker } from '@/components/manage/ThemePicker';
-import { MetricStrip } from '@/components/ui/MetricStrip';
 import { useEventOverviewPlan } from '@/hooks/useEventOverviewPlan';
-import { useRightContextPanel } from '@/hooks/useRightContextPanel';
 import type {
     EventDetailResponseDto,
     EventModuleResponseDto,
@@ -20,13 +15,10 @@ import type {
     PlanTierResponseDto,
     PlatformModuleResponseDto,
 } from '@/lib/api/types';
-import { eventCapabilities } from '@/lib/eventCapabilities';
 
 export default function OverviewTab({
     event,
     memberCount,
-    daysToGo,
-    pendingCoHostInvitationCount,
     seatsClaimed,
     eventUsage,
     planTiers,
@@ -41,11 +33,9 @@ export default function OverviewTab({
     cancelledCheckout,
     canPurchase,
 }: {
-    // Only for the draft's theme picker; everything else reads the narrower props below.
+    // The draft's theme picker and the live journey read the whole event; everything else reads the narrower props below.
     event: EventDetailResponseDto;
     memberCount: number;
-    daysToGo: number;
-    pendingCoHostInvitationCount: number;
     seatsClaimed: number | null;
     eventUsage: EventUsageResponseDto | null;
     planTiers: PlanTierResponseDto[];
@@ -60,7 +50,6 @@ export default function OverviewTab({
     cancelledCheckout: boolean;
     canPurchase: boolean;
 }) {
-    const t = useTranslations('ManagePage');
     const {
         currentPlan,
         currentOption,
@@ -80,7 +69,6 @@ export default function OverviewTab({
         modules,
         eventModules,
     });
-    const hostContextPanel = useRightContextPanel({ includeManageLinks: false });
 
     if (eventStatus === 'DRAFT') {
         // The draft's duration, and so its price, comes from the billing view.
@@ -111,34 +99,13 @@ export default function OverviewTab({
         );
     }
 
-    // The member count lives in this strip only: the usage panel below shows the
-    // plan's headroom, so it reports storage and lets this cell carry members.
-    const shownMemberCount = eventUsage?.memberCount ?? memberCount;
-    const memberValue = eventUsage?.memberLimit ? `${shownMemberCount} / ${eventUsage.memberLimit}` : shownMemberCount;
-    // A lite event takes no guests, so it has no members or invitations to count.
-    const capabilities = eventCapabilities(event);
-    const showGuestStats = capabilities?.takesGuests ?? true;
-    // A lite event may have no date to count down to.
-    const showDaysToGo = capabilities?.hasSchedule ?? true;
-    const metrics = [
-        ...(showGuestStats ? [{ key: 'members', label: t('stats.totalGuests.label'), value: memberValue }] : []),
-        ...(showDaysToGo ? [{ key: 'days', label: t('stats.daysToGo.label'), value: daysToGo }] : []),
-        ...(showGuestStats ? [{ key: 'invitations', label: t('stats.invitations.label'), value: pendingCoHostInvitationCount }] : []),
-        ...(seatsClaimed === null ? [] : [{ key: 'seats', label: t('stats.seats.label'), value: seatsClaimed }]),
-    ];
+    // Members are counted on the invitations stop, against the plan's limit.
+    const counts = { memberCount: eventUsage?.memberCount ?? memberCount, memberLimit: eventUsage?.memberLimit ?? null, seatsClaimed };
 
     return (
-        <div className="flex flex-col gap-5">
-            {/* Coverage status */}
-            <CoverageStatusStrip eventId={eventId} schedule={schedule} />
-
-            {/* Headline numbers */}
-            {metrics.length > 0 && <MetricStrip items={metrics} />}
-
-            {/* Host context: same actions, usage and summaries the feed page's right panel shows */}
-            <div className="border-t border-border pt-4">
-                <HostContextSections panel={hostContextPanel} showMembersUsage={false} />
-            </div>
+        <div className="flex flex-col gap-8">
+            {/* Journey */}
+            <OverviewJourney event={event} eventUsage={eventUsage} planName={currentPlan?.name ?? null} counts={counts} />
 
             {/* INVIART */}
             <InviartOverviewSection eventType={eventType} />

@@ -159,6 +159,16 @@ describe('contentSecurityPolicy', () => {
         expect(csp.get('script-src')).not.toContain('https://www.googleadservices.com');
     });
 
+    it('allows Meta Pixel origins only when the pixel id is set', () => {
+        expect(contentSecurityPolicy(PRODUCTION)).not.toContain('facebook');
+
+        const csp = directives({ ...PRODUCTION, NEXT_PUBLIC_META_PIXEL_ID: '123' });
+        expect(csp.get('script-src')).toContain('https://connect.facebook.net');
+        expect(csp.get('img-src')).toContain('https://www.facebook.com');
+        expect(csp.get('connect-src')).toEqual(expect.arrayContaining(['https://www.facebook.com', 'https://connect.facebook.net']));
+        expect(csp.get('frame-src')).not.toContain('https://www.facebook.com');
+    });
+
     it('is one header line', () => {
         expect(contentSecurityPolicy(PRODUCTION)).not.toMatch(/[\r\n]/);
     });

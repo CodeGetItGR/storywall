@@ -2,16 +2,18 @@
 
 import { useParams, useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 
 import { useEventRouteContext } from '@/components/routing/EventRouteGate';
 import { useQrCardDesigner } from '@/hooks/useQrCardDesigner';
 import { useQrCardExport } from '@/hooks/useQrCardExport';
+import { useQrCardFeatureTexts } from '@/hooks/useQrCardFeatureTexts';
 import { useQrCardTemplates } from '@/hooks/useQrCardTemplates';
 import { useEventQrLinks } from '@/hooks/useQrLinks';
 import type { QrCardTemplateDto } from '@/lib/api/types';
 import { eventCapabilities, eventHomeHref } from '@/lib/eventCapabilities';
 import { type QrCardLine, qrCardLineKey } from '@/lib/qrCard';
+import { qrCardFeatures } from '@/lib/qrCardFeatures';
 import { routes } from '@/lib/routes';
 
 const NO_TEMPLATES: QrCardTemplateDto[] = [];
@@ -42,9 +44,12 @@ export function useQrCardScreen() {
         templates: templates.data?.templates ?? NO_TEMPLATES,
         defaults: { title: activeEvent.title, line: lineKey ? t(`lines.${lineKey}`) : '' },
         lineKey,
+        withFeatures: true,
     });
     const exporter = useQrCardExport({ font: designer.style.headingFont, title: designer.text.title, size: designer.size });
     const lines: QrCardLine[] = [{ text: designer.text.line, tone: 'body' }];
+    const features = useMemo(() => qrCardFeatures(activeEvent.modules), [activeEvent.modules]);
+    const featureTexts = useQrCardFeatureTexts();
 
     const { refetch } = templates;
     const retryTemplates = useCallback(() => void refetch(), [refetch]);
@@ -54,15 +59,12 @@ export function useQrCardScreen() {
         unavailable,
         qrUrl: qrLink?.publicUrl ?? '',
         // A guest code's card goes back to the event's home.
-        backHref:
-            qrLink?.targetType === 'GUEST'
-                ? eventHomeHref(activeEvent)
-                : qrLink?.targetType === 'MEDIA_UPLOAD'
-                  ? routes.events.tools.galleryQr(eventId)
-                  : routes.events.invitationsQr(eventId),
+        backHref: qrLink?.targetType === 'GUEST' ? eventHomeHref(activeEvent) : routes.events.invitationsQr(eventId),
         designer,
         exporter,
         lines,
+        features,
+        featureTexts,
         label: t('cardLabel', { title: designer.text.title }),
         templatesFailed: templates.isError,
         retryTemplates,

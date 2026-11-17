@@ -5,12 +5,11 @@ import { useAuth } from '@/hooks/useAuth';
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
 import { normalizeList } from '@/lib/api/pagination';
-import type { QrLinkPatchDto, QrLinkResolutionDto, QrLinkResponseDto, QrLinkStatsDto } from '@/lib/api/types';
+import type { QrLinkResolutionDto, QrLinkResponseDto, QrLinkStatsDto } from '@/lib/api/types';
 
 export const qrLinkKeys = {
     list: (eventId: string) => ['events', eventId, 'qr-links'] as const,
     stats: (eventId: string) => ['events', eventId, 'qr-links', 'stats'] as const,
-    detail: (id: string) => ['qr-links', id] as const,
     resolution: (token: string) => ['qr-links', token, 'resolution'] as const,
 };
 
@@ -49,19 +48,6 @@ export function useEventQrLinkStats(eventId: string | null) {
         },
         enabled: Boolean(eventId) && isAuthenticated,
         refetchInterval: 30_000,
-    });
-}
-
-export function useUpdateQrLink(eventId: string, id: string) {
-    const queryClient = useQueryClient();
-
-    return useMutation({
-        mutationFn: (input: QrLinkPatchDto) => api.patch<QrLinkResponseDto>(endpoints.qrLinks.byId(id), input),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: qrLinkKeys.detail(id) });
-            queryClient.invalidateQueries({ queryKey: qrLinkKeys.list(eventId) });
-            queryClient.invalidateQueries({ queryKey: qrLinkKeys.stats(eventId) });
-        },
     });
 }
 

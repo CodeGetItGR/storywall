@@ -1,18 +1,24 @@
 import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
 import type { Metadata, Viewport } from 'next';
 import { cookies } from 'next/headers';
-import { getMessages } from 'next-intl/server';
+import { getMessages, getTranslations } from 'next-intl/server';
 import { type ReactNode } from 'react';
 
+import { CreateEventDialogHost } from '@/components/event/create/wizard/CreateEventDialogHost';
+import { CreateEventFab } from '@/components/event/create/wizard/CreateEventFab';
 import { LinkClickTracker } from '@/components/landing/LinkClickTracker';
 import { RootDocument } from '@/components/layout/RootDocument';
-import { SiteNoticeBar } from '@/components/siteNotices/SiteNoticeBar';
+import { SiteNoticeStickyBar } from '@/components/siteNotices/SiteNoticeStickyBar';
 import { siteNoticeKeys } from '@/hooks/useSiteNotices';
 import { pickPublicMessages } from '@/i18n/publicMessages';
+import { discountCampaignKeys } from '@/lib/discountCampaign';
+import { fetchLiveDiscountCampaign } from '@/lib/discountCampaign.server';
 import { makeQueryClient } from '@/lib/queryClient';
 import { getRootMetadata, rootViewport } from '@/lib/rootMetadata';
 import { DISMISSED_COOKIE } from '@/lib/siteNoticeDismissals';
 import { fetchLiveSiteNotices } from '@/lib/siteNotices.server';
+import { showsCreateWizard } from '@/lib/unreleasedPages';
+import { CreateWizardFlagProvider } from '@/providers/CreateWizardFlagProvider';
 import { PublicProviders } from '@/providers/PublicProviders';
 
 export const viewport: Viewport = rootViewport;
@@ -26,22 +32,32 @@ export function generateMetadata(): Promise<Metadata> {
 // set below can then never follow them into the app.
 export default async function LandingLayout({ children }: Readonly<{ children: ReactNode }>) {
     const queryClient = makeQueryClient();
-    // Public and the same for everyone: cached for a minute, never throws (see siteNotices.server.ts).
+    // Public and the same for everyone: cached for a minute, never throw (see the .server files).
     try {
-        queryClient.setQueryData(siteNoticeKeys.live(), await fetchLiveSiteNotices());
+        const [notices, campaign] = await Promise.all([fetchLiveSiteNotices(), fetchLiveDiscountCampaign()]);
+        queryClient.setQueryData(siteNoticeKeys.live(), notices);
+        queryClient.setQueryData(discountCampaignKeys.live(), campaign);
     } catch {
-        // The bar fetches the list itself.
+        // The bar fetches them itself.
     }
     const dismissed = (await cookies()).get(DISMISSED_COOKIE)?.value ?? '';
+
+    const createLabel = (await getTranslations('CreateEventPage'))('title');
 
     return (
         <RootDocument documentScroll messages={pickPublicMessages(await getMessages())}>
             <PublicProviders>
-                <HydrationBoundary state={dehydrate(queryClient)}>
-                    {/* Notice */}
-                    <SiteNoticeBar area="PUBLIC" initialDismissed={dismissed} />
-                    {children}
-                </HydrationBoundary>
+                <CreateWizardFlagProvider enabled={showsCreateWizard()} createLabel={createLabel}>
+                    <HydrationBoundary state={dehydrate(queryClient)}>
+                        {/* Notice */}
+                        <SiteNoticeStickyBar initialDismissed={dismissed} />
+                        {children}
+                    </HydrationBoundary>
+                    {/* Create wizard */}
+                    <CreateEventDialogHost />
+                    {/* Phone create button */}
+                    <CreateEventFab />
+                </CreateWizardFlagProvider>
                 <LinkClickTracker />
             </PublicProviders>
         </RootDocument>

@@ -110,14 +110,21 @@ describe('text contrast', () => {
 });
 
 describe('sectionShell', () => {
-    it('applies the section height and padding', () => {
-        const section = { ...blank, style: { ...blank.style, minHeight: 300, paddingY: 20 } };
-        expect(sectionShell(section, 0, ctx).style).toMatchObject({ minHeight: '300px', paddingTop: '20px', paddingBottom: '20px' });
+    it('keeps the saved height and padding only where they are part of the composition', () => {
+        const saved = { minHeight: 300, paddingY: 20 };
+        const footer = { ...SAMPLE_SECTIONS.footer, style: { ...SAMPLE_SECTIONS.footer.style, ...saved } };
+        expect(sectionShell(footer, 0, ctx).style).toMatchObject({ minHeight: '300px', paddingTop: '20px', paddingBottom: '20px' });
+
+        const style = sectionShell({ ...blank, style: { ...blank.style, ...saved } }, 0, ctx).style;
+        expect(style.minHeight).toBeUndefined();
+        expect(style.paddingTop).toBeUndefined();
     });
 
     it('names footers and theme backgrounds', () => {
-        expect(sectionShell(SAMPLE_SECTIONS.footer, 0, ctx).className).toBe('section footer');
-        expect(sectionShell(SAMPLE_SECTIONS.top, 0, ctx).className).toBe('section has-theme-bg');
+        // The sample section above the footer has art on its bottom edge.
+        expect(sectionShell(SAMPLE_SECTIONS.footer, 0, ctx).className).toBe('section footer wedart-transition-adjacent');
+        // The sample top section has falling petals.
+        expect(sectionShell(SAMPLE_SECTIONS.top, 0, ctx).className).toBe('section has-theme-bg wedart-bg-effect-active');
     });
 });
 
@@ -125,6 +132,13 @@ describe('textStyleCss', () => {
     it('gives added text 18px above and nothing below', () => {
         const css = textStyleCss({ size: 20 }, { role: 'body', contrast: 'normal', defaultMarginTop: 18 }, ctx);
         expect(css).toMatchObject({ fontFamily: 'inherit', fontSize: '20px', marginTop: '18px', marginBottom: 0, textAlign: 'center' });
+    });
+
+    it('lets a host turn italic off where the field is italic by default', () => {
+        const role = { role: 'body', contrast: 'normal' } as const;
+        expect(textStyleCss({ italic: false }, role, ctx).fontStyle).toBe('normal');
+        expect(textStyleCss({ italic: true }, role, ctx).fontStyle).toBe('italic');
+        expect(textStyleCss({}, role, ctx).fontStyle).toBeUndefined();
     });
 
     it('leaves section fields without margins unless set', () => {

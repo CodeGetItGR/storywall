@@ -8,5 +8,5 @@ import type { SiteNoticeViewArea } from '@/lib/siteNotices';
 export function SiteNoticeBar({ area, initialDismissed }: { area: SiteNoticeViewArea | null; initialDismissed: string }) {
     const view = useSiteNoticeBar(area, initialDismissed);
     if (!view) return null;
-    return <SiteNoticeBanner tone={view.tone} message={view.message} link={view.link} onDismiss={view.onDismiss} />;
+    return <SiteNoticeBanner tone={view.tone} message={view.message} link={view.link} onDismiss={view.onDismiss} countdownEndsAt={view.countdownEndsAt} />;
 }

@@ -18,6 +18,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useCreateEventRun } from '@/hooks/useCreateEventRun';
 import { useCurrentReturnPath } from '@/hooks/useCurrentReturnPath';
 import { useScrollTopOnChange } from '@/hooks/useScrollTopOnChange';
+import { clearPendingCreateEventPath, rememberPendingCreateEventPath } from '@/lib/pendingCreateEvent';
 import { routes } from '@/lib/routes';
 import { cn } from '@/lib/utils';
 import { useCreateEventForm } from '@/providers/createEvent/CreateEventFormContext';
@@ -46,8 +47,14 @@ export default function CreateEventPage() {
             router.replace(routes.admin);
             return;
         }
-        if (isConfirmedUnverified) router.replace(routes.home);
-    }, [isAuthenticated, isBootstrapping, isConfirmedUnverified, returnPath, router, user?.role]);
+        if (isConfirmedUnverified) {
+            // The verification page sends them back here, with the plan they picked.
+            rememberPendingCreateEventPath(returnPath);
+            router.replace(routes.home);
+            return;
+        }
+        if (user?.emailVerified === true) clearPendingCreateEventPath();
+    }, [isAuthenticated, isBootstrapping, isConfirmedUnverified, returnPath, router, user?.emailVerified, user?.role]);
 
     return (
         <CreateEventRouteState

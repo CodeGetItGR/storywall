@@ -2,34 +2,27 @@
 
 import { Plus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { type MouseEvent, useCallback } from 'react';
 
+import { NoEventsArt } from '@/components/home/HomeEmptyArt';
 import { AppLink } from '@/components/ui/AppLink';
 import { routes } from '@/lib/routes';
-import { cn } from '@/lib/utils';
 
-export function HomeEmptyState({ canCreateEvent }: { canCreateEvent: boolean }) {
+export function HomeEmptyState() {
     const t = useTranslations('WelcomePage');
-
-    const onClick = useCallback(
-        (event: MouseEvent<HTMLAnchorElement>) => {
-            if (!canCreateEvent) event.preventDefault();
-        },
-        [canCreateEvent],
-    );
 
     return (
         <div className="flex min-h-[35vh] flex-col items-center justify-center gap-6 px-4 text-center">
+            {/* Drawing */}
+            <NoEventsArt />
+
+            {/* Title */}
             <div>
                 <h2 className="text-xl font-bold text-ink">{t('title')}</h2>
                 <p className="mt-2 max-w-xs text-sm text-ink-muted">{t('subtitle')}</p>
             </div>
-            <AppLink
-                href={canCreateEvent ? routes.events.new() : '#'}
-                aria-disabled={!canCreateEvent}
-                onClick={onClick}
-                className={cn('group flex flex-col items-center gap-2', !canCreateEvent && 'pointer-events-none opacity-40')}
-            >
+
+            {/* Create */}
+            <AppLink href={routes.events.new()} className="group flex flex-col items-center gap-2">
                 <span className="flex h-20 w-20 items-center justify-center rounded-full shadow-[0_10px_28px_rgba(255,122,89,0.28)] transition-transform bg-gradient-brand group-hover:scale-105">
                     <Plus className="h-7 w-7 text-white" strokeWidth={2.2} />
                 </span>
