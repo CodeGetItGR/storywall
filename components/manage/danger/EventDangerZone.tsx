@@ -1,23 +1,60 @@
 'use client';
 
-import { Trash2 } from 'lucide-react';
+import { Loader2, Trash2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
-export function EventDangerZone({ onDeleteOpenAction, disabled }: { onDeleteOpenAction: () => void; disabled?: boolean }) {
-    const t = useTranslations('ManagePage');
+import { DangerConsequences } from '@/components/manage/danger/DangerConsequences';
+import type { DangerZoneWishbookLink } from '@/hooks/useDangerZoneDownloads';
+
+type EventDangerZoneProps = {
+    showGalleryDownload: boolean;
+    wishbook: DangerZoneWishbookLink | null;
+    onDownloadAllAction: () => void;
+    onDeleteAction: () => void;
+    isSendingCode: boolean;
+    disabled?: boolean;
+    // Shown here while the code sheet is closed, e.g. when the code couldn't be sent.
+    error: string | null;
+};
+
+export function EventDangerZone({
+    showGalleryDownload,
+    wishbook,
+    onDownloadAllAction,
+    onDeleteAction,
+    isSendingCode,
+    disabled = false,
+    error,
+}: EventDangerZoneProps) {
+    const t = useTranslations('ManagePage.settings.dangerZone');
 
     return (
-        <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-4">
-            <p className="text-xs leading-relaxed text-rose-700/80">{t('settings.dangerZone.body')}</p>
-            <button
-                type="button"
-                onClick={onDeleteOpenAction}
-                disabled={disabled}
-                className="mt-3 inline-flex min-h-10 items-center gap-1.5 rounded-full bg-rose-600 px-4 text-sm font-semibold text-white transition-colors hover:bg-rose-700 disabled:cursor-not-allowed disabled:opacity-60"
-            >
-                <Trash2 className="h-4 w-4" aria-hidden="true" />
-                {t('settings.dangerZone.delete')}
-            </button>
+        <div className="flex flex-col gap-6">
+            {/* Consequences */}
+            <DangerConsequences showGalleryDownload={showGalleryDownload} wishbook={wishbook} onDownloadAllAction={onDownloadAllAction} />
+
+            {/* Delete */}
+            <div className="flex flex-col items-start gap-2">
+                <button
+                    type="button"
+                    onClick={onDeleteAction}
+                    disabled={disabled || isSendingCode}
+                    aria-busy={isSendingCode || undefined}
+                    className="inline-flex min-h-11 items-center gap-1.5 rounded-full border border-rose-300 px-5 text-sm font-semibold text-rose-600 transition-colors hover:border-rose-400 hover:bg-rose-50 focus-visible:ring-2 focus-visible:ring-rose-300 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                    {isSendingCode ? (
+                        <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+                    ) : (
+                        <Trash2 className="h-4 w-4" aria-hidden="true" />
+                    )}
+                    {t('delete')}
+                </button>
+                {error && (
+                    <p role="alert" className="text-xs text-rose-600">
+                        {error}
+                    </p>
+                )}
+            </div>
         </div>
     );
 }
