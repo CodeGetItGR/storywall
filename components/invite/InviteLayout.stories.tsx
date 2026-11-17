@@ -23,7 +23,6 @@ const meta = {
         eventTitle: 'Anna & Nikos',
         eventSubtitle: '12 June 2027',
         scroll: 'page',
-        heroTone: 'plain',
         children: <TallBody />,
     },
     decorators: [
@@ -41,8 +40,8 @@ type Story = StoryObj<typeof meta>;
 // No cover and no theme art: the logo stands in, and there's no footer, so the body keeps its own bottom space.
 export const LogoHeroLongForm: Story = {};
 
-// The QR forms: the cover cut to a short strip with the title on it.
-export const StripWithCover: Story = { args: { stripHero: true, coverImageSrc: '/images/banner.jpg' } };
+// The QR choices: a slim bar with the logo and a control, then the event's name as a heading.
+export const BarWithHeading: Story = { args: { topBar: <span className="text-xs text-ink-muted">EN · EL</span> } };
 
-// The QR forms without a cover: the strip falls back to the brand gradient.
-export const StripWithoutCover: Story = { args: { stripHero: true } };
+// The QR forms: the same bar, then the event's name as a small grey line.
+export const BarWithLine: Story = { args: { topBar: <span className="text-xs text-ink-muted">EN · EL</span>, barTitle: 'line' } };

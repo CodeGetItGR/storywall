@@ -81,7 +81,7 @@ export function QrLandingChoices({ plan, eventId, onChoose, coverSrc, eventTitle
         <div className="flex flex-col gap-6">
             {/* Details: pulled up to sit under the event's name in the page header. */}
             {details ? (
-                <div className="-mt-10 -mb-2">
+                <div className="-mt-4 -mb-2">
                     <QrEventDetailsLine details={details} />
                 </div>
             ) : null}
