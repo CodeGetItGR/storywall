@@ -20,7 +20,8 @@ export default function DangerZoneTab({ event }: { event: EventDetailResponseDto
                 onDownloadAllAction={downloads.openArchive}
                 onDeleteAction={deletionFlow.startDeletion}
                 isSendingCode={deletionFlow.isSendingCode}
-                disabled={deletionFlow.isDeleting}
+                // A refused send (rate limit) waits out its cooldown before another try.
+                disabled={deletionFlow.isDeleting || (deletionFlow.step === 'send' && deletionFlow.resendSeconds > 0)}
                 error={deletionFlow.confirmOpen ? null : deletionFlow.deleteError}
             />
 
