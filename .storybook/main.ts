@@ -7,8 +7,9 @@ const config: StorybookConfig = {
         name: '@storybook/nextjs-vite',
         options: {},
     },
-    // public/ holds the logo, icons and MSW's mockServiceWorker.js.
-    staticDirs: ['../public'],
+    // public/ holds the logo, icons and MSW's mockServiceWorker.js. assets/
+    // holds images only stories use, so they stay out of the app.
+    staticDirs: ['../public', { from: './assets', to: '/storybook-assets' }],
 };
 
 export default config;

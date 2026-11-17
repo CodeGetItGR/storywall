@@ -7,6 +7,11 @@ import type { ThemeDesign } from '@/lib/invitation/theme';
 // The invitation the staging preview page shows. Its texts are a host's
 // content, not app copy, so they stay as data. Images come from public/.
 
+// A sample frame drawn inline, so the preview needs no frame files: the mask is
+// the oval the photo shows through, the art is a ring around it.
+const svgImage = (body: string) =>
+    `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 1200">${body}</svg>`)}`;
+
 const PREVIEW_MEDIA: Record<string, string> = {
     'm-top': '/images/venue.png',
     'm-main-art': '/images/couple-hero.png',
@@ -15,6 +20,13 @@ const PREVIEW_MEDIA: Record<string, string> = {
     'm-dad': '/images/couple-hero.png',
     'm-g1': '/images/couple-hero.png',
     'm-a': '/images/couple-hero.png',
+    'm-icon': '/images/post-florals.png',
+    'm-1': '/images/post-flowers.png',
+    'm-2': '/images/post-cake.png',
+    'm-photo': '/images/venue.png',
+    'm-framed': '/images/couple-hero.png',
+    'm-frame-mask': svgImage('<ellipse cx="450" cy="600" rx="400" ry="550"/>'),
+    'm-frame-art': svgImage('<ellipse cx="450" cy="600" rx="400" ry="550" fill="none" stroke="#b08d57" stroke-width="24"/>'),
 };
 
 export const previewMedia: MediaResolver = (mediaId) => PREVIEW_MEDIA[mediaId];
@@ -26,7 +38,10 @@ export const PREVIEW_THEME: ThemeDesign = {
         content: { mode: 'cover', stableRepeat: false },
         extra: { mode: 'cover', stableRepeat: false },
     },
-    art: { main: { image: { mediaId: 'm-main-art' }, scale: 0.8, animation: 'fade' } },
+    art: {
+        main: { image: { mediaId: 'm-main-art' }, scale: 0.8, animation: 'fade' },
+        ceremonyIcon: { image: { mediaId: 'm-icon' }, scale: 1, animation: 'none' },
+    },
     fonts: { title: "'Playfair Display',serif", body: "'Lora',serif" },
     autoTextContrast: true,
 };
@@ -112,6 +127,15 @@ const textSections = (style: PreviewDateStyle, lang: PreviewDateLanguage): Invit
     SAMPLE_SECTIONS.weddingSponsors,
     SAMPLE_SECTIONS.weddingSponsorsSimple,
     SAMPLE_SECTIONS.ourStoryProposal,
+    SAMPLE_SECTIONS.program,
+    SAMPLE_SECTIONS.programIcons,
+    SAMPLE_SECTIONS.locations,
+    SAMPLE_SECTIONS.accommodation,
+    SAMPLE_SECTIONS.gift,
+    SAMPLE_SECTIONS.rsvp,
+    SAMPLE_SECTIONS.photo,
+    SAMPLE_SECTIONS.gallery,
+    { ...SAMPLE_SECTIONS.photoFrame, style: { ...SAMPLE_SECTIONS.photoFrame.style, transition: undefined } },
     SAMPLE_SECTIONS.footer,
 ];
 

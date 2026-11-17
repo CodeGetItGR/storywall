@@ -84,10 +84,10 @@ describe('useToolsMenuItems', () => {
         mocks.activeMember = { id: 'm1', isFeatured: false };
     });
 
-    it('lists every available tool for a live event', () => {
+    it('lists every available tool for a live event, leaving the wishbook to the feed', () => {
         mocks.activeEvent = event();
         const { result } = renderHook(() => useToolsMenuItems());
-        expect(result.current.map((item) => item.key)).toEqual(['rsvp', 'schedule', 'gallery', 'wishbook', 'gifts']);
+        expect(result.current.map((item) => item.key)).toEqual(['rsvp', 'schedule', 'gallery', 'gifts']);
     });
 
     it('keeps only gallery and wishbook for a deleted event', () => {
@@ -96,7 +96,13 @@ describe('useToolsMenuItems', () => {
         expect(result.current.map((item) => item.key)).toEqual(['gallery', 'wishbook']);
     });
 
-    const withHeOrShe = () => event({ modules: [{ moduleKey: 'posts', isEnabled: true, isAvailable: true, configuration: {} }, { moduleKey: 'he_or_she', isEnabled: true, isAvailable: true, configuration: {} }] });
+    const withHeOrShe = () =>
+        event({
+            modules: [
+                { moduleKey: 'posts', isEnabled: true, isAvailable: true, configuration: {} },
+                { moduleKey: 'he_or_she', isEnabled: true, isAvailable: true, configuration: {} },
+            ],
+        });
 
     it('lists Boy or Girl? when its module is readable', () => {
         mocks.activeEvent = withHeOrShe();
@@ -115,7 +121,10 @@ describe('useToolsMenuItems', () => {
 
     const withRoles = (overrides: Record<string, unknown> = {}) =>
         event({
-            modules: [{ moduleKey: 'posts', isEnabled: true, isAvailable: true, configuration: {} }, { moduleKey: 'member_roles', isEnabled: true, isAvailable: true, configuration: {} }],
+            modules: [
+                { moduleKey: 'posts', isEnabled: true, isAvailable: true, configuration: {} },
+                { moduleKey: 'member_roles', isEnabled: true, isAvailable: true, configuration: {} },
+            ],
             ...overrides,
         });
 
@@ -181,26 +190,33 @@ describe('useHostMenuItems', () => {
         expect(result.current.map((item) => item.key)).toEqual(['manage']);
     });
 
-    it('lists manage, both QR pages, announcement and help for a live event', () => {
+    it('lists manage, the share links and announcement for a live event', () => {
         mocks.activeEvent = withoutModule('vendors');
         const { result } = renderHook(() => useHostMenuItems());
-        expect(result.current.map((item) => item.key)).toEqual(['manage', 'galleryQr', 'invitationsQr', 'announcement', 'help']);
+        expect(result.current.map((item) => item.key)).toEqual(['manage', 'invitationsQr', 'announcement']);
     });
 
-    // A missing qrUploadEnabled key counts as off: the backend mints no upload link.
-    it('hides the gallery QR page when the gallery config has no qrUploadEnabled', () => {
+    it('mentions uploads on the share links only when QR upload is on', () => {
+        mocks.activeEvent = withoutModule('vendors');
+        const withUpload = renderHook(() => useHostMenuItems()).result.current.find((item) => item.key === 'invitationsQr');
+        expect(withUpload?.description).toBe('invitationsQr.descriptionWithUpload');
+
+        // A missing qrUploadEnabled key counts as off: the backend mints no upload link.
         mocks.activeEvent = event({
-            modules: [{ moduleKey: 'gallery', isEnabled: true, isAvailable: true, configuration: {} }],
+            modules: [
+                { moduleKey: 'posts', isEnabled: true, isAvailable: true, configuration: {} },
+                { moduleKey: 'gallery', isEnabled: true, isAvailable: true, configuration: {} },
+            ],
         });
-        const { result } = renderHook(() => useHostMenuItems());
-        expect(result.current.map((item) => item.key)).not.toContain('galleryQr');
+        const withoutUpload = renderHook(() => useHostMenuItems()).result.current.find((item) => item.key === 'invitationsQr');
+        expect(withoutUpload?.description).toBe('invitationsQr.description');
     });
 
     // A lite event (no posts) has no upload or invitation codes: its guest code lives on its home.
     it('hides both QR pages on a lite event and keeps only its gallery and wishbook tools', () => {
         mocks.isHost = true;
         mocks.activeEvent = { ...event(), modules: event().modules.filter((module) => module.moduleKey !== 'posts') };
-        expect(renderHook(() => useHostMenuItems()).result.current.map((item) => item.key)).toEqual(['manage', 'help']);
+        expect(renderHook(() => useHostMenuItems()).result.current.map((item) => item.key)).toEqual(['manage']);
         expect(renderHook(() => useToolsMenuItems()).result.current.map((item) => item.key)).toEqual(['gallery', 'wishbook']);
     });
 });
@@ -313,12 +329,9 @@ describe('vendor tools in the menu', () => {
         expect(keysNow()).not.toContain('rsvp');
     });
 
-    it('shows the vendor list once one vendor is listed', () => {
-        expect(keysNow()).not.toContain('vendors');
-        vendor.list = [{ id: 'v1', businessName: 'Studio X', hiddenByHost: true, optedOut: false }];
-        expect(keysNow()).not.toContain('vendors');
+    it('leaves the vendor list to the feed, even once a vendor is listed', () => {
         vendor.list = [{ id: 'v1', businessName: 'Studio X', hiddenByHost: false, optedOut: false }];
-        expect(keysNow()).toContain('vendors');
+        expect(keysNow()).not.toContain('vendors');
     });
 
     it('leaves the vendor list out for a host, who has it in the host menu', () => {
@@ -356,12 +369,19 @@ describe('vendor tools in the menu', () => {
 describe('vendor entries in the host menu', () => {
     beforeEach(() => {
         mocks.isHost = true;
+        mocks.accessMode = 'standard';
     });
 
     it('adds Vendors and Announcement for a live event with the module', () => {
         mocks.activeEvent = vendorEvent();
         const keys = renderHook(() => useHostMenuItems()).result.current.map((item) => item.key);
         expect(keys).toEqual(expect.arrayContaining(['vendors', 'announcement']));
+    });
+
+    it('hides Announcement for a demo visitor', () => {
+        mocks.activeEvent = vendorEvent();
+        mocks.accessMode = 'demoVisitor';
+        expect(renderHook(() => useHostMenuItems()).result.current.map((item) => item.key)).not.toContain('announcement');
     });
 
     it('hides Announcement when the posts module is off', () => {

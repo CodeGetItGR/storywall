@@ -1,0 +1,36 @@
+name: Visual cleanup
+
+# Runs the scripts from staging, so a PR's own changes to them never see the deploy key.
+# Not pull_request_target: GitHub only runs it from main, and blocks it by default in public repos from December 2, 2026.
+on:
+    pull_request:
+        types: [closed]
+        branches: [staging]
+
+concurrency:
+    group: visual-cleanup-${{ github.event.pull_request.number }}
+    cancel-in-progress: false
+
+permissions:
+    contents: read
+
+jobs:
+    cleanup:
+        if: github.event.pull_request.head.repo.full_name == github.repository
+        runs-on: ubuntu-latest
+        timeout-minutes: 10
+        steps:
+            - uses: actions/checkout@v7
+              with:
+                  ref: ${{ github.event.pull_request.base.ref }}
+                  sparse-checkout: scripts/visual
+
+            - uses: actions/setup-node@v7
+              with:
+                  node-version: 22
+
+            - run: node scripts/visual/cleanup.mjs
+              env:
+                  PR_NUMBER: ${{ github.event.pull_request.number }}
+                  REPORTS_REPO: CodeGetItGR/storywall-visual-reports
+                  VISUAL_REPORTS_DEPLOY_KEY: ${{ secrets.VISUAL_REPORTS_DEPLOY_KEY }}

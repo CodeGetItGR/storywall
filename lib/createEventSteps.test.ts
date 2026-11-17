@@ -1,12 +1,15 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
 
 import type { ThemePresetDto } from '@/lib/api/types';
 import {
     effectiveThemePresetId,
+    focusFirstInvalidField,
     isThemeStepAvailable,
     parseCreateEventStep,
     resolveCreateEventStep,
     resolveCreateEventType,
+    stepAfter,
+    stepBefore,
     visibleCreateEventSteps,
 } from '@/lib/createEventSteps';
 import { eventTypeSlug } from '@/lib/eventTypeSlug';
@@ -63,5 +66,56 @@ describe('createEventSteps', () => {
         expect(resolveCreateEventType(['BABY_SHOWER', 'WEDDING'], 'REUNION', null)).toBe('WEDDING');
         expect(resolveCreateEventType(['BABY_SHOWER', 'REUNION'], null, null)).toBe('BABY_SHOWER');
         expect(resolveCreateEventType([], null, 'reunion')).toBe('WEDDING');
+    });
+});
+
+describe('visibleCreateEventSteps with the account step', () => {
+    it('puts account between theme and review', () => {
+        expect(visibleCreateEventSteps(true, true)).toEqual(['type', 'plan', 'details', 'theme', 'account', 'overview']);
+        expect(visibleCreateEventSteps(false, true)).toEqual(['type', 'plan', 'details', 'account', 'overview']);
+        expect(visibleCreateEventSteps(false, false)).toEqual(['type', 'plan', 'details', 'overview']);
+    });
+});
+
+describe('stepAfter and stepBefore', () => {
+    const steps = ['type', 'plan', 'details', 'account', 'overview'] as const;
+
+    it('moves along the shown steps', () => {
+        expect(stepAfter('details', steps)).toBe('account');
+        expect(stepAfter('overview', steps)).toBeNull();
+        expect(stepBefore('overview', steps, false)).toBe('account');
+    });
+
+    it('steps back over the account step once it is done', () => {
+        expect(stepBefore('overview', steps, true)).toBe('details');
+    });
+});
+
+describe('focusFirstInvalidField', () => {
+    afterEach(() => {
+        document.body.innerHTML = '';
+    });
+
+    function renderForm(html: string) {
+        document.body.innerHTML = `<form id="f">${html}</form>`;
+        Element.prototype.scrollIntoView = () => {};
+    }
+
+    it('focuses the first required field holding only spaces', () => {
+        renderForm('<input id="a" required value="Title" /><input id="b" required value="   " /><input id="c" required />');
+        focusFirstInvalidField('f');
+        expect(document.activeElement?.id).toBe('b');
+    });
+
+    it('focuses a field marked invalid', () => {
+        renderForm('<input id="a" required value="Title" /><input id="b" aria-invalid="true" value="2020-01-01" />');
+        focusFirstInvalidField('f');
+        expect(document.activeElement?.id).toBe('b');
+    });
+
+    it('leaves focus alone when nothing is missing', () => {
+        renderForm('<input id="a" required value="Title" />');
+        focusFirstInvalidField('f');
+        expect(document.activeElement).toBe(document.body);
     });
 });

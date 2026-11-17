@@ -12,7 +12,10 @@ import { type GiftDetailsInput, isPlanGiftable, sameGiftRequest } from '@/lib/gi
  * given. The gift is declared on the draft right before checkout, and again only
  * when its details changed since.
  */
-export function useCreateEventGift(selectedPlan: PlanTierResponseDto | undefined, initial?: { isGift: boolean; details: GiftDetailsInput }) {
+export function useCreateEventGift(
+    selectedPlan: PlanTierResponseDto | undefined,
+    initial: { isGift: boolean; details: GiftDetailsInput } | null = null,
+) {
     const details = useGiftDetailsInput(initial?.details);
     const saveGift = useSaveGift(null);
     const [isGift, setIsGift] = useState(initial?.isGift ?? false);
@@ -39,8 +42,8 @@ export function useCreateEventGift(selectedPlan: PlanTierResponseDto | undefined
 
     return {
         available,
-        isGift,
         enabled,
+        isGift,
         handleToggle,
         details,
         // Details can't move on while a gift is picked but its required fields are empty.

@@ -7,6 +7,7 @@ vi.mock('next-intl', () => ({
     useTranslations: () => (key: string, values?: Record<string, unknown>) => (values ? `${key}:${JSON.stringify(values)}` : key),
     useLocale: () => 'en',
 }));
+vi.mock('@/components/manage/nav/ManagePageFrame', () => ({ ManagePageFrame: ({ children }: { children: React.ReactNode }) => <>{children}</> }));
 vi.mock('@/components/tools/ModulePageShell', () => ({ ModulePageShell: ({ children }: { children: React.ReactNode }) => <div>{children}</div> }));
 vi.mock('@/components/routing/EventRouteGate', () => ({ useEventRouteContext: () => ({ eventId: 'e1', activeEvent: { id: 'e1' }, isHost: true }) }));
 const readable = vi.hoisted(() => ({ value: true }));

@@ -2,6 +2,7 @@
 
 import { RefreshCw } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import type { ReactNode } from 'react';
 
 import { cn } from '@/lib/utils';
 
@@ -10,18 +11,21 @@ export function FunnelHeader({
     updatedAt,
     isFetching,
     onRefreshAction,
+    actions,
 }: {
     title: string;
     updatedAt: string | null;
     isFetching: boolean;
     onRefreshAction: () => void;
+    /** The page's own buttons, after Refresh. */
+    actions?: ReactNode;
 }) {
     const t = useTranslations('AdminPage.funnel');
 
     return (
         <header className="mb-5 flex flex-wrap items-center justify-between gap-3">
             <h1 className="text-2xl font-extrabold tracking-tight text-ink sm:text-3xl">{title}</h1>
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center gap-3">
                 {updatedAt && <span className="text-xs text-ink-faint">{t('updatedAt', { time: updatedAt })}</span>}
                 <button
                     type="button"
@@ -32,6 +36,7 @@ export function FunnelHeader({
                     <RefreshCw className={cn('h-4 w-4', isFetching && 'animate-spin')} aria-hidden="true" />
                     {t('refresh')}
                 </button>
+                {actions}
             </div>
         </header>
     );

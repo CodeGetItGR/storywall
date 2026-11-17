@@ -5,17 +5,7 @@ import { useTranslations } from 'next-intl';
 import { AdminInfoTip } from '@/components/admin/AdminInfoTip';
 
 export type CampaignValue =
-    | 'visits'
-    | 'visitors'
-    | 'createClicks'
-    | 'plansClicks'
-    | 'planPicks'
-    | 'signedUp'
-    | 'createdEvent'
-    | 'paidHost'
-    | 'revenue'
-    | 'sales'
-    | 'salesRevenue';
+    'visitors' | 'createClicks' | 'plansClicks' | 'planPicks' | 'signedUp' | 'createdEvent' | 'paidHost' | 'sales' | 'salesRevenue';
 
 // The "i" for one campaign value. `name` is the visible label it sits next to.
 export function CampaignValueTip({ value, name }: { value: CampaignValue; name: string }) {

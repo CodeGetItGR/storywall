@@ -27,10 +27,18 @@ const VARIANT_CLASSES = {
         idle: 'text-ink-muted hover:text-ink',
         text: 'text-ink-muted',
     },
+    // The wizard's plan card: a full-width segmented control with the months spelled out.
+    segmented: {
+        group: 'flex w-full gap-1.5 rounded-[22px] bg-[#f6f1ec] p-1',
+        option: 'h-10 flex-1 rounded-[18px] text-sm',
+        selected: 'bg-white font-bold text-ink shadow-[0_1px_3px_rgba(36,31,26,0.14)]',
+        idle: 'font-semibold text-[#5a4e44] hover:text-ink',
+        text: 'text-[#6f6257]',
+    },
 } as const;
 
 // Marketing cards have room to spell each length out; app rows keep "3m".
-const OPTION_TEXT_KEY = { marketing: 'months', app: 'short' } as const;
+const OPTION_TEXT_KEY = { marketing: 'months', app: 'short', segmented: 'months' } as const;
 
 // The lengths a plan is sold at, as a switch. A plan sold at one length only
 // shows it as text.

@@ -53,6 +53,7 @@ import type {
     WithdrawalReleaseDto,
     WithdrawalResponseDto,
 } from '@/lib/api/types';
+import { withoutUnreleasedModules } from '@/lib/saveMyDateRelease';
 
 export const adminKeys = {
     all: ['admin'] as const,
@@ -585,7 +586,7 @@ export function useRemoveEventAddon() {
 export function useAdminPlatformModules() {
     return useQuery({
         queryKey: adminKeys.platformModules,
-        queryFn: () => api.get<PlatformModuleResponseDto[]>(endpoints.admin.platformModules.list),
+        queryFn: async () => withoutUnreleasedModules(await api.get<PlatformModuleResponseDto[]>(endpoints.admin.platformModules.list)),
     });
 }
 

@@ -132,10 +132,10 @@ export const SAMPLE_SECTIONS: { [T in SectionType]: SectionOf<T> } = {
     ourStoryProposal: section('ourStoryProposal', {
         block1Title: 'Πώς γνωριστήκαμε',
         block1Subtitle: '2019',
-        block1Body: '…',
+        block1Body: 'Γνωριστήκαμε μέσω κοινών φίλων!',
         block2Title: 'Η πρόταση',
         block2Subtitle: '2025',
-        block2Body: '…',
+        block2Body: 'Μετά από χρόνια σχέσης... επιτέλους ήρθε και η πρόταση γάμου!',
     }),
     dressCode: section('dressCode', { title: 'Dress code', note: 'Καλοκαιρινό', colors: ['#b8dfd3', '#efe7ec'] }),
     coupleContact: section('coupleContact', {

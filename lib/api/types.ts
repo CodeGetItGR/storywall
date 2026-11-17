@@ -36,6 +36,7 @@ export const EVENT_MODULE_KEYS = [
     'quiz_polls',
     'vendors',
     'qr_cards',
+    'save_my_date',
 ] as const;
 // Use this (not the raw `ModuleKey` wire type below) whenever code branches on
 // a specific module — it's a closed set and catches typos at compile time.
@@ -373,28 +374,6 @@ export interface DiscountCampaignLiveDto {
 // GET /api/public/discount-campaign: always 200, campaign null without a live one.
 export interface DiscountCampaignLiveResponseDto {
     campaign: DiscountCampaignLiveDto | null;
-}
-
-export interface AdminDiscountCampaignDto {
-    id: string;
-    name: string;
-    percent: number;
-    label: string | null;
-    linkName: string;
-    startsAt: string;
-    endsAt: string;
-    status: SiteNoticeStatus;
-    createdAt: string;
-}
-
-export interface DiscountCampaignRequestDto {
-    name: string;
-    percent: number;
-    label: string | null;
-    linkName: string;
-    // Null means now.
-    startsAt: string | null;
-    endsAt: string;
 }
 
 export interface SiteNoticeLiveDto {
@@ -803,6 +782,8 @@ export interface RegisterRequestDto {
     adultConfirmed: true;
     inviteToken?: string;
     subscribeToNewsletter?: boolean;
+    // 'CODE' mails a 6-digit code (the create wizard) instead of a link. Default 'LINK'.
+    emailVerification?: 'LINK' | 'CODE';
     // All-or-nothing: an invalid profile is a 400 and no account is created.
     // VIES may leave it PENDING, so read GET /api/me/business-profile afterwards.
     businessProfile?: BusinessProfileRequestDto | null;
@@ -1038,6 +1019,25 @@ export interface AdminProvisionEventRequestDto {
     // Module settings saved with the event, in the same request (max 50). One refused setting
     // (400, 409) and no event is created. A vendors setting turns vendors on for this event.
     moduleConfigs?: AdminProvisionModuleConfig[];
+    // Added 2026-11-11: schedule items after the main session, in order (max 20); the plan must
+    // include the schedule. One refused item (e.g. 409 session limit) and no event is created.
+    schedule?: AdminProvisionScheduleItem[];
+    // Added 2026-11-11: the gift account, set for the primary host; the plan must include the
+    // wishlist. An invalid IBAN (400) and no event is created.
+    giftAccount?: EventGiftAccountRequestDto;
+}
+
+export interface AdminProvisionScheduleItem {
+    title: string;
+    description?: string;
+    startAt?: string;
+    endAt?: string;
+    locationName?: string;
+    // Added 2026-11-16 (KAN-84).
+    locationAddress?: string;
+    mapsUrl?: string;
+    // The reception venue of a wedding or baptism; at most one.
+    isSecondary?: boolean;
 }
 
 // One setting as PUT .../modules/{moduleKey}/config/{configKey} takes it: extra, enabled or value, exactly one.
@@ -1110,6 +1110,18 @@ export interface QrCardLayoutDto {
         text?: Partial<Record<QrCardWordingKey, LocalizedText>> | null;
     };
     fields?: QrCardTextFieldDto[]; // up to 5; absent on layouts saved before KAN-103
+    // The picture tiles' box. null = removed; absent on layouts saved before it, which also means no tiles.
+    features?: { x: number; y: number; width: number; height: number } | null;
+    logo?: QrCardLogoDto | null; // null or absent = no logo
+}
+
+// The full StoryWall logo (icon and wordmark) at a fixed shape: its height is width × 32 / 140.
+// color: null = the brand colours, #RRGGBB = the whole logo in that one colour.
+export interface QrCardLogoDto {
+    x: number;
+    y: number;
+    width: number;
+    color: string | null;
 }
 
 // The scan lines a design can word: one per thing a code opens (QrCardPage.lines), and the gift card's.
@@ -1270,6 +1282,10 @@ export interface EventDetailResponseDto {
     partnerBranding: PartnerBrandingDto | null;
     // Hosts only: an admin linked a partner and no host has answered yet.
     partnerBrandingPrompt: PartnerBrandingNoticeDto | null;
+    // The link name of the event's online invitation while guests can open it; null otherwise. Missing from an older backend.
+    invitationSlug?: string | null;
+    // Members only: the event's upload code while it takes photos, so the feed can open the upload page. Null otherwise.
+    uploadToken?: string | null;
 }
 
 // --- Partner feed branding (collaborator-feed-branding-design.md, 2026-10-08) ---
@@ -2768,8 +2784,8 @@ export interface FunnelChannelRowDto {
     revenueMinorByCurrency: Record<string, number>;
 }
 
-// /api/admin/campaign-links. Made with the campaign link builder; only the name changes afterwards.
-// Spring stores the UTM values trimmed and lowercased, one link per (source, medium, campaign).
+// One of a campaign's links, made by Add links. Spring stores the UTM values trimmed and lowercased,
+// one link per (source, medium, campaign).
 export interface CampaignLinkDto {
     id: string;
     name: string;
@@ -2783,42 +2799,22 @@ export interface CampaignLinkDto {
     destinationAnchor?: string | null;
     // The readable code in the link's short address, /c/{shortCode}.
     shortCode: string;
+    // The campaign the link belongs to. Every link has one.
+    campaignId: string;
 }
 
 // GET /api/public/campaign-links/{shortCode}: what a short address needs to build the full URL.
 export type CampaignLinkTargetDto = Pick<CampaignLinkDto, 'destinationPath' | 'destinationAnchor' | 'utmSource' | 'utmMedium' | 'utmCampaign'>;
 
-export interface CampaignLinkRequestDto {
-    name: string;
-    destinationPath: string;
-    utmSource: string;
-    utmMedium: string;
-    utmCampaign: string;
-}
-
 export type CampaignLinkLanguage = 'en' | 'el';
 
-// POST /api/admin/campaign-links/sets. Creates whichever of the 8 links are missing.
-export interface CampaignLinkSetRequestDto {
-    name: string;
-    linkName: string;
-    language: CampaignLinkLanguage;
-}
+// GET /api/admin/campaigns and /api/admin/campaigns/{id}. A campaign owns its links and at most one
+// discount. Its status is worked out by Spring: from the discount when it has one, else from its dates.
+export type CampaignStatus = 'SCHEDULED' | 'LIVE' | 'ENDED' | 'ARCHIVED';
 
-export interface CampaignLinkSetDto {
-    links: CampaignLinkDto[];
-    created: number;
-}
-
-// GET /api/admin/metrics/campaigns. Visits and landing page clicks (saved links only) and sign-ups in
-// the range per (source, medium, campaign), sign-ups counted as on FunnelChannelRowDto, with the saved
-// link that has the same values. A saved link with nothing in the range is a row of zeros. Any of the
-// three values is null when the visit didn't have it.
-export interface CampaignRowDto {
-    utmSource: string | null;
-    utmMedium: string | null;
-    utmCampaign: string | null;
-    link: CampaignLinkDto | null;
+// One period's numbers for a campaign, a link or every campaign. Revenue is what the period's sales
+// paid; null for a MARKETING caller.
+export interface CampaignCountsDto {
     visits: number;
     visitors: number;
     createClicks: number;
@@ -2827,37 +2823,125 @@ export interface CampaignRowDto {
     signedUp: number;
     createdEvent: number;
     paidHost: number;
-    // Null for a MARKETING caller: the server leaves revenue out.
-    revenueMinorByCurrency: Record<string, number> | null;
-    // Paid orders credited to this link in the range, whenever the buyer signed up.
     sales: number;
-    // Null for a MARKETING caller, like revenue.
     salesRevenueMinorByCurrency: Record<string, number> | null;
 }
 
-// GET /api/admin/metrics/campaigns/overview. Every saved link, one utm source (?source=) or one link
-// (?link=, which wins) over a range. daily lists every Athens day in the range and hourly every Athens
-// hour (0-23) summed over it, zeros included; both are empty when there's no visit at all.
-// dailySeries and hourlySeries split them into the chart's lines (each source, or with ?source= each
-// "medium / campaign"), only where a line had a visit; empty for one link. A page is null for old
-// visits whose link is gone.
-export interface CampaignOverviewDto {
-    visits: number;
+export interface CampaignDiscountViewDto {
+    id: string;
+    percent: number;
+    label: string | null;
+    startsAt: string;
+    endsAt: string;
+    // When the discount was stopped; null when it wasn't, or was stopped before this was recorded.
+    stoppedAt: string | null;
+    status: SiteNoticeStatus;
+}
+
+// Its dates are the discount's when it has one.
+export interface CampaignDto {
+    id: string;
+    name: string;
+    linkName: string;
+    status: CampaignStatus;
+    startsAt: string | null;
+    endsAt: string | null;
+    archivedAt: string | null;
+    discount: CampaignDiscountViewDto | null;
+    linkCount: number;
+    createdAt: string;
+}
+
+// Visitors on one Athens day, date as YYYY-MM-DD.
+export interface CampaignDayDto {
+    date: string;
     visitors: number;
-    createClicks: number;
-    plansClicks: number;
-    planPicks: number;
-    signedUp: number;
-    paidHost: number;
-    // Null for a MARKETING caller: the server leaves revenue out.
-    revenueMinorByCurrency: Record<string, number> | null;
-    daily: { date: string; visits: number; visitors: number }[];
-    hourly: { hour: number; visits: number; visitors: number }[];
-    dailySeries: { series: string; date: string; visits: number; visitors: number }[];
-    hourlySeries: { series: string; hour: number; visits: number; visitors: number }[];
+}
+
+// previous is null for all time.
+export interface CampaignListItemDto {
+    campaign: CampaignDto;
+    current: CampaignCountsDto;
+    previous: CampaignCountsDto | null;
+    daily: CampaignDayDto[];
+}
+
+// Every campaign added up, then each one. The previous period and its numbers are null for all time.
+export interface CampaignListDto {
+    previousSince: string | null;
+    previousUntil: string | null;
+    current: CampaignCountsDto;
+    previous: CampaignCountsDto | null;
+    items: CampaignListItemDto[];
+}
+
+export interface CampaignLinkStatsDto {
+    link: CampaignLinkDto;
+    counts: CampaignCountsDto;
+}
+
+// One campaign. deletable: no visit ever, and no discount that has started or been stopped.
+export interface CampaignDetailDto {
+    campaign: CampaignDto;
+    deletable: boolean;
+    previousSince: string | null;
+    previousUntil: string | null;
+    current: CampaignCountsDto;
+    previous: CampaignCountsDto | null;
+    daily: CampaignDayDto[];
+    previousDaily: CampaignDayDto[];
+    links: CampaignLinkStatsDto[];
     devices: { device: VisitorDevice; visits: number }[];
     languages: { language: VisitorLanguage; visits: number }[];
     pages: { page: string | null; visits: number }[];
+}
+
+// Spring's CampaignPlacement: what a link is for. Source, medium and format follow from it.
+export type CampaignPlacement =
+    | 'INSTAGRAM_POST'
+    | 'INSTAGRAM_STORY'
+    | 'FACEBOOK_POST'
+    | 'TIKTOK_POST'
+    | 'INSTAGRAM_POST_AD'
+    | 'INSTAGRAM_STORY_AD'
+    | 'FACEBOOK_POST_AD'
+    | 'TIKTOK_POST_AD'
+    | 'GOOGLE_ADS'
+    | 'PINTEREST'
+    | 'YOUTUBE'
+    | 'LINKEDIN'
+    | 'EMAIL'
+    | 'PARTNER'
+    | 'PRINTED_QR'
+    | 'OTHER';
+
+// POST /api/admin/campaigns/{id}/links. No pageKey means each language's home page, plans section;
+// with one, pagePaths gives that page's path per language. partnerName is for PARTNER, utmSource and
+// utmMedium for OTHER, each as a utm value.
+export interface CampaignLinksRequestDto {
+    placements: CampaignPlacement[];
+    languages: CampaignLinkLanguage[];
+    pageKey: string | null;
+    pagePaths: Partial<Record<CampaignLinkLanguage, string>> | null;
+    partnerName: string | null;
+    utmSource: string | null;
+    utmMedium: string | null;
+}
+
+export interface CampaignDiscountRequestDto {
+    percent: number;
+    label: string | null;
+}
+
+// POST and PATCH /api/admin/campaigns. With a discount the dates are the discount's and the end is
+// required. links is for create only.
+export interface CampaignRequestDto {
+    name: string;
+    linkName: string;
+    startsAt: string | null;
+    endsAt: string | null;
+    discount: CampaignDiscountRequestDto | null;
+    links: CampaignLinksRequestDto | null;
 }
 
 // POST /api/public/campaign-visits. Spring always answers 204.
@@ -3057,23 +3141,13 @@ export interface CostSummaryResponseDto {
 
 // GUEST: the one code a lite event (a plan without posts) gets; only the system makes it. Its scan lists guestActions.
 // See guestwall-be docs/fe-guides/lite-tiers-fe-integration.md §3.
-export type QrTargetType = 'EVENT_JOIN' | 'MEDIA_UPLOAD' | 'INVITATION' | 'GUEST';
+export type QrTargetType = 'EVENT_JOIN' | 'MEDIA_UPLOAD' | 'GUEST';
 // What a scanner can do without an account, in display order.
 export type QrGuestAction = 'UPLOAD' | 'WISH';
 export type QrLinkStatus = 'ACTIVE' | 'REVOKED' | 'EXPIRED' | 'TARGET_UNAVAILABLE';
 
-export interface QrLinkRequestDto {
-    targetType: QrTargetType;
-    targetId?: string;
-    maxGuests?: number;
-    label?: string;
-    metadata?: Record<string, unknown>;
-    expiresAt?: string;
-}
-
 export interface QrLinkPatchDto {
     targetType?: QrTargetType;
-    targetId?: string;
     maxGuests?: number;
     label?: string;
     metadata?: Record<string, unknown>;
@@ -3121,7 +3195,8 @@ export interface QrLinkStatsDto {
 export interface QrLinkResolutionDto {
     status: QrLinkStatus;
     targetType: QrTargetType;
-    // [] unless the code is ACTIVE: GUEST lists UPLOAD and/or WISH, MEDIA_UPLOAD lists UPLOAD.
+    // [] unless the code is ACTIVE: GUEST lists UPLOAD and/or WISH, MEDIA_UPLOAD lists UPLOAD, EVENT_JOIN lists WISH
+    // while the wishbook is in the plan.
     guestActions?: QrGuestAction[];
     eventId?: string;
     eventTitle?: string;
@@ -3136,13 +3211,25 @@ export interface QrLinkResolutionDto {
     inviteToken?: string;
     requiresAuth?: boolean;
     requiresGuestKey?: boolean;
+    // On a join link: the event's upload code, while it can upload. On an upload or guest code: the join
+    // link's invite token, while it works. Lets one scan offer both (KAN-208).
+    uploadToken?: string;
+    joinInviteToken?: string;
+    // The token a wish from this scan goes through, without an account: the code's own, or the event's join
+    // code's. Missing when the event takes no wishes, and from a backend older than this field.
+    wishToken?: string;
+    // The event's online invitation while guests can open it (KAN-239): same rule as the event's own
+    // invitationSlug. Missing when there is none, and from a backend older than this field.
+    invitationSlug?: string | null;
 }
 
 // POST /api/qr/{token}/wishes: a wish left through a GUEST code, with no account. See
 // guestwall-be docs/fe-guides/lite-tiers-fe-integration.md §4.
+// Since KAN-219 it also takes multipart/form-data: this DTO as a `wish` JSON part plus an optional `audio` part.
 export interface QrWishRequestDto {
     guestName: string;
-    message: string;
+    // Optional when the request carries a recording; the server needs one of the two (3132).
+    message?: string;
     ageConfirmed: true;
     acceptedTermsVersion: string;
     acceptedGuidelinesVersion: string;
@@ -3261,9 +3348,26 @@ export interface EventGiftAccountResponseDto {
     updatedAt: string;
 }
 
+// A wish's recording (KAN-219). url is presigned and short-lived: refetch the list for a fresh one.
+export interface WishAudioDto {
+    url: string;
+    durationMs: number;
+}
+
+// POST /api/events/{eventId}/wishbook. Since KAN-219 it also takes multipart/form-data: this DTO as a
+// `wish` JSON part plus an optional `audio` part (the recording).
 export interface WishbookEntryRequestDto {
-    message: string;
+    // Optional when the request carries a recording; the server needs one of the two (3132).
+    message?: string;
     guestName?: string;
+}
+
+// PUT /api/wishbook/{entryId} — the author only, while the event is ACTIVE (KAN-217).
+// A blank or missing message drops the text, so send the current text when only the recording changes.
+export interface WishbookEntryEditDto {
+    message?: string;
+    // Drops the stored recording. Ignored when a new one is sent.
+    removeAudio?: boolean;
 }
 
 export interface WishbookEntryResponseDto {
@@ -3271,7 +3375,10 @@ export interface WishbookEntryResponseDto {
     eventId: string;
     authorMemberId: string | null;
     guestName: string;
-    message: string;
+    // null for a voice-only wish (KAN-219).
+    message: string | null;
+    // Hosts, co-hosts and the author only; null for everyone else and for a wish without one.
+    audio: WishAudioDto | null;
     createdAt: string;
     canDelete: boolean;
     // Starred for the book (2026-10-06). Hosts get true/false; everyone else gets null.
@@ -3634,6 +3741,7 @@ export interface EventSessionRequestDto {
     endAt?: string;
     locationName?: string;
     mapsUrl?: string;
+    locationAddress?: string;
     displayOrder: number;
     isSecondary?: boolean; // defaults to false; at most one non-deleted session per event
     rsvpEnabled?: boolean; // defaults to false; guests may answer for this session only when true
@@ -3649,6 +3757,8 @@ export interface EventSessionResponseDto {
     endAt: string | null;
     locationName: string | null;
     mapsUrl: string | null;
+    // The main session's mirrors the event's own address.
+    locationAddress: string | null;
     displayOrder: number;
     isMain: boolean; // system-managed, read-only — set only via initialSessionTitle at event creation
     isSecondary: boolean;
@@ -3666,6 +3776,7 @@ export interface EventSessionPatchDto {
     clearEndAt?: boolean;
     locationName?: string;
     mapsUrl?: string | null;
+    locationAddress?: string;
     displayOrder?: number;
     isSecondary?: boolean;
     rsvpEnabled?: boolean;
@@ -3696,6 +3807,15 @@ export interface RsvpResponseDto {
     notes: string | null;
     submittedAt: string;
     updatedAt: string;
+    // KAN-50 (guestwall-be): optional until that backend release is on every environment.
+    // The member's name, for every RSVP: the only place a reply-only guest's name appears.
+    guestName?: string | null;
+    // A reply from a published invitation, by a guest with no account and no place in the member list.
+    replyOnly?: boolean;
+    // Typed on the invitation's form; null for replies made in the app.
+    email?: string | null;
+    // The reply's phone matched another RSVP on the event (last ten digits). The host keeps or removes it.
+    possibleDuplicate?: boolean;
 }
 
 export interface RsvpPatchDto {
@@ -4488,12 +4608,16 @@ export interface GiftClaimPreviewDto {
     giverDisplayName: string;
     recipientLabel: string;
     emailBound: boolean;
+    // Signed in: whether this account's email is the recipient's. Null for a visitor with no account.
+    callerIsRecipient: boolean | null;
     state: GiftClaimState;
 }
 
 // POST /api/gift-claims/{token}/claim. COMPLETED: the caller owns the event now.
 // CLAIMED: co-host now, owner at ownershipTransfersAt (null while a withdrawal is under review).
 export interface GiftClaimResponseDto {
+    // The claimed event, which the caller hosts now.
+    eventId: string;
     status: 'COMPLETED' | 'CLAIMED';
     ownershipTransfersAt: string | null;
 }
@@ -4569,6 +4693,9 @@ export type AdminAuditAction =
     | 'INVITATION_THEME_IMAGE_DELETED'
     | 'INVITATION_FONT_PAIRING_CREATED'
     | 'INVITATION_FONT_PAIRING_UPDATED'
+    | 'INVITATION_TEXT_CREATED'
+    | 'INVITATION_TEXT_UPDATED'
+    | 'INVITATION_TEXT_DELETED'
     | 'QR_CARD_TEMPLATE_DUPLICATED'
     | 'INVIART_COLLECTION_CHANGED'
     | 'SHOP_STORE_CREATED'
@@ -4642,6 +4769,8 @@ export interface ModerationContentDto {
     authorDisplayName: string | null;
     authorIsHost: boolean;
     media: MediaResponseDto[];
+    // A reported voice wish's recording (KAN-219); null for everything else.
+    audio: WishAudioDto | null;
     createdAt: string;
 }
 
@@ -4944,27 +5073,35 @@ export interface AdminQrCardTemplatePatchDto {
     layout?: QrCardLayoutDto; // a full layout replaces the stored one
 }
 
-// /api/admin/theme-fonts
+// Which list a font belongs to: the wall's theme presets and QR cards, or Save my date. Set on create, never changes.
+export type ThemeFontLibrary = 'WALL' | 'INVITATION';
+
+// /api/admin/theme-fonts?library=
 export interface AdminThemeFontDto {
     id: string;
     key: string;
     familyName: string;
     fallback: 'serif' | 'sans-serif';
+    library: ThemeFontLibrary;
     archived: boolean;
     url: string | null; // null until a file is uploaded; such a font can't be put on a preset
     presetCount: number;
+    // Save my date fonts only: the event types the editor offers it to, sorted. Empty means every type.
+    invitationEventTypes: string[];
 }
 
 export interface AdminThemeFontRequestDto {
     key: string;
     familyName: string;
     fallback: 'serif' | 'sans-serif';
+    library?: ThemeFontLibrary; // WALL when left out
 }
 
 export interface AdminThemeFontPatchDto {
     familyName?: string;
     fallback?: 'serif' | 'sans-serif';
     archived?: boolean;
+    invitationEventTypes?: string[]; // Save my date fonts only
 }
 
 // Why an admin closed an event when no rule was broken (admin-event-management-fe-integration.md §7).
@@ -4992,6 +5129,41 @@ export interface AdminEventSummaryDto {
     suspendedAt: string | null;
     closedAt: string | null;
     deletedAt: string | null;
+}
+
+// GET /api/admin/events/{eventId}/activity — anonymous counts; hour is local "yyyy-MM-ddTHH:00" in `timezone`.
+export interface AdminEventActivityDto {
+    timezone: string;
+    eventStartAt: string | null;
+    eventEndAt: string | null;
+    generatedAt: string;
+    members: { total: number; contributed: number };
+    totals: {
+        posts: number;
+        postMedia: number;
+        stories: number;
+        storyViews: number;
+        galleryUploads: number;
+        galleryViaQr: number;
+        proUploads: number;
+        comments: number;
+        reactions: number;
+        reactionsByType: { code: string; emoji: string | null; count: number }[];
+        wishes: number | null;
+        playlist: { suggestions: number; votes: number } | null;
+        quizAnswers: number | null;
+        rsvp: { attending: number; declined: number } | null;
+    };
+    removed: { posts: number; stories: number; galleryUploads: number; comments: number; wishes: number };
+    hours: AdminEventActivityHour[];
+}
+
+export interface AdminEventActivityHour {
+    hour: string;
+    posts: number;
+    stories: number;
+    gallery: number;
+    wishes: number;
 }
 
 export type AdminEventModuleSource = 'PLAN' | 'ADDON' | 'ADMIN_GRANT' | 'NONE';

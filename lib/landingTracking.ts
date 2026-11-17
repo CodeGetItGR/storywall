@@ -9,7 +9,19 @@ import { trackAnalyticsEvent } from '@/lib/googleAnalytics';
 // to the campaign counter (lib/campaignVisits.ts). Vercel's Pro plan keeps at most two properties per
 // event, so no event here carries more.
 
-export type LandingPlacement = 'header' | 'mobile_menu' | 'hero' | 'hero_band' | 'stories' | 'themes' | 'demo' | 'final_cta' | 'sale_button';
+export type LandingPlacement =
+    | 'header'
+    | 'mobile_menu'
+    | 'hero'
+    | 'hero_band'
+    | 'stories'
+    | 'themes'
+    | 'demo'
+    | 'final_cta'
+    | 'sale_button'
+    // The phone create button, plain and during a sale.
+    | 'phone_create'
+    | 'phone_create_sale';
 
 export type LandingSection =
     | 'how_it_works'

@@ -3,7 +3,18 @@ import { userEvent, within } from 'storybook/test';
 
 import { withAppContext } from '@/.storybook/appContext';
 import { copyFor } from '@/.storybook/copy';
-import { guestAuthor, STORY_GUEST_MEMBER_ID, storyAuthor, storyComment, storyEvent, storyHostMember, storyMedia, storyPhotos, storyPost } from '@/.storybook/fixtures';
+import {
+    guestAuthor,
+    STORY_GUEST_MEMBER_ID,
+    storyAuthor,
+    storyComment,
+    storyEvent,
+    storyHostMember,
+    storyMedia,
+    storyPhotos,
+    storyPost,
+} from '@/.storybook/fixtures';
+import { waitForOpen } from '@/.storybook/waitForOpen';
 import { PostCard } from '@/components/feed/PostCard';
 
 const me = storyAuthor({ memberId: STORY_GUEST_MEMBER_ID, displayName: 'Maria Papadopoulou', role: 'ATTENDEE' });
@@ -71,7 +82,10 @@ export const WithReactionsAndComments: Story = {
             reactionCounts: { LOVE: 8, LAUGH: 3, WOW: 1 },
             myReactionType: 'LOVE',
             commentCount: 5,
-            recentComments: [storyComment('c1'), storyComment('c2', { author: { ...guestAuthor, displayName: 'Sofia Ioannou' }, content: 'Gorgeous!' })],
+            recentComments: [
+                storyComment('c1'),
+                storyComment('c2', { author: { ...guestAuthor, displayName: 'Sofia Ioannou' }, content: 'Gorgeous!' }),
+            ],
         }),
     },
 };
@@ -85,6 +99,7 @@ export const MyPostActions: Story = {
     args: { post: myPost },
     play: async ({ canvasElement, globals }) => {
         await userEvent.click(within(canvasElement).getByRole('button', { name: copyFor(globals).PostCard.moreOptions }));
+        await waitForOpen('menu');
     },
 };
 
@@ -93,7 +108,9 @@ export const ConfirmDelete: Story = {
     play: async ({ canvasElement, globals }) => {
         const t = copyFor(globals).PostCard;
         await userEvent.click(within(canvasElement).getByRole('button', { name: t.moreOptions }));
-        await userEvent.click(await within(document.body).findByRole('menuitem', { name: t.deletePost }));
+        await waitForOpen('menu');
+        await userEvent.click(within(document.body).getByRole('menuitem', { name: t.deletePost }));
+        await waitForOpen('dialog');
     },
 };
 

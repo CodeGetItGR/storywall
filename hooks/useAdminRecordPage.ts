@@ -73,6 +73,7 @@ export function useAdminRecordPage(root: string) {
     return {
         isNew: record === NEW_RECORD,
         recordId: record === NEW_RECORD ? null : record,
+        push,
         replace,
         showList,
         handleNewClick,

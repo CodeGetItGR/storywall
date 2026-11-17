@@ -7,21 +7,24 @@ const state = vi.hoisted(() => ({
     emailVerified: true as boolean | null,
     isLoading: false,
     memberships: [] as { eventId: string }[],
+    wizard: false,
 }));
 
 vi.mock('@/hooks/useAuth', () => ({
     useAuth: () => ({ user: { emailVerified: state.emailVerified } }),
 }));
-vi.mock('@/hooks/useEmailVerificationWatch', () => ({ useEmailVerificationWatch: () => undefined }));
+vi.mock('@/hooks/useMe', () => ({ useMe: () => undefined }));
 vi.mock('@/hooks/useMyEventList', () => ({
     useMyEventList: () => ({ eventQueries: [], isLoading: state.isLoading, memberships: state.memberships }),
 }));
 vi.mock('@/hooks/useEventGridItems', () => ({ useEventGridItems: () => [] }));
+vi.mock('@/providers/CreateWizardFlagProvider', () => ({ useCreateWizardEnabled: () => state.wizard }));
 
 afterEach(() => {
     state.emailVerified = true;
     state.isLoading = false;
     state.memberships = [];
+    state.wizard = false;
 });
 
 describe('useHomeContent', () => {
@@ -58,5 +61,22 @@ describe('useHomeContent', () => {
         state.emailVerified = null;
         const { result } = renderHook(() => useHomeContent());
         expect(result.current.emptyState).toBe('noEvents');
+    });
+
+    it('lets an unverified account create once the wizard is on', () => {
+        state.wizard = true;
+        state.emailVerified = false;
+        const { result } = renderHook(() => useHomeContent());
+        expect(result.current.canCreateEvent).toBe(true);
+        expect(result.current.emptyState).toBe('noEvents');
+        expect(result.current.showVerifyBanner).toBe(false);
+        expect(result.current.showCreateButton).toBe(true);
+    });
+
+    it('keeps the old block with the wizard off', () => {
+        state.emailVerified = false;
+        const { result } = renderHook(() => useHomeContent());
+        expect(result.current.canCreateEvent).toBe(false);
+        expect(result.current.showCreateButton).toBe(false);
     });
 });

@@ -3,6 +3,8 @@ import type { MetadataRoute } from 'next';
 import { defaultLocale, locales } from '@/i18n/config';
 import {
     getForBusinessPath,
+    getInvitationCataloguePath,
+    getInvitationThemePath,
     getLegalPagePath,
     getPublicLandingPath,
     getQrWeddingPath,
@@ -14,11 +16,15 @@ import { endpoints } from '@/lib/api/endpoints';
 import { serverPublicConfigGet } from '@/lib/api/serverFetch';
 import type { AppConfigResponseDto } from '@/lib/api/types';
 import { showsForBusinessHub } from '@/lib/forBusinessRelease';
+import { fetchThemeCatalogue } from '@/lib/invitation/serverThemeCatalogue';
 import { liveOccasionsInConfig, occasionLanguageAlternates, occasionPath } from '@/lib/occasions/occasions';
 import { qrWeddingPageLive } from '@/lib/qrWeddingPage';
+import { showsSaveMyDate } from '@/lib/saveMyDateRelease';
 import {
     absoluteUrl,
     forBusinessLanguageAlternates,
+    invitationCatalogueLanguageAlternates,
+    invitationThemeLanguageAlternates,
     landingLanguageAlternates,
     legalPageLanguageAlternates,
     qrWeddingLanguageAlternates,
@@ -36,10 +42,19 @@ async function loadConfig(): Promise<AppConfigResponseDto | null> {
     }
 }
 
-// Only the public landing, wedding QR, partner, vendor type, occasion, contact and legal pages are indexable. Every
+// Every active theme's slug, or none when the backend can't answer: the catalogue page itself still goes in.
+async function loadThemeSlugs(): Promise<string[]> {
+    try {
+        return (await fetchThemeCatalogue()).map((theme) => theme.slug);
+    } catch {
+        return [];
+    }
+}
+
+// Only the public landing, wedding QR, partner, vendor type, occasion, invitation theme, contact and legal pages are indexable. Every
 // other route is either behind a session or a tokenised guest link, so it stays out on purpose.
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-    const config = await loadConfig();
+    const [config, themeSlugs] = await Promise.all([loadConfig(), showsSaveMyDate() ? loadThemeSlugs() : Promise.resolve([])]);
 
     const landingLanguages = landingLanguageAlternates();
     const landing: MetadataRoute.Sitemap = locales.map((locale) => ({
@@ -85,6 +100,24 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         }));
     });
 
+    const invitationCatalogueLanguages = invitationCatalogueLanguageAlternates();
+    const invitationCatalogue: MetadataRoute.Sitemap = (showsSaveMyDate() ? locales : []).map((locale) => ({
+        url: absoluteUrl(getInvitationCataloguePath(locale)),
+        changeFrequency: 'weekly',
+        priority: 0.8,
+        alternates: { languages: invitationCatalogueLanguages },
+    }));
+
+    const invitationThemes: MetadataRoute.Sitemap = themeSlugs.flatMap((slug) => {
+        const languages = invitationThemeLanguageAlternates(slug);
+        return locales.map((locale) => ({
+            url: absoluteUrl(getInvitationThemePath(slug, locale)),
+            changeFrequency: 'weekly' as const,
+            priority: 0.6,
+            alternates: { languages },
+        }));
+    });
+
     const legal: MetadataRoute.Sitemap = LEGAL_PAGE_PATHS.flatMap((path) => {
         const languages = legalPageLanguageAlternates(path);
         return locales.map((locale) => ({
@@ -95,5 +128,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         }));
     });
 
-    return [...landing, ...qrWedding, ...forBusiness, ...vendorPages, ...occasions, ...legal];
+    return [...landing, ...qrWedding, ...forBusiness, ...vendorPages, ...occasions, ...invitationCatalogue, ...invitationThemes, ...legal];
 }

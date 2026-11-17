@@ -17,11 +17,11 @@ export const CONSENT_COOKIE = 'sw_consent';
 // The last campaign link, kept only with analytics consent. Defined here so lib/campaignAttribution.ts can read the consent without a cycle.
 export const CAMPAIGN_ATTRIBUTION_COOKIE = 'sw_campaign';
 // Bump to ask everyone again, e.g. when a new optional category is added or a switch's meaning widens.
-export const CONSENT_VERSION = 3;
+export const CONSENT_VERSION = 4;
 // Six months, then the banner asks again.
 const CONSENT_MAX_AGE_SECONDS = 60 * 60 * 24 * 182;
-// Google Ads' click and conversion cookies.
-const AD_COOKIE_PREFIX = '_gcl_';
+// Google Ads' click and conversion cookies, and the Meta Pixel's (_fbp, _fbc).
+const AD_COOKIE_PREFIXES = ['_gcl_', '_fbp', '_fbc'];
 // Google Analytics' visitor and session cookies (_ga, _ga_<id>).
 const ANALYTICS_COOKIE_PREFIX = '_ga';
 
@@ -66,7 +66,7 @@ function cookieDomains(hostname: string): string[] {
 }
 
 export function clearAdCookies(): void {
-    clearCookiesStartingWith(AD_COOKIE_PREFIX);
+    for (const prefix of AD_COOKIE_PREFIXES) clearCookiesStartingWith(prefix);
 }
 
 // Google Analytics' cookies, and the signup source and campaign link, which are kept only with analytics consent.

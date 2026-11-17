@@ -1,6 +1,5 @@
 'use client';
 
-import { AlertTriangle } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { QrStatsRow } from '@/components/manage/invitations/QrStatsRow';
@@ -12,15 +11,11 @@ export function QrStatsSheet({
     stats,
     open,
     onCloseAction,
-    canRaiseLimit,
-    onRaiseLimitAction,
 }: {
     qrLink: QrLinkResponseDto;
     stats: QrLinkStatsDto;
     open: boolean;
     onCloseAction: () => void;
-    canRaiseLimit: boolean;
-    onRaiseLimitAction: () => void;
 }) {
     const t = useTranslations('ManagePage');
     const tGlobal = useTranslations();
@@ -51,17 +46,6 @@ export function QrStatsSheet({
                         value={stats.lastJoinedAt ? t('qr.stats.lastJoinedAt', { date: new Date(stats.lastJoinedAt) }) : t('qr.stats.noJoinsYet')}
                     />
                 </div>
-
-                {isLowOnSlots && canRaiseLimit && (
-                    <button
-                        type="button"
-                        onClick={onRaiseLimitAction}
-                        className="mt-4 flex w-full items-center justify-center gap-2 rounded-full px-4 py-2.5 text-sm font-semibold text-white transition-opacity bg-gradient-brand hover:opacity-90"
-                    >
-                        <AlertTriangle className="h-4 w-4" />
-                        {t('qr.stats.raiseLimit')}
-                    </button>
-                )}
             </Modal.Body>
         </Modal>
     );

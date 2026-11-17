@@ -3,6 +3,7 @@ import { useTranslations } from 'next-intl';
 import { fn, userEvent, within } from 'storybook/test';
 
 import { copyFor } from '@/.storybook/copy';
+import { waitForOpen } from '@/.storybook/waitForOpen';
 import { PostActionsMenu } from '@/components/feed/post/PostActionsMenu';
 
 type MenuArgs = { canEdit: boolean; canDelete: boolean; canReport: boolean; canReportRole: boolean; isDeleting: boolean };
@@ -41,7 +42,9 @@ const meta = {
     ],
     play: async ({ canvasElement, globals }) => {
         const trigger = within(canvasElement).getByRole('button', { name: copyFor(globals).PostCard.moreOptions });
-        if (!(trigger as HTMLButtonElement).disabled) await userEvent.click(trigger);
+        if ((trigger as HTMLButtonElement).disabled) return;
+        await userEvent.click(trigger);
+        await waitForOpen('menu');
     },
 } satisfies Meta<typeof PostMenu>;
 

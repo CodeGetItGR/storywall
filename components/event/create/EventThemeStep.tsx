@@ -12,7 +12,7 @@ import { useCreateEventForm } from '@/providers/createEvent/CreateEventFormConte
 
 // The creation form's optional theme step. Nothing is saved here: the pick goes out with
 // the create request (or a PUT /theme when the draft already exists).
-export function EventThemeStep() {
+export function EventThemeStep({ showHint = true }: { showHint?: boolean } = {}) {
     const t = useTranslations('ManagePage.settings.theme');
     const tSteps = useTranslations('CreateEventPage.steps');
     const toErrorMessage = useApiErrorMessage();
@@ -30,7 +30,7 @@ export function EventThemeStep() {
             <h3 id={headingId} className="sr-only">
                 {themeName}
             </h3>
-            <p className="text-sm text-ink-muted">{tSteps('themeHint')}</p>
+            {showHint && <p className="text-sm text-ink-muted">{tSteps('themeHint')}</p>}
 
             {isThemePresetsLoading && <LoadingState label={t('loading')} className="mt-4 justify-start" />}
             {!isThemePresetsLoading && Boolean(themePresetsError) && (

@@ -7,6 +7,7 @@ import type { MouseEvent } from 'react';
 
 import { ComposerFab } from '@/components/layout/mobile-tab-bar/ComposerFab';
 import { ContextNavSlot } from '@/components/layout/mobile-tab-bar/ContextNavSlot';
+import { OverviewFab } from '@/components/layout/mobile-tab-bar/OverviewFab';
 import { ShareInviteTab } from '@/components/layout/mobile-tab-bar/ShareInviteTab';
 import { tabIconBoxClass, TabLabel } from '@/components/layout/mobile-tab-bar/TabLabel';
 import { TabLink } from '@/components/layout/mobile-tab-bar/TabLink';
@@ -74,9 +75,7 @@ export function MobileTabBar() {
     const contextItems: ContextNavItem[] = activeEvent
         ? isHost
             ? [
-                  // Help links into the manage page's Help section, and the gallery QR only makes
-                  // sense once the event is live — both hidden for draft events.
-                  ...(isDraft ? hostItems.filter((item) => item.key !== 'help' && item.key !== 'galleryQr') : hostItems),
+                  ...hostItems,
                   // Hosts answer RSVPs from the dashboard's RSVP section, not the guest self-RSVP tool.
                   ...(isDraft ? [] : toolItems.filter((item) => item.key !== 'rsvp')),
               ]
@@ -221,6 +220,9 @@ export function MobileTabBar() {
                     </nav>
                 </div>
             </div>
+
+            {/* Overview */}
+            <OverviewFab raised={showComposerFab} hidden={hasOpenOverlay || isComposerFabHidden || isMobileTabBarHidden} />
 
             {/* Compose */}
             {showComposerFab && <ComposerFab hidden={hasOpenOverlay || isComposerFabHidden} />}

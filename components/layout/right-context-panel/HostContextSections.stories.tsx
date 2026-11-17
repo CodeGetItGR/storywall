@@ -6,10 +6,9 @@ import { hostPanelHandlers } from '@/.storybook/handlers';
 import { HostContextSections } from '@/components/layout/right-context-panel/HostContextSections';
 import { useRightContextPanel } from '@/hooks/useRightContextPanel';
 
-// HostContextSections reads its whole model from useRightContextPanel; this is
-// how the manage page's overview places it, inline and without the member count.
+// HostContextSections reads its whole model from useRightContextPanel.
 function HostSections({ showMembersUsage }: { showMembersUsage: boolean }) {
-    const panel = useRightContextPanel({ includeManageLinks: false });
+    const panel = useRightContextPanel();
     return <HostContextSections panel={panel} showMembersUsage={showMembersUsage} />;
 }
 

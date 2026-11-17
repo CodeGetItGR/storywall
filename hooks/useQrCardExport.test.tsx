@@ -1,6 +1,6 @@
 import { act, renderHook, waitFor } from '@testing-library/react';
 import type { ChangeEvent } from 'react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const exportMocks = vi.hoisted(() => ({
     standaloneQrCardSvg: vi.fn(),
@@ -30,6 +30,8 @@ beforeEach(() => {
     exportMocks.qrCardPdfBytes.mockReset().mockResolvedValue(new Uint8Array([37, 80, 68, 70]));
     downloadBlob.mockReset();
 });
+
+afterEach(() => vi.restoreAllMocks());
 
 describe('useQrCardExport', () => {
     it('saves the card as a PNG named after the title', async () => {
@@ -98,6 +100,18 @@ describe('useQrCardExport', () => {
         expect(result.current.perPage).toBe('one');
         expect(result.current.sheet).toBeNull();
         expect(result.current.sheetCount).toBe(4);
+    });
+
+    it('prints to the exact page outside Android', () => {
+        vi.spyOn(navigator, 'userAgent', 'get').mockReturnValue('Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/154.0');
+
+        expect(renderExport().result.current.adaptivePrint).toBe(false);
+    });
+
+    it('adapts the print to the paper on Android', () => {
+        vi.spyOn(navigator, 'userAgent', 'get').mockReturnValue('Mozilla/5.0 (Linux; Android 15; SM-S938B) Chrome/154.0 Mobile');
+
+        expect(renderExport().result.current.adaptivePrint).toBe(true);
     });
 
     it('saves a PDF of a full A4 sheet, and keeps the PNG to one card', async () => {

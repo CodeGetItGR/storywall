@@ -122,11 +122,11 @@ describe('QrCardLayoutEditor', () => {
         // Shift moves 5 mm.
         fireEvent.keyDown(code, { key: 'ArrowRight', shiftKey: true });
 
-        expect(screen.getByText(/position .*"x":"25.5"/)).toBeInTheDocument();
+        expect(screen.getByText(/position .*"x":"34.5"/)).toBeInTheDocument();
         fireEvent.click(screen.getByRole('button', { name: 'save' }));
 
         await vi.waitFor(() => expect(onClose).toHaveBeenCalled());
-        expect(patch.mutateAsync.mock.calls[0][0].input.layout.code.x).toBe(25.5);
+        expect(patch.mutateAsync.mock.calls[0][0].input.layout.code.x).toBe(34.5);
         expect(onSaved).toHaveBeenCalled();
     });
 
@@ -154,6 +154,32 @@ describe('QrCardLayoutEditor', () => {
         const layout = patch.mutateAsync.mock.calls[0][0].input.layout;
         expect(layout.title).toBeNull();
         expect(layout.fields).toEqual([expect.objectContaining({ kind: 'fixed', text: { en: 'Thank you', el: 'Ευχαριστούμε' } })]);
+    });
+
+    it('adds the logo once, colours it, and saves it', async () => {
+        renderEditor();
+        fireEvent.click(screen.getByRole('button', { name: 'addLogo' }));
+        expect(screen.getByRole('button', { name: /^elements\.logo/ })).toBeInTheDocument();
+        expect(screen.queryByRole('button', { name: 'addLogo' })).not.toBeInTheDocument();
+        expect(screen.getByRole('radio', { name: 'logoColorOptions.original' })).toBeChecked();
+
+        // One colour starts as the card's text colour.
+        fireEvent.click(screen.getByRole('radio', { name: 'logoColorOptions.one' }));
+        fireEvent.change(screen.getByLabelText('color'), { target: { value: '#ffffff' } });
+
+        fireEvent.click(screen.getByRole('button', { name: 'save' }));
+        await vi.waitFor(() => expect(patch.mutateAsync).toHaveBeenCalled());
+        expect(patch.mutateAsync.mock.calls[0][0].input.layout.logo).toEqual({ x: 30, y: 129.7, width: 45, color: '#FFFFFF' });
+        // The tiles got shorter to make room for it.
+        expect(patch.mutateAsync.mock.calls[0][0].input.layout.features).toEqual({ x: 8, y: 79, width: 89, height: 49.7 });
+    });
+
+    it('removes the logo', () => {
+        renderEditor();
+        fireEvent.click(screen.getByRole('button', { name: 'addLogo' }));
+        fireEvent.click(screen.getByRole('button', { name: 'removeLogo' }));
+        expect(screen.queryByRole('button', { name: /^elements\.logo/ })).not.toBeInTheDocument();
+        expect(screen.getByRole('button', { name: 'addLogo' })).toBeInTheDocument();
     });
 
     it('asks before discarding changes', () => {
