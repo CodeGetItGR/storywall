@@ -4,6 +4,7 @@ import { useCallback, useMemo, useState } from 'react';
 import { storyDraft } from '@/.storybook/editor';
 import { SectionSettings } from '@/components/saveMyDate/editor/settings/SectionSettings';
 import type { SettingsScope } from '@/hooks/useSectionSettingsPanel';
+import { draftImageUploader } from '@/lib/invitation/editorUploads';
 import { eventFieldLinks } from '@/lib/invitation/eventData';
 import { type InvitationEventData, syncWithEvent } from '@/lib/invitation/eventLinks';
 import { type DocumentRecipe, settingsGroups } from '@/lib/invitation/sectionSettings';
@@ -90,7 +91,7 @@ export function useStoryPanel(sectionId: string, isAdmin: boolean, { followsEven
         theme: draft.theme,
         media,
         fonts,
-        draftId: draft.id,
+        uploadImage: draftImageUploader(draft.id),
         addUploaded,
         event,
         eventSamples: null,

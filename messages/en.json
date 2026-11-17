@@ -1433,8 +1433,7 @@
         },
         "invitations": {
             "capacity": {
-                "title": "Guest capacity",
-                "coHostsTitle": "Guests and co-hosts"
+                "title": "Guest capacity"
             },
             "full": {
                 "notice": "This event has reached its guest limit, so new invitations can't be created.",
@@ -1445,8 +1444,6 @@
                 "shareTitle": "Share with a group",
                 "shareBody": "Create a link or QR code for group chats, printed cards, posters, or photo uploads."
             },
-            "claimed": "Claimed",
-            "unclaimed": "Unclaimed",
             "copyLink": "Copy link",
             "shareLanguageNote": "Links you share open in English.",
             "copied": "Copied!",
@@ -1462,23 +1459,17 @@
                 "cta": "Invite co-host",
                 "title": "Invite a co-host",
                 "subtitle": "They become a host only after signing in with this verified email and accepting.",
-                "summary": "{count, plural, one {# co-host invitation} other {# co-host invitations}}",
                 "empty": "No pending co-host invitations.",
-                "emptyTitle": "No co-host invites yet",
-                "emptyBody": "Invite someone by email when they should help manage the event.",
-                "singleRecipient": "One verified recipient",
                 "email": "Email",
                 "firstName": "First name",
                 "lastName": "Last name",
                 "expiresAt": "Expires",
+                "expiresOn": "Expires {date}",
                 "emailNotice": "We send the invitation automatically. Another account cannot accept this link.",
                 "alreadyMember": "{name} is already a member of this event.",
                 "submit": "Send invitation",
                 "cancel": "Cancel",
-                "guideTitle": "Invite someone to help",
-                "guideBody": "Co-host invitations are sent by email and are tied to that email address.",
                 "currentTitle": "Current hosts",
-                "currentSummary": "{count, plural, one {# host} other {# hosts}}",
                 "primary": "Primary host",
                 "coHost": "Co-host",
                 "transfer": "Transfer ownership",
@@ -1719,7 +1710,6 @@
             "emptyTitle": "No members yet",
             "emptyBody": "Members appear here after they join.",
             "joined": "Joined {date}",
-            "roleHost": "Host",
             "report": "Report",
             "remove": "Remove",
             "cancel": "Cancel",
@@ -1728,7 +1718,8 @@
             "promote": "Make co-host",
             "promoteConfirmTitle": "Make {name} a co-host?",
             "promoteConfirmBody": "They'll be able to manage this event.",
-            "removeFailed": "Couldn't remove this member. Please try again."
+            "removeFailed": "Couldn't remove this member. Please try again.",
+            "moreFor": "More options for {name}"
         }
     },
     "EventPlanSettingsPage": {
@@ -4740,7 +4731,9 @@
                 "fields": "Plan fields",
                 "to": "to",
                 "added": "Added:",
-                "removed": "Removed:"
+                "removed": "Removed:",
+                "promoPricesNoEnd": "Promo prices on this plan's durations stay on and will have no end date. Remove them in Durations.",
+                "goesLiveOnSave": "This promotion goes live as soon as you save."
             },
             "create": {
                 "title": "Create plan",
@@ -5545,6 +5538,7 @@
             }
         },
         "invitationThemes": {
+            "editDesign": "Edit design of {name}",
             "title": "Themes",
             "create": "New theme",
             "search": "Search by name or slug",
@@ -5572,6 +5566,7 @@
                 "HIDDEN": "Out of the catalogue. Invitations made from it keep working."
             },
             "drawer": {
+                "editDesign": "Edit design",
                 "name": "Name",
                 "eventType": "Event type",
                 "status": "Status",
@@ -10314,6 +10309,75 @@
         "linkFallback": "See more"
     },
     "InvitationEditor": {
+        "save": "Save",
+        "themeMetaTitle": "Edit theme",
+        "themeLoadFailed": "We couldn't load this theme.",
+        "themeConflictTitle": "This theme has newer changes.",
+        "themeConflictBody": "It was saved in another tab or by another admin. Changes not saved here will be lost.",
+        "assets": {
+            "tabs": {
+                "illustrations": "Illustrations",
+                "elements": "Elements",
+                "frames": "Frames",
+                "transitions": "Transitions",
+                "share": "Share image"
+            },
+            "art": {
+                "main": "Main illustration",
+                "ceremonyIcon": "Ceremony icon",
+                "welcomeIcon": "Welcome icon",
+                "receptionIcon": "Reception icon"
+            },
+            "frameArt": "Art",
+            "mask": "Mask",
+            "upload": "Upload",
+            "replace": "Replace",
+            "addElement": "Add element",
+            "addFrame": "Add frame",
+            "addTransition": "Add transition",
+            "name": "Name",
+            "uploadFailed": "The image didn't upload. Try again.",
+            "pickElement": "Pick an element",
+            "noElement": "No element"
+        },
+        "themeStyle": {
+            "mainColor": "Main color",
+            "secondColor": "Second color",
+            "backgrounds": "Backgrounds",
+            "modes": {
+                "cover": "Cover",
+                "repeat": "Repeat",
+                "texture": "Texture"
+            },
+            "stableRepeat": "Stable scale, repeat down",
+            "fonts": "Fonts",
+            "fontStyle": "Font style",
+            "customFonts": "Custom",
+            "bodyFont": "Body font",
+            "photoShape": "Photo shape",
+            "shapes": {
+                "rounded": "Rounded corners",
+                "square": "Square",
+                "portrait": "Portrait",
+                "landscape": "Landscape",
+                "circle": "Circle",
+                "oval": "Oval",
+                "arch": "Arch",
+                "extraRounded": "Extra rounded",
+                "hexagon": "Hexagon",
+                "diamond": "Diamond",
+                "octagon": "Octagon",
+                "teardrop": "Teardrop",
+                "blob": "Organic"
+            },
+            "autoContrast": "Automatic contrast on dark backgrounds",
+            "buttons": "Buttons",
+            "buttonFill": "Button fill",
+            "buttonText": "Button text color",
+            "buttonFont": "Button font",
+            "sameAsBody": "Same as body font",
+            "reset": "Reset"
+        },
         "themeSwitch": {
             "change": "Change design",
             "current": "Design: {name}",

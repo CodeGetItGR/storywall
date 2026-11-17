@@ -10,9 +10,10 @@ type Props = Parameters<typeof EditorTopBar>[0];
 
 function renderBar(props: Partial<Props> = {}) {
     const handlers = { onBack: vi.fn(), onUndo: vi.fn(), onRedo: vi.fn(), onPreview: vi.fn(), onPublish: vi.fn(), onTour: vi.fn() };
+    const { onPublish, ...rest } = handlers;
     render(
         <NextIntlClientProvider locale="en" messages={en}>
-            <EditorTopBar status="saved" canUndo canRedo {...handlers} {...props} />
+            <EditorTopBar status="saved" canUndo canRedo {...rest} primary={{ action: 'publish', onClick: onPublish }} {...props} />
         </NextIntlClientProvider>,
     );
     return handlers;
@@ -45,6 +46,20 @@ describe('EditorTopBar', () => {
         expect(screen.getByRole('button', { name: 'Preview' })).toBeDisabled();
         expect(screen.getByRole('button', { name: 'Publish' })).toBeDisabled();
         expect(screen.getByRole('button', { name: 'Undo' })).toBeEnabled();
+    });
+
+    it('shows Save, and no tour, in the theme editor', () => {
+        const onSave = vi.fn();
+        renderBar({ primary: { action: 'save', onClick: onSave }, onTour: undefined });
+        fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+        expect(onSave).toHaveBeenCalledOnce();
+        expect(screen.queryByRole('button', { name: 'Editor tour' })).not.toBeInTheDocument();
+        expect(screen.queryByRole('button', { name: 'Publish' })).not.toBeInTheDocument();
+    });
+
+    it('leaves the end button out when there is nothing to publish or save', () => {
+        renderBar({ primary: undefined });
+        expect(screen.queryByRole('button', { name: 'Publish' })).not.toBeInTheDocument();
     });
 
     it.each<[SaveStatus, string]>([

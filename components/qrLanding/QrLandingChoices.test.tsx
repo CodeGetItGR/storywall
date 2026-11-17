@@ -1,4 +1,4 @@
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { QrLandingChoices } from '@/components/qrLanding/QrLandingChoices';
@@ -6,7 +6,10 @@ import { invitationPublicUrl } from '@/lib/invitation/publication';
 import type { QrEventDetails, QrLandingPlan } from '@/lib/qrLanding';
 import { SITE_URL } from '@/lib/seo';
 
+const trackFlow = vi.hoisted(() => vi.fn());
+
 vi.mock('next-intl', () => ({ useTranslations: () => (key: string) => key }));
+vi.mock('@/lib/flowTracking', () => ({ trackFlow }));
 
 const GUEST_PLAN: QrLandingPlan = { choices: ['join', 'upload', 'wish'], joinInviteToken: 'inv', uploadToken: 'up', wishToken: 'wish', invitationSlug: null };
 
@@ -45,6 +48,15 @@ describe('QrLandingChoices', () => {
             expect(query.get('invite')).toBe('inv');
             expect(query.get('next')).toContain('e1');
         }
+    });
+
+    it('counts the sign-up and log-in taps like the invite page', () => {
+        renderChoices(GUEST_PLAN);
+
+        fireEvent.click(screen.getByRole('link', { name: 'createAccount' }));
+        fireEvent.click(screen.getByRole('link', { name: 'haveAccount' }));
+        expect(trackFlow).toHaveBeenNthCalledWith(1, { name: 'Invite Choice', choice: 'register' });
+        expect(trackFlow).toHaveBeenNthCalledWith(2, { name: 'Invite Choice', choice: 'login' });
     });
 
     it('shows when and where above the card', () => {

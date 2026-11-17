@@ -11,6 +11,7 @@ import { AppLink } from '@/components/ui/AppLink';
 import { billingKeys, useEventBilling, useOrderSync } from '@/hooks/useBilling';
 import { useCheckoutCelebration } from '@/hooks/useCheckoutCelebration';
 import { eventKeys } from '@/hooks/useEvent';
+import { useFlowEvent } from '@/hooks/useFlowEvent';
 import { useLeaveCheckoutOnBack } from '@/hooks/useLeaveCheckoutOnBack';
 import { myEventsKeys } from '@/hooks/useMyEvents';
 import { clearPendingCheckout, readPendingCheckout } from '@/lib/billing';
@@ -53,6 +54,7 @@ export default function CheckoutSuccessPage() {
     const exitHref = paid ? doneHref : routes.events.manage(eventId);
     useOrderSync(eventId, orderId, !paid && !timedOut);
     useLeaveCheckoutOnBack(exitHref);
+    useFlowEvent(paid ? { name: 'Checkout Result', result: 'paid' } : timedOut ? { name: 'Checkout Result', result: 'timed_out' } : null);
     useEffect(() => {
         const timer = window.setTimeout(() => setTimedOut(true), 30000);
         return () => window.clearTimeout(timer);

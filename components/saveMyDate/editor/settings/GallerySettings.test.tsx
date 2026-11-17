@@ -10,6 +10,7 @@ import { PhotoUploadsContext } from '@/hooks/usePhotoUploadsContext';
 import type { SectionOf, SettingsScope } from '@/hooks/useSectionSettingsPanel';
 import { GALLERY_DRAG_MESSAGES, useSortableDrag } from '@/hooks/useSortableDrag';
 import type { InvitationDocument } from '@/lib/invitation/document';
+import { draftImageUploader } from '@/lib/invitation/editorUploads';
 import { galleryPhotoKey, photoSlotKey } from '@/lib/invitation/photoSlots';
 import { createPhotoUploadStore } from '@/lib/invitation/photoUploadStore';
 import type { ImageRef } from '@/lib/invitation/primitives';
@@ -44,7 +45,7 @@ function renderGallery({ images = [photo('m-1'), photo('m-2')], value = slots() 
         theme: SAMPLE_THEME,
         media: (id) => `/media/${id}.jpg`,
         fonts: [],
-        draftId: 'draft-1',
+        uploadImage: draftImageUploader('draft-1'),
         addUploaded: vi.fn(),
         event: null,
         eventSamples: null,

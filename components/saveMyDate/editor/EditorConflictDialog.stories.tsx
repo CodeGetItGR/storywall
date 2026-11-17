@@ -30,3 +30,12 @@ export const Reloading: Story = {
         await waitForOpen('dialog');
     },
 };
+
+// Another admin saved the theme first.
+export const Theme: Story = {
+    args: { subject: 'theme' },
+    play: async ({ globals }) => {
+        const dialog = await waitForOpen('dialog');
+        await expect(within(dialog).getByText(copyFor(globals).InvitationEditor.themeConflictTitle)).toBeVisible();
+    },
+};

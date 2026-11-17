@@ -7,7 +7,6 @@ import { IncidentPausedNote } from '@/components/incident/IncidentPausedNote';
 import { SignupAcceptanceCheckbox } from '@/components/legal/SignupAcceptanceCheckbox';
 import { QrSentArt } from '@/components/qrGuest/QrSentArt';
 import { WishLengthCount } from '@/components/qrGuest/WishLengthCount';
-import { WishPreviewPile } from '@/components/qrGuest/WishPreviewPile';
 import { FormFieldLabel } from '@/components/ui/FormFieldLabel';
 import { VoiceRecorder } from '@/components/wishbook/VoiceRecorder';
 import { GUEST_WISH_NAME_MAX_LENGTH, type GuestWishFormState } from '@/hooks/useGuestWishForm';
@@ -38,11 +37,6 @@ export function GuestWishFormContent({ form }: { form: GuestWishFormState }) {
 
     return (
         <form onSubmit={form.submit} className="flex flex-col gap-5">
-            {/* Preview: the wish as it will read in the wishbook */}
-            <div className="-mx-2 rounded-3xl bg-linear-to-b from-primary-light/70 to-transparent px-6 pt-5 pb-4">
-                <WishPreviewPile message={form.message} guestName={form.guestName} />
-            </div>
-
             {/* Message */}
             <div>
                 <FormFieldLabel label={t('guestCode.wish.messageLabel')} required={form.messageRequired} labelClassName={FIELD_LABEL_CLASS}>

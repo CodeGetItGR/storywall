@@ -1,5 +1,7 @@
+import type { HelpProgress } from '@/hooks/useHelpProgress';
 import type { EventDetailResponseDto, EventSessionResponseDto } from '@/lib/api/types';
 import { addDays, localDay } from '@/lib/datetime';
+import { isModuleAvailable } from '@/lib/eventLifecycle';
 import type { JourneyIconKey } from '@/lib/journeyIcons';
 import { isLiteEvent } from '@/lib/liteEvents';
 import { routes } from '@/lib/routes';
@@ -95,4 +97,41 @@ export function afterStartDay(event: JourneyEvent): string {
 /** Where the All set card's print button goes: a lite event has no QR links, so it opens the gallery. */
 export function journeyPrintHref(event: EventDetailResponseDto): string {
     return isLiteEvent(event) ? routes.events.tools.gallery(event.id) : routes.events.invitationsQr(event.id);
+}
+
+export type SetupStepKey = keyof HelpProgress;
+
+type SetupEvent = Pick<EventDetailResponseDto, 'modules'> & NonNullable<Parameters<typeof isLiteEvent>[0]>;
+
+/** The Before journey's setup stops this event has, in path order. */
+export function setupStepKeys(event: SetupEvent): SetupStepKey[] {
+    const wishlistOn = event.modules.some((item) => item.moduleKey === 'wishlist' && item.isEnabled && item.isAvailable);
+    const keys: SetupStepKey[] = ['details'];
+    if (isModuleAvailable(event.modules, 'rsvp')) keys.push('rsvp');
+    keys.push('schedule');
+    if (wishlistOn) keys.push('giftAccount');
+    if (!isLiteEvent(event)) keys.push('invitations');
+    return keys;
+}
+
+/**
+ * Steps left in the event's current phase, as the Overview path shows them: Before counts setup
+ * stops not done and earlier sessions not ended; On the day counts the day's sessions not ended.
+ * After has no count, since its stops are never marked done.
+ */
+export function journeyStepsLeft(event: JourneyEvent & SetupEvent, progress: HelpProgress, now: Date = new Date()): number | null {
+    const phase = currentPhase(event, now);
+    if (phase === 'after') return null;
+    const groups = sessionsByPhase(event);
+    const openSessions = (list: EventSessionResponseDto[]) =>
+        sessionStates(list, event.schedule.timezone, now).filter((state) => state !== 'done').length;
+    if (phase === 'day') return openSessions(groups.day);
+    return setupStepKeys(event).filter((key) => !progress[key]).length + openSessions(groups.before);
+}
+
+/** The dashboard's Overview: `/manage` with no tab, or `?tab=overview`. */
+export function isOverviewPath(eventId: string, pathname: string, searchParams: string): boolean {
+    if (pathname !== routes.events.manage(eventId)) return false;
+    const tab = new URLSearchParams(searchParams).get('tab');
+    return tab === null || tab === 'overview';
 }

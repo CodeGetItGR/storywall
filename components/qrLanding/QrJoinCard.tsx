@@ -2,6 +2,7 @@ import { useTranslations } from 'next-intl';
 
 import { QrJoinPreview } from '@/components/qrLanding/QrJoinPreview';
 import { AppLink } from '@/components/ui/AppLink';
+import { trackFlow } from '@/lib/flowTracking';
 
 interface QrJoinCardProps {
     choice: 'join' | 'open';
@@ -12,11 +13,21 @@ interface QrJoinCardProps {
     accountHrefs: { register: string; login: string } | null;
 }
 
+// Counted like the invite page's buttons.
+function handleChooseRegister() {
+    trackFlow({ name: 'Invite Choice', choice: 'register' });
+}
+
+function handleChooseLogin() {
+    trackFlow({ name: 'Invite Choice', choice: 'login' });
+}
+
 const PRIMARY_CLASS =
     'flex min-h-10 items-center justify-center rounded-full bg-gradient-brand px-5 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90';
-// Log-in is a plain link under the main button, so the card stays short.
+// Log-in is a plain link under the main button, so the card stays short. The negative margin keeps
+// its tap area full height without the extra space showing above and below it.
 const LINK_CLASS =
-    'mx-auto inline-flex min-h-10 items-center px-3 text-sm font-semibold text-ink underline decoration-ink/30 underline-offset-4 transition-colors hover:decoration-ink';
+    'mx-auto -my-2.5 inline-flex min-h-10 items-center px-3 text-sm font-semibold text-ink underline decoration-ink/30 underline-offset-4 transition-colors hover:decoration-ink';
 
 // The main choice on a scanned event code (KAN-213): what is inside the event, then the way in.
 export function QrJoinCard({ choice, href, coverSrc, title, accountHrefs }: QrJoinCardProps) {
@@ -30,16 +41,16 @@ export function QrJoinCard({ choice, href, coverSrc, title, accountHrefs }: QrJo
             <QrJoinPreview coverSrc={coverSrc} title={title} />
 
             {/* Line */}
-            <p className="text-[13px] leading-snug text-ink-muted">{choice === 'join' ? t('choices.joinLine') : t('choices.eventHint')}</p>
+            <p className="text-center text-[13px] leading-snug text-ink-muted">{choice === 'join' ? t('choices.joinLine') : t('choices.eventHint')}</p>
 
             {/* Actions */}
             {showAccountButtons ? (
                 <>
-                    <AppLink href={accountHrefs.register} className={PRIMARY_CLASS}>
+                    <AppLink href={accountHrefs.register} onClick={handleChooseRegister} className={PRIMARY_CLASS}>
                         {tInvite('createAccount')}
                     </AppLink>
                     <p className="-mt-1 text-center text-xs text-ink-muted">{t('choices.freeAccount')}</p>
-                    <AppLink href={accountHrefs.login} className={LINK_CLASS}>
+                    <AppLink href={accountHrefs.login} onClick={handleChooseLogin} className={LINK_CLASS}>
                         {tInvite('haveAccount')}
                     </AppLink>
                 </>
