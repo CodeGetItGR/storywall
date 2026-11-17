@@ -19,11 +19,15 @@ type LanguageSwitcherVariant = 'auth' | 'default' | 'sidebar';
 export function LanguageSwitcher({
     alternatePaths,
     className,
+    reloadOnChange = false,
     variant = 'default',
 }: {
     // The page's own URL in each language (occasion pages). Switching goes there.
     alternatePaths?: Partial<Record<Locale, string>>;
     className?: string;
+    // Reloads the whole page after the switch (the sign-in pages). Otherwise the page swaps language in place
+    // and keeps what's on screen, such as a half-filled form.
+    reloadOnChange?: boolean;
     variant?: LanguageSwitcherVariant;
 }) {
     const locale = useLocale();
@@ -61,7 +65,7 @@ export function LanguageSwitcher({
             syncRouterWithAddressBar();
             startTransition(async () => {
                 await setLocale(next);
-                if (variant === 'auth') {
+                if (reloadOnChange) {
                     window.location.reload();
                 } else {
                     router.refresh();
@@ -75,7 +79,7 @@ export function LanguageSwitcher({
                 void api.patch<unknown>(endpoints.me.profile, { locale: next } satisfies MeUpdateRequestDto).catch(() => {});
             }
         },
-        [alternatePaths, isAuthenticated, locale, pathname, router, startTransition, variant],
+        [alternatePaths, isAuthenticated, locale, pathname, reloadOnChange, router, startTransition],
     );
 
     const handleLocaleClick = useCallback(
