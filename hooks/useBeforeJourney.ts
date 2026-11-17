@@ -7,9 +7,7 @@ import { useModuleCopy } from '@/hooks/useModuleCopy';
 import type { EventDetailResponseDto } from '@/lib/api/types';
 import { getCreateEventCatalogEntry } from '@/lib/createEventCatalog';
 import { formatDate } from '@/lib/datetime';
-import { type JourneyChip, type JourneyStopModel, sessionsByPhase, sessionStates } from '@/lib/eventJourney';
-import { isModuleAvailable } from '@/lib/eventLifecycle';
-import { isLiteEvent } from '@/lib/liteEvents';
+import { type JourneyChip, type JourneyStopModel, sessionsByPhase, sessionStates, setupStepKeys } from '@/lib/eventJourney';
 import { routes } from '@/lib/routes';
 
 export type JourneyCounts = { memberCount: number; memberLimit: number | null; seatsClaimed: number | null };
@@ -51,7 +49,8 @@ export function useBeforeJourney(event: EventDetailResponseDto, counts: JourneyC
 
     const hasVenueConvention = Boolean(getCreateEventCatalogEntry(event.eventType)?.secondarySessionTitleKey);
     const hasVenue = sessions.some((item) => item.isSecondary);
-    const wishlistOn = event.modules.some((item) => item.moduleKey === 'wishlist' && item.isEnabled && item.isAvailable);
+    // The same stop list the floating Overview button counts (KAN-236).
+    const present = new Set(setupStepKeys(event));
     const membersLine = counts.memberLimit === null ? undefined : tj('journey.members', { count: counts.memberCount, limit: counts.memberLimit });
 
     const settingsHref = routes.events.manage(event.id, { tab: 'settings' });
@@ -91,7 +90,7 @@ export function useBeforeJourney(event: EventDetailResponseDto, counts: JourneyC
                   ]
                 : [],
         },
-        isModuleAvailable(event.modules, 'rsvp') && {
+        present.has('rsvp') && {
             key: 'rsvp',
             title: moduleCopy('rsvp').name,
             icon: 'rsvp',
@@ -112,7 +111,7 @@ export function useBeforeJourney(event: EventDetailResponseDto, counts: JourneyC
             actionLine: progress.schedule ? null : 'link',
             detail: progress.schedule ? tj('journey.sessions', { count: sessions.length }) : undefined,
         },
-        wishlistOn && {
+        present.has('giftAccount') && {
             key: 'giftAccount',
             title: moduleCopy('wishlist').name,
             icon: 'gift',
@@ -121,7 +120,7 @@ export function useBeforeJourney(event: EventDetailResponseDto, counts: JourneyC
             action: { label: t('steps.giftAccount.edit'), href: giftHref },
             actionLine: progress.giftAccount ? null : 'link',
         },
-        !isLiteEvent(event) && {
+        present.has('invitations') && {
             key: 'invitations',
             title: t('steps.invitations.title'),
             icon: 'invitations',
@@ -133,9 +132,9 @@ export function useBeforeJourney(event: EventDetailResponseDto, counts: JourneyC
         },
     ];
 
-    const present = setup.filter((stop): stop is SetupStop => Boolean(stop));
-    const currentIndex = present.findIndex((stop) => !stop.complete);
-    const setupStops: JourneyStopModel[] = present.map((stop, index) => {
+    const shown = setup.filter((stop): stop is SetupStop => Boolean(stop));
+    const currentIndex = shown.findIndex((stop) => !stop.complete);
+    const setupStops: JourneyStopModel[] = shown.map((stop, index) => {
         const { complete, action, actionLine: _actionLine, cardBody, ...rest } = stop;
         const status = complete ? 'done' : index === currentIndex ? 'current' : 'upcoming';
         const current = status === 'current';
