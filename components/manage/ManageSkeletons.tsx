@@ -109,11 +109,7 @@ export function ManageRsvpSkeleton() {
             <Skeleton className="h-[68px] w-full rounded-[20px]" />
 
             {/* Numbers */}
-            <div className="grid grid-cols-4 gap-2">
-                {Array.from({ length: 4 }).map((_, index) => (
-                    <Skeleton key={index} className="h-[58px] rounded-2xl" />
-                ))}
-            </div>
+            <Skeleton className="h-[70px] w-full rounded-[20px]" />
 
             {/* Reports */}
             <div className="flex gap-2 overflow-hidden">
