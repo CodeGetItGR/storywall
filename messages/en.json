@@ -1813,7 +1813,6 @@
             "members": "Members",
             "limits": "Limits",
             "flags": "Flags",
-            "moduleChanges": "New modules",
             "removedModules": "No longer included",
             "moduleCount": "{count} modules",
             "noModuleChanges": "No new modules on this tier. The upgrade mainly increases limits.",
