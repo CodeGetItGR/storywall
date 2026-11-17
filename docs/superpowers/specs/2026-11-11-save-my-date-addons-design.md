@@ -74,6 +74,16 @@ Further decisions:
 
 - The RSVP section is hidden when `rsvpOpen` is false.
 
+### Manage → Invitation (added 2026-11-17)
+
+- The "Your plan doesn't include the invitation" screen (KAN-207, `useEventOnlineInvitation`'s `addOnHref`) gets a main button when a Save my date add-on is sold for the event's plan: "Add the invitation · {price}". It opens the event's Add-ons page with Save my date already ticked.
+- "Upgrade plan" stays as the second button.
+- When an add-on is sold, the body uses a new key: "Add it to your plan or upgrade to make an online invitation for this event." Otherwise today's body stays.
+
+### Event creation wizard (added 2026-11-17)
+
+- No change: the wizard's plan step (KAN-197) shows no add-on line.
+
 ### Order kind label
 
 - `MODULE_UNLOCK`: "Add-ons" / "Πρόσθετες υπηρεσίες" wherever order kinds are labelled.
@@ -93,6 +103,8 @@ Further decisions:
 | Draft note | Paid with the plan. | Πληρώνεται μαζί με το πλάνο. |
 | Paused | Add-ons are paused while your withdrawal is under review. | Οι πρόσθετες υπηρεσίες είναι σε παύση όσο εξετάζεται η υπαναχώρησή σας. |
 | Order kind | Add-ons | Πρόσθετες υπηρεσίες |
+| Manage → Invitation button (2026-11-17) | Add the invitation · {price} | Προσθήκη πρόσκλησης · {price} |
+| Manage → Invitation body, add-on sold (2026-11-17) | Add it to your plan or upgrade to make an online invitation for this event. | Προσθέστε την στο πλάνο σας ή αναβαθμίστε για να φτιάξετε ηλεκτρονική πρόσκληση για αυτή την εκδήλωση. |
 | Withdrawal email (English only) | …your withdrawal of the add-ons on "{event}"… The event stays live without those features. | — |
 
 Add-on names and prices come from the admin catalogue. Any other new text found while building goes to the owner first.
@@ -106,6 +118,15 @@ Add-on names and prices come from the admin catalogue. Any other new text found 
 ## Deploy order
 
 Backend first (new endpoints, order kind, `rsvpOpen`), then the frontend. Everything stays behind `SAVE_MY_DATE_LAUNCHED` on production; the add-on checkout is generic but nothing sells on production until an admin creates `MODULE_UNLOCK` rows there.
+
+## Build order (2026-11-17)
+
+One PR at a time, each approved before the next:
+
+1. guestwall-be: the add-on checkout, the draft add-on `DELETE`, `rsvpOpen` (migration V229).
+2. storywall: the Add-ons page "Add features" section and the Manage → Invitation button.
+3. storywall: Publish on an existing event, with the add-on step.
+4. storywall: Publish with a new event, and the published invitation hiding RSVP.
 
 ## Tests
 
