@@ -1329,7 +1329,6 @@
             "ACTIVE": "Live"
         },
         "openDashboard": "Open dashboard",
-        "rsvpOverview": "RSVP overview",
         "newEvent": "New event",
         "sections": {
             "overview": "Overview",
@@ -1648,11 +1647,6 @@
         "rsvpParty": "{count} seats",
         "rsvpPartyAdults": "{count, plural, one {# adult} other {# adults}}",
         "rsvpPartyChildren": "{count, plural, one {# child} other {# children}}",
-        "rsvpTabs": {
-            "stats": "Stats",
-            "list": "List",
-            "reports": "Reports"
-        },
         "rsvpStats": {
             "daysToGo": "{count, plural, one {# day left} other {# days left}}",
             "deadlineLabel": "RSVP deadline",
@@ -1688,7 +1682,6 @@
         },
         "rsvpReports": {
             "title": "RSVP reports",
-            "description": "Open a report to print it or download it as a PDF.",
             "types": {
                 "STATISTICS": {
                     "label": "Statistics report",
