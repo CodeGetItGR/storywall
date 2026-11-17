@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 import { delay, http, HttpResponse } from 'msw';
-import { expect, userEvent, within } from 'storybook/test';
+import { expect, userEvent, waitFor, within } from 'storybook/test';
 
 import { withAdminShell } from '@/.storybook/admin';
 import { copyFor } from '@/.storybook/copy';
@@ -68,7 +68,8 @@ export const AllTime: Story = {
         const copy = copyFor(globals).AdminPage;
         const canvas = within(canvasElement);
         await userEvent.click(await canvas.findByRole('button', { name: copy.funnel.range.ALL }));
-        await expect(canvas.queryByText(copy.campaigns.chart.previous)).not.toBeInTheDocument();
+        // The last range's numbers stay on screen until the all-time ones arrive.
+        await waitFor(() => expect(canvas.queryByText(copy.campaigns.chart.previous)).not.toBeInTheDocument());
     },
 };
 
