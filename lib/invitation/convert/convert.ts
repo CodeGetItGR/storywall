@@ -12,6 +12,7 @@ import {
     invitationDocumentSchema,
 } from '@/lib/invitation/document';
 import type { InvitationElement } from '@/lib/invitation/elements';
+import { uniqueListItemIds } from '@/lib/invitation/listIds';
 import type { TextStyle } from '@/lib/invitation/primitives';
 import { type InvitationSection, resolveTextField } from '@/lib/invitation/sections';
 import { themeDesignSchema } from '@/lib/invitation/theme';
@@ -62,7 +63,7 @@ export function convertState(input: ConvertInput, media: MediaCollector): Conver
         schemaVersion: INVITATION_SCHEMA_VERSION,
         themeId: input.themeId,
         overrides: input.template ? siteOverrides(theme, input.template) : {},
-        sections: placeFooterLast(dropUnknownAssets(uniqueElementIds(uniqueSectionIds(sections, ctx), ctx), theme, ctx)),
+        sections: placeFooterLast(dropUnknownAssets(uniqueElementIds(uniqueSectionIds(sections, ctx), ctx), theme, ctx)).map(uniqueListItemIds),
     };
     if (input.template) reportThemeDrift(theme, input.template, ctx);
 

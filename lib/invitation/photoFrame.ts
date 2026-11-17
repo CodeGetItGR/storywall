@@ -43,16 +43,24 @@ export function photoFrameWidth(boxScale: number): string {
     return `min(${Math.round(FRAME_BASE_WIDTH * boxScale)}px, 100%)`;
 }
 
-// Everything a frame needs from the theme and the host. A frame with no art, no
-// mask or no photo has nothing to show guests, so it resolves to nothing.
-export function resolvePhotoFrame(element: PhotoFrameElement, ctx: RenderContext) {
+// The frame's own art and mask from the theme, with or without a photo in it.
+export function resolveFrameArt(element: PhotoFrameElement, ctx: RenderContext) {
     const frame = ctx.theme.frames.find((item) => item.id === element.frameId);
     if (!frame) return null;
 
-    const photo = resolveImage(element.photo, ctx);
     const art = ctx.media(frame.art.mediaId);
     const mask = ctx.media(frame.mask.mediaId);
-    if (!photo || !art || !mask) return null;
+    if (!art || !mask) return null;
 
-    return { name: frame.name, width: frame.width, height: frame.height, photo, art, mask };
+    return { name: frame.name, width: frame.width, height: frame.height, art, mask };
+}
+
+// Everything a frame needs from the theme and the host. A frame with no art, no
+// mask or no photo has nothing to show guests, so it resolves to nothing.
+export function resolvePhotoFrame(element: PhotoFrameElement, ctx: RenderContext) {
+    const frame = resolveFrameArt(element, ctx);
+    const photo = resolveImage(element.photo, ctx);
+    if (!frame || !photo) return null;
+
+    return { ...frame, photo };
 }

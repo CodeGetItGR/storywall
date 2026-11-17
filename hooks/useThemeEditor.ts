@@ -15,7 +15,7 @@ import { routes } from '@/lib/routes';
 // Everything the admin's theme editor shows and does (KAN-68): the host's editor over the
 // theme's default invitation, with the theme's style, saved to the theme.
 export function useThemeEditor(theme: EditableTheme, uploadedFonts?: InvitationFontDto[]) {
-    const editor = useInvitationEditorStore(theme.document, theme.design);
+    const editor = useInvitationEditorStore(theme.document, '', theme.design);
     const mode = themeSaveMode(theme.status);
     const { status, flush, isSaved } = useThemeAutosave(editor.store, theme, mode);
     const leave = useEditorLeave(mode === 'auto' ? flush : isSaved, routes.saveMyDateAdmin.themes);

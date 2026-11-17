@@ -26,10 +26,10 @@ function stubLogo() {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(new Uint8Array([60]), { headers: { 'Content-Type': 'image/svg+xml' } })));
 }
 
-function renderCard(link: QrLinkResponseDto, cardHref: string | null = null) {
+function renderCard(link: QrLinkResponseDto, cardHref: string | null = null, label?: string) {
     render(
         <NextIntlClientProvider locale="en" messages={messages}>
-            <QrCodeCard qrLink={link} cardHref={cardHref} />
+            <QrCodeCard qrLink={link} cardHref={cardHref} label={label} />
         </NextIntlClientProvider>,
     );
 }
@@ -129,5 +129,13 @@ describe('QrCodeCard print with designs', () => {
 
         expect(screen.getByRole('link', { name: messages.ManagePage.qr.printCard })).toHaveClass('bg-gradient-brand');
         expect(screen.getByRole('button', { name: messages.ManagePage.qr.downloadFile })).not.toHaveClass('bg-surface-muted');
+    });
+});
+
+describe('QrCodeCard label', () => {
+    it('names the code for screen readers', () => {
+        renderCard(qrLink({}), null, 'QR code for Maria & Nikos');
+
+        expect(screen.getByRole('img', { name: 'QR code for Maria & Nikos' })).toBeInTheDocument();
     });
 });

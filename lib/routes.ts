@@ -7,7 +7,7 @@ type RouteQueryValue = string | number | boolean | null | undefined;
 export type CheckoutIntent = 'upgrade' | 'storage' | 'extension';
 // 'billing' is kept as an alias for the plan section so existing links keep working.
 export type ManageTab =
-    'billing' | 'coverage' | 'danger' | 'gift' | 'help' | 'invitation' | 'members' | 'orders' | 'overview' | 'plan' | 'rsvp' | 'settings' | 'theme';
+    'billing' | 'coverage' | 'danger' | 'gift' | 'invitation' | 'members' | 'orders' | 'overview' | 'plan' | 'rsvp' | 'settings' | 'theme';
 
 // The demo event lives outside the real /events/{eventId} tree (which proxy.ts protects
 // behind a real session) — see docs/superpowers/plans/2026-09-05-demo-event.md, design note 1.
@@ -88,7 +88,6 @@ export const routes = {
             rsvpSubmit: (eventId: string, attending?: 'attending' | 'not-attending' | null) =>
                 withQuery(`${eventBasePath(eventId)}/tools/rsvp/submit`, { attending }),
             gallery: (eventId: string) => `${eventBasePath(eventId)}/tools/gallery`,
-            galleryQr: (eventId: string) => `${eventBasePath(eventId)}/tools/gallery/qr`,
             playlist: (eventId: string) => `${eventBasePath(eventId)}/tools/playlist`,
             quiz: (eventId: string) => `${eventBasePath(eventId)}/tools/quiz`,
             heOrShe: (eventId: string) => `${eventBasePath(eventId)}/tools/he-or-she`,
@@ -119,6 +118,9 @@ export const routes = {
         root: '/admin/save-my-date',
         themes: '/admin/save-my-date/themes',
         themeEditor: (themeId: string) => `/admin/save-my-date/themes/${themeId}/editor`,
+        fonts: '/admin/save-my-date/fonts',
+        fontPairings: '/admin/save-my-date/font-pairings',
+        texts: '/admin/save-my-date/texts',
     },
     reportContent: '/report-content',
     notifications: '/notifications',
@@ -133,6 +135,8 @@ export const routes = {
     // Public.
     contact: '/contact',
     inviteToken: (token: string) => `/invite/${token}`,
+    // The page a scanned event code opens. choice opens one of its forms straight away.
+    qrCode: (token: string, params: { choice?: 'upload' } = {}) => withQuery(`/q/${token}`, params),
     // Public: where a gift card's QR leads.
     giftClaim: (token: string) => `/gift/${token}`,
     auth: {

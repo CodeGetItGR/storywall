@@ -5,6 +5,8 @@ import { useMemo } from 'react';
 import type { SectionSettings, SettingsEdit } from '@/hooks/useSectionSettings';
 import type { InvitationDocument } from '@/lib/invitation/document';
 import type { ImageUploader } from '@/lib/invitation/editorUploads';
+import type { EventFieldLinks } from '@/lib/invitation/eventData';
+import type { InvitationEventData, SampleSections } from '@/lib/invitation/eventLinks';
 import type { MediaResolver } from '@/lib/invitation/render';
 import type { EditorMode } from '@/lib/invitation/sectionRules';
 import type { InvitationSection } from '@/lib/invitation/sections';
@@ -25,6 +27,12 @@ export type SettingsScope<S extends InvitationSection = InvitationSection> = {
     fonts: FontOption[];
     uploadImage: ImageUploader;
     addUploaded: (mediaId: string, url: string) => void;
+    // What the invitation follows from its event; null on no event, or until it loads.
+    event: InvitationEventData | null;
+    // The theme's sample sections, which a followed photo goes back to when the event's cover goes.
+    eventSamples: SampleSections | null;
+    // Where the host changes what the event fills; null on no event.
+    eventFieldLinks: EventFieldLinks | null;
 };
 
 export type SectionOf<T extends InvitationSection['type']> = Extract<InvitationSection, { type: T }>;
@@ -36,16 +44,22 @@ type PanelSources = {
     uploadedFonts?: InvitationFontDto[];
     uploadImage: ImageUploader;
     addUploaded: (mediaId: string, url: string) => void;
+    event: InvitationEventData | null;
+    eventSamples: SampleSections | null;
+    eventFieldLinks: EventFieldLinks | null;
 };
 
 // The open section's sheet: its groups and what they share. Null when nothing is open.
 export function useSectionSettingsPanel(settings: SectionSettings, sources: PanelSources): { scope: SettingsScope; groups: SettingsGroup[] } | null {
-    const { document, theme, media, uploadedFonts, uploadImage, addUploaded } = sources;
+    const { document, theme, media, uploadedFonts, uploadImage, addUploaded, event, eventSamples, eventFieldLinks } = sources;
     const fonts = useMemo(() => fontOptions(document, theme, uploadedFonts), [document, theme, uploadedFonts]);
     const { section, groups, edit, mode } = settings;
 
     return useMemo(() => {
         if (!section) return null;
-        return { scope: { section, edit, mode, isAdmin: mode === 'admin', theme, media, fonts, uploadImage, addUploaded }, groups };
-    }, [addUploaded, edit, fonts, groups, media, mode, section, theme, uploadImage]);
+        return {
+            scope: { section, edit, mode, isAdmin: mode === 'admin', theme, media, fonts, uploadImage, addUploaded, event, eventSamples, eventFieldLinks },
+            groups,
+        };
+    }, [addUploaded, edit, event, eventFieldLinks, eventSamples, fonts, groups, media, mode, section, theme, uploadImage]);
 }

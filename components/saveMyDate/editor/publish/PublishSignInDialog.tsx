@@ -7,10 +7,14 @@ import { AppLink } from '@/components/ui/AppLink';
 import { Modal } from '@/components/ui/modal';
 import type { PublishSignInState } from '@/hooks/usePublishInvitation';
 
-type PublishSignInDialogProps = { signIn: PublishSignInState };
+type PublishSignInDialogProps = {
+    signIn: PublishSignInState;
+    // What signing in is for; publishing by default.
+    title?: string;
+};
 
-// A visitor edits signed out and signs in to publish. The draft stays in this browser meanwhile.
-export function PublishSignInDialog({ signIn }: PublishSignInDialogProps) {
+// A visitor edits signed out and signs in to publish or to add photos. The draft stays in this browser meanwhile.
+export function PublishSignInDialog({ signIn, title }: PublishSignInDialogProps) {
     const t = useTranslations('InvitationEditor');
 
     return (
@@ -23,7 +27,7 @@ export function PublishSignInDialog({ signIn }: PublishSignInDialogProps) {
                             <LogIn className="h-5 w-5" aria-hidden="true" />
                         </div>
                         <div className="min-w-0 flex-1">
-                            <h2 className="text-base font-semibold text-ink">{t('signInTitle')}</h2>
+                            <h2 className="text-base font-semibold text-ink">{title ?? t('signInTitle')}</h2>
                             <p className="mt-1 text-sm leading-relaxed text-ink-muted">{t('signInBody')}</p>
                         </div>
                     </div>

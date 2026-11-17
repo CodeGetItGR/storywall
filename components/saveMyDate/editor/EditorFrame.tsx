@@ -19,6 +19,10 @@ import { SectionSettings } from '@/components/saveMyDate/editor/settings/Section
 import { InlineTextEditing } from '@/components/saveMyDate/editor/text/InlineTextEditing';
 import type { useEditorLeave } from '@/hooks/useEditorLeave';
 import type { EditorWorkspace } from '@/hooks/useEditorWorkspace';
+import type { PhotoUploadSlots } from '@/hooks/usePhotoUploads';
+import { PhotoUploadsContext } from '@/hooks/usePhotoUploadsContext';
+import type { EventFieldLinks } from '@/lib/invitation/eventData';
+import type { InvitationEventData } from '@/lib/invitation/eventLinks';
 import type { InvitationFontDto } from '@/lib/invitation/uploadedFonts';
 
 type EditorFrameProps = {
@@ -39,6 +43,12 @@ type EditorFrameProps = {
     isReloading?: boolean;
     // Notes under the top bar, like the host's publish note.
     notice?: ReactNode;
+    // What a host's draft follows from its event (KAN-84); a theme has none.
+    event?: InvitationEventData | null;
+    fieldLinks?: EventFieldLinks | null;
+    joinUrl?: string;
+    // The canvas's photo slots, which reach the canvas and the section settings alike. A theme has none.
+    photoSlots?: PhotoUploadSlots | null;
     // Sheets and dialogs of its own, like the host's publishing and tour.
     children?: ReactNode;
 };
@@ -59,12 +69,17 @@ export function EditorFrame({
     onReload,
     isReloading = false,
     notice,
+    event = null,
+    fieldLinks = null,
+    joinUrl,
+    photoSlots = null,
     children,
 }: EditorFrameProps) {
     const t = useTranslations('InvitationEditor');
     const { sectionSettings } = editor;
 
     return (
+        <PhotoUploadsContext.Provider value={photoSlots}>
         <div className="smd-editor flex h-full flex-col bg-(--smd-editor-panel)">
             {/* Top bar */}
             <EditorTopBar
@@ -89,8 +104,15 @@ export function EditorFrame({
             {/* Workspace */}
             <div className="flex min-h-0 flex-1">
                 <EditorDockedPanel title={t('themeAssets')}>{assets}</EditorDockedPanel>
-                <InlineTextEditing store={editor.store} document={editor.document} theme={editor.theme} uploadedFonts={uploadedFonts}>
-                    <CanvasHandles store={editor.store}>
+                <InlineTextEditing
+                    store={editor.store}
+                    document={editor.document}
+                    theme={editor.theme}
+                    uploadedFonts={uploadedFonts}
+                    event={event}
+                    fieldLinks={fieldLinks}
+                >
+                    <CanvasHandles store={editor.store} frames={editor.theme.frames}>
                         <EditorCanvas
                             document={editor.document}
                             theme={editor.theme}
@@ -128,6 +150,7 @@ export function EditorFrame({
                 theme={editor.theme}
                 media={editor.media}
                 uploadedFonts={uploadedFonts}
+                joinUrl={joinUrl}
             />
 
             {children}
@@ -136,5 +159,6 @@ export function EditorFrame({
             <EditorConflictDialog open={editor.status === 'conflict'} isReloading={isReloading} onReload={onReload} subject={subject} />
             <EditorLeaveDialog open={leave.isConfirming} onLeave={leave.leave} onStay={leave.stay} />
         </div>
+        </PhotoUploadsContext.Provider>
     );
 }

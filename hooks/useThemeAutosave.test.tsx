@@ -60,7 +60,7 @@ const server = setupServer(
 function renderThemeAutosave(mode: ThemeSaveMode, status: AdminInvitationThemeDto['status'] = 'DRAFT') {
     const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
     const theme = readEditableTheme(storedTheme({ status }));
-    const store = createInvitationEditorStore(theme.document, theme.design);
+    const store = createInvitationEditorStore(theme.document, '', theme.design);
     const wrapper = ({ children }: { children: ReactNode }) => <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
     const hook = renderHook(() => useThemeAutosave(store, theme, mode), { wrapper });
     const setPrimary = (color: string) =>

@@ -103,6 +103,14 @@ export function ThemePresetOption({
                         onError={handleImageError}
                     />
                 )}
+                {/* Plain page: "No theme" previews the event title as the page shows it without a theme */}
+                {presetId === null && previewTitle !== undefined && (
+                    <span aria-hidden="true" className="absolute inset-0 flex items-center justify-center p-3">
+                        <span className="line-clamp-3 text-center alegreya-light text-xl leading-tight break-words text-balance text-ink">
+                            {previewTitle}
+                        </span>
+                    </span>
+                )}
                 {saving && (
                     <span className="absolute inset-0 flex items-center justify-center bg-ink/30">
                         <Loader2 className="h-5 w-5 animate-spin text-white" aria-hidden="true" />

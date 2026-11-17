@@ -7,6 +7,7 @@ import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } 
 import { createDraftServer } from '@/hooks/invitationDraftTestServer';
 import { TEST_USER, testAuth, WithAuth } from '@/hooks/testAuthContext';
 import { EDITOR_TOUR_SEEN_KEY } from '@/lib/invitation/editorTour';
+import { keyboardDrag, layOut } from '@/lib/testing/keyboardDrag';
 import en from '@/messages/en.json';
 import { AuthContext } from '@/providers/AuthProvider';
 
@@ -137,6 +138,109 @@ describe('Invitation editor: section settings', () => {
         await save();
         const program = storedSection('s-program');
         expect(program.type === 'program' && program.data.items.map((item) => item.label)).toEqual(['Μυστήριο', 'Δείπνο']);
+    });
+
+    it('moves a moment with the keyboard, and Undo puts it back', async () => {
+        await openEditor();
+        openSettings('Event schedule');
+        const settings = panel('Event schedule');
+        fireEvent.click(within(settings).getByRole('button', { name: 'Add moment' }));
+        const title = within(settings).getByLabelText('Text');
+        fireEvent.change(title, { target: { value: 'Δείπνο' } });
+        fireEvent.blur(title);
+        fireEvent.click(within(within(settings).getByRole('group', { name: 'Moment' })).getByRole('button', { name: 'Done' }));
+        const labels = () => within(settings).getAllByRole('listitem').map((row) => row.textContent);
+
+        layOut(within(settings).getAllByRole('listitem'));
+        await keyboardDrag(within(settings).getAllByRole('button', { name: 'Drag to reorder' })[0], ['ArrowDown']);
+        expect(labels()).toEqual(['Δείπνο', '18:00Μυστήριο']);
+
+        fireEvent.click(screen.getByRole('button', { name: 'Undo' }));
+        expect(labels()).toEqual(['18:00Μυστήριο', 'Δείπνο']);
+
+        fireEvent.click(screen.getByRole('button', { name: 'Redo' }));
+        await save();
+        const program = storedSection('s-program');
+        expect(program.type === 'program' && program.data.items.map((item) => item.label)).toEqual(['Δείπνο', 'Μυστήριο']);
+    });
+
+    it('adds a question to the FAQ, shows it on the invitation and saves it', async () => {
+        await openEditor();
+        openSettings('FAQ');
+        const settings = panel('FAQ');
+
+        fireEvent.click(within(settings).getByRole('button', { name: 'Add question' }));
+        const question = within(settings).getByLabelText('Question');
+        fireEvent.change(question, { target: { value: 'Υπάρχει dress code;' } });
+        fireEvent.blur(question);
+        fireEvent.click(within(within(settings).getByRole('group', { name: 'Υπάρχει dress code;' })).getByRole('button', { name: 'Done' }));
+
+        expect(within(section('FAQ')).getByRole('button', { name: 'Υπάρχει dress code;' })).toBeInTheDocument();
+        await save();
+        const faq = storedSection('s-faq');
+        expect(faq.type === 'faq' && faq.data.items.map((item) => item.question)).toEqual([
+            'Υπάρχει πάρκινγκ;',
+            'Μπορώ να φέρω τα παιδιά μου;',
+            'Υπάρχει dress code;',
+        ]);
+    });
+
+    it('undoes an added question, and Redo brings it back without opening it', async () => {
+        await openEditor();
+        openSettings('FAQ');
+        const settings = panel('FAQ');
+
+        fireEvent.click(within(settings).getByRole('button', { name: 'Add question' }));
+        expect(within(settings).getByRole('group', { name: 'Untitled' })).toBeInTheDocument();
+        expect(section('FAQ').querySelectorAll('.faq-q')).toHaveLength(3);
+
+        fireEvent.click(screen.getByRole('button', { name: 'Undo' }));
+        expect(section('FAQ').querySelectorAll('.faq-q')).toHaveLength(2);
+        expect(within(settings).queryByRole('group', { name: 'Untitled' })).not.toBeInTheDocument();
+
+        fireEvent.click(screen.getByRole('button', { name: 'Redo' }));
+        expect(within(settings).getByRole('button', { name: 'Untitled' })).toBeInTheDocument();
+        expect(within(settings).queryByRole('group', { name: 'Untitled' })).not.toBeInTheDocument();        await save();
+        const faq = storedSection('s-faq');
+        expect(faq.type === 'faq' && faq.data.items).toHaveLength(3);
+    });
+
+    it('moves a question with the keyboard, and Undo puts it back', async () => {
+        await openEditor();
+        openSettings('FAQ');
+        const settings = panel('FAQ');
+        const canvasOrder = () => Array.from(section('FAQ').querySelectorAll('.faq-q')).map((button) => button.textContent);
+
+        layOut(within(settings).getAllByRole('listitem'));
+        await keyboardDrag(within(settings).getAllByRole('button', { name: 'Drag to reorder' })[0], ['ArrowDown']);
+        expect(canvasOrder()).toEqual(['Μπορώ να φέρω τα παιδιά μου;', 'Υπάρχει πάρκινγκ;']);
+
+        fireEvent.click(screen.getByRole('button', { name: 'Undo' }));
+        expect(canvasOrder()).toEqual(['Υπάρχει πάρκινγκ;', 'Μπορώ να φέρω τα παιδιά μου;']);
+
+        fireEvent.click(screen.getByRole('button', { name: 'Redo' }));
+        await save();
+        const faq = storedSection('s-faq');
+        expect(faq.type === 'faq' && faq.data.items.map((item) => item.id)).toEqual(['q2', 'q1']);
+    });
+
+    it('deletes a godparent from the settings, and Undo brings them back', async () => {
+        await openEditor();
+        openSettings('Godparents');
+        const settings = panel('Godparents');
+        const godparents = section('Godparents');
+        expect(within(godparents).getByText('Άννα')).toBeInTheDocument();
+
+        fireEvent.click(within(settings).getByRole('button', { name: 'Άννα' }));
+        fireEvent.click(within(settings).getByRole('button', { name: 'Delete' }));
+        expect(within(godparents).queryByText('Άννα')).not.toBeInTheDocument();
+        expect(within(settings).getByRole('button', { name: 'Add godparent' })).toBeInTheDocument();
+
+        fireEvent.click(screen.getByRole('button', { name: 'Undo' }));
+        expect(within(godparents).getByText('Άννα')).toBeInTheDocument();
+        await save();
+        const stored = storedSection('s-godparents');
+        expect(stored.type === 'godparents' && stored.data.godparents.map((person) => person.name)).toEqual(['Γιώργος', 'Άννα']);
     });
 
     it('keeps a bad link out and saves a good one', async () => {
