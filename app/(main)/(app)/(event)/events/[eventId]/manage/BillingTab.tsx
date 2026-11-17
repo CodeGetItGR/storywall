@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl';
 import { BillingAddonsSection } from '@/components/manage/billing/BillingAddonsSection';
 import { BillingExtensionSection } from '@/components/manage/billing/BillingExtensionSection';
 import { BillingOrdersPanel } from '@/components/manage/billing/BillingOrdersPanel';
-import { BillingPlanSummary } from '@/components/manage/billing/BillingPlanSummary';
+import { BillingPlanCard } from '@/components/manage/billing/BillingPlanCard';
 import { BillingUpgradeSection } from '@/components/manage/billing/BillingUpgradeSection';
 import { OrderWithdrawalModal } from '@/components/manage/billing/OrderWithdrawalModal';
 import { StorageTrimNotice } from '@/components/manage/billing/StorageTrimNotice';
@@ -74,7 +74,7 @@ export default function BillingTab({
             <StorageTrimNotice dueAt={data.storageTrimDueAt} />
 
             {/* Your plan */}
-            <BillingPlanSummary data={data} schedule={schedule} usage={panel.usage} />
+            <BillingPlanCard data={data} schedule={schedule} usage={panel.usage} />
 
             {/* Upgrade */}
             {!withdrawalOnly && (

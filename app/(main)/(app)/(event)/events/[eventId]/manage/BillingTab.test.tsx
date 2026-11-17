@@ -35,7 +35,7 @@ vi.mock('@/hooks/useOrderWithdrawalFlow', () => ({ useOrderWithdrawalFlow: () =>
 vi.mock('@/components/manage/billing/BillingUpgradeSection', () => ({ BillingUpgradeSection: () => <div>upgrade-section</div> }));
 vi.mock('@/components/manage/billing/BillingExtensionSection', () => ({ BillingExtensionSection: () => <div>extension-section</div> }));
 vi.mock('@/components/manage/billing/BillingAddonsSection', () => ({ BillingAddonsSection: () => <div>addons-section</div> }));
-vi.mock('@/components/manage/billing/BillingPlanSummary', () => ({ BillingPlanSummary: () => <div>plan-summary</div> }));
+vi.mock('@/components/manage/billing/BillingPlanCard', () => ({ BillingPlanCard: () => <div>plan-summary</div> }));
 vi.mock('@/components/manage/billing/BillingOrdersPanel', () => ({ BillingOrdersPanel: () => <div>orders-panel</div> }));
 vi.mock('@/components/manage/billing/StorageTrimNotice', () => ({ StorageTrimNotice: () => null }));
 vi.mock('@/components/manage/billing/WithdrawalHistory', () => ({ WithdrawalHistory: () => <div>withdrawal-history</div> }));
