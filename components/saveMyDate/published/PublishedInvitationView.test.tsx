@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { FOUND_STATE, PUBLISHED_LABELS } from '@/.storybook/publishedInvitation';
 import { PublishedInvitationView } from '@/components/saveMyDate/published/PublishedInvitationView';
+import { INVITATION_LABELS } from '@/lib/invitation/labels';
 import el from '@/messages/el.json';
 
 // next/font only works inside a Next build.
@@ -35,6 +36,25 @@ describe('PublishedInvitationView', () => {
         );
         expect(container.querySelector('.smd-invitation')).toHaveAttribute('lang', 'el');
         expect(screen.queryByRole('heading', { name: labels.notFound })).toBeNull();
+    });
+
+    it("links to the event from the RSVP section while there is a guest link, and not without one", () => {
+        const joinLabel = INVITATION_LABELS.el.joinEvent;
+        if (FOUND_STATE.kind !== 'found') throw new Error('FOUND_STATE is a found invitation');
+        const withLink = { ...FOUND_STATE, invitation: { ...FOUND_STATE.invitation, joinUrl: 'https://storywall.gr/q/tok' } };
+        const { rerender } = render(
+            <NextIntlClientProvider locale="el" messages={el}>
+                <PublishedInvitationView state={withLink} labels={labels} />
+            </NextIntlClientProvider>,
+        );
+        expect(screen.getByRole('link', { name: joinLabel })).toHaveAttribute('href', 'https://storywall.gr/q/tok');
+
+        rerender(
+            <NextIntlClientProvider locale="el" messages={el}>
+                <PublishedInvitationView state={FOUND_STATE} labels={labels} />
+            </NextIntlClientProvider>,
+        );
+        expect(screen.queryByRole('link', { name: joinLabel })).toBeNull();
     });
 
     it('says an unknown link is not there, with nothing to retry', () => {

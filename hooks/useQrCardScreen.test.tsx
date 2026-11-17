@@ -15,7 +15,7 @@ vi.mock('next-intl', () => ({
     useLocale: () => 'en',
 }));
 vi.mock('@/components/routing/EventRouteGate', () => ({
-    useEventRouteContext: () => ({ eventId: 'e1', activeEvent: { title: 'Maria & Nikos' }, isHost: true }),
+    useEventRouteContext: () => ({ eventId: 'e1', activeEvent: { title: 'Maria & Nikos', modules: [] }, isHost: true }),
 }));
 vi.mock('@/hooks/useQrLinks', () => ({ useEventQrLinks: () => mocks.links }));
 vi.mock('@/hooks/useQrCardTemplates', () => ({ useQrCardTemplates: () => ({ ...mocks.templates, refetch: mocks.refetch }) }));
@@ -60,11 +60,11 @@ describe('useQrCardScreen', () => {
         expect(result.current.backHref).toBe(routes.events.invitationsQr('e1'));
     });
 
-    it('fills the gallery card and goes back to the gallery QR', () => {
+    it('fills the gallery card and goes back to the share links', () => {
         mocks.links = { data: [link({ targetType: 'MEDIA_UPLOAD' })], isLoading: false };
         const { result } = renderHook(() => useQrCardScreen());
         expect(result.current.designer.text.line).toBe('lines.gallery');
-        expect(result.current.backHref).toBe(routes.events.tools.galleryQr('e1'));
+        expect(result.current.backHref).toBe(routes.events.invitationsQr('e1'));
     });
 
     it('treats an event without QR cards as a page that does not exist', () => {

@@ -33,14 +33,43 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
+// A first visit: the card starts open.
+function firstVisit() {
+    window.localStorage.removeItem('sw.guestOfferSeen.evt-story');
+    window.sessionStorage.removeItem('sw.guestOfferOpen.evt-story');
+}
+
 export const Claim: Story = {
     beforeEach({ msw }) {
         msw.use(...offerHandlers({ discountPercent: 20, code: null, endsAt: null }));
+        firstVisit();
     },
 };
 
 export const CodeClaimed: Story = {
     beforeEach({ msw }) {
         msw.use(...offerHandlers({ discountPercent: 20, code: 'GS-7KQ4M2XR9P', endsAt: '2027-05-31T21:00:00Z' }));
+        firstVisit();
+    },
+};
+
+// A later visit: the card starts folded into the strip.
+function seenBefore() {
+    window.localStorage.setItem('sw.guestOfferSeen.evt-story', '1');
+    window.sessionStorage.removeItem('sw.guestOfferOpen.evt-story');
+    return () => window.localStorage.removeItem('sw.guestOfferSeen.evt-story');
+}
+
+export const Strip: Story = {
+    beforeEach({ msw }) {
+        msw.use(...offerHandlers({ discountPercent: 20, code: null, endsAt: null }));
+        return seenBefore();
+    },
+};
+
+export const StripWithCode: Story = {
+    beforeEach({ msw }) {
+        msw.use(...offerHandlers({ discountPercent: 20, code: 'GS-7KQ4M2XR9P', endsAt: '2027-05-31T21:00:00Z' }));
+        return seenBefore();
     },
 };

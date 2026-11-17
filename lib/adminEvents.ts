@@ -19,20 +19,30 @@ export function isEventsHash(hash: string): boolean {
     return hash === EVENTS_HASH_ROOT || hash.startsWith(`${EVENTS_HASH_ROOT}/`);
 }
 
-// `#events/<eventId>` opens that event's page; the bare root is the list.
+export type EventDetailTab = 'settings' | 'activity';
+
+// `#events/<eventId>` opens that event's settings, `#events/<eventId>/activity` its activity; the bare root is the list.
+// The id is URI-encoded, so a slash inside it never splits the hash.
 export function parseEventsHash(hash: string): string | null {
     if (!isEventsHash(hash)) return null;
-    const rest = hash.slice(EVENTS_HASH_ROOT.length + 1);
-    if (!rest) return null;
+    const [encodedId] = hash.slice(EVENTS_HASH_ROOT.length + 1).split('/');
+    if (!encodedId) return null;
     try {
-        return decodeURIComponent(rest);
+        return decodeURIComponent(encodedId);
     } catch {
         return null;
     }
 }
 
-export function formatEventsHash(eventId: string | null): string {
-    return eventId ? `${EVENTS_HASH_ROOT}/${encodeURIComponent(eventId)}` : EVENTS_HASH_ROOT;
+export function parseEventsTab(hash: string): EventDetailTab {
+    if (!isEventsHash(hash)) return 'settings';
+    return hash.slice(EVENTS_HASH_ROOT.length + 1).split('/')[1] === 'activity' ? 'activity' : 'settings';
+}
+
+export function formatEventsHash(eventId: string | null, tab: EventDetailTab = 'settings'): string {
+    if (!eventId) return EVENTS_HASH_ROOT;
+    const base = `${EVENTS_HASH_ROOT}/${encodeURIComponent(eventId)}`;
+    return tab === 'activity' ? `${base}/activity` : base;
 }
 
 export const EVENT_STATUSES: EventStatus[] = ['ACTIVE', 'DRAFT'];

@@ -27,6 +27,8 @@ const toolbar: TextToolbarState = {
     setAlign: fn(),
     pickColor: fn(),
     add: fn(),
+    lock: null,
+    lockHref: undefined,
 };
 
 const meta = {
@@ -79,4 +81,16 @@ export const Styled: Story = {
 export const CannotAdd: Story = {
     tags: ['visual-desktop-only'],
     args: { canAdd: false },
+};
+
+// A text the event fills, such as the date: its look changes here, its words on the event.
+export const FromTheEvent: Story = {
+    args: { toolbar: { ...toolbar, lock: 'settings', lockHref: '/events/e1/manage?tab=settings' } },
+    play: async ({ canvasElement, globals }) => {
+        const copy = copyFor(globals).InvitationEditor;
+        const bar = within(canvasElement);
+        await expect(bar.getByText(copy.eventLock.note, { exact: false })).toBeVisible();
+        await expect(bar.getByRole('link', { name: copy.eventLock.settings })).toHaveAttribute('href', '/events/e1/manage?tab=settings');
+        await expect(bar.queryByRole('button', { name: copy.deleteText })).toBeNull();
+    },
 };

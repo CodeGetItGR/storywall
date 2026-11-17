@@ -7,6 +7,8 @@ import { useCallback, useState } from 'react';
 export function useSettingsItem<T extends { id: string }>(items: readonly T[]) {
     const [openId, setOpenId] = useState<string | null>(null);
     const item = items.find((entry) => entry.id === openId) ?? null;
+    // Forget an item that went away, so a redo that brings it back doesn't open it again.
+    if (openId !== null && item === null) setOpenId(null);
 
     const open = useCallback((id: string) => setOpenId(id), []);
     const close = useCallback(() => setOpenId(null), []);

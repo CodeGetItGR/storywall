@@ -40,17 +40,20 @@ const PRIMARY_ACTION_CLASS =
 // The QR artwork + copy/download/print/share actions, shared between the share
 // links page and the dedicated gallery QR page. With cardHref (the event has QR
 // cards), Print opens the card page instead of the popup. Without linkActions,
-// copy, share and the language note are left to the page around it.
+// copy, share and the language note are left to the page around it. With label,
+// the code is an image by that name instead of carrying the link's title.
 export function QrCodeCard({
     qrLink,
     size = 240,
     cardHref = null,
     linkActions = true,
+    label,
 }: {
     qrLink: QrLinkResponseDto;
     size?: number;
     cardHref?: string | null;
     linkActions?: boolean;
+    label?: string;
 }) {
     const t = useTranslations('ManagePage');
     const tGlobal = useTranslations();
@@ -112,11 +115,15 @@ export function QrCodeCard({
                     ref={svgRef}
                     value={qrLink.publicUrl}
                     size={size}
+                    // Shrinks to fit a narrow column (230px on Invitations & QR codes) instead of overflowing it.
+                    className="h-auto max-w-full"
                     level="H"
                     marginSize={4}
                     fgColor="#241f1a"
                     bgColor="#ffffff"
-                    title={qrLink.labelKey ? tGlobal(qrLink.labelKey) : qrLink.label || t('qr.untitled')}
+                    {...(label
+                        ? { role: 'img', 'aria-label': label }
+                        : { title: qrLink.labelKey ? tGlobal(qrLink.labelKey) : qrLink.label || t('qr.untitled') })}
                     imageSettings={{ src: '/assets/Logo.svg', height: size / 6, width: size / 6, excavate: true }}
                 />
             </div>

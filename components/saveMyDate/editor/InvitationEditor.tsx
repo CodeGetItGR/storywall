@@ -22,9 +22,13 @@ import { PublishSignInDialog } from '@/components/saveMyDate/editor/publish/Publ
 import { SectionSettings } from '@/components/saveMyDate/editor/settings/SectionSettings';
 import { InlineTextEditing } from '@/components/saveMyDate/editor/text/InlineTextEditing';
 import { TextColorSetting } from '@/components/saveMyDate/editor/TextColorSetting';
+import { ThemeSwitchDialog } from '@/components/saveMyDate/editor/theme/ThemeSwitchDialog';
+import { ThemeSwitchPanel } from '@/components/saveMyDate/editor/theme/ThemeSwitchPanel';
+import { ThemeSwitchSheet } from '@/components/saveMyDate/editor/theme/ThemeSwitchSheet';
 import { ThemeAssetsPanel } from '@/components/saveMyDate/editor/ThemeAssetsPanel';
 import { EditorTour } from '@/components/saveMyDate/editor/tour/EditorTour';
 import { useInvitationEditor } from '@/hooks/useInvitationEditor';
+import { PhotoUploadsContext } from '@/hooks/usePhotoUploadsContext';
 import type { EditableDraft } from '@/lib/invitation/drafts';
 import { inviteHostFor } from '@/lib/invitation/publication';
 import type { InvitationFontDto } from '@/lib/invitation/uploadedFonts';
@@ -47,91 +51,134 @@ export function InvitationEditor({ draft, uploadedFonts, onReload, isReloading =
     const editor = useInvitationEditor(draft, uploadedFonts);
     const { sectionSettings } = editor;
 
-    const assets = <ThemeAssetsPanel />;
+    const assets = (
+        <div className="flex flex-col gap-4">
+            {/* Design */}
+            <ThemeSwitchPanel themeName={editor.themeName} onChange={editor.openThemeSwitch} />
+
+            {/* Assets */}
+            <ThemeAssetsPanel />
+        </div>
+    );
     const settings = <TextColorSetting value={editor.textColor} onChange={editor.setTextColor} />;
 
     return (
-        <div className="smd-editor flex h-full flex-col bg-(--smd-editor-panel)">
-            {/* Top bar */}
-            <EditorTopBar
-                status={editor.status}
-                canUndo={editor.canUndo}
-                canRedo={editor.canRedo}
-                isBusy={editor.isBusy}
-                onBack={editor.leave.back}
-                onUndo={editor.undo}
-                onRedo={editor.redo}
-                onPreview={editor.openPreview}
-                onPublish={editor.publishing.start}
-                onTour={editor.tour.start}
-            />
+        // The photo uploads reach the canvas and the section settings alike.
+        <PhotoUploadsContext.Provider value={editor.photos.slots}>
+            <div className="smd-editor flex h-full flex-col bg-(--smd-editor-panel)">
+                {/* Top bar */}
+                <EditorTopBar
+                    status={editor.status}
+                    canUndo={editor.canUndo}
+                    canRedo={editor.canRedo}
+                    isBusy={editor.isBusy}
+                    onBack={editor.leave.back}
+                    onUndo={editor.undo}
+                    onRedo={editor.redo}
+                    onPreview={editor.openPreview}
+                    onPublish={editor.publishing.start}
+                    onTour={editor.tour.start}
+                />
 
-            {/* Save problem */}
-            {editor.status === 'error' && <EditorNotice tone="error" message={t('notSaved')} actionLabel={t('retry')} onAction={editor.retrySave} />}
-
-            {/* Publish note */}
-            <PublishNotice notice={editor.publishing.notice} onOpen={editor.publishing.openPublished} />
-
-            {/* Workspace */}
-            <div className="flex min-h-0 flex-1">
-                <EditorDockedPanel title={t('themeAssets')}>{assets}</EditorDockedPanel>
-                <InlineTextEditing store={editor.store} document={editor.document} theme={editor.theme} uploadedFonts={uploadedFonts}>
-                    <CanvasHandles store={editor.store}>
-                        <EditorCanvas
-                            document={editor.document}
-                            theme={editor.theme}
-                            media={editor.media}
-                            uploadedFonts={uploadedFonts}
-                            sections={editor.sections}
-                            sectionSettings={sectionSettings.opener}
-                        />
-                    </CanvasHandles>
-                </InlineTextEditing>
-                {sectionSettings.isDocked && sectionSettings.panel ? (
-                    <SectionSettings panel={sectionSettings.panel} isDocked onClose={sectionSettings.close} />
-                ) : (
-                    <EditorDockedPanel title={t('settings')}>{settings}</EditorDockedPanel>
+                {/* Save problem */}
+                {editor.status === 'error' && (
+                    <EditorNotice tone="error" message={t('notSaved')} actionLabel={t('retry')} onAction={editor.retrySave} />
                 )}
+
+                {/* Photo problem */}
+                {editor.photos.problem && (
+                    <EditorNotice
+                        tone="error"
+                        message={t(`photos.errors.${editor.photos.problem}`)}
+                        actionLabel={t('close')}
+                        onAction={editor.photos.dismissProblem}
+                    />
+                )}
+
+                {/* Publish note */}
+                <PublishNotice notice={editor.publishing.notice} onOpen={editor.publishing.openPublished} />
+
+                {/* Workspace */}
+                <div className="flex min-h-0 flex-1">
+                    <EditorDockedPanel title={t('themeAssets')}>{assets}</EditorDockedPanel>
+                    <InlineTextEditing
+                        store={editor.store}
+                        document={editor.document}
+                        theme={editor.theme}
+                        uploadedFonts={uploadedFonts}
+                        event={editor.event}
+                        fieldLinks={editor.fieldLinks}
+                    >
+                        <CanvasHandles store={editor.store} frames={editor.theme.frames}>
+                            <EditorCanvas
+                                document={editor.document}
+                                theme={editor.theme}
+                                media={editor.media}
+                                uploadedFonts={uploadedFonts}
+                                sections={editor.sections}
+                                sectionSettings={sectionSettings.opener}
+                            />
+                        </CanvasHandles>
+                    </InlineTextEditing>
+                    {sectionSettings.isDocked && sectionSettings.panel ? (
+                        <SectionSettings panel={sectionSettings.panel} isDocked onClose={sectionSettings.close} />
+                    ) : (
+                        <EditorDockedPanel title={t('settings')}>{settings}</EditorDockedPanel>
+                    )}
+                </div>
+
+                {/* Panels on small screens */}
+                <EditorPanelBar onOpen={editor.setOpenPanel} />
+                <EditorPanelSheet open={editor.openPanel === 'assets'} title={t('themeAssets')} onClose={editor.closePanel}>
+                    {assets}
+                </EditorPanelSheet>
+                <EditorPanelSheet open={editor.openPanel === 'settings'} title={t('settings')} onClose={editor.closePanel}>
+                    {settings}
+                </EditorPanelSheet>
+
+                {/* Section settings on small screens */}
+                {!sectionSettings.isDocked && <SectionSettings panel={sectionSettings.panel} isDocked={false} onClose={sectionSettings.close} />}
+
+                {/* Preview */}
+                <EditorPreview
+                    open={editor.isPreviewOpen}
+                    onClose={editor.closePreview}
+                    document={editor.document}
+                    theme={editor.theme}
+                    media={editor.media}
+                    uploadedFonts={uploadedFonts}
+                    joinUrl={editor.joinUrl}
+                />
+
+                {/* Publishing */}
+                <PublishSignInDialog signIn={editor.publishing.signIn} />
+                <PublishSignInDialog signIn={editor.photos.signIn} title={t('photos.signInTitle')} />
+                <PublishEventSheet step={editor.publishing.eventStep} draftId={draft.id} eventType={draft.eventType} document={editor.document} />
+                <PublishSheet sheet={editor.publishing.sheet} inviteHost={INVITE_HOST} />
+                <PublishPlanDialog
+                    prompt={editor.publishing.planPrompt}
+                    onSeePlan={editor.publishing.seePlan}
+                    onClose={editor.publishing.closePlanPrompt}
+                />
+
+                {/* Design change */}
+                <ThemeSwitchSheet
+                    step={editor.themeSwitch.step}
+                    list={editor.themeSwitch.list}
+                    currentSlug={editor.themeSwitch.currentSlug}
+                    onChoose={editor.themeSwitch.choose}
+                    onRetryList={editor.themeSwitch.retryList}
+                    onClose={editor.themeSwitch.close}
+                />
+                <ThemeSwitchDialog step={editor.themeSwitch.step} onConfirm={editor.themeSwitch.confirm} onCancel={editor.themeSwitch.back} />
+
+                {/* Dialogs */}
+                <EditorConflictDialog open={editor.status === 'conflict'} isReloading={isReloading} onReload={onReload} />
+                <EditorLeaveDialog open={editor.leave.isConfirming} onLeave={editor.leave.leave} onStay={editor.leave.stay} />
+
+                {/* Tour */}
+                <EditorTour tour={editor.tour} />
             </div>
-
-            {/* Panels on small screens */}
-            <EditorPanelBar onOpen={editor.setOpenPanel} />
-            <EditorPanelSheet open={editor.openPanel === 'assets'} title={t('themeAssets')} onClose={editor.closePanel}>
-                {assets}
-            </EditorPanelSheet>
-            <EditorPanelSheet open={editor.openPanel === 'settings'} title={t('settings')} onClose={editor.closePanel}>
-                {settings}
-            </EditorPanelSheet>
-
-            {/* Section settings on small screens */}
-            {!sectionSettings.isDocked && <SectionSettings panel={sectionSettings.panel} isDocked={false} onClose={sectionSettings.close} />}
-
-            {/* Preview */}
-            <EditorPreview
-                open={editor.isPreviewOpen}
-                onClose={editor.closePreview}
-                document={editor.document}
-                theme={editor.theme}
-                media={editor.media}
-                uploadedFonts={uploadedFonts}
-            />
-
-            {/* Publishing */}
-            <PublishSignInDialog signIn={editor.publishing.signIn} />
-            <PublishEventSheet step={editor.publishing.eventStep} draftId={draft.id} eventType={draft.eventType} document={editor.document} />
-            <PublishSheet sheet={editor.publishing.sheet} inviteHost={INVITE_HOST} />
-            <PublishPlanDialog
-                prompt={editor.publishing.planPrompt}
-                onSeePlan={editor.publishing.seePlan}
-                onClose={editor.publishing.closePlanPrompt}
-            />
-
-            {/* Dialogs */}
-            <EditorConflictDialog open={editor.status === 'conflict'} isReloading={isReloading} onReload={onReload} />
-            <EditorLeaveDialog open={editor.leave.isConfirming} onLeave={editor.leave.leave} onStay={editor.leave.stay} />
-
-            {/* Tour */}
-            <EditorTour tour={editor.tour} />
-        </div>
+        </PhotoUploadsContext.Provider>
     );
 }

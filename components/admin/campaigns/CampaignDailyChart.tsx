@@ -1,12 +1,13 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
+import { useMemo } from 'react';
 import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 
 import { CampaignDailyTooltip } from '@/components/admin/campaigns/CampaignDailyTooltip';
 import { FunnelGroup } from '@/components/admin/funnel/FunnelGroup';
 import { useCampaignFormat } from '@/hooks/useCampaignFormat';
-import type { CampaignDailyRow } from '@/lib/campaignCompare';
+import { type CampaignDailyRow, chartLabelDates } from '@/lib/campaignCompare';
 
 const AXIS_TICK = { fill: 'var(--ink-faint)', fontSize: 11 };
 const MARGIN = { top: 4, right: 8, left: -12, bottom: 0 };
@@ -18,6 +19,7 @@ const SINGLE_DOT = { r: 4, strokeWidth: 2, fill: 'var(--card)' };
 export function CampaignDailyChart({ rows, hasPrevious }: { rows: CampaignDailyRow[]; hasPrevious: boolean }) {
     const t = useTranslations('AdminPage.campaigns.chart');
     const format = useCampaignFormat();
+    const labelDates = useMemo(() => chartLabelDates(rows.map((row) => row.date)), [rows]);
 
     return (
         <FunnelGroup title={t('title')} window="visit">
@@ -40,7 +42,15 @@ export function CampaignDailyChart({ rows, hasPrevious }: { rows: CampaignDailyR
                 <ResponsiveContainer width="100%" height="100%">
                     <LineChart data={rows} margin={MARGIN}>
                         <CartesianGrid stroke="var(--border)" vertical={false} />
-                        <XAxis dataKey="date" tickFormatter={format.day} tick={AXIS_TICK} tickLine={false} axisLine={false} minTickGap={16} />
+                        <XAxis
+                            dataKey="date"
+                            ticks={labelDates}
+                            interval={0}
+                            tickFormatter={format.day}
+                            tick={AXIS_TICK}
+                            tickLine={false}
+                            axisLine={false}
+                        />
                         <YAxis allowDecimals={false} tickFormatter={format.count} tick={AXIS_TICK} tickLine={false} axisLine={false} />
                         <Tooltip cursor={CURSOR} content={<CampaignDailyTooltip currentName={t('current')} previousName={t('previous')} />} />
                         {hasPrevious && (

@@ -1033,6 +1033,8 @@ export interface AdminProvisionScheduleItem {
     startAt?: string;
     endAt?: string;
     locationName?: string;
+    // Added 2026-11-16 (KAN-84).
+    locationAddress?: string;
     mapsUrl?: string;
     // The reception venue of a wedding or baptism; at most one.
     isSecondary?: boolean;
@@ -1108,6 +1110,18 @@ export interface QrCardLayoutDto {
         text?: Partial<Record<QrCardWordingKey, LocalizedText>> | null;
     };
     fields?: QrCardTextFieldDto[]; // up to 5; absent on layouts saved before KAN-103
+    // The picture tiles' box. null = removed; absent on layouts saved before it, which also means no tiles.
+    features?: { x: number; y: number; width: number; height: number } | null;
+    logo?: QrCardLogoDto | null; // null or absent = no logo
+}
+
+// The full StoryWall logo (icon and wordmark) at a fixed shape: its height is width × 32 / 140.
+// color: null = the brand colours, #RRGGBB = the whole logo in that one colour.
+export interface QrCardLogoDto {
+    x: number;
+    y: number;
+    width: number;
+    color: string | null;
 }
 
 // The scan lines a design can word: one per thing a code opens (QrCardPage.lines), and the gift card's.
@@ -1268,6 +1282,10 @@ export interface EventDetailResponseDto {
     partnerBranding: PartnerBrandingDto | null;
     // Hosts only: an admin linked a partner and no host has answered yet.
     partnerBrandingPrompt: PartnerBrandingNoticeDto | null;
+    // The link name of the event's online invitation while guests can open it; null otherwise. Missing from an older backend.
+    invitationSlug?: string | null;
+    // Members only: the event's upload code while it takes photos, so the feed can open the upload page. Null otherwise.
+    uploadToken?: string | null;
 }
 
 // --- Partner feed branding (collaborator-feed-branding-design.md, 2026-10-08) ---
@@ -3123,23 +3141,13 @@ export interface CostSummaryResponseDto {
 
 // GUEST: the one code a lite event (a plan without posts) gets; only the system makes it. Its scan lists guestActions.
 // See guestwall-be docs/fe-guides/lite-tiers-fe-integration.md §3.
-export type QrTargetType = 'EVENT_JOIN' | 'MEDIA_UPLOAD' | 'INVITATION' | 'GUEST';
+export type QrTargetType = 'EVENT_JOIN' | 'MEDIA_UPLOAD' | 'GUEST';
 // What a scanner can do without an account, in display order.
 export type QrGuestAction = 'UPLOAD' | 'WISH';
 export type QrLinkStatus = 'ACTIVE' | 'REVOKED' | 'EXPIRED' | 'TARGET_UNAVAILABLE';
 
-export interface QrLinkRequestDto {
-    targetType: QrTargetType;
-    targetId?: string;
-    maxGuests?: number;
-    label?: string;
-    metadata?: Record<string, unknown>;
-    expiresAt?: string;
-}
-
 export interface QrLinkPatchDto {
     targetType?: QrTargetType;
-    targetId?: string;
     maxGuests?: number;
     label?: string;
     metadata?: Record<string, unknown>;
@@ -3187,7 +3195,8 @@ export interface QrLinkStatsDto {
 export interface QrLinkResolutionDto {
     status: QrLinkStatus;
     targetType: QrTargetType;
-    // [] unless the code is ACTIVE: GUEST lists UPLOAD and/or WISH, MEDIA_UPLOAD lists UPLOAD.
+    // [] unless the code is ACTIVE: GUEST lists UPLOAD and/or WISH, MEDIA_UPLOAD lists UPLOAD, EVENT_JOIN lists WISH
+    // while the wishbook is in the plan.
     guestActions?: QrGuestAction[];
     eventId?: string;
     eventTitle?: string;
@@ -3202,13 +3211,25 @@ export interface QrLinkResolutionDto {
     inviteToken?: string;
     requiresAuth?: boolean;
     requiresGuestKey?: boolean;
+    // On a join link: the event's upload code, while it can upload. On an upload or guest code: the join
+    // link's invite token, while it works. Lets one scan offer both (KAN-208).
+    uploadToken?: string;
+    joinInviteToken?: string;
+    // The token a wish from this scan goes through, without an account: the code's own, or the event's join
+    // code's. Missing when the event takes no wishes, and from a backend older than this field.
+    wishToken?: string;
+    // The event's online invitation while guests can open it (KAN-239): same rule as the event's own
+    // invitationSlug. Missing when there is none, and from a backend older than this field.
+    invitationSlug?: string | null;
 }
 
 // POST /api/qr/{token}/wishes: a wish left through a GUEST code, with no account. See
 // guestwall-be docs/fe-guides/lite-tiers-fe-integration.md §4.
+// Since KAN-219 it also takes multipart/form-data: this DTO as a `wish` JSON part plus an optional `audio` part.
 export interface QrWishRequestDto {
     guestName: string;
-    message: string;
+    // Optional when the request carries a recording; the server needs one of the two (3132).
+    message?: string;
     ageConfirmed: true;
     acceptedTermsVersion: string;
     acceptedGuidelinesVersion: string;
@@ -3327,9 +3348,26 @@ export interface EventGiftAccountResponseDto {
     updatedAt: string;
 }
 
+// A wish's recording (KAN-219). url is presigned and short-lived: refetch the list for a fresh one.
+export interface WishAudioDto {
+    url: string;
+    durationMs: number;
+}
+
+// POST /api/events/{eventId}/wishbook. Since KAN-219 it also takes multipart/form-data: this DTO as a
+// `wish` JSON part plus an optional `audio` part (the recording).
 export interface WishbookEntryRequestDto {
-    message: string;
+    // Optional when the request carries a recording; the server needs one of the two (3132).
+    message?: string;
     guestName?: string;
+}
+
+// PUT /api/wishbook/{entryId} — the author only, while the event is ACTIVE (KAN-217).
+// A blank or missing message drops the text, so send the current text when only the recording changes.
+export interface WishbookEntryEditDto {
+    message?: string;
+    // Drops the stored recording. Ignored when a new one is sent.
+    removeAudio?: boolean;
 }
 
 export interface WishbookEntryResponseDto {
@@ -3337,7 +3375,10 @@ export interface WishbookEntryResponseDto {
     eventId: string;
     authorMemberId: string | null;
     guestName: string;
-    message: string;
+    // null for a voice-only wish (KAN-219).
+    message: string | null;
+    // Hosts, co-hosts and the author only; null for everyone else and for a wish without one.
+    audio: WishAudioDto | null;
     createdAt: string;
     canDelete: boolean;
     // Starred for the book (2026-10-06). Hosts get true/false; everyone else gets null.
@@ -3700,6 +3741,7 @@ export interface EventSessionRequestDto {
     endAt?: string;
     locationName?: string;
     mapsUrl?: string;
+    locationAddress?: string;
     displayOrder: number;
     isSecondary?: boolean; // defaults to false; at most one non-deleted session per event
     rsvpEnabled?: boolean; // defaults to false; guests may answer for this session only when true
@@ -3715,6 +3757,8 @@ export interface EventSessionResponseDto {
     endAt: string | null;
     locationName: string | null;
     mapsUrl: string | null;
+    // The main session's mirrors the event's own address.
+    locationAddress: string | null;
     displayOrder: number;
     isMain: boolean; // system-managed, read-only — set only via initialSessionTitle at event creation
     isSecondary: boolean;
@@ -3732,6 +3776,7 @@ export interface EventSessionPatchDto {
     clearEndAt?: boolean;
     locationName?: string;
     mapsUrl?: string | null;
+    locationAddress?: string;
     displayOrder?: number;
     isSecondary?: boolean;
     rsvpEnabled?: boolean;
@@ -4563,12 +4608,16 @@ export interface GiftClaimPreviewDto {
     giverDisplayName: string;
     recipientLabel: string;
     emailBound: boolean;
+    // Signed in: whether this account's email is the recipient's. Null for a visitor with no account.
+    callerIsRecipient: boolean | null;
     state: GiftClaimState;
 }
 
 // POST /api/gift-claims/{token}/claim. COMPLETED: the caller owns the event now.
 // CLAIMED: co-host now, owner at ownershipTransfersAt (null while a withdrawal is under review).
 export interface GiftClaimResponseDto {
+    // The claimed event, which the caller hosts now.
+    eventId: string;
     status: 'COMPLETED' | 'CLAIMED';
     ownershipTransfersAt: string | null;
 }
@@ -4644,6 +4693,9 @@ export type AdminAuditAction =
     | 'INVITATION_THEME_IMAGE_DELETED'
     | 'INVITATION_FONT_PAIRING_CREATED'
     | 'INVITATION_FONT_PAIRING_UPDATED'
+    | 'INVITATION_TEXT_CREATED'
+    | 'INVITATION_TEXT_UPDATED'
+    | 'INVITATION_TEXT_DELETED'
     | 'QR_CARD_TEMPLATE_DUPLICATED'
     | 'INVIART_COLLECTION_CHANGED'
     | 'SHOP_STORE_CREATED'
@@ -4717,6 +4769,8 @@ export interface ModerationContentDto {
     authorDisplayName: string | null;
     authorIsHost: boolean;
     media: MediaResponseDto[];
+    // A reported voice wish's recording (KAN-219); null for everything else.
+    audio: WishAudioDto | null;
     createdAt: string;
 }
 
@@ -5019,27 +5073,35 @@ export interface AdminQrCardTemplatePatchDto {
     layout?: QrCardLayoutDto; // a full layout replaces the stored one
 }
 
-// /api/admin/theme-fonts
+// Which list a font belongs to: the wall's theme presets and QR cards, or Save my date. Set on create, never changes.
+export type ThemeFontLibrary = 'WALL' | 'INVITATION';
+
+// /api/admin/theme-fonts?library=
 export interface AdminThemeFontDto {
     id: string;
     key: string;
     familyName: string;
     fallback: 'serif' | 'sans-serif';
+    library: ThemeFontLibrary;
     archived: boolean;
     url: string | null; // null until a file is uploaded; such a font can't be put on a preset
     presetCount: number;
+    // Save my date fonts only: the event types the editor offers it to, sorted. Empty means every type.
+    invitationEventTypes: string[];
 }
 
 export interface AdminThemeFontRequestDto {
     key: string;
     familyName: string;
     fallback: 'serif' | 'sans-serif';
+    library?: ThemeFontLibrary; // WALL when left out
 }
 
 export interface AdminThemeFontPatchDto {
     familyName?: string;
     fallback?: 'serif' | 'sans-serif';
     archived?: boolean;
+    invitationEventTypes?: string[]; // Save my date fonts only
 }
 
 // Why an admin closed an event when no rule was broken (admin-event-management-fe-integration.md §7).
@@ -5067,6 +5129,41 @@ export interface AdminEventSummaryDto {
     suspendedAt: string | null;
     closedAt: string | null;
     deletedAt: string | null;
+}
+
+// GET /api/admin/events/{eventId}/activity — anonymous counts; hour is local "yyyy-MM-ddTHH:00" in `timezone`.
+export interface AdminEventActivityDto {
+    timezone: string;
+    eventStartAt: string | null;
+    eventEndAt: string | null;
+    generatedAt: string;
+    members: { total: number; contributed: number };
+    totals: {
+        posts: number;
+        postMedia: number;
+        stories: number;
+        storyViews: number;
+        galleryUploads: number;
+        galleryViaQr: number;
+        proUploads: number;
+        comments: number;
+        reactions: number;
+        reactionsByType: { code: string; emoji: string | null; count: number }[];
+        wishes: number | null;
+        playlist: { suggestions: number; votes: number } | null;
+        quizAnswers: number | null;
+        rsvp: { attending: number; declined: number } | null;
+    };
+    removed: { posts: number; stories: number; galleryUploads: number; comments: number; wishes: number };
+    hours: AdminEventActivityHour[];
+}
+
+export interface AdminEventActivityHour {
+    hour: string;
+    posts: number;
+    stories: number;
+    gallery: number;
+    wishes: number;
 }
 
 export type AdminEventModuleSource = 'PLAN' | 'ADDON' | 'ADMIN_GRANT' | 'NONE';

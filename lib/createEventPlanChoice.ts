@@ -59,3 +59,15 @@ export function compareLine(plan: PlanTierResponseDto, previous: PlanTierRespons
     if (added.length === 0) return { kind: 'same', previousName: previous.name };
     return { kind: 'plus', previousName: previous.name, keys: added.slice(0, HIGHLIGHT_COUNT) };
 }
+
+// Ends in a question mark: "?", the Greek one ";" (U+037E) or a plain ";" typed in its place.
+const QUESTION_END = /[?;;]$/;
+
+// Feature names as one list, "Gallery, Posts". A name that ends in a question mark takes no comma
+// after it: "Boy or girl? Collection", not "Boy or girl?, Collection".
+export function joinFeatureNames(names: string[]): string {
+    return names.reduce((text, name, index) => {
+        if (index === 0) return name;
+        return `${text}${QUESTION_END.test(names[index - 1].trim()) ? ' ' : ', '}${name}`;
+    }, '');
+}
