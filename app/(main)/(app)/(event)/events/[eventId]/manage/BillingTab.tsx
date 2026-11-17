@@ -109,7 +109,13 @@ export default function BillingTab({
 
                 {/* Paid add-ons */}
                 {!withdrawalOnly && (
-                    <BillingAddonsSection eventId={eventId} addons={data.addons} currency={insights.orderCurrency} canManage={derived.canManageAddons} />
+                    <BillingAddonsSection
+                        eventId={eventId}
+                        addons={data.addons}
+                        currency={insights.orderCurrency}
+                        canManage={derived.canManageAddons}
+                        hasFeatureAddons={derived.hasFeatureAddons}
+                    />
                 )}
             </div>
 

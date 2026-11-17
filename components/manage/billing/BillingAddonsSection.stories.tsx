@@ -37,11 +37,20 @@ export const Owned: Story = {
     },
 };
 
-// Nothing bought yet: the line and Add storage.
+// Nothing bought yet, only storage on offer: the line and Add storage.
 export const Empty: Story = {
     args: { addons: [] },
     play: async ({ canvasElement, globals }) => {
         const canvas = within(canvasElement);
         await expect(canvas.getByRole('link', { name: copyFor(globals).EventPlanSettingsPage.addons.addStorage })).toBeVisible();
+    },
+};
+
+// Nothing bought yet, feature add-ons on offer too (KAN-82): Manage add-ons.
+export const WithFeatureAddons: Story = {
+    args: { addons: [], hasFeatureAddons: true },
+    play: async ({ canvasElement, globals }) => {
+        const canvas = within(canvasElement);
+        await expect(canvas.getByRole('link', { name: copyFor(globals).EventPlanSettingsPage.addons.manageAction })).toBeVisible();
     },
 };

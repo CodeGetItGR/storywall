@@ -12,11 +12,14 @@ export function BillingAddonsSection({
     addons,
     currency,
     canManage,
+    hasFeatureAddons = false,
 }: {
     eventId: string;
     addons: BillingData['addons'];
     currency: string;
     canManage: boolean;
+    // Feature add-ons on offer: the link is about more than storage (KAN-82).
+    hasFeatureAddons?: boolean;
 }) {
     const t = useTranslations('EventPlanSettingsPage.addons');
     const locale = useLocale();
@@ -62,7 +65,7 @@ export function BillingAddonsSection({
                         href={routes.events.settingsAddons(eventId)}
                         className="inline-flex min-h-11 items-center justify-center rounded-full bg-white px-[18px] text-sm font-bold whitespace-nowrap text-primary-dark shadow-[inset_0_0_0_1.5px_#f2c2b2]"
                     >
-                        {t(addons.length > 0 ? 'manageAction' : 'addStorage')}
+                        {t(addons.length > 0 || hasFeatureAddons ? 'manageAction' : 'addStorage')}
                     </AppLink>
                 </div>
             )}

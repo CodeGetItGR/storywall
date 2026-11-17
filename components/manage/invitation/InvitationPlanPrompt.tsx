@@ -7,9 +7,11 @@ import { AppLink } from '@/components/ui/AppLink';
 import type { EventOnlineInvitation } from '@/hooks/useEventOnlineInvitation';
 
 const BUTTON_CLASS = 'inline-flex min-h-11 items-center justify-center rounded-full bg-ink px-5 text-sm font-semibold text-white';
+const SECONDARY_BUTTON_CLASS = 'inline-flex min-h-11 items-center justify-center rounded-full bg-surface-muted px-5 text-sm font-semibold text-ink';
 
 // The plan doesn't include the invitation: a drawing and the way to add it, before anything is started.
-export function InvitationPlanPrompt({ invitation }: { invitation: Pick<EventOnlineInvitation, 'planHref' | 'addOnHref'> }) {
+// When the plan sells it as an add-on (KAN-82), that's the main way and the upgrade comes second.
+export function InvitationPlanPrompt({ invitation }: { invitation: Pick<EventOnlineInvitation, 'planHref' | 'addOnHref' | 'addOnPrice'> }) {
     const t = useTranslations('ManagePage.invitation');
     const tEditor = useTranslations('InvitationEditor');
 
@@ -21,15 +23,19 @@ export function InvitationPlanPrompt({ invitation }: { invitation: Pick<EventOnl
             {/* Text */}
             <div className="flex max-w-sm flex-col gap-1">
                 <h2 className="text-base font-semibold text-ink">{tEditor('planMissingTitle')}</h2>
-                <p className="text-sm text-ink-muted">{t('upgradeBody')}</p>
+                <p className="text-sm text-ink-muted">{t(invitation.addOnHref ? 'addOnBody' : 'upgradeBody')}</p>
             </div>
 
             {/* Actions */}
             <div className="flex flex-wrap justify-center gap-2">
-                <AppLink href={invitation.planHref} className={BUTTON_CLASS}>
+                {invitation.addOnHref && (
+                    <AppLink href={invitation.addOnHref} className={BUTTON_CLASS}>
+                        {t('addOn', { price: invitation.addOnPrice ?? '' })}
+                    </AppLink>
+                )}
+                <AppLink href={invitation.planHref} className={invitation.addOnHref ? SECONDARY_BUTTON_CLASS : BUTTON_CLASS}>
                     {t('upgradePlan')}
                 </AppLink>
-                {/* Add-on: KAN-82 sets addOnHref and adds its label here. */}
             </div>
         </div>
     );
