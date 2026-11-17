@@ -19,6 +19,8 @@ type ConfirmActionModalProps = {
     icon?: ReactNode;
     iconTone?: 'danger' | 'neutral';
     size?: 'sm' | 'md';
+    // 'sheet' rises from the bottom on phones.
+    variant?: 'center' | 'sheet';
     showCancelAction?: boolean;
     showCloseButton?: boolean;
     layer?: 'default' | 'overStory';
@@ -39,13 +41,23 @@ export function ConfirmActionModal({
     icon,
     iconTone = 'danger',
     size = 'sm',
+    variant = 'center',
     showCancelAction = true,
     showCloseButton = true,
     layer,
     finalFocus,
 }: ConfirmActionModalProps) {
     return (
-        <Modal open={open} onClose={onCloseAction} size={size} closeLabel={cancelLabel} showCloseButton={showCloseButton} layer={layer} finalFocus={finalFocus}>
+        <Modal
+            open={open}
+            onClose={onCloseAction}
+            size={size}
+            variant={variant}
+            closeLabel={cancelLabel}
+            showCloseButton={showCloseButton}
+            layer={layer}
+            finalFocus={finalFocus}
+        >
             <Modal.Body className={cn('px-4 pb-4 sm:px-5', showCloseButton ? 'pt-12' : 'pt-5')}>
                 <div className="flex flex-col gap-5">
                     {/* Confirmation content */}
