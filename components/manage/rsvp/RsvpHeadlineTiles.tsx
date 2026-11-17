@@ -33,8 +33,10 @@ export function RsvpHeadlineTiles({ totals, isLoading }: RsvpHeadlineTilesProps)
         <dl className="grid grid-cols-4 gap-2">
             {tiles.map((tile) => (
                 // Tile: the label comes first in the markup (valid dl), the number shows on top.
-                <div key={tile.key} className="flex min-w-0 flex-col-reverse gap-px rounded-2xl bg-surface-muted px-2 py-2.5 sm:px-3">
-                    <dt className="truncate text-[11px] font-semibold text-ink-muted">{tile.label}</dt>
+                // Long labels wrap on phones; justify-end keeps every number on the top line.
+                // Under 360px the label shrinks a step so "Απαντήσεις" isn't split mid-word.
+                <div key={tile.key} className="flex min-w-0 flex-col-reverse justify-end gap-px rounded-2xl bg-surface-muted px-2 py-2.5 max-[359px]:px-1.5 sm:px-3">
+                    <dt className="text-[11px] leading-tight font-semibold wrap-break-word text-ink-muted max-[359px]:text-[10px]">{tile.label}</dt>
                     <dd className="text-[19px] leading-tight font-bold text-ink tabular-nums">{tile.value}</dd>
                 </div>
             ))}
