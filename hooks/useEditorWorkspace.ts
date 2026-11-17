@@ -66,6 +66,7 @@ export function useEditorWorkspace({ editor, eventType, source, events = NO_EVEN
         theme: source.theme,
         // The images stored with it and the ones uploaded since it opened.
         media: sectionSettings.media,
+        addUploaded: sectionSettings.addUploaded,
         canUndo: editor.canUndo,
         canRedo: editor.canRedo,
         undo: editor.undo,
