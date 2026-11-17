@@ -7,7 +7,8 @@ import { useCallback, useMemo } from 'react';
 import { useInvitationDrafts } from '@/hooks/useInvitationDrafts';
 import type { Locale } from '@/i18n/config';
 import { getInvitationCataloguePath } from '@/i18n/publicLocale';
-import type { EventDetailResponseDto } from '@/lib/api/types';
+import type { EventDetailResponseDto, PaidServiceResponseDto } from '@/lib/api/types';
+import { formatMoney } from '@/lib/billing';
 import { formatDate } from '@/lib/datetime';
 import { isModuleAvailable } from '@/lib/eventLifecycle';
 import { fetchPublication, invitationPublicationKeys, invitationPublicUrl } from '@/lib/invitation/publication';
@@ -21,8 +22,12 @@ import { SITE_URL } from '@/lib/seo';
 export type OnlineInvitationStatus = 'none' | 'draft' | 'live' | 'offline';
 
 // The event's online invitation in Manage: its draft and published copy, the link guests open, and
-// where to edit it, extend it or start one from a theme.
-export function useEventOnlineInvitation(event: EventDetailResponseDto, { enabled }: { enabled: boolean }) {
+// where to edit it, extend it or start one from a theme. addOn is the Save my date add-on sold on
+// the event's plan (KAN-82), when there is one.
+export function useEventOnlineInvitation(
+    event: EventDetailResponseDto,
+    { enabled, addOn = null }: { enabled: boolean; addOn?: PaidServiceResponseDto | null },
+) {
     const locale = useLocale() as Locale;
     const drafts = useInvitationDrafts({ enabled });
     const draft = useMemo(() => drafts.data?.find((item) => item.eventId === event.id) ?? null, [drafts.data, event.id]);
@@ -51,8 +56,9 @@ export function useEventOnlineInvitation(event: EventDetailResponseDto, { enable
         publicUrl: published ? invitationPublicUrl(SITE_URL, published.slug) : null,
         planMissing,
         locked,
-        // Buying the invitation on its own (KAN-82). Null until it's sold; the prompt then offers it next to the upgrade.
-        addOnHref: null as string | null,
+        // Buying the invitation on its own (KAN-82): the Add-ons page with it ticked, next to the upgrade.
+        addOnHref: addOn ? routes.events.settingsAddons(event.id, { add: addOn.code }) : null,
+        addOnPrice: addOn ? formatMoney(locale, addOn.priceAmountMinor, addOn.priceCurrency) : null,
         // Renewing goes through the event's plan, while the time online runs out or after it ran out.
         canExtend: !planMissing && (status === 'offline' || liveUntil !== null),
         editHref: draft ? routes.saveMyDateEditor(draft.id) : null,
