@@ -1591,6 +1591,7 @@
             "saved": "Saved",
             "readOnly": "This event is read-only. Event details and cover photo changes are paused until the event is active again.",
             "dangerZone": {
+                "illustrationAlt": "Event being deleted",
                 "consequences": {
                     "guestsLoseAccess": "Guests lose access right away.",
                     "stillAvailable": "Until it is permanently deleted, you can still view and download photos, videos and wishes.",

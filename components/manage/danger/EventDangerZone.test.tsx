@@ -39,6 +39,12 @@ describe('EventDangerZone', () => {
         expect(screen.getByText(t.consequences.cannotUndo)).toBeTruthy();
     });
 
+    it('shows the illustration with its alt text', () => {
+        renderZone();
+
+        expect(screen.getByRole('img', { name: t.illustrationAlt })).toBeTruthy();
+    });
+
     it('opens the gallery download and links to the wishbook', () => {
         const { onDownloadAllAction } = renderZone();
 

@@ -4,6 +4,7 @@ import { Loader2, Trash2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { DangerConsequences } from '@/components/manage/danger/DangerConsequences';
+import { DeleteEventIllustration } from '@/components/manage/danger/DeleteEventIllustration';
 import type { DangerZoneWishbookLink } from '@/hooks/useDangerZoneDownloads';
 
 type EventDangerZoneProps = {
@@ -30,6 +31,9 @@ export function EventDangerZone({
 
     return (
         <div className="flex flex-col gap-6">
+            {/* Illustration */}
+            <DeleteEventIllustration className="mx-auto h-auto w-full max-w-[240px] sm:mx-0" />
+
             {/* Consequences */}
             <DangerConsequences showGalleryDownload={showGalleryDownload} wishbook={wishbook} onDownloadAllAction={onDownloadAllAction} />
 
