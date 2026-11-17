@@ -1,8 +1,19 @@
 import { describe, expect, it } from 'vitest';
 
+import type { HelpProgress } from '@/hooks/useHelpProgress';
 import type { EventSessionResponseDto } from '@/lib/api/types';
 import { addDays, daysBetween, localDay } from '@/lib/datetime';
-import { currentPhase, journeyPrintHref, phaseOfDay, primaryDay, sessionsByPhase, sessionStates } from '@/lib/eventJourney';
+import {
+    currentPhase,
+    isOverviewPath,
+    journeyPrintHref,
+    journeyStepsLeft,
+    phaseOfDay,
+    primaryDay,
+    sessionsByPhase,
+    sessionStates,
+    setupStepKeys,
+} from '@/lib/eventJourney';
 import { routes } from '@/lib/routes';
 
 const tz = 'Europe/Athens';
@@ -103,5 +114,78 @@ describe('journeyPrintHref', () => {
     });
     it('opens the QR links on a full event', () => {
         expect(journeyPrintHref(withModules([{ moduleKey: 'posts', isEnabled: true, isAvailable: true }]))).toBe(routes.events.invitationsQr('e1'));
+    });
+});
+
+const posts = { moduleKey: 'posts', isEnabled: true, isAvailable: true };
+
+function fullEvent(over: Record<string, unknown> = {}) {
+    return {
+        id: 'e1',
+        status: 'ACTIVE',
+        sessions: [],
+        schedule: { startAt: '2026-12-12T16:00:00Z', timezone: tz },
+        // `posts` makes it a full event: isLiteEvent says lite when the plan leaves out the feed.
+        modules: [
+            posts,
+            { moduleKey: 'rsvp', isEnabled: true, isAvailable: true },
+            { moduleKey: 'wishlist', isEnabled: true, isAvailable: true },
+        ],
+        ...over,
+    } as never;
+}
+
+const noneDone: HelpProgress = { details: false, rsvp: false, giftAccount: false, schedule: false, invitations: false };
+const allDone: HelpProgress = { details: true, rsvp: true, giftAccount: true, schedule: true, invitations: true };
+
+describe('setupStepKeys', () => {
+    it('lists every setup stop a full event with RSVP and a wishlist has, in path order', () => {
+        expect(setupStepKeys(fullEvent())).toEqual(['details', 'rsvp', 'schedule', 'giftAccount', 'invitations']);
+    });
+    it('drops RSVP and the gift account when those modules are off', () => {
+        expect(setupStepKeys(fullEvent({ modules: [posts] }))).toEqual(['details', 'schedule', 'invitations']);
+    });
+    it('drops invitations for a lite event', () => {
+        expect(setupStepKeys(fullEvent({ modules: [] }))).toEqual(['details', 'schedule']);
+    });
+});
+
+describe('journeyStepsLeft', () => {
+    const before = new Date('2026-11-20T10:00:00Z');
+
+    it('counts setup stops not done before the day', () => {
+        expect(journeyStepsLeft(fullEvent(), noneDone, before)).toBe(5);
+        expect(journeyStepsLeft(fullEvent(), { ...noneDone, details: true, schedule: true }, before)).toBe(3);
+    });
+    it('adds sessions before the day that have not ended', () => {
+        const ev = fullEvent({
+            sessions: [session('henna', '2026-12-10T17:00:00Z', '2026-12-10T20:00:00Z'), session('main', '2026-12-12T16:00:00Z', null, { isMain: true })],
+        });
+        expect(journeyStepsLeft(ev, allDone, before)).toBe(1);
+        expect(journeyStepsLeft(ev, allDone, new Date('2026-12-11T10:00:00Z'))).toBe(0);
+    });
+    it('counts the day sessions not ended on the day', () => {
+        const ev = fullEvent({
+            sessions: [
+                session('church', '2026-12-12T14:00:00Z', '2026-12-12T15:00:00Z', { isMain: true }),
+                session('party', '2026-12-12T18:00:00Z', '2026-12-12T23:00:00Z'),
+            ],
+        });
+        expect(journeyStepsLeft(ev, noneDone, new Date('2026-12-12T16:00:00Z'))).toBe(1);
+    });
+    it('has no count after the day', () => {
+        expect(journeyStepsLeft(fullEvent(), noneDone, new Date('2026-12-20T10:00:00Z'))).toBeNull();
+    });
+});
+
+describe('isOverviewPath', () => {
+    it('is the dashboard with no tab or the overview tab', () => {
+        expect(isOverviewPath('e1', routes.events.manage('e1'), '')).toBe(true);
+        expect(isOverviewPath('e1', routes.events.manage('e1'), 'tab=overview')).toBe(true);
+    });
+    it('is not a dashboard section or another page', () => {
+        expect(isOverviewPath('e1', routes.events.manage('e1'), 'tab=members')).toBe(false);
+        expect(isOverviewPath('e1', routes.events.invitationsQr('e1'), '')).toBe(false);
+        expect(isOverviewPath('e1', routes.events.feed('e1'), '')).toBe(false);
     });
 });
