@@ -28,7 +28,8 @@ export function QrCardChoiceControl<T extends string>({
                     <label
                         key={option.value}
                         className={cn(
-                            'flex min-h-10 cursor-pointer items-center justify-center rounded-full px-3 text-sm font-semibold transition-colors has-focus-visible:ring-2 has-focus-visible:ring-primary/30',
+                            // relative: keeps the hidden radio inside the page's scroller, so focusing it can't scroll the app shell.
+                            'relative flex min-h-10 cursor-pointer items-center justify-center rounded-full px-3 text-sm font-semibold transition-colors has-focus-visible:ring-2 has-focus-visible:ring-primary/30',
                             option.value === value ? 'bg-white text-ink shadow-sm' : 'text-ink-muted hover:text-ink',
                         )}
                     >

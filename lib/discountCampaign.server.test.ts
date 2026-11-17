@@ -1,6 +1,12 @@
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 describe('fetchLiveDiscountCampaign', () => {
+    // A day before the sample campaign ends, so it stays live whatever today's date is.
+    beforeEach(() => {
+        vi.useFakeTimers({ toFake: ['Date'] });
+        vi.setSystemTime(new Date('2026-11-07T00:00:00Z'));
+    });
+
     afterEach(() => {
         vi.useRealTimers();
         vi.unstubAllGlobals();

@@ -29,7 +29,7 @@ export function QrCardLayoutSegmented<T extends string>({
                         key={option.value}
                         title={option.icon ? option.label : undefined}
                         className={cn(
-                            'flex h-8 min-w-8 cursor-pointer items-center justify-center gap-1.5 rounded px-2.5 text-xs font-semibold has-focus-visible:ring-2 has-focus-visible:ring-primary/30',
+                            'relative flex h-8 min-w-8 cursor-pointer items-center justify-center gap-1.5 rounded px-2.5 text-xs font-semibold has-focus-visible:ring-2 has-focus-visible:ring-primary/30',
                             option.value === value ? 'bg-card text-ink shadow-sm' : 'text-ink-muted hover:text-ink',
                         )}
                     >

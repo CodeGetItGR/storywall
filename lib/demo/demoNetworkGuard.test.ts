@@ -2,7 +2,8 @@
 import type { SetupServer } from 'msw/node';
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import type { QrLinkResponseDto, QrTargetType } from '@/lib/api/types';
+import type { QrLinkResponseDto, QrTargetType, WishbookEntryResponseDto } from '@/lib/api/types';
+import { buildWishFormData } from '@/lib/wishbook/voice';
 
 // Proves a demo session never sends anything to the backend except the snapshot and /api/config:
 // every request below goes through the session's real MSW handlers, and any request MSW did not
@@ -97,6 +98,7 @@ describe('demo network guard', () => {
             '/api/events/evt-demo/rsvps',
             '/api/events/evt-demo/media?page=0',
             '/api/events/evt-demo/wishbook?page=0',
+            '/api/events/evt-demo/wishbook/mine?page=0',
             '/api/events/evt-demo/playlist-suggestions',
             '/api/events/evt-demo/qr-links',
             '/api/events/evt-demo/qr-links/stats',
@@ -129,6 +131,8 @@ describe('demo network guard', () => {
         await send('POST', '/api/rsvps', { eventMemberId: 'mem-host', attendanceStatus: 'ATTENDING' });
         await send('POST', '/api/playlist-suggestions', { title: 'Song' });
         await send('POST', '/api/events/evt-demo/wishbook', { guestName: 'A', message: 'B' });
+        const wishes = (await (await send('GET', '/api/events/evt-demo/wishbook/mine?page=0')).json()) as { content: { id: string }[] };
+        await send('PUT', `/api/wishbook/${wishes.content[0].id}`, { message: 'Edited' });
         await send('PATCH', '/api/events/evt-demo', { title: 'Renamed' });
         await send('PUT', '/api/events/evt-demo/gift-account', { iban: 'X', accountHolder: 'Y', bankName: 'Z' });
         await send('DELETE', `/api/posts/${post.id}`);
@@ -205,6 +209,35 @@ describe('demo network guard', () => {
 
         const media = (await (await send('GET', '/api/events/evt-demo/media?page=0')).json()) as { content: { id: string }[] };
         expect(media.content.map((item) => item.id)).toContain(result.created[0].id);
+        expect(left).toEqual([]);
+    });
+
+    it('keeps a recorded wish local, and changes or removes its recording', async () => {
+        const recording = new Blob(['voice'], { type: 'audio/webm' });
+        const created = await send('POST', '/api/events/evt-demo/wishbook', buildWishFormData({ guestName: 'Maria' }, recording));
+        expect(created.status).toBe(201);
+        const wish = (await created.json()) as WishbookEntryResponseDto;
+        expect(wish.message).toBeNull();
+        expect(wish.audio?.url.startsWith('blob:')).toBe(true);
+
+        // A recording-only edit keeps the missing text missing, not the word "null".
+        const replaced = (await (
+            await send('PUT', `/api/wishbook/${wish.id}`, buildWishFormData({}, new Blob(['again'], { type: 'audio/webm' })))
+        ).json()) as WishbookEntryResponseDto;
+        expect(replaced.message).toBeNull();
+        expect(replaced.audio?.url).not.toBe(wish.audio?.url);
+
+        // Blank text on a voice wish is stored as no text, as the backend does.
+        const withText = (await (await send('PUT', `/api/wishbook/${wish.id}`, { message: 'Hey' })).json()) as WishbookEntryResponseDto;
+        expect(withText).toMatchObject({ message: 'Hey', audio: replaced.audio });
+        const blanked = (await (await send('PUT', `/api/wishbook/${wish.id}`, { message: '   ' })).json()) as WishbookEntryResponseDto;
+        expect(blanked).toMatchObject({ message: null, audio: replaced.audio });
+
+        const written = (await (await send('PUT', `/api/wishbook/${wish.id}`, { message: ' Hi ', removeAudio: true })).json()) as WishbookEntryResponseDto;
+        expect(written).toMatchObject({ message: 'Hi', audio: null });
+
+        const kept = (await (await send('PUT', `/api/wishbook/${wish.id}`, { message: 'Hi again' })).json()) as WishbookEntryResponseDto;
+        expect(kept).toMatchObject({ message: 'Hi again', audio: null });
         expect(left).toEqual([]);
     });
 

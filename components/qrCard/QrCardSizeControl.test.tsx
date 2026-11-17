@@ -21,4 +21,10 @@ describe('QrCardSizeControl', () => {
         expect(onChange).toHaveBeenCalledTimes(1);
         expect(onChange.mock.calls[0][0].target.value).toBe('A5');
     });
+
+    // An unanchored hidden radio sits outside the page's scroller: focusing it scrolls the whole app shell.
+    it('anchors each hidden radio to its label', () => {
+        render(<QrCardSizeControl sizes={['A6', 'A5']} size="A6" onChangeAction={vi.fn()} />);
+        expect(screen.getByRole('radio', { name: 'A5' }).closest('label')).toHaveClass('relative');
+    });
 });

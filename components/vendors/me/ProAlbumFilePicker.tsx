@@ -19,7 +19,7 @@ export function ProAlbumFilePicker({ onChooseAction }: { onChooseAction: (files:
     );
 
     return (
-        <label className="inline-flex h-11 cursor-pointer items-center gap-2 rounded-full border border-border px-4 text-sm font-semibold text-ink focus-within:ring-2 has-disabled:cursor-not-allowed has-disabled:opacity-60">
+        <label className="relative inline-flex h-11 cursor-pointer items-center gap-2 rounded-full border border-border px-4 text-sm font-semibold text-ink focus-within:ring-2 has-disabled:cursor-not-allowed has-disabled:opacity-60">
             <ImagePlus className="size-4" aria-hidden="true" />
             {t('me.proChoose')}
             <input type="file" multiple accept="image/*,video/*" disabled={INCIDENT_MODE} className="sr-only" onChange={handleChange} />

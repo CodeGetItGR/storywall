@@ -51,6 +51,8 @@ const FONT: AdminThemeFontDto = {
     archived: false,
     url: '/api/theme-fonts/gfs-didot/1.woff2',
     presetCount: 2,
+    library: 'WALL',
+    invitationEventTypes: [],
 };
 
 function state(overrides: Record<string, unknown> = {}) {
@@ -285,5 +287,13 @@ describe('ThemeFontDrawer pending file check', () => {
         state({ isCheckingFile: true });
         renderDrawer();
         expect(screen.getByRole('button', { name: 'save' })).toBeDisabled();
+    });
+});
+
+describe('ThemeFontDrawer file picker', () => {
+    it('anchors the hidden file input to its label, so focusing it does not shift the drawer', () => {
+        state();
+        renderDrawer();
+        expect(document.querySelector('input[type="file"]')?.closest('label')).toHaveClass('relative');
     });
 });

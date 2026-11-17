@@ -24,7 +24,7 @@ describe('WeddingRsvp', () => {
         render(await WeddingRsvp({ locale: 'el' }));
         const wide = screen.getByRole('img', { name: /^Χωρίς StoryWall οι απαντήσεις έρχονται διάσπαρτα/ });
         expect(wide).toHaveClass('hidden', 'min-[761px]:block');
-        expect(wide.getAttribute('src')).toContain('wedding-rsvp-replies-without-and-with.webp');
+        expect(wide.getAttribute('src')).toMatch(/^\/landing\/wedding\/wedding-rsvp-replies-without-and-with\.webp/);
         expect(screen.getByRole('img', { name: /^Χωρίς StoryWall: οι απαντήσεις/ }).parentElement).toHaveClass('min-[761px]:hidden');
         expect(screen.getByRole('img', { name: /^Με StoryWall: φόρμα RSVP/ }).getAttribute('src')).toContain('wedding-rsvp-replies-with.webp');
     });

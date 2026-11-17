@@ -12,6 +12,7 @@ import { useGalleryAlbum } from '@/hooks/useGalleryAlbum';
 import { useGallerySelection } from '@/hooks/useGallerySelection';
 import { useInfiniteScrollSentinel } from '@/hooks/useInfiniteScrollSentinel';
 import { useDeleteMedia, useEventMedia, useOriginalMedia, useUploadMediaBatch } from '@/hooks/useMedia';
+import { useSlowUpload } from '@/hooks/useSlowUpload';
 import { useMyVendorRole } from '@/hooks/useVendors';
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
@@ -66,6 +67,7 @@ export function useGalleryScreen({ printAvailable = false }: { printAvailable?: 
     const selectedMedia = useMemo(() => media.find((item) => item.id === selectedMediaId) ?? null, [media, selectedMediaId]);
     const loadMoreRef = useInfiniteScrollSentinel(hasNextPage, fetchNextPage, media.length);
     const uploadMediaBatch = useUploadMediaBatch();
+    const isSlowUpload = useSlowUpload(uploadMediaBatch.isPending);
     const originalMedia = useOriginalMedia();
     const deleteMedia = useDeleteMedia(eventId ?? '');
     // A host is never a vendor, so the host skips the role request.
@@ -392,7 +394,7 @@ export function useGalleryScreen({ printAvailable = false }: { printAvailable?: 
         canDownloadSelection,
         selectedFiles,
         selectedSize,
-        uploadNotice: isUploadBusy ? t('uploadBusy') : uploadNotice,
+        uploadNotice: isUploadBusy ? t('uploadBusy') : isSlowUpload ? t('uploadSlow') : uploadNotice,
         selectedMedia,
         originalError,
         selectionDownloadError,

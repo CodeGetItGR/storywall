@@ -1,15 +1,18 @@
 'use client';
 
-import { LogOut, Shield } from 'lucide-react';
+import { CalendarHeart, Shield } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { type MouseEvent } from 'react';
 
+import { AdminNavBrand } from '@/components/admin/AdminNavBrand';
+import { AdminNavFooter } from '@/components/admin/AdminNavFooter';
 import { type AdminTab, useAdminNavigation } from '@/components/admin/AdminNavigationContext';
-import { LanguageSwitcher } from '@/components/LanguageSwitcher';
+import { AdminNavLink } from '@/components/admin/AdminNavLink';
 import { usePendingOutreachRequestsCount } from '@/hooks/useAdminOutreachRequests';
 import { usePendingApplicationsCount } from '@/hooks/useAdminPartnerApplications';
 import { useNewVendorMessagesCount } from '@/hooks/useAdminVendorMessages';
-import { canOpenAdminTab } from '@/lib/adminAccess';
+import { canOpenAdminTab, canUseSaveMyDateAdmin } from '@/lib/adminAccess';
+import { routes } from '@/lib/routes';
 import { cn } from '@/lib/utils';
 
 const TAB_GROUP: Record<AdminTab, 'overview' | 'catalog' | 'marketing' | 'operations'> = {
@@ -24,10 +27,8 @@ const TAB_GROUP: Record<AdminTab, 'overview' | 'catalog' | 'marketing' | 'operat
     outreachRequests: 'marketing',
     inviart: 'catalog',
     discountCodes: 'marketing',
-    discountCampaigns: 'marketing',
     guestOffer: 'marketing',
     appReviews: 'marketing',
-    campaignOverview: 'marketing',
     campaigns: 'marketing',
     partnerApplications: 'operations',
     collaborations: 'operations',
@@ -84,11 +85,8 @@ export function AdminShellNav({
         onNavigateAction?.();
     }
 
-    function handleLogoutClick() {
-        void onLogoutAction();
-    }
-
-    const initials = (email ?? '?').slice(0, 2).toUpperCase();
+    // Save my date has its own admin page; the Catalog group links to it.
+    const showsSaveMyDateLink = canUseSaveMyDateAdmin(role);
 
     return (
         <aside
@@ -97,21 +95,14 @@ export function AdminShellNav({
                 mobile ? 'min-h-full' : 'hidden h-full w-64 shrink-0 overflow-y-auto border-r border-border lg:flex',
             )}
         >
-            <div className="flex items-center gap-2.5 px-2">
-                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-[7px] bg-gradient-to-br from-primary to-primary-dark text-white">
-                    <Shield className="h-[15px] w-[15px]" />
-                </div>
-                <div className="min-w-0 leading-tight">
-                    <p className="truncate text-[14.5px] font-extrabold tracking-tight text-ink">{t('layout.console')}</p>
-                    <p className="text-[10px] font-semibold tracking-[0.06em] text-ink-faint uppercase">
-                        {role === 'MARKETING' ? t('eyebrowMarketing') : t('eyebrow')}
-                    </p>
-                </div>
-            </div>
+            {/* Brand */}
+            <AdminNavBrand icon={Shield} title={t('layout.console')} eyebrow={role === 'MARKETING' ? t('eyebrowMarketing') : t('eyebrow')} />
 
+            {/* Sections */}
             {GROUP_ORDER.map((group) => {
                 const groupTabs = tabs.filter(({ key }) => TAB_GROUP[key] === group);
-                if (groupTabs.length === 0) return null;
+                const saveMyDateLink = group === 'catalog' && showsSaveMyDateLink;
+                if (groupTabs.length === 0 && !saveMyDateLink) return null;
                 return (
                     <nav key={group}>
                         <p className="mb-1.5 px-2.5 text-[10.5px] font-bold tracking-[0.08em] text-ink-faint uppercase">
@@ -145,34 +136,21 @@ export function AdminShellNav({
                                     </button>
                                 );
                             })}
+                            {saveMyDateLink && (
+                                <AdminNavLink
+                                    href={routes.saveMyDateAdmin.root}
+                                    label={t('saveMyDate.title')}
+                                    icon={CalendarHeart}
+                                    onNavigateAction={onNavigateAction}
+                                />
+                            )}
                         </div>
                     </nav>
                 );
             })}
 
-            <div className="mt-auto flex flex-col gap-3 border-t border-border pt-3">
-                <div className="px-2.5">
-                    <LanguageSwitcher />
-                </div>
-
-                <div className="flex items-center gap-2 px-2.5">
-                    <div className="flex h-[26px] w-[26px] shrink-0 items-center justify-center rounded-full bg-surface-muted text-[10.5px] font-extrabold text-ink-muted">
-                        {initials}
-                    </div>
-                    <div className="min-w-0 flex-1 leading-tight">
-                        <p className="truncate text-[12.3px] font-bold text-ink">{email ?? t('layout.console')}</p>
-                        {userId && <p className="truncate text-[10.8px] text-ink-faint">{userId}</p>}
-                    </div>
-                    <button
-                        type="button"
-                        onClick={handleLogoutClick}
-                        aria-label={t('layout.signOut')}
-                        className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-ink-muted transition-colors hover:bg-canvas hover:text-ink"
-                    >
-                        <LogOut className="h-3.5 w-3.5" />
-                    </button>
-                </div>
-            </div>
+            {/* Footer */}
+            <AdminNavFooter email={email} userId={userId} onLogoutAction={onLogoutAction} />
         </aside>
     );
 }

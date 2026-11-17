@@ -1,13 +1,17 @@
 // @vitest-environment node
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const serverPublicConfigGet = vi.hoisted(() => vi.fn());
 vi.mock('@/lib/api/serverFetch', () => ({ serverPublicConfigGet: (...args: unknown[]) => serverPublicConfigGet(...args) }));
+const fetchThemeCatalogue = vi.hoisted(() => vi.fn());
+vi.mock('@/lib/invitation/serverThemeCatalogue', () => ({ fetchThemeCatalogue: () => fetchThemeCatalogue() }));
 
 import sitemap from '@/app/sitemap';
 import { getVendorPagePath, VENDOR_PAGE_TYPES } from '@/i18n/publicLocale';
 import {
     forBusinessLanguageAlternates,
+    invitationCatalogueLanguageAlternates,
+    invitationThemeLanguageAlternates,
     landingLanguageAlternates,
     legalPageLanguageAlternates,
     qrWeddingLanguageAlternates,
@@ -35,10 +39,18 @@ const VENDOR_URLS = VENDOR_PAGE_TYPES.flatMap((type) => [
     `${SITE_URL}${getVendorPagePath(type, 'el')}`,
 ]);
 
+// The invitation catalogue in English, then Greek.
+const INVITATION_CATALOGUE_URLS = [`${SITE_URL}/invitations`, `${SITE_URL}/el/prosklitiria`];
+
 describe('sitemap', () => {
+    beforeEach(() => {
+        fetchThemeCatalogue.mockResolvedValue([]);
+    });
+
     afterEach(() => {
         vi.unstubAllEnvs();
         serverPublicConfigGet.mockReset();
+        fetchThemeCatalogue.mockReset();
     });
 
     // While the site builds, a second identical fetch waits for the first one's cache write.
@@ -61,6 +73,7 @@ describe('sitemap', () => {
             ...VENDOR_URLS,
             `${SITE_URL}/weddings`,
             `${SITE_URL}/el/gamos`,
+            ...INVITATION_CATALOGUE_URLS,
             ...LEGAL_URLS,
         ]);
     });
@@ -121,6 +134,36 @@ describe('sitemap', () => {
         const urls = (await sitemap()).map((entry) => entry.url);
         expect(urls).not.toContain(`${SITE_URL}/qr-code-for-wedding-photos`);
         expect(urls).not.toContain(`${SITE_URL}/el/qr-code-gamou`);
+    });
+
+    it('lists every active theme page in both languages with their alternates', async () => {
+        serverPublicConfigGet.mockResolvedValue({ eventTypes: [] });
+        fetchThemeCatalogue.mockResolvedValue([{ slug: 'olive', name: 'Olive', eventType: 'WEDDING', cardColor: null, cardThumbUrl: null }]);
+        const byUrl = new Map((await sitemap()).map((entry) => [entry.url, entry]));
+        expect(byUrl.get(`${SITE_URL}/invitations`)?.alternates?.languages).toEqual(invitationCatalogueLanguageAlternates());
+        expect(byUrl.get(`${SITE_URL}/invitations/olive`)?.alternates?.languages).toEqual(invitationThemeLanguageAlternates('olive'));
+        expect(byUrl.get(`${SITE_URL}/el/prosklitiria/olive`)?.alternates?.languages).toEqual({
+            en: `${SITE_URL}/invitations/olive`,
+            el: `${SITE_URL}/el/prosklitiria/olive`,
+            'x-default': `${SITE_URL}/invitations/olive`,
+        });
+    });
+
+    it('keeps the invitation catalogue when the themes cannot be read', async () => {
+        serverPublicConfigGet.mockResolvedValue({ eventTypes: [] });
+        fetchThemeCatalogue.mockRejectedValue(new Error('down'));
+        const urls = (await sitemap()).map((entry) => entry.url);
+        expect(urls).toEqual(expect.arrayContaining(INVITATION_CATALOGUE_URLS));
+        expect(urls.some((url) => url.includes('/invitations/'))).toBe(false);
+    });
+
+    it('leaves out the invitation pages on the production site before launch', async () => {
+        vi.stubEnv('VERCEL_ENV', 'production');
+        serverPublicConfigGet.mockResolvedValue({ eventTypes: [] });
+        fetchThemeCatalogue.mockResolvedValue([{ slug: 'olive', name: 'Olive', eventType: 'WEDDING', cardColor: null, cardThumbUrl: null }]);
+        const urls = (await sitemap()).map((entry) => entry.url);
+        expect(urls.some((url) => url.includes('invitations') || url.includes('prosklitiria'))).toBe(false);
+        expect(fetchThemeCatalogue).not.toHaveBeenCalled();
     });
 
     it('keeps every ready occasion when the config cannot be read', async () => {

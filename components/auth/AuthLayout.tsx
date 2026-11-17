@@ -25,7 +25,7 @@ export function AuthLayout({ children, showLanguageSwitcher = false }: AuthLayou
                 </div>
 
                 {/* Language selection */}
-                {showLanguageSwitcher && <LanguageSwitcher variant="auth" className={'mx-auto mt-5'} />}
+                {showLanguageSwitcher && <LanguageSwitcher variant="auth" reloadOnChange className={'mx-auto mt-5'} />}
 
                 {/* Form panel */}
                 <div className="flex flex-col items-center justify-center gap-3">

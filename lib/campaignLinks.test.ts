@@ -1,19 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import type { CampaignRowDto } from '@/lib/api/types';
-import {
-    campaignDestinations,
-    campaignLinkFormProblem,
-    campaignLinkSections,
-    campaignRedirectUrl,
-    campaignShortUrl,
-    campaignUrl,
-    emptyCampaignLinkForm,
-    findCampaignPreset,
-    isUtmValue,
-    totalOf,
-    toUtmValue,
-} from '@/lib/campaignLinks';
+import { campaignRedirectUrl, campaignShortUrl, campaignUrl, isUtmValue, pageRows, toUtmValue, UNKNOWN_PAGE } from '@/lib/campaignLinks';
 import { captureVisitSource } from '@/lib/signupSource';
 
 describe('toUtmValue', () => {
@@ -54,33 +41,6 @@ describe('campaignUrl', () => {
     });
 });
 
-describe('campaignLinkSections', () => {
-    function row(utmSource: string | null, utmMedium: string | null, name: string | null) {
-        return { utmSource, utmMedium, utmCampaign: 'x', link: name ? { name } : null } as CampaignRowDto;
-    }
-
-    it('groups by type and sorts by platform, then name', () => {
-        const sections = campaignLinkSections([
-            row('tiktok', 'social', 'T'),
-            row('instagram', 'paid_social', 'Paid'),
-            row('instagram', 'social', 'B'),
-            row('google', 'cpc', 'Google'),
-            row('instagram', 'social', 'A'),
-            row('print', 'qr', 'Print'),
-            row(null, null, null),
-        ]);
-        expect(sections.map((section) => [section.group, section.rows.map((one) => one.link?.name ?? null)])).toEqual([
-            ['social', ['A', 'B', 'T']],
-            ['ads', ['Google', 'Paid']],
-            ['other', [null, 'Print']],
-        ]);
-    });
-
-    it('leaves out an empty section', () => {
-        expect(campaignLinkSections([row('instagram', 'social', 'A')]).map((section) => section.group)).toEqual(['social']);
-    });
-});
-
 describe('campaignShortUrl', () => {
     it('is the readable code on the site', () => {
         expect(campaignShortUrl({ shortCode: 'instagram-paid-sale' }, 'https://www.storywall.gr')).toBe(
@@ -100,35 +60,6 @@ describe('campaignRedirectUrl', () => {
     });
 });
 
-describe('campaignLinkFormProblem', () => {
-    it('names the first missing value', () => {
-        const form = emptyCampaignLinkForm('/');
-        expect(campaignLinkFormProblem(form)).toBe('name');
-        expect(campaignLinkFormProblem({ ...form, name: 'Bio' })).toBe('campaign');
-        expect(campaignLinkFormProblem({ ...form, name: 'Bio', utmCampaign: 'oct' })).toBeNull();
-        const partner = findCampaignPreset('partner');
-        expect(
-            campaignLinkFormProblem({
-                ...form,
-                preset: 'partner',
-                utmSource: partner.source,
-                utmMedium: partner.medium,
-                name: 'Bio',
-                utmCampaign: 'oct',
-            }),
-        ).toBe('source');
-    });
-});
-
-describe('campaignDestinations', () => {
-    it('starts with each language home page', () => {
-        expect(campaignDestinations().slice(0, 2)).toEqual([
-            { kind: 'home', path: '/' },
-            { kind: 'home', path: '/el' },
-        ]);
-    });
-});
-
 describe('campaignUrl with an anchor', () => {
     const parts = { destinationPath: '/el', utmSource: 'instagram', utmMedium: 'social', utmCampaign: 'bf-post-el' };
 
@@ -143,15 +74,14 @@ describe('campaignUrl with an anchor', () => {
     });
 });
 
-describe('totalOf', () => {
-    const row = (visits: number, sales: number, salesRevenueMinorByCurrency: Record<string, number> | null) =>
-        ({ visits, sales, salesRevenueMinorByCurrency }) as Parameters<typeof totalOf>[0][number];
+describe('pageRows', () => {
+    it('keys a visit whose page is unknown apart, biggest first', () => {
+        const rows = pageRows([
+            { page: '/', visits: 30 },
+            { page: null, visits: 4 },
+            { page: '/el', visits: 112 },
+        ]);
 
-    it('adds up visits, sales and each currency', () => {
-        expect(totalOf([row(3, 1, { EUR: 4900 }), row(2, 2, { EUR: 9800, USD: 100 }), row(1, 0, null)])).toEqual({
-            visits: 6,
-            sales: 3,
-            salesRevenueMinorByCurrency: { EUR: 14_700, USD: 100 },
-        });
+        expect(rows.map((row) => row.key)).toEqual(['/el', '/', UNKNOWN_PAGE]);
     });
 });

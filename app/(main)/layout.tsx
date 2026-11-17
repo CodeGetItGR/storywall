@@ -1,7 +1,7 @@
 import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
 import type { Metadata, Viewport } from 'next';
 import { cookies } from 'next/headers';
-import { getMessages } from 'next-intl/server';
+import { getMessages, getTranslations } from 'next-intl/server';
 import { type ReactNode } from 'react';
 
 import { RootDocument } from '@/components/layout/RootDocument';
@@ -15,7 +15,9 @@ import { makeQueryClient } from '@/lib/queryClient';
 import { getRootMetadata, rootViewport } from '@/lib/rootMetadata';
 import { DISMISSED_COOKIE } from '@/lib/siteNoticeDismissals';
 import { fetchLiveSiteNotices } from '@/lib/siteNotices.server';
+import { showsCreateWizard } from '@/lib/unreleasedPages';
 import { AppProviders } from '@/providers/AppProviders';
+import { CreateWizardFlagProvider } from '@/providers/CreateWizardFlagProvider';
 
 export const viewport: Viewport = rootViewport;
 
@@ -39,12 +41,16 @@ export default async function MainLayout({ children }: Readonly<{ children: Reac
     }
     const dismissed = (await cookies()).get(DISMISSED_COOKIE)?.value ?? '';
 
+    const createLabel = (await getTranslations('CreateEventPage'))('title');
+
     return (
         <RootDocument messages={pickAppMessages(await getMessages())}>
             <AppProviders handoff={handoff}>
-                <HydrationBoundary state={dehydrate(queryClient)}>
-                    <SiteNoticeFrame initialDismissed={dismissed}>{children}</SiteNoticeFrame>
-                </HydrationBoundary>
+                <CreateWizardFlagProvider enabled={showsCreateWizard()} createLabel={createLabel}>
+                    <HydrationBoundary state={dehydrate(queryClient)}>
+                        <SiteNoticeFrame initialDismissed={dismissed}>{children}</SiteNoticeFrame>
+                    </HydrationBoundary>
+                </CreateWizardFlagProvider>
             </AppProviders>
         </RootDocument>
     );
