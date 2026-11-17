@@ -123,9 +123,27 @@ export function readCreateEventCheckout(run: string): CreateEventCheckout | null
 
 // Brings the first unticked checkbox in the form into view and focuses it, so a
 // host who can't pay yet lands on the box still blocking them.
-export function focusFirstUncheckedBox(formId: string): void {
+// With highlight, the box's row also glows briefly once the scroll settles.
+export function focusFirstUncheckedBox(formId: string, { highlight = false }: { highlight?: boolean } = {}): void {
     const box = document.getElementById(formId)?.querySelector<HTMLInputElement>('input[type="checkbox"]:not(:checked)');
     if (!box) return;
     box.scrollIntoView({ behavior: 'smooth', block: 'center' });
     box.focus({ preventScroll: true });
+    if (highlight) flashRow(box.closest('label') ?? box);
+}
+
+const FLASH_DELAY_MS = 350;
+const FLASH_DURATION_MS = 1800;
+
+// A brand-tint glow that pulses twice and fades; the shadow pads it past the row's edges.
+function flashRow(row: Element): void {
+    if (typeof row.animate !== 'function') return;
+    const primary = getComputedStyle(row).getPropertyValue('--primary').trim() || '#ff6b6b';
+    const on = { backgroundColor: `color-mix(in srgb, ${primary} 22%, transparent)`, boxShadow: `0 0 0 8px color-mix(in srgb, ${primary} 22%, transparent)` };
+    const off = { backgroundColor: 'transparent', boxShadow: '0 0 0 8px transparent' };
+    row.animate([on, off, on, off].map((frame) => ({ ...frame, borderRadius: '6px' })), {
+        duration: FLASH_DURATION_MS,
+        delay: FLASH_DELAY_MS,
+        easing: 'ease-in-out',
+    });
 }

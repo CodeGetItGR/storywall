@@ -1,14 +1,15 @@
 import { cleanup, render, screen } from '@testing-library/react';
+import type { ReactNode } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { AccountStep } from '@/components/event/create/wizard/account/AccountStep';
 
-const state = vi.hoisted(() => ({ view: 'choose', user: null as null | { userId: string } }));
+const state = vi.hoisted(() => ({ view: 'choose', user: null as null | { userId: string }, isFinishing: false }));
 
 vi.mock('next-intl', () => ({ useTranslations: (ns: string) => (key: string) => `${ns}.${key}`, useLocale: () => 'en' }));
 vi.mock('@/hooks/useAuth', () => ({ useAuth: () => ({ user: state.user }) }));
 vi.mock('@/hooks/useCreateEventWizardAccount', () => ({
-    useCreateEventWizardAccount: () => ({ view: state.view, open: vi.fn(), show: vi.fn(), onSignedIn: vi.fn() }),
+    useCreateEventWizardAccount: () => ({ view: state.view, open: vi.fn(), show: vi.fn(), onSignedIn: vi.fn(), isFinishingSignIn: state.isFinishing }),
 }));
 vi.mock('@/hooks/useCreateEventWizardAccountPreview', () => ({
     useCreateEventWizardAccountPreview: () => ({
@@ -39,15 +40,22 @@ vi.mock('@/hooks/useEmailCode', () => ({
     }),
 }));
 vi.mock('@/components/auth/OAuthButtons', () => ({ OAuthButtons: () => <div data-testid="oauth" /> }));
-vi.mock('@/components/auth/RegisterEmailForm', () => ({ RegisterEmailForm: () => <form data-testid="register" /> }));
-vi.mock('@/components/auth/LoginEmailForm', () => ({ LoginEmailForm: () => <form data-testid="login" /> }));
+vi.mock('@/components/auth/RegisterEmailForm', () => ({
+    RegisterEmailForm: ({ submitButton }: { submitButton: ReactNode }) => <form data-testid="register">{submitButton}</form>,
+}));
+vi.mock('@/components/auth/LoginEmailForm', () => ({
+    LoginEmailForm: ({ submitButton }: { submitButton: ReactNode }) => <form data-testid="login">{submitButton}</form>,
+}));
 vi.mock('@/hooks/useRegisterForm', () => ({ useRegisterForm: () => ({ isSubmitting: false }) }));
 vi.mock('@/components/common/ProtectedImage', () => ({
     // eslint-disable-next-line @next/next/no-img-element
     ProtectedImage: ({ src, alt }: { src: string; alt: string }) => <img src={src} alt={alt} />,
 }));
 
-afterEach(cleanup);
+afterEach(() => {
+    cleanup();
+    state.isFinishing = false;
+});
 
 describe('AccountStep', () => {
     it('offers Google first, then email sign-up and sign-in', () => {
@@ -72,6 +80,18 @@ describe('AccountStep', () => {
         state.user = null;
         render(<AccountStep />);
         expect(screen.getByTestId('login')).toBeInTheDocument();
+    });
+
+    it('keeps the sign-up and sign-in buttons busy once signed in, until the next screen opens', () => {
+        state.user = { userId: 'u1' };
+        state.isFinishing = true;
+        state.view = 'signup';
+        const { unmount } = render(<AccountStep />);
+        expect(screen.getByRole('button', { name: 'RegisterPage.submit' })).toBeDisabled();
+        unmount();
+        state.view = 'signin';
+        render(<AccountStep />);
+        expect(screen.getByRole('button', { name: 'LoginPage.submit' })).toBeDisabled();
     });
 
     it('shows the code screen with the email and the countdown', () => {

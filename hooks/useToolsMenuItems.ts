@@ -8,7 +8,6 @@ import {
     CalendarDays,
     ClipboardList,
     Gift,
-    HelpCircle,
     Images,
     LayoutDashboard,
     ListMusic,
@@ -116,6 +115,8 @@ export function useToolsMenuItems(): ToolMenuItem[] {
             .filter((tool) => !isDeleted || tool.key === 'gallery' || tool.key === 'wishbook')
             // A lite event (no feed in its plan) has only its gallery and wishbook; every other tool sends its host home.
             .filter((tool) => !isLite || tool.key === 'gallery' || tool.key === 'wishbook')
+            // The feed's quick actions hold the wishbook and vendors; a lite or deleted event has no feed, so keeps them here.
+            .filter((tool) => isLite || isDeleted || !FEED_QUICK_ACTION_TOOLS.has(tool.key))
             .map((tool) => {
                 const copyKey = tool.copyKey ?? tool.moduleKey;
                 const copy = copyKey && copyKey !== 'member_roles' ? moduleCopy(copyKey) : null;
@@ -133,6 +134,9 @@ export function useToolsMenuItems(): ToolMenuItem[] {
     );
 }
 
+// Tools the feed's quick actions show instead of the menu.
+const FEED_QUICK_ACTION_TOOLS = new Set(['wishbook', 'vendors']);
+
 // Menu entries that are vendor tools, by menu key.
 const VENDOR_TOOL_KEYS: Partial<Record<string, VendorActionKey>> = {
     schedule: 'schedule',
@@ -148,6 +152,7 @@ const VENDOR_TOOL_KEYS: Partial<Record<string, VendorActionKey>> = {
 export function useHostMenuItems(): ToolMenuItem[] {
     const t = useTranslations('MobileTabBar.hostMenu');
     const activeEvent = useActiveEvent();
+    const isDemoVisitor = useContentAccessMode() === 'demoVisitor';
 
     // A suspended StoryWall shows only the suspended view: no host menu.
     if (!activeEvent || activeEvent.suspended) return [];
@@ -164,11 +169,10 @@ export function useHostMenuItems(): ToolMenuItem[] {
 
     const hostAdminDefinitions: { key: string; href: string; icon: LucideIcon; hidden?: boolean }[] = [
         { key: 'manage', href: routes.events.manage(activeEvent.id), icon: LayoutDashboard },
-        { key: 'galleryQr', href: routes.events.tools.galleryQr(activeEvent.id), icon: QrCode, hidden: isDeleted || isLite || !galleryQrEnabled },
         { key: 'invitationsQr', href: routes.events.invitationsQr(activeEvent.id), icon: Ticket, hidden: isDeleted || isDraft || isLite },
         { key: 'vendors', href: routes.events.manageVendors(activeEvent.id), icon: Store, hidden: isDeleted || isDraft || !vendorsOn },
-        { key: 'announcement', href: routes.events.tools.announcement(activeEvent.id), icon: Megaphone, hidden: isDeleted || isDraft || !postsOn },
-        { key: 'help', href: routes.events.manage(activeEvent.id, { tab: 'help' }), icon: HelpCircle, hidden: isDeleted },
+        // The public demo has no announcement page.
+        { key: 'announcement', href: routes.events.tools.announcement(activeEvent.id), icon: Megaphone, hidden: isDeleted || isDraft || !postsOn || isDemoVisitor },
     ];
 
     return hostAdminDefinitions
@@ -178,6 +182,7 @@ export function useHostMenuItems(): ToolMenuItem[] {
             href: item.href,
             icon: item.icon,
             label: t(`${item.key}.label`),
-            description: t(`${item.key}.description`),
+            // Share links' one code also uploads when the plan has photo uploads (KAN-208).
+            description: item.key === 'invitationsQr' && galleryQrEnabled ? t('invitationsQr.descriptionWithUpload') : t(`${item.key}.description`),
         }));
 }

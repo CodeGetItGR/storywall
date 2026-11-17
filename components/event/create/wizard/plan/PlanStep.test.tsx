@@ -34,17 +34,20 @@ function entry(code: string, sortOrder: number, maxMembers: number | null, modul
     };
 }
 
-function setup(selectedCode = 'STORY') {
-    const onSelectPlan = vi.fn();
-    const onSelectPlanDuration = vi.fn();
-    marketing.current = {
+function setup(
+    selectedCode = 'STORY',
+    plans: { full: unknown[]; lite: unknown[] } = {
         full: [
             entry('START', 1, 150, ['gallery', 'posts']),
             entry('STORY', 2, 300, ['gallery', 'posts', 'stories', 'rsvp']),
             entry('SIGNATURE', 3, 2500, ['gallery', 'posts', 'stories', 'rsvp']),
         ],
         lite: [],
-    };
+    },
+) {
+    const onSelectPlan = vi.fn();
+    const onSelectPlanDuration = vi.fn();
+    marketing.current = plans;
     form.current = {
         eventPlans: [],
         modules: [],
@@ -94,5 +97,21 @@ describe('PlanStep', () => {
         const { onSelectPlanDuration } = setup();
         fireEvent.click(screen.getByRole('radio', { name: 'Durations.months{"count":12}' }));
         expect(onSelectPlanDuration).toHaveBeenCalledWith('STORY', 'STORY-12');
+    });
+
+    it('offers to compare the plans when there is more than one', () => {
+        setup();
+        expect(screen.getByRole('button', { name: 'CreateEventPage.wizard.plan.compare' })).toBeInTheDocument();
+    });
+
+    it('hides the compare link when only one plan is offered', () => {
+        setup('STORY', { full: [entry('STORY', 1, 10, ['gallery', 'posts'])], lite: [] });
+        expect(screen.getByText('STORY')).toBeInTheDocument();
+        expect(screen.queryByRole('button', { name: 'CreateEventPage.wizard.plan.compare' })).not.toBeInTheDocument();
+    });
+
+    it('counts a lite plan as a second plan to compare', () => {
+        setup('STORY', { full: [entry('STORY', 1, 10, ['gallery', 'posts'])], lite: [entry('LITE', 0, 10, ['gallery'])] });
+        expect(screen.getByRole('button', { name: 'CreateEventPage.wizard.plan.compare' })).toBeInTheDocument();
     });
 });

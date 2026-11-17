@@ -4,9 +4,9 @@ import { MailCheck } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import type { SubmitEvent } from 'react';
 
-import { EmailCodeInput } from '@/components/event/create/wizard/account/EmailCodeInput';
 import { CreateEventWizardButton } from '@/components/event/create/wizard/CreateEventWizardButton';
 import { CREATE_EVENT_WIZARD_HEADING_ID } from '@/components/event/create/wizard/createEventWizardIds';
+import { CodeInput } from '@/components/ui/CodeInput';
 import type { useEmailCode } from '@/hooks/useEmailCode';
 import { EMAIL_CODE_LENGTH, formatCountdown } from '@/lib/emailCode';
 
@@ -45,7 +45,10 @@ export function AccountCode({ emailCode, onChangeEmail }: Props) {
             </div>
 
             {/* Code */}
-            <EmailCodeInput
+            <CodeInput
+                tone="cream"
+                length={EMAIL_CODE_LENGTH}
+                autoFocus
                 label={t('label')}
                 value={code}
                 onChange={setCode}

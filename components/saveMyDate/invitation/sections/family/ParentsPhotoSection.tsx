@@ -42,7 +42,7 @@ type ParentPersonProps = {
 function ParentPerson({ section, path, parent, contrast, ctx }: ParentPersonProps) {
     return (
         <div className="family-person">
-            <FamilyPhoto photo={parent.photo} name={parent.name} ctx={ctx} />
+            <FamilyPhoto photo={parent.photo} name={parent.name} sectionId={section.id} path={`${path}.photo`} ctx={ctx} />
             <SectionText section={section} path={`${path}.label`} value={parent.label} tag="small" className="family-person-label" contrast={contrast} ctx={ctx} />
             <SectionText section={section} path={`${path}.name`} value={parent.name} tag="h2" className="family-person-name" contrast={contrast} ctx={ctx} />
         </div>

@@ -80,8 +80,10 @@ describe('InvitationThemeDrawer', () => {
         await waitFor(() => expect(server.put).toHaveBeenCalledTimes(1));
         expect(server.put).toHaveBeenCalledWith(
             '/api/admin/invitation-themes/t1',
-            expect.objectContaining({ name: 'Gamos 002', slug: 'gamos-002', status: 'ACTIVE', seoDescription: 'Hello', revision: 3, sortOrder: 2 }),
+            expect.objectContaining({ name: 'Gamos 002', slug: 'gamos-002', status: 'ACTIVE', seoDescription: 'Hello', revision: 3 }),
         );
+        // The list's drag and drop owns the order, so a save leaves it as it is.
+        expect(server.put.mock.calls[0][1]).not.toHaveProperty('sortOrder');
         // Saved: nothing left to save, and the copy can be made now.
         await waitFor(() => expect(screen.getByRole('button', { name: 'Save' })).toBeDisabled());
         expect(screen.getByRole('button', { name: 'Duplicate' })).toHaveAttribute('aria-disabled', 'false');
@@ -131,5 +133,16 @@ describe('InvitationThemeDrawer', () => {
         const props = renderDrawer();
         fireEvent.click(await screen.findByRole('button', { name: 'Duplicate' }));
         expect(props.onDuplicateAction).toHaveBeenCalledWith(expect.objectContaining({ id: 't1' }));
+    });
+
+    it('opens the design editor, once the details are saved', async () => {
+        renderDrawer();
+        const link = await screen.findByRole('link', { name: 'Edit design' });
+        expect(link).toHaveAttribute('href', '/admin/save-my-date/themes/t1/editor');
+        expect(link).not.toHaveAttribute('aria-disabled', 'true');
+
+        fireEvent.change(screen.getByLabelText(/^Name/), { target: { value: 'Changed' } });
+        expect(screen.getByRole('link', { name: 'Edit design' })).toHaveAttribute('aria-disabled', 'true');
+        expect(screen.getByRole('link', { name: 'Edit design' })).toHaveAttribute('title', 'Save first');
     });
 });

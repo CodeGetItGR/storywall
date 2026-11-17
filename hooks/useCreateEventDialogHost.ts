@@ -1,12 +1,13 @@
 'use client';
 
-import { useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useRef } from 'react';
 
 import { useAuth } from '@/hooks/useAuth';
 import { clearCreateEventWizardDraft, isCreateEventWizardDraftEmpty, readCreateEventWizardDraft } from '@/lib/createEventWizardDraft';
 import { closeWizard, pushWizardEntry } from '@/lib/createEventWizardHistory';
 import { CREATE_EVENT_STEP_PARAM, isCreateEventHref, isWizardOpen, wizardUrlForLink } from '@/lib/createEventWizardUrl';
+import { routes } from '@/lib/routes';
 import { useCreateWizardEnabled } from '@/providers/CreateWizardFlagProvider';
 
 function createLinkFrom(target: EventTarget | null): HTMLAnchorElement | null {
@@ -26,11 +27,18 @@ function createLinkFrom(target: EventTarget | null): HTMLAnchorElement | null {
  */
 export function useCreateEventDialogHost({ preload }: { preload?: () => void } = {}) {
     const enabled = useCreateWizardEnabled();
-    const { user } = useAuth();
+    const router = useRouter();
+    const { user, isBootstrapping } = useAuth();
     const searchParams = useSearchParams();
     const active = enabled && user?.role !== 'ADMIN';
     const isOpen = active && isWizardOpen(searchParams);
+    const adminOnCreateLink = enabled && !isBootstrapping && user?.role === 'ADMIN' && isWizardOpen(searchParams);
     const opener = useRef<HTMLElement | null>(null);
+
+    // An admin who opens a create=1 link goes to the console, as /events/new sends them.
+    useEffect(() => {
+        if (adminOnCreateLink) router.replace(routes.admin);
+    }, [adminOnCreateLink, router]);
 
     useEffect(() => {
         if (!active) return;

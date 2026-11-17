@@ -1,27 +1,18 @@
 'use client';
 
-import './editor.css';
-
 import { useTranslations } from 'next-intl';
 
-import { EditorCanvas } from '@/components/saveMyDate/editor/EditorCanvas';
-import { EditorConflictDialog } from '@/components/saveMyDate/editor/EditorConflictDialog';
-import { EditorDockedPanel } from '@/components/saveMyDate/editor/EditorDockedPanel';
-import { EditorLeaveDialog } from '@/components/saveMyDate/editor/EditorLeaveDialog';
+import { EditorFrame } from '@/components/saveMyDate/editor/EditorFrame';
 import { EditorNotice } from '@/components/saveMyDate/editor/EditorNotice';
-import { EditorPanelBar } from '@/components/saveMyDate/editor/EditorPanelBar';
-import { EditorPanelSheet } from '@/components/saveMyDate/editor/EditorPanelSheet';
-import { EditorPreview } from '@/components/saveMyDate/editor/EditorPreview';
-import { EditorTopBar } from '@/components/saveMyDate/editor/EditorTopBar';
-import { CanvasHandles } from '@/components/saveMyDate/editor/handles/CanvasHandles';
 import { PublishEventSheet } from '@/components/saveMyDate/editor/publish/PublishEventSheet';
 import { PublishNotice } from '@/components/saveMyDate/editor/publish/PublishNotice';
 import { PublishPlanDialog } from '@/components/saveMyDate/editor/publish/PublishPlanDialog';
 import { PublishSheet } from '@/components/saveMyDate/editor/publish/PublishSheet';
 import { PublishSignInDialog } from '@/components/saveMyDate/editor/publish/PublishSignInDialog';
-import { SectionSettings } from '@/components/saveMyDate/editor/settings/SectionSettings';
-import { InlineTextEditing } from '@/components/saveMyDate/editor/text/InlineTextEditing';
 import { TextColorSetting } from '@/components/saveMyDate/editor/TextColorSetting';
+import { ThemeSwitchDialog } from '@/components/saveMyDate/editor/theme/ThemeSwitchDialog';
+import { ThemeSwitchPanel } from '@/components/saveMyDate/editor/theme/ThemeSwitchPanel';
+import { ThemeSwitchSheet } from '@/components/saveMyDate/editor/theme/ThemeSwitchSheet';
 import { ThemeAssetsPanel } from '@/components/saveMyDate/editor/ThemeAssetsPanel';
 import { EditorTour } from '@/components/saveMyDate/editor/tour/EditorTour';
 import { useInvitationEditor } from '@/hooks/useInvitationEditor';
@@ -40,84 +31,60 @@ type InvitationEditorProps = {
     isReloading?: boolean;
 };
 
-// The editor for one draft: top bar, canvas in the middle, theme assets on the left and
-// typography and settings on the right. The panels dock on wide screens and open as sheets on smaller ones.
+// The host's editor for one draft: the editor frame with the design change, photo uploads,
+// publishing and the tour.
 export function InvitationEditor({ draft, uploadedFonts, onReload, isReloading = false }: InvitationEditorProps) {
     const t = useTranslations('InvitationEditor');
     const editor = useInvitationEditor(draft, uploadedFonts);
-    const { sectionSettings } = editor;
 
-    const assets = <ThemeAssetsPanel />;
-    const settings = <TextColorSetting value={editor.textColor} onChange={editor.setTextColor} />;
+    const assets = (
+        <div className="flex flex-col gap-4">
+            {/* Design */}
+            <ThemeSwitchPanel themeName={editor.themeName} onChange={editor.openThemeSwitch} />
 
-    return (
-        <div className="smd-editor flex h-full flex-col bg-(--smd-editor-panel)">
-            {/* Top bar */}
-            <EditorTopBar
-                status={editor.status}
-                canUndo={editor.canUndo}
-                canRedo={editor.canRedo}
-                isBusy={editor.isBusy}
-                onBack={editor.leave.back}
-                onUndo={editor.undo}
-                onRedo={editor.redo}
-                onPreview={editor.openPreview}
-                onPublish={editor.publishing.start}
-                onTour={editor.tour.start}
-            />
-
-            {/* Save problem */}
-            {editor.status === 'error' && <EditorNotice tone="error" message={t('notSaved')} actionLabel={t('retry')} onAction={editor.retrySave} />}
+            {/* Assets */}
+            <ThemeAssetsPanel />
+        </div>
+    );
+    const notice = (
+        <>
+            {/* Photo problem */}
+            {editor.photos.problem && (
+                <EditorNotice
+                    tone="error"
+                    message={t(`photos.errors.${editor.photos.problem}`)}
+                    actionLabel={t('close')}
+                    onAction={editor.photos.dismissProblem}
+                />
+            )}
 
             {/* Publish note */}
             <PublishNotice notice={editor.publishing.notice} onOpen={editor.publishing.openPublished} />
+        </>
+    );
 
-            {/* Workspace */}
-            <div className="flex min-h-0 flex-1">
-                <EditorDockedPanel title={t('themeAssets')}>{assets}</EditorDockedPanel>
-                <InlineTextEditing store={editor.store} document={editor.document} theme={editor.theme} uploadedFonts={uploadedFonts}>
-                    <CanvasHandles store={editor.store}>
-                        <EditorCanvas
-                            document={editor.document}
-                            theme={editor.theme}
-                            media={editor.media}
-                            uploadedFonts={uploadedFonts}
-                            sections={editor.sections}
-                            sectionSettings={sectionSettings.opener}
-                        />
-                    </CanvasHandles>
-                </InlineTextEditing>
-                {sectionSettings.isDocked && sectionSettings.panel ? (
-                    <SectionSettings panel={sectionSettings.panel} isDocked onClose={sectionSettings.close} />
-                ) : (
-                    <EditorDockedPanel title={t('settings')}>{settings}</EditorDockedPanel>
-                )}
-            </div>
-
-            {/* Panels on small screens */}
-            <EditorPanelBar onOpen={editor.setOpenPanel} />
-            <EditorPanelSheet open={editor.openPanel === 'assets'} title={t('themeAssets')} onClose={editor.closePanel}>
-                {assets}
-            </EditorPanelSheet>
-            <EditorPanelSheet open={editor.openPanel === 'settings'} title={t('settings')} onClose={editor.closePanel}>
-                {settings}
-            </EditorPanelSheet>
-
-            {/* Section settings on small screens */}
-            {!sectionSettings.isDocked && <SectionSettings panel={sectionSettings.panel} isDocked={false} onClose={sectionSettings.close} />}
-
-            {/* Preview */}
-            <EditorPreview
-                open={editor.isPreviewOpen}
-                onClose={editor.closePreview}
-                document={editor.document}
-                theme={editor.theme}
-                media={editor.media}
-                uploadedFonts={uploadedFonts}
-            />
-
+    return (
+        <EditorFrame
+            workspace={editor}
+            leave={editor.leave}
+            isBusy={editor.isBusy}
+            primary={{ action: 'publish', onClick: editor.publishing.start }}
+            onTour={editor.tour.start}
+            subject="invitation"
+            assets={assets}
+            settings={<TextColorSetting value={editor.textColor} onChange={editor.setTextColor} />}
+            uploadedFonts={uploadedFonts}
+            onReload={onReload}
+            isReloading={isReloading}
+            notice={notice}
+            event={editor.event}
+            fieldLinks={editor.fieldLinks}
+            joinUrl={editor.joinUrl}
+            photoSlots={editor.photos.slots}
+        >
             {/* Publishing */}
             <PublishSignInDialog signIn={editor.publishing.signIn} />
+            <PublishSignInDialog signIn={editor.photos.signIn} title={t('photos.signInTitle')} />
             <PublishEventSheet step={editor.publishing.eventStep} draftId={draft.id} eventType={draft.eventType} document={editor.document} />
             <PublishSheet sheet={editor.publishing.sheet} inviteHost={INVITE_HOST} />
             <PublishPlanDialog
@@ -126,12 +93,19 @@ export function InvitationEditor({ draft, uploadedFonts, onReload, isReloading =
                 onClose={editor.publishing.closePlanPrompt}
             />
 
-            {/* Dialogs */}
-            <EditorConflictDialog open={editor.status === 'conflict'} isReloading={isReloading} onReload={onReload} />
-            <EditorLeaveDialog open={editor.leave.isConfirming} onLeave={editor.leave.leave} onStay={editor.leave.stay} />
+            {/* Design change */}
+            <ThemeSwitchSheet
+                step={editor.themeSwitch.step}
+                list={editor.themeSwitch.list}
+                currentSlug={editor.themeSwitch.currentSlug}
+                onChoose={editor.themeSwitch.choose}
+                onRetryList={editor.themeSwitch.retryList}
+                onClose={editor.themeSwitch.close}
+            />
+            <ThemeSwitchDialog step={editor.themeSwitch.step} onConfirm={editor.themeSwitch.confirm} onCancel={editor.themeSwitch.back} />
 
             {/* Tour */}
             <EditorTour tour={editor.tour} />
-        </div>
+        </EditorFrame>
     );
 }

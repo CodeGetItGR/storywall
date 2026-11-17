@@ -1,6 +1,7 @@
 import { InvitationElements } from '@/components/saveMyDate/invitation/InvitationElements';
 import { FaqItem } from '@/components/saveMyDate/invitation/sections/faq/FaqItem';
 import { SectionText } from '@/components/saveMyDate/invitation/sections/SectionText';
+import { faqItemHasContent, visibleItems } from '@/lib/invitation/listContent';
 import type { RenderContext, TextContrast } from '@/lib/invitation/render';
 import { faqVars } from '@/lib/invitation/sectionCss';
 import type { InvitationSection } from '@/lib/invitation/sections';
@@ -20,7 +21,7 @@ export function FaqSection({ section, contrast, ctx }: FaqSectionProps) {
             <SectionText section={section} path="title" value={data.title} tag="h2" contrast={contrast} ctx={ctx} />
             {/* Questions */}
             <div className="faq-list" style={faqVars(data, contrast, ctx)}>
-                {data.items.map((item) => (
+                {visibleItems(data.items, faqItemHasContent, ctx).map((item) => (
                     <FaqItem key={item.id} question={item.question} answer={item.answer} />
                 ))}
             </div>

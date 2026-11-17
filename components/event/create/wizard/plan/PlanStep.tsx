@@ -14,7 +14,7 @@ import { useCreateEventWizardPlanStep } from '@/hooks/useCreateEventWizardPlanSt
 export function PlanStep() {
     const t = useTranslations('CreateEventPage.wizard.plan');
     const tPage = useTranslations('CreateEventPage');
-    const { isLoading, isEmpty, chips, card, onSelectPlan, onChipKeyDown, onDurationChange } = useCreateEventWizardPlanStep();
+    const { isLoading, isEmpty, canCompare, chips, card, onSelectPlan, onChipKeyDown, onDurationChange } = useCreateEventWizardPlanStep();
     const sheet = useCreateEventPlansSheet();
 
     return (
@@ -36,13 +36,15 @@ export function PlanStep() {
                     {card && <PlanCard card={card} onDurationChange={onDurationChange} />}
 
                     {/* Compare */}
-                    <button
-                        type="button"
-                        onClick={sheet.open}
-                        className="mx-auto h-11 px-4 text-[15px] font-bold text-ink underline underline-offset-[3px] focus-ring"
-                    >
-                        {t('compare')}
-                    </button>
+                    {canCompare && (
+                        <button
+                            type="button"
+                            onClick={sheet.open}
+                            className="mx-auto h-11 px-4 text-[15px] font-bold text-ink underline underline-offset-[3px] focus-ring"
+                        >
+                            {t('compare')}
+                        </button>
+                    )}
                     <PlansSheet />
                 </>
             )}

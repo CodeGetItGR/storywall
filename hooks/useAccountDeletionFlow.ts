@@ -3,13 +3,14 @@
 import { useMutation } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { type ChangeEvent, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { api, ApiError } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
 import { ERROR_CODES, getErrorCode, getRetryAfterSeconds, isRateLimitedError } from '@/lib/api/errors';
 import type { AccountDeletionBlockingEvent,AccountDeletionConfirmRequestDto } from '@/lib/api/types';
+import { onlyDigits } from '@/lib/emailCode';
 import { routes } from '@/lib/routes';
 import { useAuth } from '@/providers/AuthProvider';
 
@@ -80,8 +81,8 @@ export function useAccountDeletionFlow() {
         setConfirmOpen(false);
     }
 
-    function handleOtpChange(event: ChangeEvent<HTMLInputElement>) {
-        setOtpCode(event.target.value.replace(/\D/g, '').slice(0, CODE_DIGITS));
+    function handleOtpChange(value: string) {
+        setOtpCode(onlyDigits(value, CODE_DIGITS));
         setOtpInvalid(false);
         setDeleteError(null);
     }

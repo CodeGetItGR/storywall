@@ -5,10 +5,12 @@ import { usageKeys } from '@/hooks/useUsage';
 import { vendorKeys } from '@/hooks/useVendors';
 import { endpoints } from '@/lib/api/endpoints';
 import { normalizeList } from '@/lib/api/pagination';
+import { prefetchOnlineInvitation } from '@/lib/api/prefetchOnlineInvitation';
 import { prefetchQrCardTemplates } from '@/lib/api/prefetchQrCardTemplates';
 import { serverGet, serverGetOrNull } from '@/lib/api/serverFetch';
 import type { EventUsageResponseDto, QrLinkResponseDto, QrLinkStatsDto, VendorMeDto } from '@/lib/api/types';
-import { resolveServerEventContext } from '@/lib/auth/serverEventContext';
+import { resolveServerEventContext, resolveServerEventDetail } from '@/lib/auth/serverEventContext';
+import { offersOnlineInvitation } from '@/lib/invitation/invitationEvent';
 import { makeQueryClient } from '@/lib/queryClient';
 import { hasVendorCapability } from '@/lib/vendors';
 
@@ -53,7 +55,7 @@ async function prefetchPlannerData(queryClient: QueryClient, eventId: string, ac
     await Promise.all([prefetchPlannerLinks(queryClient, eventId, accessToken), prefetchQrCardTemplates(queryClient, eventId, accessToken)]);
 }
 
-// Prefetches the event's QR links, their stats, and usage (host-only) so
+// Prefetches the event's QR links, their stats, usage and online invitation (host-only) so
 // InvitationsQrScreen finds them already cached instead of showing its
 // loading state. A planner gets the vendor role and the links. Both get the card designs, so Print knows where to go.
 export default async function Page({ params }: PageProps) {
@@ -63,9 +65,12 @@ export default async function Page({ params }: PageProps) {
 
     if (context) {
         if (context.isHost) {
+            const event = await resolveServerEventDetail(eventId);
             await Promise.all([
                 prefetchHostData(queryClient, eventId, context.accessToken),
                 prefetchQrCardTemplates(queryClient, eventId, context.accessToken),
+                // Mirrors useInvitationsQrScreen: the invitation row only where the event type offers one.
+                event && offersOnlineInvitation(event.eventType) ? prefetchOnlineInvitation(queryClient, eventId, context.accessToken) : null,
             ]);
         } else {
             await prefetchPlannerData(queryClient, eventId, context.accessToken);

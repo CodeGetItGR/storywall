@@ -17,13 +17,14 @@ type EditorTopBarProps = {
     onUndo: () => void;
     onRedo: () => void;
     onPreview: () => void;
-    onPublish: () => void;
-    // Starts the editor tour again.
-    onTour: () => void;
+    // The button at the end: Publish for a host, Save for an admin's live theme. None when absent.
+    primary?: { action: 'publish' | 'save'; onClick: () => void; disabled?: boolean };
+    // Starts the editor tour again. No tour button when absent.
+    onTour?: () => void;
 };
 
-// Back and the save status on the left; undo, redo, the tour, preview and publish on the right.
-export function EditorTopBar({ status, canUndo, canRedo, isBusy = false, onBack, onUndo, onRedo, onPreview, onPublish, onTour }: EditorTopBarProps) {
+// Back and the save status on the left; undo, redo, the tour, preview and publish (or save) on the right.
+export function EditorTopBar({ status, canUndo, canRedo, isBusy = false, onBack, onUndo, onRedo, onPreview, primary, onTour }: EditorTopBarProps) {
     const t = useTranslations('InvitationEditor');
 
     return (
@@ -44,21 +45,25 @@ export function EditorTopBar({ status, canUndo, canRedo, isBusy = false, onBack,
                 <EditorIconButton label={t('redo')} onClick={onRedo} disabled={!canRedo}>
                     <Redo2 aria-hidden="true" />
                 </EditorIconButton>
-                <EditorIconButton label={t('tour.help')} onClick={onTour}>
-                    <CircleHelp aria-hidden="true" />
-                </EditorIconButton>
+                {onTour && (
+                    <EditorIconButton label={t('tour.help')} onClick={onTour}>
+                        <CircleHelp aria-hidden="true" />
+                    </EditorIconButton>
+                )}
                 <EditorIconButton label={t('preview')} onClick={onPreview} disabled={isBusy} tourTarget="preview">
                     <Eye aria-hidden="true" />
                 </EditorIconButton>
-                <button
-                    type="button"
-                    onClick={onPublish}
-                    disabled={isBusy}
-                    data-editor-tour="publish"
-                    className="ml-1 h-10 rounded-[10px] bg-primary px-3.5 text-[13px] font-extrabold tracking-[0.02em] text-primary-foreground transition-colors hover:bg-primary-dark focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none disabled:opacity-60"
-                >
-                    {t('publish')}
-                </button>
+                {primary && (
+                    <button
+                        type="button"
+                        onClick={primary.onClick}
+                        disabled={isBusy || primary.disabled}
+                        data-editor-tour="publish"
+                        className="ml-1 h-10 rounded-[10px] bg-primary px-3.5 text-[13px] font-extrabold tracking-[0.02em] text-primary-foreground transition-colors hover:bg-primary-dark focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none disabled:opacity-60"
+                    >
+                        {t(primary.action)}
+                    </button>
+                )}
             </div>
         </header>
     );

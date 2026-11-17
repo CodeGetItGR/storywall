@@ -47,23 +47,11 @@ export default function LoginPage() {
         <AuthLayout showLanguageSwitcher>
             <InviteEventCard inviteToken={inviteToken} />
 
-            {/* Email form */}
-            <LoginEmailForm
-                form={form}
-                status={
-                    <>
-                        {passwordChanged && <p className="rounded-2xl bg-emerald-50 px-4 py-3 text-sm text-emerald-800">{t('passwordChanged')}</p>}
-                        {accountDeleted && <p className="rounded-2xl bg-surface-muted px-4 py-3 text-sm text-ink">{t('accountDeleted')}</p>}
-                    </>
-                }
-            />
+            {/* Status */}
+            {passwordChanged && <p className="mb-4 rounded-2xl bg-emerald-50 px-4 py-3 text-sm text-emerald-800">{t('passwordChanged')}</p>}
+            {accountDeleted && <p className="mb-4 rounded-2xl bg-surface-muted px-4 py-3 text-sm text-ink">{t('accountDeleted')}</p>}
 
             {/* OAuth */}
-            <div className="my-5 flex items-center gap-3 text-xs text-ink-faint">
-                <span className="h-px flex-1 bg-surface-muted" />
-                {t('orContinueWith')}
-                <span className="h-px flex-1 bg-surface-muted" />
-            </div>
             <OAuthButtons onSignIn={form.handleOAuthSignIn} onError={form.handleOAuthError} />
             {form.oauthSignIn.pendingSignup && (
                 <OAuthSignupAcceptanceModal
@@ -73,6 +61,16 @@ export default function LoginPage() {
                     onCloseAction={form.oauthSignIn.handleSignupCancel}
                 />
             )}
+
+            {/* Divider */}
+            <div className="my-5 flex items-center gap-3 text-xs text-ink-faint">
+                <span className="h-px flex-1 bg-surface-muted" />
+                {t('orWithEmail')}
+                <span className="h-px flex-1 bg-surface-muted" />
+            </div>
+
+            {/* Email form */}
+            <LoginEmailForm form={form} />
 
             {/* Footer */}
             <p className="mt-6 text-center text-xs text-ink-muted">
