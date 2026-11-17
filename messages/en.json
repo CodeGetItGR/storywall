@@ -1591,10 +1591,14 @@
             "saved": "Saved",
             "readOnly": "This event is read-only. Event details and cover photo changes are paused until the event is active again.",
             "dangerZone": {
-                "body": "Deleting this event hides it from guests right away. This can't be undone.",
+                "illustrationAlt": "Event being deleted",
+                "consequences": {
+                    "guestsLoseAccess": "Guests lose access right away.",
+                    "stillAvailable": "Until it is permanently deleted, you can still view and download photos, videos and wishes.",
+                    "cannotUndo": "This can't be undone."
+                },
                 "delete": "Delete event",
                 "confirmTitle": "Delete this event?",
-                "confirmBody": "Guests lose access right away and the event is permanently deleted later. This can't be undone. Until then you can still view and download photos, videos and messages.",
                 "confirmAction": "Delete event",
                 "cancelAction": "Cancel",
                 "otp": {
