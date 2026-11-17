@@ -1,7 +1,16 @@
 import type { Metadata } from 'next';
 
 import { defaultLocale, type Locale, locales } from '@/i18n/config';
-import { getForBusinessPath, getPublicLandingPath, getQrWeddingPath, getVendorPagePath, localizeLegalHref, type VendorPageType } from '@/i18n/publicLocale';
+import {
+    getForBusinessPath,
+    getInvitationCataloguePath,
+    getInvitationThemePath,
+    getPublicLandingPath,
+    getQrWeddingPath,
+    getVendorPagePath,
+    localizeLegalHref,
+    type VendorPageType,
+} from '@/i18n/publicLocale';
 
 // Single source for the production origin. Canonicals, alternates, the
 // sitemap and structured data all build absolute URLs from it, so it must
@@ -73,6 +82,22 @@ export function qrWeddingLanguageAlternates(): Record<string, string> {
     const languages: Record<string, string> = {};
     for (const locale of locales) languages[locale] = absoluteUrl(getQrWeddingPath(locale));
     languages['x-default'] = absoluteUrl(getQrWeddingPath(defaultLocale));
+    return languages;
+}
+
+// Same shape for the Save my date theme catalogue.
+export function invitationCatalogueLanguageAlternates(): Record<string, string> {
+    const languages: Record<string, string> = {};
+    for (const locale of locales) languages[locale] = absoluteUrl(getInvitationCataloguePath(locale));
+    languages['x-default'] = absoluteUrl(getInvitationCataloguePath(defaultLocale));
+    return languages;
+}
+
+// And for one theme's page.
+export function invitationThemeLanguageAlternates(slug: string): Record<string, string> {
+    const languages: Record<string, string> = {};
+    for (const locale of locales) languages[locale] = absoluteUrl(getInvitationThemePath(slug, locale));
+    languages['x-default'] = absoluteUrl(getInvitationThemePath(slug, defaultLocale));
     return languages;
 }
 

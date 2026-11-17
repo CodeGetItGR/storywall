@@ -1,14 +1,59 @@
 import { describe, expect, it } from 'vitest';
 
-import { manageSections, parseManageSection, resolveManageSection, visibleManageSections } from '@/lib/manageSections';
+import {
+    isManagePage,
+    manageNavGroups,
+    manageNavHref,
+    manageSections,
+    parseManageSection,
+    resolveManageSection,
+    visibleManageNav,
+    visibleManageSections,
+} from '@/lib/manageSections';
+import { routes } from '@/lib/routes';
 
 describe('manageSections', () => {
-    it('lists sections in the host dashboard nav order', () => {
-        expect(manageSections).toEqual(['overview', 'settings', 'theme', 'rsvp', 'members', 'gift', 'billing', 'help', 'danger']);
+    it('lists sections in the nav order: the Event group, then People, then Danger zone', () => {
+        expect(manageSections).toEqual(['overview', 'settings', 'theme', 'billing', 'gift', 'rsvp', 'members', 'danger']);
+        const groupedSections = manageNavGroups.flatMap((group) => group.items).filter((key) => !isManagePage(key));
+        expect([...groupedSections, 'danger']).toEqual(manageSections);
     });
 
-    it('parseManageSection resolves "help"', () => {
-        expect(parseManageSection('help')).toBe('help');
+    it('groups the nav under Event and People, with the two pages among the People', () => {
+        expect(manageNavGroups).toEqual([
+            { key: 'event', items: ['overview', 'settings', 'theme', 'billing', 'gift'] },
+            { key: 'people', items: ['rsvp', 'invitationsQr', 'members', 'vendors'] },
+        ]);
+    });
+
+    it('manageNavHref opens a section through ?tab= and a page on its own route', () => {
+        expect(manageNavHref('e1', 'overview')).toBe(routes.events.manage('e1'));
+        expect(manageNavHref('e1', 'settings')).toBe(routes.events.manage('e1', { tab: 'settings' }));
+        expect(manageNavHref('e1', 'invitationsQr')).toBe(routes.events.invitationsQr('e1'));
+        expect(manageNavHref('e1', 'vendors')).toBe(routes.events.manageVendors('e1'));
+    });
+
+    it('visibleManageNav keeps only visible entries, drops empty groups and keeps Danger zone apart', () => {
+        const visibleSections = visibleManageSections({ canDelete: true, rsvpAvailable: false, membersAvailable: false });
+        expect(visibleManageNav(visibleSections, { invitationsQr: false, vendors: false })).toEqual({
+            groups: [{ key: 'event', items: ['overview', 'settings', 'billing'] }],
+            showDanger: true,
+        });
+        expect(visibleManageNav(visibleManageSections({ canDelete: false, rsvpAvailable: true }), { invitationsQr: true, vendors: true })).toEqual({
+            groups: [
+                { key: 'event', items: ['overview', 'settings', 'billing'] },
+                { key: 'people', items: ['rsvp', 'invitationsQr', 'members', 'vendors'] },
+            ],
+            showDanger: false,
+        });
+    });
+
+    it('no longer accepts the old invitation tab', () => {
+        expect(parseManageSection('invitation')).toBe('overview');
+    });
+
+    it('parseManageSection sends the removed Help section to the overview', () => {
+        expect(parseManageSection('help')).toBe('overview');
     });
 
     it('parseManageSection falls back to "overview" for an unknown or removed section', () => {
@@ -20,9 +65,8 @@ describe('manageSections', () => {
         expect(visibleManageSections({ canDelete: true, rsvpAvailable: false })).toEqual([
             'overview',
             'settings',
-            'members',
             'billing',
-            'help',
+            'members',
             'danger',
         ]);
     });
@@ -31,10 +75,9 @@ describe('manageSections', () => {
         expect(visibleManageSections({ canDelete: false, rsvpAvailable: true })).toEqual([
             'overview',
             'settings',
+            'billing',
             'rsvp',
             'members',
-            'billing',
-            'help',
         ]);
     });
 
@@ -42,10 +85,9 @@ describe('manageSections', () => {
         expect(visibleManageSections({ canDelete: false, rsvpAvailable: false, giftAvailable: true })).toEqual([
             'overview',
             'settings',
-            'members',
-            'gift',
             'billing',
-            'help',
+            'gift',
+            'members',
         ]);
     });
 
@@ -55,9 +97,8 @@ describe('manageSections', () => {
             'overview',
             'settings',
             'theme',
-            'members',
             'billing',
-            'help',
+            'members',
         ]);
     });
 
@@ -67,7 +108,6 @@ describe('manageSections', () => {
             'overview',
             'settings',
             'billing',
-            'help',
             'danger',
         ]);
     });

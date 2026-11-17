@@ -3,15 +3,15 @@ import { notFound } from 'next/navigation';
 
 import { ForBusinessPage } from '@/components/forBusiness/ForBusinessPage';
 import { getForBusinessMetadata } from '@/lib/forBusinessMetadata';
-import { showsUnreleasedPages } from '@/lib/unreleasedPages';
+import { showsForBusinessHub } from '@/lib/forBusinessRelease';
 
 // Public, indexable. The proxy pins this URL to English.
 export async function generateMetadata(): Promise<Metadata> {
-    if (!showsUnreleasedPages()) return {};
+    if (!showsForBusinessHub()) return {};
     return getForBusinessMetadata('en');
 }
 
 export default function Page() {
-    if (!showsUnreleasedPages()) notFound();
+    if (!showsForBusinessHub()) notFound();
     return <ForBusinessPage />;
 }

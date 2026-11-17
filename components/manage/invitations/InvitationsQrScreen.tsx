@@ -2,100 +2,72 @@
 
 import { QrCode } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useCallback, useState } from 'react';
 
-import { ShareLanguageNote } from '@/components/manage/invitations/ShareLanguageNote';
+import { GuestChoicesList } from '@/components/manage/invitations/GuestChoicesList';
 import { ShareLinkPanel } from '@/components/manage/invitations/ShareLinkPanel';
 import { QrLinksListSkeleton } from '@/components/manage/ManageSkeletons';
+import { ManagePageFrame } from '@/components/manage/nav/ManagePageFrame';
 import { UsagePanel } from '@/components/plan/UsagePanel';
-import { useEventRouteContext } from '@/components/routing/EventRouteGate';
 import { ModulePageShell } from '@/components/tools/ModulePageShell';
 import { ToolEmptyState } from '@/components/tools/ToolEmptyState';
-import { useAppConfig } from '@/hooks/useAppConfig';
-import { useUpgradeOptions } from '@/hooks/useBilling';
-import { useIsPrimaryHost } from '@/hooks/useIsPrimaryHost';
-import { useEventQrLinks, useEventQrLinkStats } from '@/hooks/useQrLinks';
-import { useEventUsage } from '@/hooks/useUsage';
-import { isEventWritable } from '@/lib/eventLifecycle';
-import { findPlanByCode } from '@/lib/planTiers';
-import { isInvitationQrLink } from '@/lib/qrLinks';
+import { useInvitationsQrScreen } from '@/hooks/useInvitationsQrScreen';
 import { routes } from '@/lib/routes';
 
 export function InvitationsQrScreen() {
     const t = useTranslations('ManagePage');
     const tPage = useTranslations('InvitationsQrPage');
-    const { activeEvent, eventId, isHost } = useEventRouteContext();
-    // A planner (QR_READ) sees the links only: stats, usage, upgrades and edits stay with hosts.
-    const hostEventId = isHost ? eventId : null;
-    const { data: qrLinks = [], isLoading: qrLinksLoading } = useEventQrLinks(eventId);
-    const { data: qrLinkStats = [], isLoading: statsLoading } = useEventQrLinkStats(hostEventId);
-    const { data: eventUsage = null, isLoading: usageLoading } = useEventUsage(hostEventId);
-    const isPrimaryHost = useIsPrimaryHost();
-    const { data: upgradeOptions = [], isLoading: upgradesLoading } = useUpgradeOptions(eventId, isHost && isPrimaryHost);
-    const { data: appConfig } = useAppConfig();
-    const [limitNotice, setLimitNotice] = useState<string | null>(null);
+    const {
+        eventId,
+        isHost,
+        isWritable,
+        canWrite,
+        isLoading,
+        eventUsage,
+        memberCount,
+        memberLimit,
+        currentPlanName,
+        nextPlanName,
+        upgradeHref,
+        qrLinkStats,
+        shareQrLinks,
+        invitation,
+        rows,
+        eventTitle,
+    } = useInvitationsQrScreen();
 
-    const isWritable = isEventWritable(activeEvent?.status);
-    const canWrite = isHost && isWritable;
-    const memberLimit = eventUsage?.memberLimit ?? null;
-    const memberCount = eventUsage?.memberCount ?? 0;
-    const isFull = memberLimit !== null && memberCount >= memberLimit;
-    const currentPlan = eventUsage ? findPlanByCode(appConfig?.planTiers ?? [], 'EVENT', eventUsage.planTier) : undefined;
-    const nextUpgradeOption = upgradeOptions[0];
-    const isLoading = qrLinksLoading || statsLoading || usageLoading || upgradesLoading;
-    // The gallery upload code has its own dedicated page and its own summary
-    // row in the right context panel (see QrLinksSection), and the guest code
-    // lives on a lite event's home — exclude both here so this "Share links"
-    // list and its count only cover join-type links.
-    const shareQrLinks = qrLinks.filter(isInvitationQrLink);
+    const content = isLoading ? (
+        <QrLinksListSkeleton />
+    ) : (
+        // Phones stack every section; from lg up, What guests see moves to a column on the right.
+        <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start">
+            <div className="flex min-w-0 flex-col gap-6">
+                {/* Capacity */}
+                {eventUsage && (
+                    <UsagePanel
+                        title={t('invitations.capacity.title')}
+                        planName={currentPlanName}
+                        nextPlanName={nextPlanName}
+                        upgradeHref={upgradeHref}
+                        items={[
+                            {
+                                key: 'members',
+                                used: memberCount,
+                                limit: memberLimit,
+                                percent: eventUsage.memberPercent,
+                                valueLabel: memberLimit === null ? `${memberCount}` : `${memberCount} / ${memberLimit}`,
+                            },
+                        ]}
+                    />
+                )}
 
-    const handleClampNotice = useCallback((message: string) => setLimitNotice(message), []);
+                {/* Read only */}
+                {isHost && !isWritable && (
+                    <p className="rounded-2xl bg-surface-muted px-4 py-3 text-sm leading-relaxed text-ink-muted">{t('qr.readOnly')}</p>
+                )}
 
-    return (
-        <ModulePageShell
-            maxWidth="2xl"
-            title={tPage('title')}
-            icon={QrCode}
-            backLabel={tPage('back')}
-            backHref={routes.events.feed(eventId)}
-            subtitle={tPage('subtitle')}
-        >
-            {isLoading ? (
-                <QrLinksListSkeleton />
-            ) : (
-                <>
-                    {eventUsage && (
-                        <div className="mb-8">
-                            <UsagePanel
-                                title={t('invitations.capacity.title')}
-                                planName={currentPlan?.name ?? eventUsage.planTier}
-                                nextPlanName={isFull ? nextUpgradeOption?.planTierName : undefined}
-                                upgradeHref={routes.events.manage(eventId, { tab: 'billing' })}
-                                items={[
-                                    {
-                                        key: 'members',
-                                        used: memberCount,
-                                        limit: memberLimit,
-                                        percent: eventUsage.memberPercent,
-                                        valueLabel: memberLimit === null ? `${memberCount}` : `${memberCount} / ${memberLimit}`,
-                                    },
-                                ]}
-                            />
-                        </div>
-                    )}
-
-                    {isHost && !isWritable && (
-                        <p className="mb-3 rounded-2xl bg-surface-muted px-4 py-3 text-sm leading-relaxed text-ink-muted">{t('qr.readOnly')}</p>
-                    )}
-
-                    {limitNotice && (
-                        <p className="mb-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-relaxed text-amber-900">
-                            {limitNotice}
-                        </p>
-                    )}
-
-                    {/* Share links */}
-                    <div className="flex flex-col divide-y divide-border [&>*]:py-8 [&>*:first-child]:pt-0">
+                {/* Link and QR code */}
+                {shareQrLinks.length > 0 && (
+                    <div className="flex flex-col divide-y divide-border [&>*]:py-8 [&>*:first-child]:pt-0 [&>*:last-child]:pb-0">
                         {shareQrLinks.map((qrLink) => {
                             const stats = qrLinkStats.find((row) => row.qrLinkId === qrLink.id);
                             return (
@@ -105,20 +77,34 @@ export function InvitationsQrScreen() {
                                     qrLink={qrLink}
                                     stats={stats}
                                     canWrite={canWrite}
-                                    onClampNoticeAction={handleClampNotice}
+                                    eventTitle={eventTitle}
                                 />
                             );
                         })}
                     </div>
+                )}
 
-                    {/* Link language */}
-                    {shareQrLinks.length > 0 && <ShareLanguageNote />}
+                {/* Empty */}
+                {shareQrLinks.length === 0 && <ToolEmptyState title={t('qr.emptyTitle')} body={t('qr.emptyBody')} icon={QrCode} className="py-8" />}
+            </div>
 
-                    {shareQrLinks.length === 0 && (
-                        <ToolEmptyState title={t('qr.emptyTitle')} body={t('qr.emptyBody')} icon={QrCode} className="py-8" />
-                    )}
-                </>
-            )}
+            {/* What guests see */}
+            <GuestChoicesList rows={rows} invitation={isHost ? invitation : null} />
+        </div>
+    );
+
+    // Hosts see their links inside the dashboard; a planner (QR_READ) keeps the standalone page.
+    if (isHost) {
+        return (
+            <ManagePageFrame active="invitationsQr" wide>
+                {content}
+            </ManagePageFrame>
+        );
+    }
+
+    return (
+        <ModulePageShell maxWidth="5xl" title={tPage('title')} icon={QrCode} backLabel={tPage('back')} backHref={routes.events.feed(eventId)}>
+            {content}
         </ModulePageShell>
     );
 }

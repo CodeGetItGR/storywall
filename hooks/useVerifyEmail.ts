@@ -2,14 +2,24 @@
 
 import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
 import { isRateLimitedError } from '@/lib/api/errors';
+import { readPendingCreateEventPath } from '@/lib/pendingCreateEvent';
+import { routes } from '@/lib/routes';
 
 export type EmailVerificationState = 'error' | 'missing-token' | 'pending' | 'verified';
+
+function subscribeToNothing() {
+    return () => undefined;
+}
+
+function noPathOnServer() {
+    return null;
+}
 
 export function useVerifyEmail() {
     const t = useTranslations('VerifyEmailPage');
@@ -36,5 +46,10 @@ export function useVerifyEmail() {
         );
     }, [t, toErrorMessage, token]);
 
-    return { errorMessage, state: token ? state : 'missing-token' };
+    // Back to the create form they were stopped on, if any. Signing in goes there too, and an
+    // account that is already signed in is sent straight on.
+    const pendingPath = useSyncExternalStore(subscribeToNothing, readPendingCreateEventPath, noPathOnServer);
+    const signInHref = pendingPath ? routes.auth.login({ next: pendingPath }) : routes.login;
+
+    return { errorMessage, signInHref, state: token ? state : 'missing-token' };
 }

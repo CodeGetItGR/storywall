@@ -30,6 +30,7 @@ import type {
     WithdrawalRequestDto,
     WithdrawalResponseDto,
 } from '@/lib/api/types';
+import { checkoutAttribution } from '@/lib/campaignAttribution';
 
 // The server can now legitimately refuse to settle an order (amount collected
 // disagrees with the price), so a PENDING order is no longer guaranteed to
@@ -96,7 +97,7 @@ export function useCheckout(eventId: string) {
     return useMutation({
         // A body is required as of 2026-09 — requestsImmediateStart/acknowledgesWithdrawalTerms
         // are mandatory consent, not optional metadata (billing-fe-guide §6).
-        mutationFn: (input: CheckoutRequestDto) => api.post<CheckoutResponseDto>(endpoints.events.checkout(eventId), input),
+        mutationFn: (input: CheckoutRequestDto) => api.post<CheckoutResponseDto>(endpoints.events.checkout(eventId), { ...input, ...checkoutAttribution() }),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: billingKeys.event(eventId) });
             // Only the event itself (exact): without it, every query under
@@ -146,7 +147,7 @@ export function usePreviewCreateEventCode() {
 export function useUpgradeCheckout(eventId: string) {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: (input: UpgradeCheckoutRequestDto) => api.post<CheckoutResponseDto>(endpoints.events.upgradeCheckout(eventId), input),
+        mutationFn: (input: UpgradeCheckoutRequestDto) => api.post<CheckoutResponseDto>(endpoints.events.upgradeCheckout(eventId), { ...input, ...checkoutAttribution() }),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: billingKeys.event(eventId) });
             queryClient.invalidateQueries({ queryKey: usageKeys.event(eventId) });

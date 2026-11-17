@@ -7,11 +7,14 @@ import type {
     PartnerBrandingNoticeDto,
     PlanTierResponseDto,
 } from '@/lib/api/types';
+import { getSafeReturnPath } from '@/lib/auth/returnPath';
 import { dateTimeFormat, numberFormat } from '@/lib/format';
 
 type PendingCheckout = {
     orderId: string;
     planTierCode?: string;
+    // Where the host goes once paid, instead of the event's feed (the invitation editor).
+    returnTo?: string;
 };
 
 function pendingCheckoutKey(eventId: string): string {
@@ -51,11 +54,13 @@ export function checkoutSuccessUrl(origin: string, eventId: string, orderId: str
     return `${origin}/events/${eventId}/checkout/success?${params.toString()}`;
 }
 
-export function rememberPendingCheckout(eventId: string, orderId: string, planTierCode?: string | null): void {
+export function rememberPendingCheckout(eventId: string, orderId: string, planTierCode?: string | null, returnTo?: string | null): void {
     if (typeof window === 'undefined') return;
 
     const pending: PendingCheckout = { orderId };
     if (planTierCode) pending.planTierCode = planTierCode;
+    const safeReturnTo = getSafeReturnPath(returnTo ?? null);
+    if (safeReturnTo) pending.returnTo = safeReturnTo;
     window.sessionStorage.setItem(pendingCheckoutKey(eventId), JSON.stringify(pending));
 }
 
@@ -67,9 +72,13 @@ export function readPendingCheckout(eventId: string): PendingCheckout | null {
 
     try {
         const pending = JSON.parse(value) as Partial<PendingCheckout>;
-        return typeof pending.orderId === 'string'
-            ? { orderId: pending.orderId, ...(typeof pending.planTierCode === 'string' ? { planTierCode: pending.planTierCode } : {}) }
-            : null;
+        if (typeof pending.orderId !== 'string') return null;
+        const returnTo = typeof pending.returnTo === 'string' ? getSafeReturnPath(pending.returnTo) : null;
+        return {
+            orderId: pending.orderId,
+            ...(typeof pending.planTierCode === 'string' ? { planTierCode: pending.planTierCode } : {}),
+            ...(returnTo ? { returnTo } : {}),
+        };
     } catch {
         return null;
     }
@@ -79,8 +88,9 @@ export function clearPendingCheckout(eventId: string): void {
     if (typeof window !== 'undefined') window.sessionStorage.removeItem(pendingCheckoutKey(eventId));
 }
 
-export function navigateToCheckout(eventId: string, checkout: CheckoutResponseDto, planTierCode?: string | null): void {
-    rememberPendingCheckout(eventId, checkout.orderId, planTierCode);
+// returnTo: where the success page sends the host once paid, instead of the event's feed.
+export function navigateToCheckout(eventId: string, checkout: CheckoutResponseDto, planTierCode?: string | null, returnTo?: string | null): void {
+    rememberPendingCheckout(eventId, checkout.orderId, planTierCode, returnTo);
     const destination = checkout.redirectUrl.includes('/checkout/success')
         ? checkoutSuccessUrl(window.location.origin, eventId, checkout.orderId, planTierCode)
         : checkout.redirectUrl;
@@ -128,15 +138,57 @@ export function isPlanDiscountActive(plan: PlanTierResponseDto, now = new Date()
     return isPlanPromotionOpen(plan, now);
 }
 
-// The amount after the plan's percent. The discount is truncated, never the
-// price, as the server does (CollaborationPricing.applyDiscount): 12.5% off
-// 999 takes 124, not 125. The percent carries at most two decimals, so it is
-// worked in hundredths to keep the arithmetic exact.
-export function discountedAmountMinor(amountMinor: number, plan: PlanTierResponseDto, now = new Date()): number {
-    if (!isPlanDiscountActive(plan, now)) return amountMinor;
+// Whether the discount campaign this plan carries covers `now`. The catalog is cached, so the
+// browser checks the dates itself.
+export function isCampaignDiscountLive(plan: PlanTierResponseDto, now = new Date()): boolean {
+    if (!plan.campaignDiscountPercent || plan.campaignDiscountPercent <= 0) return false;
+    const startsAt = parseDiscountBoundary(plan.campaignDiscountStartsAt ?? null);
+    const endsAt = parseDiscountBoundary(plan.campaignDiscountEndsAt ?? null);
+    if (!startsAt || !endsAt) return false;
+    return startsAt.getTime() <= now.getTime() && endsAt.getTime() > now.getTime();
+}
 
-    const hundredths = Math.round(Math.min(Math.max(plan.discountPercent ?? 0, 0), 100) * 100);
+// The next moment after `now` (epoch ms) when a campaign carried by one of the plans starts or ends,
+// null when there is none. Prices change then, so a screen that is already open must redraw.
+export function nextCampaignBoundary(plans: PlanTierResponseDto[], now = new Date()): number | null {
+    let next: number | null = null;
+    for (const plan of plans) {
+        if (!plan.campaignDiscountPercent || plan.campaignDiscountPercent <= 0) continue;
+        for (const boundary of [plan.campaignDiscountStartsAt, plan.campaignDiscountEndsAt]) {
+            const moment = parseDiscountBoundary(boundary ?? null)?.getTime();
+            if (moment !== undefined && moment > now.getTime() && (next === null || moment < next)) next = moment;
+        }
+    }
+    return next;
+}
+
+// The discount is truncated, never the price, as the server does
+// (CollaborationPricing.applyDiscount): 12.5% off 999 takes 124, not 125. The percent carries at
+// most two decimals, so it is worked in hundredths to keep the arithmetic exact.
+function percentOffMinor(amountMinor: number, percent: number): number {
+    const hundredths = Math.round(Math.min(Math.max(percent, 0), 100) * 100);
     return Math.max(0, amountMinor - Math.floor((amountMinor * hundredths) / 10_000));
+}
+
+export type PromotedLine = { amountMinor: number; discountActive: boolean; discountLabel: string | null };
+
+// The lower of the plan's own price and the campaign's, as PlanPromotionResolver does on the server.
+// A tie keeps the plan's own, and the two never add up.
+function promotedLine(listMinor: number, ownMinor: number, ownActive: boolean, plan: PlanTierResponseDto, now: Date): PromotedLine {
+    if (isCampaignDiscountLive(plan, now)) {
+        const campaignMinor = percentOffMinor(listMinor, plan.campaignDiscountPercent ?? 0);
+        if (campaignMinor < ownMinor) {
+            return { amountMinor: campaignMinor, discountActive: true, discountLabel: plan.campaignDiscountLabel ?? null };
+        }
+    }
+    return { amountMinor: ownMinor, discountActive: ownActive, discountLabel: plan.discountLabel };
+}
+
+// An amount after the best of the plan's percent and the campaign.
+export function promotedAmount(listMinor: number, plan: PlanTierResponseDto, now = new Date()): PromotedLine {
+    const ownActive = isPlanDiscountActive(plan, now);
+    const ownMinor = ownActive ? percentOffMinor(listMinor, plan.discountPercent ?? 0) : listMinor;
+    return promotedLine(listMinor, ownMinor, ownActive, plan, now);
 }
 
 // The duration's promo price while the plan's promotion window is open, else null.
@@ -145,10 +197,21 @@ export function activePromoPriceMinor(option: CoverageOptionResponseDto, plan: P
     return isPlanPromotionOpen(plan, now) ? option.promoPriceAmountMinor : null;
 }
 
-// One duration's price after the plan's promotion: its promo price where it
-// has a live one (which replaces the plan's percent), else the percent.
+// One duration's price: its live promo price (which replaces the plan's percent), else the percent,
+// and in both cases the campaign when that is lower.
+export function promotedOption(option: CoverageOptionResponseDto, plan: PlanTierResponseDto, now = new Date()): PromotedLine {
+    const promoMinor = activePromoPriceMinor(option, plan, now);
+    return promoMinor !== null
+        ? promotedLine(option.priceAmountMinor, promoMinor, true, plan, now)
+        : promotedAmount(option.priceAmountMinor, plan, now);
+}
+
+export function discountedAmountMinor(amountMinor: number, plan: PlanTierResponseDto, now = new Date()): number {
+    return promotedAmount(amountMinor, plan, now).amountMinor;
+}
+
 export function promotedOptionAmountMinor(option: CoverageOptionResponseDto, plan: PlanTierResponseDto, now = new Date()): number {
-    return activePromoPriceMinor(option, plan, now) ?? discountedAmountMinor(option.priceAmountMinor, plan, now);
+    return promotedOption(option, plan, now).amountMinor;
 }
 
 function parseDiscountBoundary(value: string | null): Date | null {

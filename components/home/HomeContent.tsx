@@ -2,26 +2,16 @@
 
 import { EmailVerificationBanner } from '@/components/common/EmailVerificationBanner';
 import { EventsQuickRow } from '@/components/home/EventsQuickRow';
+import { HomeCreateEventButton } from '@/components/home/HomeCreateEventButton';
 import { HomeEmptyState } from '@/components/home/HomeEmptyState';
 import { HomeHeader } from '@/components/home/HomeHeader';
 import { HomeNextEventCard } from '@/components/home/HomeNextEventCard';
 import { HOME_SECTION_CLASS_NAME, HomeNextEventCardSkeleton } from '@/components/home/HomeSkeletons';
-import { useAuth } from '@/hooks/useAuth';
-import { useEventGridItems } from '@/hooks/useEventGridItems';
-import { useMe } from '@/hooks/useMe';
-import { useMyEventList } from '@/hooks/useMyEventList';
+import { HomeVerifyEmailState } from '@/components/home/HomeVerifyEmailState';
+import { useHomeContent } from '@/hooks/useHomeContent';
 
 export function HomeContent() {
-    const { user } = useAuth();
-    useMe();
-    // Only a confirmed `false` blocks creation — `null` (not fetched yet)
-    // must not flash the banner/disable the button for the common case of an
-    // already-verified account.
-    const canCreateEvent = user?.emailVerified !== false;
-
-    const { eventQueries, isLoading, memberships } = useMyEventList();
-    const items = useEventGridItems(memberships, eventQueries);
-    const hasEvents = memberships.length > 0;
+    const { canCreateEvent, emptyState, isLoading, items, showCreateButton, showVerifyBanner } = useHomeContent();
     const feedSectionClassName = HOME_SECTION_CLASS_NAME;
 
     return (
@@ -38,18 +28,23 @@ export function HomeContent() {
                     <HomeHeader />
                 </section>
 
+                {/* Create */}
+                {showCreateButton && (
+                    <section className={feedSectionClassName}>
+                        <HomeCreateEventButton />
+                    </section>
+                )}
+
                 {/* Email verification notice */}
-                {!canCreateEvent && (
+                {showVerifyBanner && (
                     <section className={feedSectionClassName}>
                         <EmailVerificationBanner />
                     </section>
                 )}
 
-                {!isLoading && !hasEvents ? (
+                {emptyState ? (
                     /* Empty state */
-                    <section className={feedSectionClassName}>
-                        <HomeEmptyState canCreateEvent={canCreateEvent} />
-                    </section>
+                    <section className={feedSectionClassName}>{emptyState === 'verifyEmail' ? <HomeVerifyEmailState /> : <HomeEmptyState />}</section>
                 ) : (
                     <>
                         {/* Next event */}

@@ -2,7 +2,6 @@ import { cleanup, render, screen } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { capabilitiesOf } from '@/lib/__fixtures__/eventCapabilities';
 import type { EventDetailResponseDto, EventScheduleDto, EventStatus } from '@/lib/api/types';
 
 import OverviewTab from './OverviewTab';
@@ -21,14 +20,11 @@ vi.mock('@/hooks/useEventOverviewPlan', () => ({
         wishlistAvailable: false,
     }),
 }));
-vi.mock('@/hooks/useRightContextPanel', () => ({ useRightContextPanel: () => ({}) }));
-vi.mock('@/components/layout/right-context-panel/HostContextSections', () => ({ HostContextSections: () => null }));
-vi.mock('@/components/manage/CoverageStatusStrip', () => ({ CoverageStatusStrip: () => null }));
+vi.mock('@/components/manage/overview/OverviewJourney', () => ({
+    OverviewJourney: ({ counts }: { counts: { memberCount: number } }) => <p data-testid="journey">{counts.memberCount}</p>,
+}));
 vi.mock('@/components/inviart/InviartOverviewSection', () => ({ InviartOverviewSection: () => null }));
 vi.mock('@/components/manage/ManageSkeletons', () => ({ ManageDraftOverviewSkeleton: () => null }));
-vi.mock('@/components/ui/MetricStrip', () => ({
-    MetricStrip: ({ items }: { items: { key: string }[] }) => <p data-testid="metrics">{items.map((item) => item.key).join(',')}</p>,
-}));
 vi.mock('@/components/manage/OverviewDraftPanel', () => ({
     OverviewDraftPanel: ({ themeSection }: { themeSection?: ReactNode }) => <div data-testid="draft-panel">{themeSection}</div>,
 }));
@@ -42,23 +38,12 @@ vi.mock('@/components/manage/ThemePicker', () => ({
 
 const schedule = { startAt: '2026-11-01T10:00:00Z', endAt: null, projectedCoverage: null } as unknown as EventScheduleDto;
 
-const fullModules = [{ moduleKey: 'posts', isEnabled: true, isAvailable: true }];
-const liteModules = [{ moduleKey: 'gallery', isEnabled: true, isAvailable: true }];
-
-function renderOverview(status: EventStatus, modules: typeof fullModules = fullModules, hasSchedule = true) {
-    const event = {
-        id: 'e1',
-        status,
-        deletedAt: null,
-        modules,
-        capabilities: capabilitiesOf(modules, hasSchedule),
-    } as unknown as EventDetailResponseDto;
+function renderOverview(status: EventStatus) {
+    const event = { id: 'e1', status, deletedAt: null, modules: [] } as unknown as EventDetailResponseDto;
     render(
         <OverviewTab
             event={event}
             memberCount={0}
-            daysToGo={10}
-            pendingCoHostInvitationCount={0}
             seatsClaimed={null}
             eventUsage={null}
             planTiers={[]}
@@ -90,18 +75,14 @@ describe('OverviewTab', () => {
         expect(screen.queryByTestId('theme-picker')).toBeNull();
     });
 
-    it('shows members and invitations on a full event', () => {
+    it('shows the journey on a live event', () => {
         renderOverview('ACTIVE');
-        expect(screen.getByTestId('metrics')).toHaveTextContent('members,days,invitations');
+        expect(screen.getByTestId('journey')).toBeInTheDocument();
     });
 
-    it('leaves members and invitations out on a lite event, which takes no guests', () => {
-        renderOverview('ACTIVE', liteModules);
-        expect(screen.getByTestId('metrics')).toHaveTextContent(/^days$/);
-    });
-
-    it('leaves the countdown out on a lite event without a date', () => {
-        renderOverview('ACTIVE', liteModules, false);
-        expect(screen.queryByTestId('metrics')).toBeNull();
+    it('keeps the draft panel for a draft', () => {
+        renderOverview('DRAFT');
+        expect(screen.queryByTestId('journey')).toBeNull();
+        expect(screen.getByTestId('draft-panel')).toBeInTheDocument();
     });
 });

@@ -37,16 +37,15 @@ export type QrShareEvent = ShareEvent & { targetType: QrTargetType; guestActions
 
 type ShareDescriptionKey = 'uploadDescription' | 'wishDescription' | 'guestDescription' | 'inviteDescription';
 
-// Only an active code shows its event, matching QrCodeLandingBoundary. A code
-// that leads to an invitation opens the invite page (see getQrRedirectPath),
-// so it gets that page's preview, with the description, date and venue the
-// code lookup leaves out.
+// Only an active code shows its event, matching QrCodeLandingBoundary. A join
+// code gets the invite page's preview, with the description, date and venue
+// the code lookup leaves out.
 export async function getQrShareEvent(token: string, options: ShareLookupOptions = {}): Promise<QrShareEvent | null> {
     try {
         const resolution = await shareLookup<QrLinkResolutionDto>(endpoints.qrLinks.resolve(token), options);
         if (resolution.status !== 'ACTIVE' || !resolution.eventTitle) return null;
 
-        const leadsToInvite = resolution.targetType === 'EVENT_JOIN' || resolution.targetType === 'INVITATION';
+        const leadsToInvite = resolution.targetType === 'EVENT_JOIN';
         const inviteEvent = leadsToInvite && resolution.inviteToken ? await getInviteShareEvent(resolution.inviteToken, options) : null;
         if (inviteEvent) return { ...inviteEvent, targetType: resolution.targetType };
 

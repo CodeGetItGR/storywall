@@ -35,6 +35,11 @@ export type UnlockDraft = {
 // The form's controls that live in state rather than in FormData.
 export type PlanEditorControls = { visibility: Visibility; isGiftable: boolean };
 
+// The server reads null as "leave it", so clearing saved text has to send an empty string.
+function clearableText(value: FormDataEntryValue | null, current: string | null): string | null {
+    return emptyToNull(value) ?? (current ? '' : null);
+}
+
 export function planPatchFromFormData(
     plan: PlanTierResponseDto,
     formData: FormData,
@@ -43,7 +48,7 @@ export function planPatchFromFormData(
     const flags = visibilityFlags(visibility);
     return {
         name: String(formData.get('name') ?? '').trim(),
-        description: emptyToNull(formData.get('description')),
+        description: clearableText(formData.get('description'), plan.description),
         isPublic: flags.isPublic,
         isAssignable: flags.isAssignable,
         // An EVENT plan is priced by its durations, so it never sends a price of
@@ -59,7 +64,7 @@ export function planPatchFromFormData(
         priceCurrency: emptyToNull(formData.get('priceCurrency'))?.toUpperCase() ?? null,
         billingPeriod: (emptyToNull(formData.get('billingPeriod')) as BillingPeriod | null) ?? null,
         discountPercent: numberOrNull(formData.get('discountPercent')),
-        discountLabel: emptyToNull(formData.get('discountLabel')),
+        discountLabel: clearableText(formData.get('discountLabel'), plan.discountLabel),
         discountStartsAt: localInputToInstant(formData.get('discountStartsAt')),
         discountEndsAt: localInputToInstant(formData.get('discountEndsAt')),
     };

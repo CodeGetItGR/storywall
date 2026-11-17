@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation';
 
 import { ForBusinessPage } from '@/components/forBusiness/ForBusinessPage';
 import { getForBusinessMetadata } from '@/lib/forBusinessMetadata';
-import { showsUnreleasedPages } from '@/lib/unreleasedPages';
+import { showsForBusinessHub } from '@/lib/forBusinessRelease';
 
 type PageProps = { params: Promise<{ slug: string }> };
 
@@ -16,12 +16,12 @@ export function generateStaticParams() {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
     const { slug } = await params;
-    if (slug !== 'el' || !showsUnreleasedPages()) return {};
+    if (slug !== 'el' || !showsForBusinessHub()) return {};
     return getForBusinessMetadata('el');
 }
 
 export default async function Page({ params }: PageProps) {
     const { slug } = await params;
-    if (slug !== 'el' || !showsUnreleasedPages()) notFound();
+    if (slug !== 'el' || !showsForBusinessHub()) notFound();
     return <ForBusinessPage />;
 }

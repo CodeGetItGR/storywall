@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import { ProtectedImage } from '@/components/common/ProtectedImage';
 import { QrWeddingFinalCtaButton } from '@/components/qrWedding/QrWeddingFinalCtaButton';
 import type { Locale } from '@/i18n/config';
+import { finalCtaAttributes } from '@/lib/createEventFab';
 import { QR_WEDDING_SECTION } from '@/lib/qrWeddingPage';
 
 const IMAGE = '/landing/storywall-final-cta-wedding-santorini.webp';
@@ -18,6 +19,7 @@ export async function QrWeddingFinalCta({ locale }: { locale: Locale }) {
             aria-labelledby="qr-wedding-final-title"
             className="grid h-180 min-h-180 grid-cols-[44%_56%] overflow-hidden bg-[#f5ab62] text-[#151313] max-[761px]:block max-[761px]:h-auto max-[761px]:min-h-100"
             id={QR_WEDDING_SECTION.create}
+            {...finalCtaAttributes()}
         >
             {/* Photo */}
             <div className="group/photo h-180 min-h-180 min-w-0 overflow-hidden max-[761px]:h-[78vw] max-[761px]:max-h-125 max-[761px]:min-h-80">

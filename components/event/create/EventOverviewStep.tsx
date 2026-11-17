@@ -9,12 +9,13 @@ import { PartnerBrandingNotice } from '@/components/checkout/PartnerBrandingNoti
 import { WithdrawalConsentSection } from '@/components/checkout/WithdrawalConsentSection';
 import { EventOverviewDiscountCode } from '@/components/event/create/EventOverviewDiscountCode';
 import { EventOverviewPriceRow } from '@/components/event/create/EventOverviewPriceRow';
+import { useCampaignPriceClock } from '@/hooks/useCampaignPriceClock';
 import { useLocalizedAppEventTypeCopy } from '@/hooks/useLocalizedAppEventTypeCopy';
 import { formatMoney } from '@/lib/billing';
 import { getOptionPriceDetails } from '@/lib/planTiers';
 import { useCreateEventForm } from '@/providers/createEvent/CreateEventFormContext';
 
-export function EventOverviewStep() {
+export function EventOverviewStep({ showEventSummary = true }: { showEventSummary?: boolean } = {}) {
     const t = useTranslations('CreateEventPage');
     const tDurations = useTranslations('Durations');
     const locale = useLocale();
@@ -23,6 +24,7 @@ export function EventOverviewStep() {
         trimmedTitle: title,
         selectedEventType: eventType,
         eventTypes,
+        eventPlans,
         startAt,
         projectedCoverage,
         selectedPlan: plan,
@@ -38,6 +40,8 @@ export function EventOverviewStep() {
         partnerBrandingAccepted,
         onPartnerBrandingChange: onPartnerBrandingChangeAction,
     } = useCreateEventForm();
+    // The total below is worked out as it renders; this redraws it when a campaign starts or ends.
+    useCampaignPriceClock(eventPlans);
 
     if (!plan || !option) return null;
 
@@ -56,9 +60,11 @@ export function EventOverviewStep() {
     return (
         <div className="flex h-full flex-col">
             {/* Event Summary */}
-            <div className="border-b border-border/70 pb-5">
-                <ActivationEventSummary eventTitle={title} eventTypeName={eventTypeName} startAt={startAt} />
-            </div>
+            {showEventSummary && (
+                <div className="border-b border-border/70 pb-5">
+                    <ActivationEventSummary eventTitle={title} eventTypeName={eventTypeName} startAt={startAt} />
+                </div>
+            )}
 
             {/* Pricing */}
             <section aria-labelledby="pricing-heading" className="border-b border-border/70 py-5">

@@ -5,6 +5,7 @@ import { GradientIcon } from '@/components/vendorPages/GradientIcon';
 import { TYPE_ICONS } from '@/components/vendorPages/vendorPageIcons';
 import type { Locale } from '@/i18n/config';
 import { getForBusinessPath, getVendorPagePath, VENDOR_PAGE_TYPES, type VendorPageType } from '@/i18n/publicLocale';
+import { showsForBusinessHub } from '@/lib/forBusinessRelease';
 import { cn } from '@/lib/utils';
 import { vendorPageLinkAttributes } from '@/lib/vendorPageTracking';
 
@@ -43,11 +44,13 @@ export async function VendorPageLinks({ type }: { type: VendorPageType }) {
                     {t('sections.others')}
                 </h2>
                 <VendorTypeLinks exclude={type} />
-                <p className="m-0 mt-8">
-                    <a href={getForBusinessPath(locale)} className={SECONDARY_LINK} {...vendorPageLinkAttributes({ type, target: 'all' })}>
-                        {t('others')}
-                    </a>
-                </p>
+                {showsForBusinessHub() && (
+                    <p className="m-0 mt-8">
+                        <a href={getForBusinessPath(locale)} className={SECONDARY_LINK} {...vendorPageLinkAttributes({ type, target: 'all' })}>
+                            {t('others')}
+                        </a>
+                    </p>
+                )}
             </div>
         </section>
     );

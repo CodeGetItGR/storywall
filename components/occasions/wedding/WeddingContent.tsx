@@ -11,6 +11,7 @@ import { LandingHeroTransition } from '@/components/landing/LandingHeroTransitio
 import { LandingHowItWorks } from '@/components/landing/LandingHowItWorks';
 import { LandingPricing } from '@/components/landing/LandingPricing';
 import { LandingReviews } from '@/components/landing/LandingReviews';
+import { LandingSaleButton } from '@/components/landing/LandingSaleButton';
 import { OccasionCampaignBanner } from '@/components/occasions/OccasionCampaignBanner';
 import { OccasionLinks } from '@/components/occasions/OccasionLinks';
 import { OccasionPageShell } from '@/components/occasions/OccasionPageShell';
@@ -153,6 +154,9 @@ export async function WeddingContent({ campaign, demoHref, featureKeys, length, 
                 {/* Footer */}
                 <LandingFooter anchorBase={getPublicLandingPath(locale)} />
             </OccasionPageShell>
+
+            {/* Sale button */}
+            <LandingSaleButton />
 
             {/* Cookie consent */}
             <CookieConsent />

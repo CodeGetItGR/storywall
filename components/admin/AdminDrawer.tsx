@@ -127,7 +127,10 @@ export function AdminDrawer({
                     </DrawerFooterSlotContext.Provider>
 
                     {/* Footer */}
-                    <div ref={setFooterSlot} className="flex items-center justify-between gap-3 border-t border-border px-5 py-3.5 empty:hidden">
+                    <div
+                        ref={setFooterSlot}
+                        className="flex flex-wrap items-center justify-between gap-3 border-t border-border px-5 py-3.5 empty:hidden"
+                    >
                         {footer}
                     </div>
                 </Dialog.Popup>
