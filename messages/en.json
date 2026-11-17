@@ -1471,6 +1471,7 @@
                 "firstName": "First name",
                 "lastName": "Last name",
                 "expiresAt": "Expires",
+                "expiresOn": "Expires {date}",
                 "emailNotice": "We send the invitation automatically. Another account cannot accept this link.",
                 "alreadyMember": "{name} is already a member of this event.",
                 "submit": "Send invitation",
@@ -1728,7 +1729,8 @@
             "promote": "Make co-host",
             "promoteConfirmTitle": "Make {name} a co-host?",
             "promoteConfirmBody": "They'll be able to manage this event.",
-            "removeFailed": "Couldn't remove this member. Please try again."
+            "removeFailed": "Couldn't remove this member. Please try again.",
+            "moreFor": "More options for {name}"
         }
     },
     "EventPlanSettingsPage": {
