@@ -151,32 +151,30 @@ export function ManageMembersSkeleton() {
 
 export function BillingTabSkeleton() {
     return (
-        <SkeletonStatus className="flex flex-col gap-6">
-            {/* Your plan */}
-            <div>
-                <Skeleton className="mb-3 h-3 w-20 rounded-full" />
-                <Skeleton className="h-6 w-32 rounded-md" />
-                <div className="mt-4 grid grid-cols-2 gap-x-4 gap-y-4 sm:grid-cols-4">
-                    {Array.from({ length: 4 }).map((_, index) => (
-                        <div key={index} className="space-y-1.5">
-                            <Skeleton className="h-2.5 w-16 rounded-full" />
-                            <Skeleton className="h-3.5 w-20 rounded-full" />
-                        </div>
-                    ))}
+        <SkeletonStatus className="flex flex-col gap-6 lg:grid lg:grid-cols-[minmax(0,1fr)_20rem] lg:items-start lg:gap-7">
+            <div className="flex flex-col gap-6">
+                {/* Your plan */}
+                <Skeleton className="h-[164px] w-full rounded-[26px]" />
+
+                {/* Upgrade and extend */}
+                <div className="flex flex-col gap-6 lg:grid lg:grid-cols-2">
+                    <div className="space-y-2.5">
+                        <Skeleton className="h-4 w-32 rounded-full" />
+                        <Skeleton className="h-64 w-full rounded-[22px]" />
+                    </div>
+                    <div className="space-y-2.5">
+                        <Skeleton className="h-4 w-28 rounded-full" />
+                        <Skeleton className="h-16 w-full rounded-[16px]" />
+                        <Skeleton className="h-11 w-full rounded-full" />
+                    </div>
                 </div>
             </div>
 
-            {/* Upgrade */}
-            <div className="border-t border-ink/10 pt-5">
-                <Skeleton className="mb-3 h-3 w-24 rounded-full" />
-                <Skeleton className="h-20 w-full rounded-lg" />
-            </div>
-
-            {/* Payments */}
-            <div className="space-y-3 border-t border-ink/10 pt-5">
-                <Skeleton className="h-3 w-20 rounded-full" />
-                <Skeleton className="h-12 w-full rounded-lg" />
-                <Skeleton className="h-12 w-full rounded-lg" />
+            {/* Order history */}
+            <div className="space-y-3 lg:rounded-[24px] lg:border lg:border-border lg:px-[22px] lg:py-5">
+                <Skeleton className="h-4 w-28 rounded-full" />
+                <Skeleton className="h-12 w-full rounded-[12px]" />
+                <Skeleton className="h-12 w-full rounded-[12px]" />
             </div>
         </SkeletonStatus>
     );

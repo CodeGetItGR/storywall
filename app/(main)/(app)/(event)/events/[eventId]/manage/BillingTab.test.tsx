@@ -41,7 +41,6 @@ vi.mock('@/components/manage/billing/StorageTrimNotice', () => ({ StorageTrimNot
 vi.mock('@/components/manage/billing/WithdrawalHistory', () => ({ WithdrawalHistory: () => <div>withdrawal-history</div> }));
 vi.mock('@/components/manage/billing/OrderWithdrawalModal', () => ({ OrderWithdrawalModal: () => <div>withdrawal-modal</div> }));
 vi.mock('@/components/manage/ManageSkeletons', () => ({ BillingTabSkeleton: () => <div>skeleton</div> }));
-vi.mock('@/components/manage/Section', () => ({ default: ({ children }: { children: React.ReactNode }) => <div>{children}</div> }));
 
 afterEach(() => {
     cleanup();
@@ -64,6 +63,15 @@ describe('BillingTab', () => {
         expect(screen.getByText('upgrade-section')).toBeTruthy();
         expect(screen.getByText('extension-section')).toBeTruthy();
         expect(screen.getByText('addons-section')).toBeTruthy();
+    });
+
+    it('shows everything open on one page, in the agreed order', () => {
+        render(<BillingTab eventId="e-1" schedule={schedule} canPurchase />);
+        const order = ['plan-summary', 'upgrade-section', 'extension-section', 'addons-section', 'orders-panel'].map((text) => screen.getByText(text));
+        for (let index = 1; index < order.length; index += 1) {
+            expect(order[index - 1].compareDocumentPosition(order[index]) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+        }
+        expect(screen.queryByRole('tab')).toBeNull();
     });
 
     it('in withdrawal-only mode keeps the plan, the payments and the withdrawal, and offers no purchase', () => {
