@@ -1433,8 +1433,7 @@
         },
         "invitations": {
             "capacity": {
-                "title": "Guest capacity",
-                "coHostsTitle": "Guests and co-hosts"
+                "title": "Guest capacity"
             },
             "full": {
                 "notice": "This event has reached its guest limit, so new invitations can't be created.",
@@ -1445,8 +1444,6 @@
                 "shareTitle": "Share with a group",
                 "shareBody": "Create a link or QR code for group chats, printed cards, posters, or photo uploads."
             },
-            "claimed": "Claimed",
-            "unclaimed": "Unclaimed",
             "copyLink": "Copy link",
             "shareLanguageNote": "Links you share open in English.",
             "copied": "Copied!",
@@ -1462,23 +1459,17 @@
                 "cta": "Invite co-host",
                 "title": "Invite a co-host",
                 "subtitle": "They become a host only after signing in with this verified email and accepting.",
-                "summary": "{count, plural, one {# co-host invitation} other {# co-host invitations}}",
                 "empty": "No pending co-host invitations.",
-                "emptyTitle": "No co-host invites yet",
-                "emptyBody": "Invite someone by email when they should help manage the event.",
-                "singleRecipient": "One verified recipient",
                 "email": "Email",
                 "firstName": "First name",
                 "lastName": "Last name",
                 "expiresAt": "Expires",
+                "expiresOn": "Expires {date}",
                 "emailNotice": "We send the invitation automatically. Another account cannot accept this link.",
                 "alreadyMember": "{name} is already a member of this event.",
                 "submit": "Send invitation",
                 "cancel": "Cancel",
-                "guideTitle": "Invite someone to help",
-                "guideBody": "Co-host invitations are sent by email and are tied to that email address.",
                 "currentTitle": "Current hosts",
-                "currentSummary": "{count, plural, one {# host} other {# hosts}}",
                 "primary": "Primary host",
                 "coHost": "Co-host",
                 "transfer": "Transfer ownership",
@@ -1719,7 +1710,6 @@
             "emptyTitle": "No members yet",
             "emptyBody": "Members appear here after they join.",
             "joined": "Joined {date}",
-            "roleHost": "Host",
             "report": "Report",
             "remove": "Remove",
             "cancel": "Cancel",
@@ -1728,7 +1718,8 @@
             "promote": "Make co-host",
             "promoteConfirmTitle": "Make {name} a co-host?",
             "promoteConfirmBody": "They'll be able to manage this event.",
-            "removeFailed": "Couldn't remove this member. Please try again."
+            "removeFailed": "Couldn't remove this member. Please try again.",
+            "moreFor": "More options for {name}"
         }
     },
     "EventPlanSettingsPage": {
