@@ -18,7 +18,13 @@ const OTP_RESEND_COOLDOWN_SECONDS = 60;
 
 export type EventDeletionStep = 'send' | 'verify';
 
-export function useEventDeletionFlow(eventId: string) {
+type EventDeletionFlowOptions = {
+    // The page itself says what deleting does, so the sheet opens on the code step:
+    // startDeletion sends the code first, and code errors stay on the code step.
+    codeFirst?: boolean;
+};
+
+export function useEventDeletionFlow(eventId: string, { codeFirst = false }: EventDeletionFlowOptions = {}) {
     const queryClient = useQueryClient();
     const router = useRouter();
     const t = useTranslations('ManagePage.settings.dangerZone.otp');
@@ -75,8 +81,8 @@ export function useEventDeletionFlow(eventId: string) {
         queryClient.invalidateQueries({ queryKey: eventKeys.detail(eventId) });
     }
 
-    async function sendOtp() {
-        if (requestOtp.isPending || resendSeconds > 0) return;
+    async function sendOtp(): Promise<boolean> {
+        if (requestOtp.isPending || resendSeconds > 0) return false;
         setOtpInvalid(false);
         setDeleteError(null);
 
@@ -85,16 +91,40 @@ export function useEventDeletionFlow(eventId: string) {
             setOtpCode('');
             setStep('verify');
             setResendSeconds(OTP_RESEND_COOLDOWN_SECONDS);
+            return true;
         } catch (error) {
             if (getErrorCode(error) === ERROR_CODES.EVENT_DELETE_ALREADY_PENDING) {
                 handleAlreadyPending();
-                return;
+                return false;
             }
             if (isRateLimitedError(error)) {
                 setResendSeconds(getRetryAfterSeconds(error) ?? OTP_RESEND_COOLDOWN_SECONDS);
             }
             setDeleteError(toErrorMessage(error));
+            return false;
         }
+    }
+
+    // Code-first flow: a code already sent reopens its step; otherwise send one
+    // and open the sheet only once it is on its way. A failed send keeps the
+    // sheet closed and leaves its error for the page.
+    async function startDeletion() {
+        if (isPending) return;
+        if (step === 'verify') {
+            openConfirm();
+            return;
+        }
+        resetFeedback();
+        if (await sendOtp()) setConfirmOpen(true);
+    }
+
+    // A code that can no longer be used: the plain flow goes back to its warning
+    // step, the code-first flow stays on the code step with a new code ready.
+    function restartCode(message: string) {
+        if (!codeFirst) setStep('send');
+        setOtpCode('');
+        setResendSeconds(0);
+        setDeleteError(message);
     }
 
     async function confirmDelete() {
@@ -117,24 +147,15 @@ export function useEventDeletionFlow(eventId: string) {
                 return;
             }
             if (code === ERROR_CODES.EVENT_DELETE_OTP_NOT_REQUESTED) {
-                setStep('send');
-                setOtpCode('');
-                setResendSeconds(0);
-                setDeleteError(t('errors.notRequested'));
+                restartCode(t('errors.notRequested'));
                 return;
             }
             if (code === ERROR_CODES.EVENT_DELETE_OTP_EXPIRED) {
-                setStep('send');
-                setOtpCode('');
-                setResendSeconds(0);
-                setDeleteError(t('errors.expired'));
+                restartCode(t('errors.expired'));
                 return;
             }
             if (code === ERROR_CODES.EVENT_DELETE_OTP_TOO_MANY_ATTEMPTS) {
-                setStep('send');
-                setOtpCode('');
-                setResendSeconds(0);
-                setDeleteError(t('errors.tooManyAttempts'));
+                restartCode(t('errors.tooManyAttempts'));
                 return;
             }
             setDeleteError(toErrorMessage(error));
@@ -145,6 +166,7 @@ export function useEventDeletionFlow(eventId: string) {
         confirmOpen,
         step,
         openConfirm,
+        startDeletion,
         closeConfirm,
         otpCode,
         codeDigits,

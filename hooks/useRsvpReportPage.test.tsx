@@ -47,16 +47,16 @@ describe('useRsvpReportPage', () => {
 
         result.current.onClose();
 
-        expect(mocks.push).toHaveBeenCalledWith('/events/e1/manage?tab=rsvp&section=reports');
+        expect(mocks.push).toHaveBeenCalledWith('/events/e1/manage?tab=rsvp');
     });
 
-    it('closes to the Tools RSVP Reports sub-tab when opened from there', () => {
+    it('closes an old from=tools link to the RSVP page', () => {
         fromParam = 'tools';
         const { result } = renderHook(() => useRsvpReportPage('FULL_LIST'));
 
         result.current.onClose();
 
-        expect(mocks.push).toHaveBeenCalledWith('/events/e1/tools/rsvp?section=reports');
+        expect(mocks.push).toHaveBeenCalledWith('/events/e1/manage?tab=rsvp');
     });
 
     it('falls back to Manage for an unrecognized from value', () => {
@@ -65,7 +65,7 @@ describe('useRsvpReportPage', () => {
 
         result.current.onClose();
 
-        expect(mocks.push).toHaveBeenCalledWith('/events/e1/manage?tab=rsvp&section=reports');
+        expect(mocks.push).toHaveBeenCalledWith('/events/e1/manage?tab=rsvp');
     });
 
     it('lets only hosts download the PDF', () => {

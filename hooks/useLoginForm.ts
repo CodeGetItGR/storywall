@@ -7,15 +7,19 @@ import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useAuth } from '@/hooks/useAuth';
 import { useOAuthSignIn } from '@/hooks/useOAuthSignIn';
 import type { AuthSessionDto, OAuthProviderName } from '@/lib/api/types';
+import { type AuthEntry, flowErrorCode, trackFlow } from '@/lib/flowTracking';
 
 // The sign-in form (email and password, Google, Apple). The page navigates after sign-in; the
 // create wizard stays put and moves to its next screen.
 export function useLoginForm({
     inviteToken,
+    entry,
     initialEmail,
     onSignedIn,
 }: {
     inviteToken: string | null;
+    // What brought them here, for the sign-in step count.
+    entry: AuthEntry;
     initialEmail: string;
     onSignedIn: (session: AuthSessionDto) => void;
 }) {
@@ -48,14 +52,16 @@ export function useLoginForm({
 
             try {
                 const session = await login({ email, password, inviteToken: inviteToken ?? undefined });
+                trackFlow({ name: 'Sign In', method: 'email', from: entry });
                 onSignedIn(session);
             } catch (err) {
+                trackFlow({ name: 'Sign In Error', method: 'email', code: flowErrorCode(err) });
                 setError(toErrorMessage(err));
             } finally {
                 setIsSubmitting(false);
             }
         },
-        [email, inviteToken, login, onSignedIn, password, toErrorMessage],
+        [email, entry, inviteToken, login, onSignedIn, password, toErrorMessage],
     );
 
     const handleOAuthError = useCallback(
@@ -65,7 +71,7 @@ export function useLoginForm({
         [toErrorMessage],
     );
 
-    const oauthSignIn = useOAuthSignIn({ inviteToken, onSignedInAction: onSignedIn, onErrorAction: handleOAuthError });
+    const oauthSignIn = useOAuthSignIn({ inviteToken, entry, onSignedInAction: onSignedIn, onErrorAction: handleOAuthError });
     const { handleSignIn } = oauthSignIn;
 
     const handleOAuthSignIn = useCallback(

@@ -93,7 +93,6 @@ export function ManageScreen() {
                         startAt={activeEvent.schedule.startAt}
                         rsvpDeadline={activeEvent.schedule.rsvpDeadline}
                         canWrite={canWrite}
-                        origin="manage"
                     />
                 ))}
 

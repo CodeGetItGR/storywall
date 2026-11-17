@@ -12,7 +12,7 @@ import { routes } from '@/lib/routes';
 
 const settingsHref = routes.events.manage(STORY_EVENT_ID, { tab: 'settings' });
 const billingHref = routes.events.manage(STORY_EVENT_ID, { tab: 'billing' });
-const rsvpHref = routes.events.tools.rsvp(STORY_EVENT_ID);
+const rsvpHref = routes.events.manage(STORY_EVENT_ID, { tab: 'rsvp' });
 const scheduleHref = routes.events.tools.schedule(STORY_EVENT_ID);
 const giftHref = routes.events.tools.gifts(STORY_EVENT_ID);
 const qrHref = routes.events.invitationsQr(STORY_EVENT_ID);

@@ -18,7 +18,9 @@ vi.mock('next-intl', () => ({ useTranslations: () => (key: string) => key, useLo
 vi.mock('@/hooks/useThemePicker', () => ({ useThemePicker: () => picker.current }));
 vi.mock('@/hooks/useApiErrorMessage', () => ({ useApiErrorMessage: () => () => 'Could not save.' }));
 vi.mock('@/components/common/ProtectedImage', () => ({
-    ProtectedImage: ({ src, alt, onError }: { src: string; alt: string; onError?: () => void }) => <img data-testid="art" src={src} alt={alt} onError={onError} />,
+    ProtectedImage: ({ src, alt, onError }: { src: string; alt: string; onError?: () => void }) => (
+        <img data-testid="art" src={src} alt={alt} onError={onError} />
+    ),
 }));
 
 const PRESET = {
@@ -174,6 +176,23 @@ describe('ThemePicker', () => {
         expect(scope).toHaveAttribute('data-theme-font');
         expect(scope.style.getPropertyValue('--event-title')).toBe('#7A2E3B');
         expect(container.querySelector('style')?.textContent).toContain('theme-great-vibes');
+    });
+
+    it("previews the event's title on every card, with the theme name under it", () => {
+        state();
+        render(<ThemePicker event={{ id: 'e1', title: '  Maria & Nikos ' } as EventDetailResponseDto} canWrite />);
+        for (const radio of screen.getAllByRole('radio')) {
+            expect(within(radio).getAllByText('Maria & Nikos').length).toBeGreaterThan(0);
+        }
+        const dino = screen.getByRole('radio', { name: 'Dino' });
+        expect(within(dino).getByText('Dino')).toHaveClass('text-xs', 'text-ink-muted');
+        expect(within(screen.getByRole('radio', { name: 'none' })).getByText('none')).toHaveClass('text-xs');
+    });
+
+    it('shows just the theme name when the event title is blank', () => {
+        state();
+        render(<ThemePicker event={{ id: 'e1', title: '   ' } as EventDetailResponseDto} canWrite />);
+        expect(within(screen.getByRole('radio', { name: 'Dino' })).getByText('Dino')).toHaveClass('event-heading');
     });
 
     it('announces saving and saved in a polite status region', () => {

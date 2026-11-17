@@ -4,16 +4,6 @@ import { MetricStripSkeleton } from '@/components/ui/MetricStrip';
 import { Skeleton, SkeletonStatus } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 
-function SubTabsSkeleton({ count }: { count: number }) {
-    return (
-        <div className="flex w-full items-center justify-center gap-4">
-            {Array.from({ length: count }).map((_, index) => (
-                <Skeleton key={index} className="h-4 w-16 rounded-full" />
-            ))}
-        </div>
-    );
-}
-
 function MemberRowSkeleton() {
     return (
         <div className="flex items-center gap-3 border-b border-border/70 py-3 last:border-b-0">
@@ -114,28 +104,23 @@ export function RsvpReportSkeleton() {
 
 export function ManageRsvpSkeleton() {
     return (
-        <div className="flex flex-col gap-7">
-            {/* Sub-tabs */}
-            <SubTabsSkeleton count={3} />
-
-            {/* Countdown */}
-            <div className="flex items-start gap-3">
-                <Skeleton className="h-10 w-10 shrink-0 rounded-full" />
-                <div className="space-y-2">
-                    <Skeleton className="h-3 w-24 rounded-full" />
-                    <Skeleton className="h-3.5 w-40 rounded-full" />
-                </div>
-            </div>
-
+        <SkeletonStatus className="flex flex-col gap-6">
             {/* Deadline */}
-            <div className="space-y-2">
-                <Skeleton className="h-3 w-28 rounded-full" />
-                <Skeleton className="h-11 w-full max-w-sm rounded-2xl" />
+            <Skeleton className="h-[68px] w-full rounded-[20px]" />
+
+            {/* Numbers */}
+            <Skeleton className="h-[70px] w-full rounded-[20px]" />
+
+            {/* Reports */}
+            <div className="flex gap-2 overflow-hidden">
+                {Array.from({ length: 2 }).map((_, index) => (
+                    <Skeleton key={index} className="h-[84px] w-[200px] shrink-0 rounded-[18px]" />
+                ))}
             </div>
 
-            {/* Report */}
+            {/* Attendance */}
             <RsvpReportSkeleton />
-        </div>
+        </SkeletonStatus>
     );
 }
 
@@ -166,32 +151,30 @@ export function ManageMembersSkeleton() {
 
 export function BillingTabSkeleton() {
     return (
-        <SkeletonStatus className="flex flex-col gap-6">
-            {/* Your plan */}
-            <div>
-                <Skeleton className="mb-3 h-3 w-20 rounded-full" />
-                <Skeleton className="h-6 w-32 rounded-md" />
-                <div className="mt-4 grid grid-cols-2 gap-x-4 gap-y-4 sm:grid-cols-4">
-                    {Array.from({ length: 4 }).map((_, index) => (
-                        <div key={index} className="space-y-1.5">
-                            <Skeleton className="h-2.5 w-16 rounded-full" />
-                            <Skeleton className="h-3.5 w-20 rounded-full" />
-                        </div>
-                    ))}
+        <SkeletonStatus className="flex flex-col gap-6 lg:grid lg:grid-cols-[minmax(0,1fr)_20rem] lg:items-start lg:gap-7">
+            <div className="flex flex-col gap-6">
+                {/* Your plan */}
+                <Skeleton className="h-[164px] w-full rounded-[26px]" />
+
+                {/* Upgrade and extend */}
+                <div className="flex flex-col gap-6 lg:grid lg:grid-cols-2">
+                    <div className="space-y-2.5">
+                        <Skeleton className="h-4 w-32 rounded-full" />
+                        <Skeleton className="h-64 w-full rounded-[22px]" />
+                    </div>
+                    <div className="space-y-2.5">
+                        <Skeleton className="h-4 w-28 rounded-full" />
+                        <Skeleton className="h-16 w-full rounded-[16px]" />
+                        <Skeleton className="h-11 w-full rounded-full" />
+                    </div>
                 </div>
             </div>
 
-            {/* Upgrade */}
-            <div className="border-t border-ink/10 pt-5">
-                <Skeleton className="mb-3 h-3 w-24 rounded-full" />
-                <Skeleton className="h-20 w-full rounded-lg" />
-            </div>
-
-            {/* Payments */}
-            <div className="space-y-3 border-t border-ink/10 pt-5">
-                <Skeleton className="h-3 w-20 rounded-full" />
-                <Skeleton className="h-12 w-full rounded-lg" />
-                <Skeleton className="h-12 w-full rounded-lg" />
+            {/* Order history */}
+            <div className="space-y-3 lg:rounded-[24px] lg:border lg:border-border lg:px-[22px] lg:py-5">
+                <Skeleton className="h-4 w-28 rounded-full" />
+                <Skeleton className="h-12 w-full rounded-[12px]" />
+                <Skeleton className="h-12 w-full rounded-[12px]" />
             </div>
         </SkeletonStatus>
     );

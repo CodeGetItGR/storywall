@@ -13,10 +13,12 @@ import { AuthLoadingState } from '@/components/layout/AuthLoadingState';
 import { AppLink } from '@/components/ui/AppLink';
 import { useAuthPageRedirect } from '@/hooks/useAuthPageRedirect';
 import { useAuthReturnPath } from '@/hooks/useAuthReturnPath';
+import { useFlowEvent } from '@/hooks/useFlowEvent';
 import { useLoginForm } from '@/hooks/useLoginForm';
 import { useNavigateAfterSignIn } from '@/hooks/useNavigateAfterSignIn';
 import type { AuthSessionDto } from '@/lib/api/types';
 import { getPostAuthRedirectPath } from '@/lib/auth/returnPath';
+import { authEntry } from '@/lib/flowTracking';
 import { routes } from '@/lib/routes';
 
 export default function LoginPage() {
@@ -29,6 +31,8 @@ export default function LoginPage() {
     const returnPath = useAuthReturnPath();
 
     const { shouldRenderAuthPage } = useAuthPageRedirect(returnPath);
+    const entry = authEntry(inviteToken, returnPath);
+    useFlowEvent(shouldRenderAuthPage ? { name: 'Auth Page', page: 'login', from: entry } : null);
 
     const handleSignedIn = useCallback(
         (session: AuthSessionDto) => {
@@ -37,7 +41,7 @@ export default function LoginPage() {
         [navigateAfterSignIn, returnPath],
     );
 
-    const form = useLoginForm({ inviteToken, initialEmail: searchParams.get('email') ?? '', onSignedIn: handleSignedIn });
+    const form = useLoginForm({ inviteToken, entry, initialEmail: searchParams.get('email') ?? '', onSignedIn: handleSignedIn });
 
     if (!shouldRenderAuthPage) {
         return <AuthLoadingState className="min-h-screen" />;

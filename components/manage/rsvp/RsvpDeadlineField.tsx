@@ -16,7 +16,18 @@ const inputClass =
     'w-full bg-surface-muted rounded-xl px-4 py-3 text-sm text-ink placeholder:text-ink-faint outline-none focus:ring-2 focus:ring-primary/30 transition disabled:cursor-not-allowed disabled:opacity-60';
 const labelClass = 'text-xs font-semibold text-ink-muted uppercase tracking-wide';
 
-export function RsvpDeadlineField({ eventId, rsvpDeadline, canWrite }: { eventId: string; rsvpDeadline: string | null; canWrite: boolean }) {
+export function RsvpDeadlineField({
+    eventId,
+    rsvpDeadline,
+    canWrite,
+    onSavedAction,
+}: {
+    eventId: string;
+    rsvpDeadline: string | null;
+    canWrite: boolean;
+    // The sheet closes itself once the new deadline is saved.
+    onSavedAction?: () => void;
+}) {
     const t = useTranslations('ManagePage');
     const toErrorMessage = useApiErrorMessage();
     const updateEvent = useUpdateEvent(eventId);
@@ -45,6 +56,7 @@ export function RsvpDeadlineField({ eventId, rsvpDeadline, canWrite }: { eventId
             await updateEvent.mutateAsync({ rsvpDeadline: new Date(value).toISOString() });
             setSavedValues(value);
             setSaved(true);
+            onSavedAction?.();
         } catch {
             // error surfaced inline below
         }
