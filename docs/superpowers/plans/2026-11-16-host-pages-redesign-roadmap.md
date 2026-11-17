@@ -19,7 +19,7 @@
 | 1 | KAN-223 | Navigation: grouped sidebar, Overview is the mobile menu, header B, Help folded into Overview, Share links and Vendors inside the dashboard | N1, MN1, header B | — | [2026-11-16-host-dashboard-navigation.md](2026-11-16-host-dashboard-navigation.md) |
 | 2 | KAN-224 | Overview: the event journey (before, all done, on the day, after) | C1 | 1 (takes over the setup steps) | [2026-11-16-host-overview-journey.md](2026-11-16-host-overview-journey.md) |
 | 3 | KAN-225 | Invitations & QR codes as one section | Q5 | 1 (merges the Invitation and Share links entries); backend KAN-239 | [2026-11-16-invitations-qr-codes.md](2026-11-16-invitations-qr-codes.md) |
-| 4 | KAN-226 | Members on one page | M1 | 1 | not written yet |
+| 4 | KAN-226 | Members on one page | M1 | 1 | [2026-11-17-members-one-page.md](2026-11-17-members-one-page.md) |
 | 5 | KAN-227 | RSVP on one page | R1a | 1 | not written yet |
 | 6 | KAN-228 | Settings edited on the invite preview | S2 | 1 | not written yet |
 | 7 | KAN-229 | Billing with everything open | Billing | 1 | not written yet |
@@ -44,6 +44,8 @@ Pieces 3–9 and 11 only need piece 1. They can be built in any order once it is
   - The scan page gets a live invitation as one more choice. The scan page's own design is out of scope.
   - The scan answer lacks the invitation: guestwall-be ticket KAN-239 adds `invitationSlug`, merged to backend staging before the frontend PR.
   - Built 2026-11-16 (storywall #365, backend guestwall-be #166). Changes from the plan: the "QR code" heading over the code was dropped (owner approved). The scan page with a live invitation was not checked live; tests and the `WithInvitation` story cover it.
+- **4 Members**
+  - Built 2026-11-17 (storywall #369). A pending co-host invitation row was not checked live, since that sends a real email; tests and the `PendingInvitationRow` stories cover it.
 - **11 Danger zone**
   - Decide what "Download all" opens (the gallery download, or a new export) before building it.
 
@@ -54,6 +56,7 @@ Pieces 3–9 and 11 only need piece 1. They can be built in any order once it is
 | 1 | Group headings "Event" and "People" (English agreed; Greek to approve). The removals listed in that plan's Task 1. |
 | 2 | Approved 2026-11-16 (see that plan's Wording section) |
 | 3 | Approved 2026-11-16 (see that plan's Wording section) |
+| 4 | Approved 2026-11-17 (see that plan's Wording section) |
 | 5 | "Guests" (heading), "Edit RSVP deadline" |
 | 6 | Pencil button labels ("Edit" + field name) |
 | 9 | Seats bar label "4 of 5 vendor seats used". "What vendors can do" is approved in English; Greek to approve. |
