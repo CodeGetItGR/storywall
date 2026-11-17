@@ -33,7 +33,6 @@ import { isEventDeleted, isModuleAvailable, readableModuleKeys } from '@/lib/eve
 import { canPickTheme } from '@/lib/eventTheme';
 import { makeQueryClient } from '@/lib/queryClient';
 import { routes } from '@/lib/routes';
-import { resolveRsvpSubTab } from '@/lib/rsvpReport';
 
 import ManagePage from '../PageClient';
 
@@ -60,7 +59,7 @@ async function prefetchJourney(event: EventDetailResponseDto, eventId: string, a
     };
 }
 
-type PageProps = { params: Promise<{ eventId: string }>; searchParams: Promise<{ tab?: string; section?: string }> };
+type PageProps = { params: Promise<{ eventId: string }>; searchParams: Promise<{ tab?: string }> };
 
 // ManageScreen fires five host-only calls in parallel on mount (members,
 // rsvps, invitations, usage, the gift) — the biggest single client-side waterfall in
@@ -69,14 +68,14 @@ type PageProps = { params: Promise<{ eventId: string }>; searchParams: Promise<{
 // wouldn't have requested anyway. A live event's Overview also prefetches its
 // journey's reads (gift account, QR links, media summary, wishbook count; see
 // prefetchJourney), alongside the rest.
-// The RSVP stats sub-tab's STATISTICS report is prefetched when that sub-tab opens.
+// The RSVP page's STATISTICS report is prefetched when that page opens.
 export default async function Page({ params, searchParams }: PageProps) {
     const { eventId } = await params;
-    const { tab, section } = await searchParams;
+    const { tab } = await searchParams;
     // The Invitation tab moved into Invitations & QR codes (KAN-225); old links land there.
     if (tab === 'invitation') redirect(routes.events.invitationsQr(eventId));
-    // RsvpTab opens on its stats sub-tab, which reads the STATISTICS report (see useRsvpSubTab).
-    const opensRsvpStats = tab === 'rsvp' && resolveRsvpSubTab(section) === 'stats';
+    // The RSVP page shows the STATISTICS report's numbers and attendance (KAN-227: no sub-tabs).
+    const opensRsvp = tab === 'rsvp';
     const queryClient = makeQueryClient();
     // The event doesn't depend on the memberships, so both load at once.
     const [context, event] = await Promise.all([resolveServerEventContext(eventId), resolveServerEventDetail(eventId)]);
@@ -109,7 +108,7 @@ export default async function Page({ params, searchParams }: PageProps) {
                           serverGet<EventMemberResponseDto[]>(endpoints.events.members(eventId), accessToken),
                           rsvpAvailable ? serverGet<RsvpResponseDto[]>(endpoints.events.rsvps(eventId), accessToken) : null,
                           serverGet<EventInvitationResponseDto[]>(endpoints.events.invitations(eventId), accessToken),
-                          rsvpAvailable && opensRsvpStats
+                          rsvpAvailable && opensRsvp
                               ? // A failed report fetch alone must not discard the members/rsvps/invitations
                                 // prefetches above in the same Promise.all — serverGet throws on !res.ok.
                                 serverGet<RsvpReportDto>(endpoints.events.rsvpReport(eventId, 'STATISTICS'), accessToken).catch(() => null)

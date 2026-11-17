@@ -47,7 +47,7 @@ export function useRsvpSubmitPageData() {
 
     useEffect(() => {
         if (!isContextLoading && isHost && eventId) {
-            router.replace(routes.events.tools.rsvp(eventId));
+            router.replace(routes.events.manage(eventId, { tab: 'rsvp' }));
         }
     }, [eventId, isContextLoading, isHost, router]);
 
