@@ -189,12 +189,11 @@ export function MembersPanel({
                                 <MemberRow
                                     key={member.id}
                                     member={member}
-                                    canModerate={canModerate}
                                     canPromote={canPromote && member.role !== 'HOST' && member.userId !== null}
                                     canRemove={canModerate && member.role !== 'HOST'}
                                     canReport={canReport && member.id !== activeMember?.id}
                                     joinedLabel={tMembers('joined', { date: formatDate(locale, member.joinedAt, { dateStyle: 'medium' }) })}
-                                    roleLabel={member.role === 'HOST' ? tMembers('roleHost') : null}
+                                    moreLabel={tMembers('moreFor', { name: member.displayName })}
                                     eventTypeKey={activeEvent?.eventType ?? null}
                                     editRoleLabel={tRoles('host.edit', { name: member.displayName })}
                                     onEditRoleAction={canManageRoles && !member.isFeatured ? roleSheet.open : undefined}

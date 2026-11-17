@@ -1,4 +1,4 @@
-import { cleanup, render, screen, within } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { EventMemberResponseDto } from '@/lib/api/types';
@@ -89,34 +89,42 @@ beforeEach(() => {
 afterEach(cleanup);
 
 describe('Member report action', () => {
-    it('shows Report on another member but not on the viewer own row', () => {
+    it('shows Report on another member but not on the viewer own row', async () => {
         renderPanel();
 
         // The other member's row carrying the action proves the list rendered.
         const otherRow = screen.getByText('Other').closest('li') as HTMLElement;
         const ownRow = screen.getByText('Me').closest('li') as HTMLElement;
-        expect(within(otherRow).getByRole('button', { name: 'report' })).toBeTruthy();
-        expect(within(ownRow).queryByRole('button', { name: 'report' })).toBeNull();
+        fireEvent.click(within(otherRow).getByRole('button', { name: 'moreFor' }));
+        expect(await screen.findByRole('menuitem', { name: 'report' })).toBeTruthy();
+        // A host's own row has no other action, so no menu at all.
+        expect(within(ownRow).queryByRole('button', { name: 'moreFor' })).toBeNull();
     });
 });
 
 describe('Make co-host action', () => {
     const attendee = member('m3', 'Guest', 'ATTENDEE');
+    const row = (name: string) => screen.getByText(name).closest('li') as HTMLElement;
 
-    it('offers it on attendees with an account, not on hosts', () => {
+    it('offers it on attendees with an account, not on hosts', async () => {
         renderPanel([member('m1', 'Me'), attendee, member('m4', 'No account', 'ATTENDEE', null)]);
 
-        const row = (name: string) => screen.getByText(name).closest('li') as HTMLElement;
-        within(row('Guest')).getByRole('button', { name: 'promote' }).click();
+        fireEvent.click(within(row('Guest')).getByRole('button', { name: 'moreFor' }));
+        fireEvent.click(await screen.findByRole('menuitem', { name: 'promote' }));
         expect(requestForMember).toHaveBeenCalledWith(attendee);
-        expect(within(row('Me')).queryByRole('button', { name: 'promote' })).toBeNull();
-        expect(within(row('No account')).queryByRole('button', { name: 'promote' })).toBeNull();
+        expect(within(row('Me')).queryByRole('button', { name: 'moreFor' })).toBeNull();
+
+        fireEvent.click(within(row('No account')).getByRole('button', { name: 'moreFor' }));
+        await screen.findByRole('menuitem', { name: 'report' });
+        expect(screen.queryByRole('menuitem', { name: 'promote' })).toBeNull();
     });
 
-    it('hides it when the co-host seats are full', () => {
+    it('hides it when the co-host seats are full', async () => {
         coHostsFull = true;
         renderPanel([member('m1', 'Me'), attendee]);
 
-        expect(screen.queryByRole('button', { name: 'promote' })).toBeNull();
+        fireEvent.click(within(row('Guest')).getByRole('button', { name: 'moreFor' }));
+        await screen.findByRole('menuitem', { name: 'report' });
+        expect(screen.queryByRole('menuitem', { name: 'promote' })).toBeNull();
     });
 });
