@@ -54,6 +54,8 @@ With nothing set, the story is a signed-in guest of an active wedding. `user: nu
 
 `.storybook/fixtures.ts` builds the data stories share: `storyUser`, `storyMember()`, `storyHostMember`, `storyAuthor()`, `storyEvent()`, `storySession()`, `storyModules()`, `storyPost()`, `storyComment()`, `storyMedia()`, `storyPhotos`, `storyStory()`, `storyQrLink()`, `storyAppConfig` and `storyPage()` for paginated responses. Each takes overrides. Prefer them over new literals so every story shows the same event. Images come from `public/images`.
 
+Invitation sections use `.storybook/invitation.tsx`: `SectionStory` draws one section through the real renderer, and `storySection('faq', { title: '…' })` is the sample section with some data replaced. A new section type also goes in the lists at the top of `components/saveMyDate/invitation/InvitationRenderer.test.tsx`.
+
 Handlers more than one file needs live in `.storybook/handlers.ts` (for example `hostPanelHandlers()` for the host's side panel).
 
 ## Finding text in play functions
@@ -67,6 +69,8 @@ play: async ({ canvasElement, globals }) => {
 ```
 
 Menus and modals render in a portal: look for their contents in `within(document.body)`.
+
+After a click that opens a menu or dialog, call `await waitForOpen('menu')` or `await waitForOpen('dialog')` from `.storybook/waitForOpen.ts`. Without it, the visual check can capture the story before it opens.
 
 ## Mocking Spring data
 
@@ -102,3 +106,21 @@ export const Failed: Story = {
 ```
 
 A handler in a story's `beforeEach` takes precedence over one in the file's.
+
+## Visual check
+
+Every PR, except PRs into `main` and from forks, gets a check named `visual-regression`. It captures every story and compares it with the commit the PR branched from.
+
+- Nothing changed: the check is green.
+- A story changed, is new or was removed: the check is red, and one comment on the PR has the counts, previews, a link to the full report and an approve box. Ticking the box turns the check green. A new push with identical visuals keeps the approval, and any other change clears it.
+- A story failed to render: fix the story, or tag it `visual-skip` if it can't be made stable. This can't be approved.
+
+Reports are public and are deleted when the PR closes.
+
+To compare locally, run `npm run visual -- --base origin/staging --serve`. Run `npx playwright-core install chromium` once first. Windows renders differently from CI, so a local run only compares with itself, and CI decides.
+
+CI runs the same steps through `scripts/visual/ci.ts`: one job builds Storybook, 6 jobs each capture a share of the stories, and one job compares them and builds the report.
+
+The report page is built from `scripts/visual/report/` (`src/`, `index.html` and `vite.config.ts`). After changing any of these, `scripts/visual/config.ts`, or the React or Vite version, run `npm run visual:page` and commit `scripts/visual/report/dist/index.html`. The check fails if that file is out of date. If it conflicts in a merge, run `npm run visual:page` instead of resolving it by hand.
+
+The code is in `scripts/visual/`, and the design is in `docs/superpowers/specs/2026-11-06-visual-regression-tool-design.md`.

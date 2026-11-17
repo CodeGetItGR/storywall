@@ -7,12 +7,15 @@ import { useLegalDocLinks } from '@/hooks/useLegalDocLinks';
 
 // The one box a new account ticks (register, the OAuth sign-up modal): the Terms, the
 // Community Guidelines, the Privacy Policy and the 18+ confirmation (Terms §3) together.
+// A QR-link upload or wish, with no account, asks for 16+ instead (minimumAge).
 export function SignupAcceptanceCheckbox({
     checked,
     onChangeAction,
+    minimumAge = 18,
 }: {
     checked: boolean;
     onChangeAction: (event: ChangeEvent<HTMLInputElement>) => void;
+    minimumAge?: 16 | 18;
 }) {
     const t = useTranslations('AcceptanceCheckboxes');
     const links = useLegalDocLinks();
@@ -22,7 +25,7 @@ export function SignupAcceptanceCheckbox({
         <div className="flex items-start gap-3 px-1 py-1">
             <input id={id} type="checkbox" required checked={checked} onChange={onChangeAction} className="mt-0.5 size-4 shrink-0 accent-primary" />
             <label htmlFor={id} className="cursor-pointer text-sm text-ink">
-                {t.rich('signup', links)}
+                {t.rich(minimumAge === 16 ? 'qrGuest' : 'signup', links)}
             </label>
         </div>
     );

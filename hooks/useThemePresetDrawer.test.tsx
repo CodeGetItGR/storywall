@@ -72,6 +72,8 @@ const ALEGREYA: AdminThemeFontDto = {
     archived: false,
     url: '/api/theme-fonts/alegreya/1.woff2',
     presetCount: 0,
+    library: 'WALL',
+    invitationEventTypes: [],
 };
 const BREE: AdminThemeFontDto = { ...ALEGREYA, id: 'f2', key: 'bree', familyName: 'Bree', url: '/api/theme-fonts/bree/3.woff2' };
 

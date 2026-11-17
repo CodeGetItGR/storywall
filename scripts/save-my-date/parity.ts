@@ -31,19 +31,71 @@ const WIDTHS = [
 // Fixed so the countdown shows the same numbers on both sides.
 const FROZEN_TIME = new Date('2026-06-01T12:00:00');
 const MEDIA_ORIGIN = 'https://parity.local/media/';
-// Effects are not built in the new renderer yet (KAN-59), so they are hidden on
-// both sides, and the old effect layer is flattened: as its own compositor layer
-// it changes how the text above it is smoothed.
+// Everything holds still except the background effects, which are stopped on the
+// same frames on both sides (FROZEN_FRAMES_MS, freezeAnimations, FX_CLOCK_SCRIPT).
 // The last rules undo old editor leftovers: a theme saved with a selected section
 // dims every section, and empty contact links and family photos show editor
 // prompts. The new page never shows guests those prompts.
-const FREEZE_CSS = `*,*::before,*::after{animation:none!important;transition:none!important;caret-color:transparent!important}
-.wedart-fx-canvas,.wedart-fx-layer,.wedart-bg-fx,.wedart-bg-particles{visibility:hidden!important}
-.section.wedart-bg-effect-active{isolation:auto!important}
-.wedart-section-bg,.wedart-section-bg-overlay{will-change:auto!important;transform:none!important;backface-visibility:visible!important}
+const FREEZE_CSS = `*:not(.wedart-section-bg,.wedart-section-bg-overlay,.wedart-bg-particles span),*::before,*::after{animation:none!important;transition:none!important;caret-color:transparent!important}
 nextjs-portal{display:none!important}
 .site.has-selection .section:not(.selected){filter:none!important;opacity:1!important}
 .contact-empty-hint,.family-photo:has(.family-photo-placeholder){display:none!important}`;
+
+// A section with an effect is compared on each of these frames; the worst one counts.
+const FROZEN_FRAMES_MS = [1500, 6000];
+const FRAME_MS = 16.667;
+
+// Runs before the page's own scripts. While held, requestAnimationFrame only fires
+// when stepped, with the same timestamps on both sides, and Math.random is seeded,
+// so a canvas effect draws the same particles on the same frames.
+const FX_CLOCK_SCRIPT = `(() => {
+    const realRequest = window.requestAnimationFrame.bind(window);
+    const realCancel = window.cancelAnimationFrame.bind(window);
+    const realRandom = Math.random;
+    let held = false;
+    let time = 0;
+    let nextId = 1e9;
+    let queue = new Map();
+    const seeded = (seed) => () => {
+        seed = (seed + 0x6d2b79f5) | 0;
+        let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+        t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+    window.requestAnimationFrame = (callback) => {
+        if (!held) return realRequest(callback);
+        nextId += 1;
+        queue.set(nextId, callback);
+        return nextId;
+    };
+    window.cancelAnimationFrame = (id) => {
+        if (!queue.delete(id)) realCancel(id);
+    };
+    window.__parityFx = {
+        hold() {
+            held = true;
+            time = 0;
+            Math.random = seeded(1);
+        },
+        step(frames) {
+            for (let i = 0; i < frames; i += 1) {
+                time += ${FRAME_MS};
+                const callbacks = [...queue.values()];
+                queue = new Map();
+                callbacks.forEach((callback) => callback(time));
+            }
+        },
+        release() {
+            held = false;
+            Math.random = realRandom;
+            const callbacks = [...queue.values()];
+            queue = new Map();
+            callbacks.forEach((callback) => realRequest(callback));
+        },
+    };
+})();`;
+
+type ParityWindow = { __parityFx: { hold: () => void; step: (frames: number) => void; release: () => void } };
 
 const { values: args } = parseArgs({
     options: {
@@ -73,7 +125,7 @@ mkdirSync(join(outDir, 'images'), { recursive: true });
 
 const readJson = <T>(path: string): T => JSON.parse(readFileSync(path, 'utf8')) as T;
 
-type SectionInfo = { id: string; type: string; visible: boolean };
+type SectionInfo = { id: string; type: string; visible: boolean; style?: { effect?: { type: string } } };
 type Converted = { record: { name: string }; design: unknown; document: { sections: SectionInfo[] } };
 
 const converted = readJson<Converted>(join(convertedDir, 'templates', `${themeId}.json`));
@@ -162,6 +214,9 @@ async function settle(page: Page) {
         window.scrollTo({ top: 0, behavior: 'instant' });
         await Promise.all(Array.from(document.images).map((image) => image.decode().catch(() => undefined)));
         await document.fonts.ready;
+        // The new page's text animations are not CSS, so the rule above doesn't stop them.
+        const ends = document.getAnimations().filter((animation) => animation.effect?.getComputedTiming().endTime !== Infinity);
+        await Promise.all(ends.map((animation) => animation.finished.catch(() => undefined)));
     });
     await page.waitForLoadState('networkidle').catch(() => undefined);
     await page.waitForTimeout(300);
@@ -179,7 +234,40 @@ async function showOnly(page: Page, attribute: string, id: string) {
     }, css);
 }
 
-async function shot(page: Page, section: Locator): Promise<Buffer> {
+async function hideAll(page: Page, attribute: string) {
+    await page.evaluate((text) => {
+        const style = document.getElementById('parity-only') ?? document.head.appendChild(document.createElement('style'));
+        style.id = 'parity-only';
+        style.textContent = text;
+    }, `section[${attribute}]{display:none!important}`);
+}
+
+// Stops every CSS animation at one moment; one that has an end goes to its end.
+async function freezeAnimations(page: Page, ms: number) {
+    await page.evaluate((at) => {
+        for (const animation of document.getAnimations()) {
+            if (animation.effect?.getComputedTiming().endTime === Infinity) {
+                animation.pause();
+                animation.currentTime = at;
+            } else {
+                animation.finish();
+            }
+        }
+    }, ms);
+}
+
+// Starts the section's effect afresh under the held clock.
+async function restartEffect(page: Page, attribute: string, id: string) {
+    await hideAll(page, attribute);
+    await page.waitForTimeout(150);
+    await page.evaluate(() => (window as unknown as ParityWindow).__parityFx.hold());
+    await showOnly(page, attribute, id);
+    await page.waitForFunction(() => document.querySelector('.wedart-bg-inview'), undefined, { timeout: 5_000 });
+    await page.waitForTimeout(150);
+}
+
+// One screenshot, or with an effect one per frozen frame.
+async function shots(page: Page, section: Locator, attribute: string, id: string, hasEffect: boolean): Promise<Buffer[]> {
     // A tab in the background draws no new frames.
     await page.bringToFront();
     await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
@@ -187,15 +275,37 @@ async function shot(page: Page, section: Locator): Promise<Buffer> {
     const first = await section.boundingBox();
     if (!first || !viewport) throw new Error('A section has no size on the page');
     // The old page scrolls inside its own box, so a full-page shot stops at the
-    // window's height. A section taller than that gets a taller window.
+    // window's height. A section taller than that gets a taller window. That comes
+    // before the effect starts: some particles travel by the window's height.
     const tall = first.height > viewport.height;
     if (tall) await page.setViewportSize({ width: viewport.width, height: Math.ceil(first.height) + 1 });
     const box = await section.boundingBox();
     if (!box) throw new Error('A section has no size on the page');
     const clip = { x: Math.round(box.x), y: Math.round(box.y), width: Math.round(box.width), height: Math.round(box.height) };
-    const png = await page.screenshot({ fullPage: true, clip });
+    const pngs: Buffer[] = [];
+    // The old page refits its IBAN on resize and can't measure a hidden section,
+    // so it has to refit once more while this one is showing.
+    await showOnly(page, attribute, id);
+    await page.evaluate(() => window.dispatchEvent(new Event('resize')));
+    await page.waitForTimeout(150);
+    if (hasEffect) {
+        await restartEffect(page, attribute, id);
+        let frames = 0;
+        for (const ms of FROZEN_FRAMES_MS) {
+            const target = Math.round(ms / FRAME_MS);
+            await page.evaluate((count) => (window as unknown as ParityWindow).__parityFx.step(count), target - frames);
+            frames = target;
+            // The stepped frames can start a reveal, which needs a moment to begin.
+            await page.waitForTimeout(100);
+            await freezeAnimations(page, ms);
+            pngs.push(await page.screenshot({ fullPage: true, clip }));
+        }
+        await page.evaluate(() => (window as unknown as ParityWindow).__parityFx.release());
+    } else {
+        pngs.push(await page.screenshot({ fullPage: true, clip }));
+    }
     if (tall) await page.setViewportSize(viewport);
-    return png;
+    return pngs;
 }
 
 type Raw = { data: Uint8Array; width: number; height: number };
@@ -246,6 +356,8 @@ type Row = {
     width: string;
     status: 'compared' | 'not built' | 'missing in old';
     percent?: number;
+    // The frozen frame shown, for a section with an effect.
+    frameMs?: number;
     oldHeight?: number;
     newHeight?: number;
     image?: string;
@@ -277,15 +389,31 @@ async function compareWidth(context: BrowserContext, oldUrl: string, width: (typ
         }
         await showOnly(oldPage, 'data-id', section.id);
         await showOnly(newPage, 'data-section-id', section.id);
-        const [oldShot, newShot] = [await shot(oldPage, oldEl), await shot(newPage, newEl)];
-        const [oldMeta, newMeta] = [await sharp(oldShot).metadata(), await sharp(newShot).metadata()];
-        const w = Math.max(oldMeta.width, newMeta.width);
-        const h = Math.max(oldMeta.height, newMeta.height);
-        const [oldRaw, newRaw] = [await toRaw(oldShot, w, h), await toRaw(newShot, w, h)];
-        const diff = comparePixels(oldRaw.data, newRaw.data, w, h);
-        const image = `images/${width.name}-${section.type}-${section.id}.png`;
-        await sideBySide(oldRaw, newRaw, diffImage(oldRaw, diff.mask), join(outDir, image));
-        rows.push({ ...base, status: 'compared', percent: diff.percent, oldHeight: oldMeta.height, newHeight: newMeta.height, image });
+        const hasEffect = Boolean(section.style?.effect && section.style.effect.type !== 'none');
+        const oldShots = await shots(oldPage, oldEl, 'data-id', section.id, hasEffect);
+        const newShots = await shots(newPage, newEl, 'data-section-id', section.id, hasEffect);
+        let worst: Row | undefined;
+        for (const [index, oldShot] of oldShots.entries()) {
+            const newShot = newShots[index];
+            const [oldMeta, newMeta] = [await sharp(oldShot).metadata(), await sharp(newShot).metadata()];
+            const w = Math.max(oldMeta.width, newMeta.width);
+            const h = Math.max(oldMeta.height, newMeta.height);
+            const [oldRaw, newRaw] = [await toRaw(oldShot, w, h), await toRaw(newShot, w, h)];
+            const diff = comparePixels(oldRaw.data, newRaw.data, w, h);
+            if (worst && diff.percent <= (worst.percent ?? 0)) continue;
+            const image = `images/${width.name}-${section.type}-${section.id}.png`;
+            await sideBySide(oldRaw, newRaw, diffImage(oldRaw, diff.mask), join(outDir, image));
+            worst = {
+                ...base,
+                status: 'compared',
+                percent: diff.percent,
+                frameMs: hasEffect ? FROZEN_FRAMES_MS[index] : undefined,
+                oldHeight: oldMeta.height,
+                newHeight: newMeta.height,
+                image,
+            };
+        }
+        if (worst) rows.push(worst);
     }
     await oldPage.close();
     await newPage.close();
@@ -299,7 +427,7 @@ function writeReport(rows: Row[]) {
     const skipped = rows.filter((row) => row.status !== 'compared');
     const over = compared.filter((row) => (row.percent ?? 0) > threshold);
     const card = (row: Row) => `<figure class="${(row.percent ?? 0) > threshold ? 'over' : ''}">
-<figcaption><b>${(row.percent ?? 0).toFixed(2)}%</b> ${row.width} · ${escapeHtml(row.type)} · ${row.id} · height old ${row.oldHeight} / new ${row.newHeight}</figcaption>
+<figcaption><b>${(row.percent ?? 0).toFixed(2)}%</b> ${row.width} · ${escapeHtml(row.type)} · ${row.id}${row.frameMs ? ` · frame ${row.frameMs}ms` : ''} · height old ${row.oldHeight} / new ${row.newHeight}</figcaption>
 <a href="${row.image}"><img src="${row.image}" alt="${escapeHtml(row.type)}: old, new and difference" loading="lazy"></a></figure>`;
     const html = `<!doctype html><meta charset="utf-8"><title>Parity ${escapeHtml(converted.record.name)}</title>
 <style>body{font:14px system-ui;margin:24px;background:#f4f4f5}figure{margin:0 0 24px;background:#fff;padding:12px;border-left:4px solid #16a34a}
@@ -359,6 +487,7 @@ async function main() {
         // themes with a text animation, which a guest does not see.
         const context = await browser.newContext({ bypassCSP: true, deviceScaleFactor: 1 });
         await context.clock.setFixedTime(FROZEN_TIME);
+        await context.addInitScript(FX_CLOCK_SCRIPT);
         await serveBackupMedia(context);
         const rows: Row[] = [];
         for (const width of WIDTHS) rows.push(...(await compareWidth(context, oldUrl, width)));

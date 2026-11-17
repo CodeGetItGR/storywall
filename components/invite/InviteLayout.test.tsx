@@ -6,8 +6,10 @@ import type { EventThemeDto, EventThemeFontDto } from '@/lib/api/types';
 
 vi.mock('@/components/common/Logo', () => ({ Logo: () => <span data-testid="logo" /> }));
 vi.mock('@/components/common/ProtectedImage', () => ({
-    // eslint-disable-next-line @next/next/no-img-element
-    ProtectedImage: ({ src, alt, onError }: { src: string; alt: string; onError?: () => void }) => <img data-testid="hero" src={src} alt={alt} onError={onError} />,
+    ProtectedImage: ({ src, alt, onError }: { src: string; alt: string; onError?: () => void }) => (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img data-testid="hero" src={src} alt={alt} onError={onError} />
+    ),
 }));
 
 const THEME: EventThemeDto = {
@@ -118,6 +120,30 @@ describe('InviteLayout without a cover', () => {
         fireEvent.error(screen.getByTestId('hero'));
 
         expect(screen.queryByTestId('hero')).toBeNull();
+        expect(screen.getAllByTestId('logo')).toHaveLength(1);
+    });
+    // The QR page: a slim bar with the logo and its control, no hero art and no footer logo.
+    it('shows a slim bar instead of the hero, with the event name as a heading', () => {
+        render(
+            <InviteLayout coverImageSrc="https://r2.test/cover.jpg" coverImageAlt="" theme={THEME} eventTitle="Baptism" topBar={<button type="button">EL</button>}>
+                <p>body</p>
+            </InviteLayout>,
+        );
+
+        expect(screen.queryByTestId('hero')).toBeNull();
+        expect(screen.getAllByTestId('logo')).toHaveLength(1);
+        expect(screen.getByRole('button', { name: 'EL' })).toBeInTheDocument();
+        expect(screen.getByRole('heading', { name: 'Baptism' })).toHaveClass('text-2xl');
+    });
+
+    it('shows the event name as a small line under the bar', () => {
+        render(
+            <InviteLayout coverImageAlt="" eventTitle="Baptism" topBar={null} barTitle="line">
+                <p>body</p>
+            </InviteLayout>,
+        );
+
+        expect(screen.getByRole('heading', { name: 'Baptism' })).toHaveClass('text-xs');
         expect(screen.getAllByTestId('logo')).toHaveLength(1);
     });
 });

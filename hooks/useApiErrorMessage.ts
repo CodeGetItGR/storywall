@@ -3,7 +3,7 @@
 import { useLocale, useTranslations } from 'next-intl';
 import { useCallback, useEffect, useState } from 'react';
 
-import { getApiErrorMessageKey } from '@/lib/api/errorMessageKeys';
+import { getApiErrorMessageKey, rateLimitedMessage } from '@/lib/api/errorMessageKeys';
 import {
     ERROR_CODES,
     getErrorCode,
@@ -63,10 +63,8 @@ export function useApiErrorMessage() {
             }
 
             if (isRateLimitedError(error)) {
-                const seconds = getRetryAfterSeconds(error);
-                if (!seconds) return t('rateLimited');
-                // An hourly upload budget can ask for most of an hour, which reads badly in seconds.
-                return seconds > 90 ? t('rateLimitedWithWaitMinutes', { minutes: Math.ceil(seconds / 60) }) : t('rateLimitedWithWait', { seconds });
+                const message = rateLimitedMessage(getRetryAfterSeconds(error));
+                return t(message.key, message.values);
             }
 
             const quotaCode = getErrorCode(error);

@@ -15,6 +15,7 @@ import {
     isGiftHandoverPending,
     isGiftPinFormat,
     isPlanGiftable,
+    needsGiftPin,
     sameGiftRequest,
 } from '@/lib/gift';
 
@@ -165,5 +166,26 @@ describe('inviteGiftFraming', () => {
         expect(inviteGiftFraming(framing)).toBe(framing);
         expect(inviteGiftFraming({ ...framing, claimed: false })).toBeNull();
         expect(inviteGiftFraming(null)).toBeNull();
+    });
+});
+
+describe('needsGiftPin', () => {
+    it('asks up front when no email is bound', () => {
+        expect(needsGiftPin({ emailBound: false, callerIsRecipient: null }, false)).toBe(true);
+        expect(needsGiftPin({ emailBound: false, callerIsRecipient: false }, true)).toBe(true);
+    });
+
+    it('asks a signed-in account that is not the recipient', () => {
+        expect(needsGiftPin({ emailBound: true, callerIsRecipient: false }, true)).toBe(true);
+    });
+
+    it('lets the recipient claim without it', () => {
+        expect(needsGiftPin({ emailBound: true, callerIsRecipient: true }, true)).toBe(false);
+    });
+
+    it('waits when the preview does not know the caller', () => {
+        expect(needsGiftPin({ emailBound: true, callerIsRecipient: null }, true)).toBe(false);
+        expect(needsGiftPin({ emailBound: true, callerIsRecipient: null }, false)).toBe(false);
+        expect(needsGiftPin(null, true)).toBe(false);
     });
 });

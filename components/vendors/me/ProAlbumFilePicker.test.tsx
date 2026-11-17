@@ -19,4 +19,10 @@ describe('ProAlbumFilePicker', () => {
         expect(onChoose).toHaveBeenCalledWith([file]);
         expect(input.value).toBe('');
     });
+
+    it('anchors the hidden file input to its label, so focusing it does not shift the page', () => {
+        const { container } = render(<ProAlbumFilePicker onChooseAction={vi.fn()} />);
+
+        expect(container.querySelector('input[type="file"]')?.closest('label')).toHaveClass('relative');
+    });
 });

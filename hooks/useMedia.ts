@@ -9,6 +9,7 @@ import { endpoints } from '@/lib/api/endpoints';
 import type { Page } from '@/lib/api/pagination';
 import type { MediaBatchUploadResponseDto, MediaCollection, MediaResponseDto, MediaUploadContext, OriginalMediaUrlDto } from '@/lib/api/types';
 import { sendUploadWithBusyRetry } from '@/lib/api/uploadRetry';
+import { processingAwareRefreshMs } from '@/lib/mediaProcessing';
 import { LIVE_CONTENT_STALE_TIME } from '@/lib/queryClient';
 import { shrinkImageForUpload } from '@/lib/uploadImageResize';
 import { getUploadLimits } from '@/lib/uploadLimits';
@@ -33,13 +34,14 @@ export function mediaListPath(eventId: string, collection: MediaCollection, page
 }
 
 // GET /api/events/{eventId}/media — any event member. Paginated, newest first.
-// Refetched once per signing window so the presigned URLs it holds never expire.
+// Refetched once per signing window so the presigned URLs it holds never expire,
+// and every few seconds while a video just uploaded is still processing.
 // The Pro album needs the vendors module as well as the gallery (the backend refuses it otherwise).
 export function useEventMedia(eventId: string | null, collection: MediaCollection = 'GUEST') {
     const { isAuthenticated } = useAuth();
     const galleryReadable = useModuleReadable(eventId, 'gallery');
     const vendorsReadable = useModuleReadable(eventId, 'vendors');
-    const refetchInterval = usePresignedUrlRefreshMs();
+    const presignedRefreshMs = usePresignedUrlRefreshMs();
     const collectionReadable = collection === 'GUEST' || vendorsReadable;
 
     return useInfiniteQuery({
@@ -49,7 +51,8 @@ export function useEventMedia(eventId: string | null, collection: MediaCollectio
         getNextPageParam: (lastPage) => (lastPage.page.number + 1 < lastPage.page.totalPages ? lastPage.page.number + 1 : undefined),
         enabled: Boolean(eventId) && isAuthenticated && galleryReadable && collectionReadable,
         staleTime: LIVE_CONTENT_STALE_TIME,
-        refetchInterval,
+        refetchInterval: (query) =>
+            processingAwareRefreshMs(query.state.data?.pages.flatMap((page) => page.content) ?? [], presignedRefreshMs, Date.now()),
     });
 }
 

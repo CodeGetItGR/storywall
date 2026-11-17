@@ -1,6 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 
-import { storyQrLink } from '@/.storybook/fixtures';
 import { QrLinksSection } from '@/components/layout/right-context-panel/QrLinksSection';
 
 const meta = {
@@ -8,8 +7,6 @@ const meta = {
     component: QrLinksSection,
     args: {
         eventId: 'evt-story',
-        showGallery: true,
-        galleryQrLink: storyQrLink({ id: 'qr-gallery', targetType: 'MEDIA_UPLOAD' }),
         showInvitations: true,
         invitationsQrCount: 3,
     },
@@ -27,11 +24,11 @@ type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {};
 
-// The gallery upload code hasn't been made yet.
-export const NoGalleryCode: Story = {
-    args: { galleryQrLink: null },
+export const OneLink: Story = {
+    args: { invitationsQrCount: 1 },
 };
 
-export const InvitationsOnly: Story = {
-    args: { showGallery: false, galleryQrLink: null, invitationsQrCount: 1 },
+// The share link was revoked.
+export const NoActiveLink: Story = {
+    args: { invitationsQrCount: 0 },
 };

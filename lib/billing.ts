@@ -7,11 +7,14 @@ import type {
     PartnerBrandingNoticeDto,
     PlanTierResponseDto,
 } from '@/lib/api/types';
+import { getSafeReturnPath } from '@/lib/auth/returnPath';
 import { dateTimeFormat, numberFormat } from '@/lib/format';
 
 type PendingCheckout = {
     orderId: string;
     planTierCode?: string;
+    // Where the host goes once paid, instead of the event's feed (the invitation editor).
+    returnTo?: string;
 };
 
 function pendingCheckoutKey(eventId: string): string {
@@ -51,11 +54,13 @@ export function checkoutSuccessUrl(origin: string, eventId: string, orderId: str
     return `${origin}/events/${eventId}/checkout/success?${params.toString()}`;
 }
 
-export function rememberPendingCheckout(eventId: string, orderId: string, planTierCode?: string | null): void {
+export function rememberPendingCheckout(eventId: string, orderId: string, planTierCode?: string | null, returnTo?: string | null): void {
     if (typeof window === 'undefined') return;
 
     const pending: PendingCheckout = { orderId };
     if (planTierCode) pending.planTierCode = planTierCode;
+    const safeReturnTo = getSafeReturnPath(returnTo ?? null);
+    if (safeReturnTo) pending.returnTo = safeReturnTo;
     window.sessionStorage.setItem(pendingCheckoutKey(eventId), JSON.stringify(pending));
 }
 
@@ -67,9 +72,13 @@ export function readPendingCheckout(eventId: string): PendingCheckout | null {
 
     try {
         const pending = JSON.parse(value) as Partial<PendingCheckout>;
-        return typeof pending.orderId === 'string'
-            ? { orderId: pending.orderId, ...(typeof pending.planTierCode === 'string' ? { planTierCode: pending.planTierCode } : {}) }
-            : null;
+        if (typeof pending.orderId !== 'string') return null;
+        const returnTo = typeof pending.returnTo === 'string' ? getSafeReturnPath(pending.returnTo) : null;
+        return {
+            orderId: pending.orderId,
+            ...(typeof pending.planTierCode === 'string' ? { planTierCode: pending.planTierCode } : {}),
+            ...(returnTo ? { returnTo } : {}),
+        };
     } catch {
         return null;
     }
@@ -79,8 +88,9 @@ export function clearPendingCheckout(eventId: string): void {
     if (typeof window !== 'undefined') window.sessionStorage.removeItem(pendingCheckoutKey(eventId));
 }
 
-export function navigateToCheckout(eventId: string, checkout: CheckoutResponseDto, planTierCode?: string | null): void {
-    rememberPendingCheckout(eventId, checkout.orderId, planTierCode);
+// returnTo: where the success page sends the host once paid, instead of the event's feed.
+export function navigateToCheckout(eventId: string, checkout: CheckoutResponseDto, planTierCode?: string | null, returnTo?: string | null): void {
+    rememberPendingCheckout(eventId, checkout.orderId, planTierCode, returnTo);
     const destination = checkout.redirectUrl.includes('/checkout/success')
         ? checkoutSuccessUrl(window.location.origin, eventId, checkout.orderId, planTierCode)
         : checkout.redirectUrl;
