@@ -1,6 +1,9 @@
 import type { ReactNode } from 'react';
 
 import type { InvitationElement } from '@/lib/invitation/elements';
+import type { PhotoFrameElement } from '@/lib/invitation/photoFrame';
+import type { PhotoSlot } from '@/lib/invitation/photoSlots';
+import type { ImageRef } from '@/lib/invitation/primitives';
 import type { SectionDecoration } from '@/lib/invitation/sections';
 
 // What the editor draws inside the invitation besides its texts: the drag handles
@@ -18,6 +21,16 @@ export type CanvasTools = {
     art?: (slot: 'main' | 'ceremonyIcon', scale: number) => ReactNode;
     // Around one item of a custom section.
     customItem?: (sectionId: string, elements: readonly InvitationElement[], item: InvitationElement, content: ReactNode) => ReactNode;
+    // On a photo the host can add or replace. An empty slot is drawn only when this is set.
+    photo?: (slot: PhotoSlot, hasPhoto: boolean) => ReactNode;
+    // Over a framed photo: move and zoom it.
+    framePhoto?: (element: PhotoFrameElement) => ReactNode;
+    // Admins: which frame and its effect. When set, a frame with no art yet shows as an empty box.
+    frameSettings?: (element: PhotoFrameElement) => ReactNode;
+    // Over the photo band's photo: move it up and down.
+    photoBand?: (sectionId: string, imageY: number) => ReactNode;
+    // In a gallery with no photos to show: add some. An empty gallery is drawn only when this is set.
+    gallery?: (sectionId: string, images: readonly ImageRef[]) => ReactNode;
     // Between the columns of a custom section.
     columnBreak?: (sectionId: string, elements: readonly InvitationElement[], breakId: string) => ReactNode;
     // The editor shows every section at its saved height. Guests see it only where it is

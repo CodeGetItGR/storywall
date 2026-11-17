@@ -20,7 +20,7 @@ const PRESETS: TypographyPresetOption[] = [{ id: 'classic', name: 'Classic', tit
 let currentStore: InvitationEditorStore | undefined;
 
 function Panel({ initial }: { initial: ThemeDesign }) {
-    const editor = useInvitationEditorStore(previewDocument(), initial);
+    const editor = useInvitationEditorStore(previewDocument(), '', initial);
     useEffect(() => {
         currentStore = editor.store;
     }, [editor.store]);

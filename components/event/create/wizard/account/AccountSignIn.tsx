@@ -8,7 +8,8 @@ import { CREATE_EVENT_WIZARD_HEADING_ID } from '@/components/event/create/wizard
 import { useLoginForm } from '@/hooks/useLoginForm';
 
 // Email sign-in inside the wizard. Forgot password opens in a new tab so the wizard keeps its place.
-export function AccountSignIn({ onSignedIn }: { onSignedIn: () => void }) {
+// isFinishing: signed in, waiting for the next screen; the button stays busy.
+export function AccountSignIn({ onSignedIn, isFinishing }: { onSignedIn: () => void; isFinishing: boolean }) {
     const t = useTranslations('LoginPage');
     const form = useLoginForm({ inviteToken: null, initialEmail: '', onSignedIn });
 
@@ -23,7 +24,14 @@ export function AccountSignIn({ onSignedIn }: { onSignedIn: () => void }) {
             <LoginEmailForm
                 form={form}
                 forgotPasswordInNewTab
-                submitButton={<CreateEventWizardButton type="submit" label={t('submit')} pending={form.isSubmitting} disabled={form.isSubmitting} />}
+                submitButton={
+                    <CreateEventWizardButton
+                        type="submit"
+                        label={t('submit')}
+                        pending={form.isSubmitting || isFinishing}
+                        disabled={form.isSubmitting || isFinishing}
+                    />
+                }
             />
         </div>
     );

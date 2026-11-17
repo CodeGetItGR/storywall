@@ -39,7 +39,13 @@ vi.mock('@/hooks/useEventTypeModuleMatrix', () => ({
     useEventTypeModuleMatrix: (eventTypeKey: string | null) => ({
         data:
             eventTypeKey && mocks.vendorsApplicability
-                ? [{ moduleKey: 'vendors', applicability: mocks.vendorsApplicability, defaultConfig: { maxVendors: 3, allowedTypes: [], accessDaysAfterEvent: 7, proStorageBytes: 0 } }]
+                ? [
+                      {
+                          moduleKey: 'vendors',
+                          applicability: mocks.vendorsApplicability,
+                          defaultConfig: { maxVendors: 3, allowedTypes: [], accessDaysAfterEvent: 7, proStorageBytes: 0 },
+                      },
+                  ]
                 : [],
     }),
 }));
@@ -212,7 +218,12 @@ describe('useProvisionEventForm vendor settings', () => {
         const { result } = renderHook(() => useProvisionEventForm(HOST));
         act(() => fillRequired(result.current));
         expect(result.current.vendorSettings.isSupported).toBe(true);
-        expect(result.current.vendorSettings.draft).toEqual({ maxVendors: '5', allowedTypes: 'PLANNER,MUSIC', accessDaysAfterEvent: '30', proStorageBytes: '5 GB' });
+        expect(result.current.vendorSettings.draft).toEqual({
+            maxVendors: '5',
+            allowedTypes: 'PLANNER,MUSIC',
+            accessDaysAfterEvent: '30',
+            proStorageBytes: '5 GB',
+        });
 
         await submitTwice(result);
         expect((mocks.calls[0] as AdminProvisionEventRequestDto).moduleConfigs).toBeUndefined();
@@ -257,7 +268,9 @@ describe('useProvisionEventForm vendor settings', () => {
         expect(result.current.vendorSettings.turnsVendorsOn).toBe(true);
 
         await submitTwice(result);
-        expect((mocks.calls[0] as AdminProvisionEventRequestDto).moduleConfigs).toEqual([{ moduleKey: 'vendors', configKey: 'maxVendors', value: 1 }]);
+        expect((mocks.calls[0] as AdminProvisionEventRequestDto).moduleConfigs).toEqual([
+            { moduleKey: 'vendors', configKey: 'maxVendors', value: 1 },
+        ]);
     });
 
     it('has no vendor settings for a type without vendors, and sends none', async () => {
@@ -279,5 +292,76 @@ describe('useProvisionEventForm vendor settings', () => {
         expect(result.current.vendorSettings.open).toBe(true);
         act(() => result.current.vendorSettings.reset());
         expect(result.current.vendorSettings.open).toBe(false);
+    });
+});
+
+describe('useProvisionEventForm pre-configuration', () => {
+    const VALID_IBAN = 'GR16 0110 1250 0000 0001 2300 695';
+
+    it('sends the subtitle and end time, and blocks an end before the start', async () => {
+        const { result } = renderHook(() => useProvisionEventForm(HOST));
+        act(() => {
+            fillRequired(result.current);
+            result.current.setSubtitle('  Join us  ');
+            result.current.setEndAt('2999-06-01T11:00');
+        });
+        expect(result.current.endAtError).toBe('validation.endBeforeStart');
+        expect(result.current.canReview).toBe(false);
+
+        act(() => result.current.setEndAt('2999-06-01T23:00'));
+        expect(result.current.canReview).toBe(true);
+        await submitTwice(result);
+        const body = mocks.calls[0] as AdminProvisionEventRequestDto;
+        expect(body.event.subtitle).toBe('Join us');
+        expect(body.event.endAt).toBe(new Date('2999-06-01T23:00').toISOString());
+    });
+
+    it('sends the schedule and gift account when the plan includes them', async () => {
+        mocks.moduleKeys = ['schedule', 'wishlist'];
+        const { result } = renderHook(() => useProvisionEventForm(HOST));
+        act(() => fillRequired(result.current));
+        act(() => result.current.schedule.openNew());
+        act(() => {
+            result.current.schedule.updateDraft('title', 'Reception');
+            result.current.schedule.updateDraft('isSecondary', true);
+        });
+        act(() => result.current.schedule.save());
+        act(() => {
+            result.current.giftAccount.setField('iban', VALID_IBAN);
+            result.current.giftAccount.setField('accountHolder', ' Maria P ');
+            result.current.giftAccount.setField('bankName', 'Bank');
+        });
+        expect(result.current.schedule.allowsVenue).toBe(true);
+        expect(result.current.canReview).toBe(true);
+
+        await submitTwice(result);
+        const body = mocks.calls[0] as AdminProvisionEventRequestDto;
+        expect(body.schedule).toEqual([expect.objectContaining({ title: 'Reception', isSecondary: true })]);
+        expect(body.giftAccount).toEqual({ iban: 'GR1601101250000000012300695', accountHolder: 'Maria P', bankName: 'Bank', note: undefined });
+    });
+
+    it('blocks review on a half-filled gift account or a bad IBAN', () => {
+        mocks.moduleKeys = ['wishlist'];
+        const { result } = renderHook(() => useProvisionEventForm(HOST));
+        act(() => fillRequired(result.current));
+        act(() => result.current.giftAccount.setField('bankName', 'Bank'));
+        expect(result.current.canReview).toBe(false);
+        act(() => {
+            result.current.giftAccount.setField('iban', 'GR00 0110 1250 0000 0001 2300 695');
+            result.current.giftAccount.setField('accountHolder', 'Maria');
+        });
+        expect(result.current.giftAccount.ibanError).toBe(true);
+        expect(result.current.canReview).toBe(false);
+    });
+
+    it('sends neither when the plan lacks the schedule and wishlist', async () => {
+        const { result } = renderHook(() => useProvisionEventForm(HOST));
+        act(() => fillRequired(result.current));
+        act(() => result.current.giftAccount.setField('bankName', 'Bank'));
+        expect(result.current.canReview).toBe(true);
+        await submitTwice(result);
+        const body = mocks.calls[0] as AdminProvisionEventRequestDto;
+        expect(body.schedule).toBeUndefined();
+        expect(body.giftAccount).toBeUndefined();
     });
 });

@@ -2,7 +2,7 @@
 
 import { useCallback, useState } from 'react';
 
-import { type SectionSettingsSource, useEditorSectionSettings } from '@/hooks/useEditorSectionSettings';
+import { type SectionSettingsEvents, type SectionSettingsSource, useEditorSectionSettings } from '@/hooks/useEditorSectionSettings';
 import type { useInvitationEditorStore } from '@/hooks/useInvitationEditorStore';
 import { useSectionActions } from '@/hooks/useSectionActions';
 import { useUndoShortcuts } from '@/hooks/useUndoShortcuts';
@@ -12,11 +12,15 @@ import type { InvitationFontDto } from '@/lib/invitation/uploadedFonts';
 
 export type EditorPanel = 'assets' | 'settings';
 
+const NO_EVENT: SectionSettingsEvents = { event: null };
+
 type EditorWorkspaceOptions = {
     editor: ReturnType<typeof useInvitationEditorStore>;
     // The event type the invitation is for: it decides which sections may be added.
     eventType: string;
     source: SectionSettingsSource;
+    // What a draft follows from its event (useInvitationEventSync). A theme has no event.
+    events?: SectionSettingsEvents;
     uploadedFonts?: InvitationFontDto[];
     status: SaveStatus;
     flush: () => Promise<boolean>;
@@ -27,9 +31,9 @@ type EditorWorkspaceOptions = {
 
 // What every editor shows around the canvas, for a host's draft or an admin's theme:
 // sections and their settings, the side panels, preview, undo and the unsaved-changes warning.
-export function useEditorWorkspace({ editor, eventType, source, uploadedFonts, status, flush, previewSavesFirst }: EditorWorkspaceOptions) {
-    const sections = useSectionActions(editor.store, editor.document, eventType);
-    const sectionSettings = useEditorSectionSettings(editor.store, editor.document, source, sections.setActiveId, uploadedFonts);
+export function useEditorWorkspace({ editor, eventType, source, events = NO_EVENT, uploadedFonts, status, flush, previewSavesFirst }: EditorWorkspaceOptions) {
+    const sections = useSectionActions(editor.store, editor.document, eventType, 'host', events.event, events.samples ?? null);
+    const sectionSettings = useEditorSectionSettings(editor.store, editor.document, source, sections.setActiveId, uploadedFonts, events);
     const [openPanel, setOpenPanel] = useState<EditorPanel | null>(null);
     const [isPreviewOpen, setIsPreviewOpen] = useState(false);
     const [isSaving, setIsSaving] = useState(false);

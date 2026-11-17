@@ -163,7 +163,9 @@ describe('Canvas handles', () => {
         const head = within(columns).getByText('Πρόγραμμα').closest<HTMLElement>('.group\\/item')!;
         // The heading has no other full-width item to swap with.
         expect(within(head).queryByRole('button', { name: 'One place forward' })).not.toBeInTheDocument();
-        const left = within(columns).getByText(/Τελετή/).closest<HTMLElement>('.group\\/item')!;
+        const left = within(columns)
+            .getByText(/Τελετή/)
+            .closest<HTMLElement>('.group\\/item')!;
         expect(within(left).getByRole('button', { name: 'One place back' })).toBeDisabled();
         fireEvent.click(within(left).getByRole('button', { name: 'One place forward' }));
         expect(order(store, 's-blank-2')).toEqual(['b2-head', 'b2-break', 'b2-left', 'b2-right']);
@@ -239,7 +241,7 @@ function ThemeCanvas({ store }: { store: InvitationEditorStore }) {
 }
 
 function renderThemeCanvas() {
-    const store = createInvitationEditorStore(draft.document, draft.theme, { imageId: null });
+    const store = createInvitationEditorStore(draft.document, '', draft.theme, { imageId: null });
     render(
         <NextIntlClientProvider locale="en" messages={en}>
             <AuthContext.Provider value={admin}>
@@ -270,7 +272,9 @@ describe('Theme canvas tools', () => {
         expect(within(section).getByRole('combobox', { name: 'Pick an element' })).toHaveValue('');
 
         fireEvent.change(within(section).getByRole('combobox', { name: 'Pick an element' }), { target: { value: 'el-leaf' } });
-        expect(sectionIn(store, 's-parentsSimple').data).toMatchObject({ decoration: { image: { source: 'theme', assetId: 'el-leaf' }, width: 220 } });
+        expect(sectionIn(store, 's-parentsSimple').data).toMatchObject({
+            decoration: { image: { source: 'theme', assetId: 'el-leaf' }, width: 220 },
+        });
         act(() => store.getState().undo());
         expect(sectionIn(store, 's-parentsSimple').data).not.toHaveProperty('decoration');
     });

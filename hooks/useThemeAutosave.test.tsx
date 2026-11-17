@@ -7,7 +7,12 @@ import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest
 
 import { adminInvitationThemeKeys } from '@/hooks/useAdminInvitationThemes';
 import { useThemeAutosave } from '@/hooks/useThemeAutosave';
-import { type AdminInvitationThemeDto, type AdminInvitationThemeRequestDto, BLANK_THEME_DESIGN, blankThemeDocument } from '@/lib/adminInvitationThemes';
+import {
+    type AdminInvitationThemeDto,
+    type AdminInvitationThemeRequestDto,
+    BLANK_THEME_DESIGN,
+    blankThemeDocument,
+} from '@/lib/adminInvitationThemes';
 import { AUTOSAVE_DEBOUNCE_MS } from '@/lib/invitation/draftAutosave';
 import { createInvitationEditorStore } from '@/lib/invitation/editorStore';
 import { readEditableTheme, type ThemeSaveMode } from '@/lib/invitation/themeEditing';
@@ -54,7 +59,10 @@ const server = setupServer(
     http.put(THEME_URL, async ({ request }) => {
         const body = (await request.json()) as AdminInvitationThemeRequestDto & { revision: number };
         if (stale) {
-            return HttpResponse.json({ status: 409, errorCode: 5201, title: 'Stale' }, { status: 409, headers: { 'Content-Type': 'application/problem+json' } });
+            return HttpResponse.json(
+                { status: 409, errorCode: 5201, title: 'Stale' },
+                { status: 409, headers: { 'Content-Type': 'application/problem+json' } },
+            );
         }
         saves.push(body);
         return HttpResponse.json(
@@ -67,7 +75,7 @@ const server = setupServer(
 function renderThemeAutosave(mode: ThemeSaveMode, status: AdminInvitationThemeDto['status'] = 'DRAFT') {
     const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
     const theme = readEditableTheme(storedTheme({ status }));
-    const store = createInvitationEditorStore(theme.document, theme.design, { imageId: null });
+    const store = createInvitationEditorStore(theme.document, '', theme.design, { imageId: null });
     const wrapper = ({ children }: { children: ReactNode }) => <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
     const hook = renderHook(() => useThemeAutosave(store, theme, mode), { wrapper });
     const setPrimary = (color: string) =>

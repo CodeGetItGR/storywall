@@ -1,10 +1,10 @@
 'use client';
 
-import { Store, UserPlus } from 'lucide-react';
+import { UserPlus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
+import { ManagePageFrame } from '@/components/manage/nav/ManagePageFrame';
 import { useEventRouteContext } from '@/components/routing/EventRouteGate';
-import { ModulePageShell } from '@/components/tools/ModulePageShell';
 import { Button } from '@/components/ui/button';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { VendorInviteSheet } from '@/components/vendors/manage/VendorInviteSheet';
@@ -15,7 +15,6 @@ import { useManageVendors } from '@/hooks/useManageVendors';
 import { useModuleReadable } from '@/hooks/useModuleReadable';
 import { useVendorInvite } from '@/hooks/useVendorInvite';
 import { useVendorSeats } from '@/hooks/useVendorSeats';
-import { routes } from '@/lib/routes';
 
 export function ManageVendorsScreen() {
     const t = useTranslations('Vendors');
@@ -28,7 +27,7 @@ export function ManageVendorsScreen() {
     const resetType = invite.link ? t(`types.${invite.link.vendorType}`) : '';
 
     return (
-        <ModulePageShell maxWidth="2xl" title={t('manage.title')} icon={Store} backLabel={t('manage.back')} backHref={routes.events.feed(eventId)}>
+        <ManagePageFrame active="vendors">
             {!vendorsOn ? (
                 <p className="rounded-2xl bg-surface-muted px-4 py-3 text-sm text-ink-muted">{t('manage.unavailable')}</p>
             ) : page.isLoading || invite.isLoading ? (
@@ -127,6 +126,6 @@ export function ManageVendorsScreen() {
                 onConfirmAction={page.confirmRemove}
                 isConfirming={page.isRemoving}
             />
-        </ModulePageShell>
+        </ManagePageFrame>
     );
 }

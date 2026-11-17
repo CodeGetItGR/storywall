@@ -3,9 +3,11 @@
 import { Plus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
+import { EventLockNote } from '@/components/saveMyDate/editor/EventLockNote';
 import { ProgramItemForm } from '@/components/saveMyDate/editor/settings/ProgramItemForm';
 import { SECONDARY_BUTTON_CLASS, SettingsGroup } from '@/components/saveMyDate/editor/settings/SettingsControls';
 import { SettingsItemRows } from '@/components/saveMyDate/editor/settings/SettingsItemRows';
+import { SortableItemRows } from '@/components/saveMyDate/editor/settings/SortableItemRows';
 import { type ProgramSection, useProgramItemsSettings } from '@/hooks/useProgramItemsSettings';
 import type { SettingsScope } from '@/hooks/useSectionSettingsPanel';
 
@@ -19,17 +21,35 @@ export function ProgramItemsSettings({ scope }: { scope: SettingsScope<ProgramSe
         <SettingsGroup title={t('moments')}>
             {program.item ? (
                 /* One moment */
-                <ProgramItemForm scope={scope} item={program.item} onChange={program.update} onDelete={program.remove} onDone={program.close} />
+                <ProgramItemForm
+                    scope={scope}
+                    item={program.item}
+                    lock={program.lock}
+                    lockHref={program.lockHref}
+                    onChange={program.update}
+                    onDelete={program.remove}
+                    onDone={program.close}
+                />
             ) : (
                 <>
                     {/* Moments */}
-                    {rows.length > 0 && <SettingsItemRows rows={rows} onOpen={program.open} />}
+                    {rows.length > 0 &&
+                        (program.reorder ? (
+                            <SortableItemRows rows={rows} onOpen={program.open} onReorder={program.reorder} />
+                        ) : (
+                            <SettingsItemRows rows={rows} onOpen={program.open} />
+                        ))}
 
-                    {/* Add */}
-                    <button type="button" onClick={program.add} disabled={!program.canAdd} className={SECONDARY_BUTTON_CLASS}>
-                        <Plus aria-hidden="true" />
-                        {t('addMoment')}
-                    </button>
+                    {program.lock ? (
+                        /* From the event */
+                        <EventLockNote source={program.lock} href={program.lockHref} />
+                    ) : (
+                        /* Add */
+                        <button type="button" onClick={program.add} disabled={!program.canAdd} className={SECONDARY_BUTTON_CLASS}>
+                            <Plus aria-hidden="true" />
+                            {t('addMoment')}
+                        </button>
+                    )}
                 </>
             )}
         </SettingsGroup>

@@ -30,7 +30,9 @@ export function pickDemoPreview(snapshot: DemoSnapshotDto): DemoPreview {
         .filter((photo) => photo !== null)
         .slice(0, PHOTO_LIMIT);
 
-    const wishes = [...snapshot.wishbookEntries]
+    // A voice-only wish (KAN-219) has no text to show here.
+    const wishes = snapshot.wishbookEntries
+        .flatMap(({ id, guestName, message, highlighted }) => (message ? [{ id, guestName, message, highlighted }] : []))
         .sort((a, b) => Number(b.highlighted === true) - Number(a.highlighted === true))
         .slice(0, WISH_LIMIT)
         .map(({ id, guestName, message }) => ({ id, guestName, message }));

@@ -4,6 +4,7 @@ import { useStore } from 'zustand';
 
 import { useInlineTextEdit } from '@/hooks/useInlineTextEdit';
 import { createInvitationEditorStore, EDITOR_MERGE_WINDOW_MS, type InvitationEditorStore } from '@/lib/invitation/editorStore';
+import type { InvitationEventData } from '@/lib/invitation/eventLinks';
 import { SAMPLE_DOCUMENT } from '@/lib/invitation/samples';
 import { readText, type TextTarget } from '@/lib/invitation/textEditing';
 
@@ -11,11 +12,26 @@ const TEXT: TextTarget = { kind: 'field', sectionId: 's-invitation', path: 'text
 const TITLE: TextTarget = { kind: 'element', elementId: 'e-inv-title' };
 const GODPARENT: TextTarget = { kind: 'field', sectionId: 's-godparents', path: 'godparents.g2.name' };
 
-function setup() {
+const DEADLINE: TextTarget = { kind: 'field', sectionId: 's-rsvp', path: 'deadline' };
+
+// An event with a reply-by date, so the RSVP deadline comes from it (KAN-84).
+const EVENT: InvitationEventData = {
+    eventType: 'WEDDING',
+    title: 'Μαρία & Γιάννης',
+    timezone: 'Europe/Athens',
+    startAt: '2027-07-12T15:30:00Z',
+    rsvp: { deadline: '2027-06-01T09:00:00Z' },
+    cover: null,
+    location: { name: null, address: null, mapsUrl: null },
+    sessions: null,
+    joinUrl: null,
+};
+
+function setup(event: InvitationEventData | null = null) {
     const store = createInvitationEditorStore(SAMPLE_DOCUMENT);
     const hook = renderHook(() => {
         const document = useStore(store, (state) => state.document);
-        return useInlineTextEdit(store, document);
+        return useInlineTextEdit(store, document, event);
     });
     return { store, hook, read: (target: TextTarget) => readText(store.getState().document, target) };
 }
@@ -160,5 +176,28 @@ describe('useInlineTextEdit', () => {
         expect(hook.result.current.canAddText).toBe(false);
         act(() => hook.result.current.activate(TEXT));
         expect(hook.result.current.canAddText).toBe(true);
+    });
+
+    it("keeps the words of a text the event fills, but still styles it", () => {
+        const { store, hook, read } = setup(EVENT);
+        act(() => hook.result.current.activate(DEADLINE));
+        expect(hook.result.current.lock).toBe('rsvp');
+
+        act(() => hook.result.current.setText('Μέχρι τέλη Ιουνίου'));
+        act(() => hook.result.current.requestDelete());
+        expect(read(DEADLINE)?.text).toBe('έως 1 Ιουλίου');
+        expect(hook.result.current.isConfirmingDelete).toBe(false);
+        expect(steps(store)).toBe(0);
+
+        act(() => hook.result.current.setStyle({ italic: true }));
+        expect(read(DEADLINE)?.style).toMatchObject({ italic: true });
+    });
+
+    it('lets the host type in a text the event has no value for', () => {
+        const { hook, read } = setup({ ...EVENT, rsvp: { deadline: null } });
+        act(() => hook.result.current.activate(DEADLINE));
+        expect(hook.result.current.lock).toBeNull();
+        act(() => hook.result.current.setText('Μέχρι τέλη Ιουνίου'));
+        expect(read(DEADLINE)?.text).toBe('Μέχρι τέλη Ιουνίου');
     });
 });

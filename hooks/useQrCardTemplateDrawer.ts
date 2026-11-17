@@ -21,8 +21,8 @@ import { toggleEventType } from '@/lib/adminThemePresets';
 import { isNotFoundError } from '@/lib/api/errors';
 import type { AdminQrCardTemplateDto, EventTypeConvention } from '@/lib/api/types';
 import { resolveLocalizedText } from '@/lib/localizedText';
-import { PLAIN_QR_CARD_STYLE, type QrCardStyle } from '@/lib/qrCard';
-import { qrCardLayoutOf } from '@/lib/qrCardLayout';
+import { PLAIN_FEATURES_QR_CARD_STYLE, type QrCardStyle } from '@/lib/qrCard';
+import { FEATURES_QR_CARD_LAYOUT, qrCardLayoutOf } from '@/lib/qrCardLayout';
 
 export type QrCardTemplateDrawerError = { kind: 'notFound' } | { kind: 'other'; error: unknown };
 export type QrCardTemplateAvailability = 'AVAILABLE' | 'ARCHIVED';
@@ -86,11 +86,11 @@ export function useQrCardTemplateDrawer({
                           : null,
                       codeColor: saved.codeColor,
                       centerLogo: saved.centerLogo,
-                      layout: qrCardLayoutOf(saved.layout),
+                      layout: qrCardLayoutOf(saved.layout, FEATURES_QR_CARD_LAYOUT),
                       // The preview never prints, so its sizes don't matter.
                       sizes: ['A6'],
                   }
-                : PLAIN_QR_CARD_STYLE,
+                : PLAIN_FEATURES_QR_CARD_STYLE,
         [saved],
     );
 

@@ -189,7 +189,6 @@ describe('qrCardLineKey', () => {
 
     it('keeps the line of every other code', () => {
         expect(qrCardLineKey('EVENT_JOIN', modules(true, true))).toBe('join');
-        expect(qrCardLineKey('INVITATION', modules(true, true))).toBe('invitation');
         expect(qrCardLineKey('MEDIA_UPLOAD', modules(true, true))).toBe('gallery');
     });
 

@@ -18,7 +18,7 @@ const uploads: Record<string, ImageUploader> = {
 
 // The library over a real editor store, so adding and removing show at once.
 function Library({ upload }: { upload: keyof typeof uploads }) {
-    const editor = useInvitationEditorStore(theme.document, theme.design, { imageId: theme.dto.ogImageAssetId });
+    const editor = useInvitationEditorStore(theme.document, '', theme.design, { imageId: theme.dto.ogImageAssetId });
     const share = editor.share ?? { imageId: null };
     const assets = useThemeAssets({
         store: editor.store,

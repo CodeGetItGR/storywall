@@ -1,6 +1,7 @@
 import type { Draft } from 'immer';
 
 import type { InvitationDocument } from '@/lib/invitation/document';
+import { followState } from '@/lib/invitation/eventLinks';
 import { hostBackgroundSlots } from '@/lib/invitation/sectionBackgrounds';
 import type { EditorMode } from '@/lib/invitation/sectionRules';
 import type { InvitationSection, SectionType } from '@/lib/invitation/sections';
@@ -15,8 +16,11 @@ export type DocumentRecipe = (draft: DocumentDraft) => void;
 export type SectionData<T extends SectionType> = Extract<InvitationSection, { type: T }>['data'];
 
 export type SettingsGroup =
+    | 'follow'
     | 'date'
+    | 'gallery'
     | 'countdown'
+    | 'faqItems'
     | 'faq'
     | 'rsvp'
     | 'programItems'
@@ -27,6 +31,7 @@ export type SettingsGroup =
     | 'coupleContact'
     | 'locations'
     | 'dressCode'
+    | 'people'
     | 'buttons'
     | 'footer'
     | 'background'
@@ -35,8 +40,9 @@ export type SettingsGroup =
 
 const TYPE_GROUPS: Partial<Record<SectionType, SettingsGroup[]>> = {
     date: ['date'],
+    gallery: ['gallery'],
     countdown: ['countdown'],
-    faq: ['faq'],
+    faq: ['faqItems', 'faq'],
     rsvp: ['rsvp'],
     program: ['programItems', 'programStyle'],
     programIcons: ['programItems', 'programStyle'],
@@ -45,6 +51,9 @@ const TYPE_GROUPS: Partial<Record<SectionType, SettingsGroup[]>> = {
     coupleContact: ['coupleContact'],
     locations: ['locations'],
     dressCode: ['dressCode'],
+    godparents: ['people'],
+    parentsSimple: ['people'],
+    weddingSponsors: ['people'],
 };
 
 // The groups one section's sheet shows, in order. The footer is the admin's
@@ -53,6 +62,8 @@ export function settingsGroups(section: InvitationSection, mode: EditorMode, the
     const isAdmin = mode === 'admin';
     if (section.type === 'footer') return isAdmin ? ['footer', 'effect'] : [];
     const groups: SettingsGroup[] = [...(TYPE_GROUPS[section.type] ?? [])];
+    // Hosts choose whether the cover follows its event (KAN-84); a theme has no event.
+    if (!isAdmin && followState(section).available) groups.unshift('follow');
     if (section.elements.some((element) => element.kind === 'link')) groups.push('buttons');
     if (isAdmin || hostBackgroundSlots(section, theme).length > 0) groups.push('background');
     if (isAdmin) groups.push('effect');

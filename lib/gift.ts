@@ -1,6 +1,6 @@
 import { ApiError } from '@/lib/api/client';
 import { ERROR_CODES, getErrorCode } from '@/lib/api/errors';
-import type { GiftClaimState, GiftFramingDto, GiftHandoverRequestDto, GiftHandoverResponseDto, PlanTierResponseDto } from '@/lib/api/types';
+import type { GiftClaimPreviewDto, GiftClaimState, GiftFramingDto, GiftHandoverRequestDto, GiftHandoverResponseDto, PlanTierResponseDto } from '@/lib/api/types';
 import { routes } from '@/lib/routes';
 
 // Server limits for PUT /api/events/{id}/gift.
@@ -69,6 +69,16 @@ export function giftClaimUrl(origin: string, token: string): string {
 // An unknown state is treated as not claimable.
 export function isGiftClaimable(state: GiftClaimState | string): boolean {
     return state === 'CLAIMABLE';
+}
+
+/**
+ * Whether to ask for the card's PIN before the first Claim tap: always when no email is bound,
+ * and for a signed-in account the preview says isn't the recipient's. The recipient skips it.
+ */
+export function needsGiftPin(preview: Pick<GiftClaimPreviewDto, 'emailBound' | 'callerIsRecipient'> | null, isAuthenticated: boolean): boolean {
+    if (!preview) return false;
+    if (!preview.emailBound) return true;
+    return isAuthenticated && preview.callerIsRecipient === false;
 }
 
 export function isGiftPinFormat(pin: string): boolean {

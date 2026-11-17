@@ -21,6 +21,7 @@ import {
     moduleConfigChange,
     parseConfigExtra,
     parseEventsHash,
+    parseEventsTab,
     parseMemberSlots,
     storageLimitWithGrant,
     suspendRequest,
@@ -55,6 +56,16 @@ describe('events hash', () => {
 
     it('ignores a malformed id', () => {
         expect(parseEventsHash('#events/%E0%A4%A')).toBeNull();
+    });
+
+    it('reads and writes the activity tab', () => {
+        expect(formatEventsHash('e-1', 'activity')).toBe('#events/e-1/activity');
+        expect(formatEventsHash('e-1', 'settings')).toBe('#events/e-1');
+        expect(parseEventsHash('#events/e-1/activity')).toBe('e-1');
+        expect(parseEventsTab('#events/e-1/activity')).toBe('activity');
+        expect(parseEventsTab('#events/e-1')).toBe('settings');
+        expect(parseEventsTab('#events/e-1/unknown')).toBe('settings');
+        expect(parseEventsHash(formatEventsHash('a b/c', 'activity'))).toBe('a b/c');
     });
 });
 

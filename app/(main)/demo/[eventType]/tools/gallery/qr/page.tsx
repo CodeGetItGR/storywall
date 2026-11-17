@@ -1,7 +1,8 @@
-'use client';
+import { redirect } from 'next/navigation';
 
-import GalleryQrPage from '@/app/(main)/(app)/(event)/events/[eventId]/tools/gallery/qr/PageClient';
+type PageProps = { params: Promise<{ eventType: string }> };
 
-export default function DemoGalleryQrPage() {
-    return <GalleryQrPage />;
+// The gallery's own upload code page is gone: the event's one code lives on Share links (KAN-208).
+export default async function DemoGalleryQrPage({ params }: PageProps) {
+    redirect(`/demo/${(await params).eventType}/manage/qr`);
 }

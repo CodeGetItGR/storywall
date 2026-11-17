@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
+
 import { EventOverviewConsentHint } from '@/components/event/create/EventOverviewConsentHint';
 import { EventOverviewError } from '@/components/event/create/EventOverviewError';
 import { CreateEventWizardButton } from '@/components/event/create/wizard/CreateEventWizardButton';
@@ -8,6 +10,7 @@ import { useCreateEventWizardFooter } from '@/hooks/useCreateEventWizardFooter';
 
 // One full-width gradient button with an ink label (6.3:1 and up; white fails) on every step.
 export function CreateEventWizardFooter() {
+    const t = useTranslations('CreateEventPage.wizard.review');
     const action = useCreateEventWizardFooter();
     if (!action) return null;
 
@@ -17,7 +20,7 @@ export function CreateEventWizardFooter() {
             {action.showReviewNotes && (
                 <>
                     <EventOverviewError />
-                    <EventOverviewConsentHint />
+                    <EventOverviewConsentHint highlight label={t('consentHint')} />
                     <IncidentPausedNote className="mb-2 text-center" />
                 </>
             )}

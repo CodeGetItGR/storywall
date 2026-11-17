@@ -2,25 +2,13 @@ import { UsagePanelSkeleton } from '@/components/plan/UsagePanelSkeleton';
 import { ModulePageShellSkeleton } from '@/components/tools/ModulePageShellSkeleton';
 import { MetricStripSkeleton } from '@/components/ui/MetricStrip';
 import { Skeleton, SkeletonStatus } from '@/components/ui/skeleton';
+import { cn } from '@/lib/utils';
 
 function SubTabsSkeleton({ count }: { count: number }) {
     return (
         <div className="flex w-full items-center justify-center gap-4">
             {Array.from({ length: count }).map((_, index) => (
                 <Skeleton key={index} className="h-4 w-16 rounded-full" />
-            ))}
-        </div>
-    );
-}
-
-function LinkRowsSkeleton({ count }: { count: number }) {
-    return (
-        <div className="space-y-1">
-            {Array.from({ length: count }).map((_, index) => (
-                <div key={index} className="flex items-center gap-3 px-3 py-2">
-                    <Skeleton className="h-4 w-4 rounded-md" />
-                    <Skeleton className="h-3 w-36 rounded-full" />
-                </div>
             ))}
         </div>
     );
@@ -40,18 +28,32 @@ function MemberRowSkeleton() {
 
 export function ManageOverviewSkeleton() {
     return (
-        <SkeletonStatus className="flex flex-col gap-5">
-            {/* Coverage status */}
-            <Skeleton className="h-10 w-full rounded-md" />
+        <SkeletonStatus className="flex flex-col gap-8">
+            {/* Phase stepper */}
+            <div className="flex gap-2">
+                {Array.from({ length: 3 }).map((_, index) => (
+                    <div key={index} className="flex flex-1 flex-col items-start gap-1.5 [&:nth-child(2)]:items-center [&:nth-child(3)]:items-end">
+                        <Skeleton className="mb-0.5 h-3.5 w-3.5 rounded-full" />
+                        <Skeleton className="h-3.5 w-16 rounded-full" />
+                        <Skeleton className="h-3 w-12 rounded-full" />
+                    </div>
+                ))}
+            </div>
 
-            {/* Headline numbers */}
-            <MetricStripSkeleton count={4} />
-
-            {/* Host context */}
-            <div className="flex flex-col gap-3 border-t border-border pt-4">
-                <Skeleton className="h-3.5 w-28 rounded-full" />
-                <LinkRowsSkeleton count={4} />
-                <UsagePanelSkeleton />
+            {/* Journey path */}
+            <div className="flex flex-col gap-10 lg:flex-row lg:items-start lg:justify-between lg:gap-4">
+                {Array.from({ length: 4 }).map((_, index) => (
+                    <div
+                        key={index}
+                        className={cn(
+                            'flex items-center gap-3 lg:flex-1 lg:flex-col lg:justify-start',
+                            index % 2 === 1 && 'flex-row-reverse self-end lg:flex-col lg:self-auto',
+                        )}
+                    >
+                        <Skeleton className="h-14 w-14 shrink-0 rounded-full" />
+                        <Skeleton className="h-3.5 w-28 rounded-full" />
+                    </div>
+                ))}
             </div>
         </SkeletonStatus>
     );

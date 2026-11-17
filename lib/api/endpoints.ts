@@ -9,6 +9,7 @@ import type {
     PartnerApplicationStatus,
     RsvpReportType,
     SignupChannel,
+    ThemeFontLibrary,
     VendorContactStatus,
 } from '@/lib/api/types';
 
@@ -176,6 +177,7 @@ export const endpoints = {
         giftCard: (eventId: string) => `/api/events/${eventId}/gift/card`,
         wishbook: (eventId: string) => `/api/events/${eventId}/wishbook`,
         wishbookCount: (eventId: string) => `/api/events/${eventId}/wishbook/count`,
+        wishbookMine: (eventId: string) => `/api/events/${eventId}/wishbook/mine`,
         wishbookBook: (eventId: string) => `/api/events/${eventId}/wishbook/book`,
         wishbookBookTexts: (eventId: string) => `/api/events/${eventId}/wishbook/book-texts`,
         // Boy or Girl? quiz (module he_or_she, he-or-she-quiz-fe-integration.md).
@@ -505,6 +507,14 @@ export const endpoints = {
             byId: (id: string) => `/api/admin/theme-presets/${id}`,
             illustration: (id: string) => `/api/admin/theme-presets/${id}/illustration`,
         },
+        invitationFontPairings: {
+            list: '/api/admin/invitation-typography-presets',
+            byId: (id: string) => `/api/admin/invitation-typography-presets/${id}`,
+        },
+        invitationTexts: {
+            list: '/api/admin/invitation-texts',
+            byId: (id: string) => `/api/admin/invitation-texts/${id}`,
+        },
         invitationThemes: {
             list: '/api/admin/invitation-themes',
             byId: (id: string) => `/api/admin/invitation-themes/${id}`,
@@ -520,6 +530,8 @@ export const endpoints = {
         },
         themeFonts: {
             list: '/api/admin/theme-fonts',
+            // The wall's list is the default; Save my date's needs its library named.
+            listIn: (library: ThemeFontLibrary) => (library === 'WALL' ? '/api/admin/theme-fonts' : `/api/admin/theme-fonts?library=${library}`),
             byId: (id: string) => `/api/admin/theme-fonts/${id}`,
             file: (id: string) => `/api/admin/theme-fonts/${id}/file`,
         },
@@ -688,6 +700,7 @@ export const endpoints = {
             collaborationRedemptionVoid: (eventId: string) => `/api/admin/events/${eventId}/collaboration-redemption/void`,
             partnerBranding: (eventId: string) => `/api/admin/events/${eventId}/partner-branding`,
             vendors: (eventId: string) => `/api/admin/events/${eventId}/vendors`,
+            activity: (eventId: string) => `/api/admin/events/${eventId}/activity`,
         },
     },
 

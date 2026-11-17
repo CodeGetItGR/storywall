@@ -7,7 +7,9 @@ const state = vi.hoisted(() => ({
     notices: [] as SiteNoticeLiveDto[],
     apiDown: false,
     campaign: null as DiscountCampaignLiveDto | null,
+    pathname: '/',
 }));
+vi.mock('next/navigation', () => ({ usePathname: () => state.pathname }));
 vi.mock('@/hooks/useLiveDiscountCampaign', () => ({ useLiveDiscountCampaign: () => state.campaign }));
 vi.mock('@/hooks/useSiteNotices', () => ({ useSiteNotices: () => ({ data: state.notices }) }));
 vi.mock('@/hooks/useApiHealth', () => ({ useApiDown: () => state.apiDown }));
@@ -31,6 +33,7 @@ const offer: SiteNoticeLiveDto = {
 
 describe('useSiteNoticeBar', () => {
     afterEach(() => {
+        state.pathname = '/';
         state.notices = [];
         state.apiDown = false;
         state.campaign = null;
@@ -81,6 +84,14 @@ describe('useSiteNoticeBar', () => {
             link: { href: '/el#pricing', label: 'seePlans' },
             countdownEndsAt: campaign.endsAt,
         });
+    });
+
+    it('leaves the campaign out on a scanned QR code page, which shows it in its own banner', () => {
+        state.campaign = campaign;
+        state.notices = [offer];
+        state.pathname = '/q/abc';
+        const { result } = renderHook(() => useSiteNoticeBar('PUBLIC', ''));
+        expect(result.current).toMatchObject({ tone: 'OFFER', message: '20% έκπτωση' });
     });
 
     it('takes the bar from an offer but not from a warning', () => {

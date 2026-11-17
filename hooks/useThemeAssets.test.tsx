@@ -10,7 +10,9 @@ import type { ImageUploader } from '@/lib/invitation/editorUploads';
 const file = (name: string) => new File(['x'], name, { type: 'image/png' });
 
 function renderAssets(uploadImage: ImageUploader) {
-    const store = createInvitationEditorStore(blankThemeDocument('WEDDING', 'garden'), structuredClone(BLANK_THEME_DESIGN), { imageId: 'og-old' });
+    const store = createInvitationEditorStore(blankThemeDocument('WEDDING', 'garden'), '', structuredClone(BLANK_THEME_DESIGN), {
+        imageId: 'og-old',
+    });
     const addUploaded = vi.fn();
     const markRemoved = vi.fn();
     const hook = renderHook(() => {
@@ -22,7 +24,12 @@ function renderAssets(uploadImage: ImageUploader) {
 }
 
 let next = 0;
-const uploader: ImageUploader = async (picked) => ({ mediaId: `asset-${++next}`, url: `https://cdn.test/${(picked as File).name}`, width: 640, height: 480 });
+const uploader: ImageUploader = async (picked) => ({
+    mediaId: `asset-${++next}`,
+    url: `https://cdn.test/${(picked as File).name}`,
+    width: 640,
+    height: 480,
+});
 
 describe('useThemeAssets', () => {
     it('uploads art, shows it at once and marks the old image for deletion on a replace', async () => {

@@ -65,6 +65,18 @@ describe('pickDemoPreview', () => {
         expect(preview.photos).toHaveLength(6);
         expect(preview.wishes).toHaveLength(3);
     });
+
+    it('leaves out voice-only wishes, which have no text to show', () => {
+        const voiceOnly = { ...wish('w2', true), message: null };
+        const snapshot = {
+            presignedUrlsValidUntil: null,
+            posts: [],
+            media: [],
+            wishbookEntries: [wish('w1', false), voiceOnly],
+        } as unknown as DemoSnapshotDto;
+
+        expect(pickDemoPreview(snapshot).wishes.map((w) => w.id)).toEqual(['w1']);
+    });
 });
 
 describe('demoCollage', () => {

@@ -1,6 +1,7 @@
 import { ApiError } from '@/lib/api/client';
 import { ERROR_CODES, getErrorCode } from '@/lib/api/errors';
-import type { AdminThemeFontDto, AdminThemeFontPatchDto, AdminThemeFontRequestDto } from '@/lib/api/types';
+import type { AdminThemeFontDto, AdminThemeFontPatchDto, AdminThemeFontRequestDto, ThemeFontLibrary } from '@/lib/api/types';
+import { sameEventTypes } from '@/lib/saveMyDateEventTypes';
 
 // Mirrors the backend for inline feedback only; the server sniffs the bytes and checks the glyphs.
 export const THEME_FONT_KEY_PATTERN = /^[a-z0-9][a-z0-9-]{1,62}$/;
@@ -16,12 +17,19 @@ export const THEME_FONT_SAMPLE = 'Βάπτιση της Ελένης · Eleni’
 export const THEME_FONT_CHARSET_SAMPLE = 'ΑΒΓΔ αβγδ ά έ ή ί ό ύ ώ ϊ ϋ ΐ ΰ Ά Έ Ή Ί Ό Ύ Ώ 0123456789';
 
 export type ThemeFontFallback = 'serif' | 'sans-serif';
-export type ThemeFontDraft = { key: string; familyName: string; fallback: ThemeFontFallback; archived: boolean };
+// invitationEventTypes is kept for Save my date fonts only; empty means every event type.
+export type ThemeFontDraft = { key: string; familyName: string; fallback: ThemeFontFallback; archived: boolean; invitationEventTypes: string[] };
 export type ThemeFontDraftErrors = Partial<Record<'key' | 'familyName', true>>;
 export type ThemeFontStatus = 'READY' | 'NEEDS_FILE' | 'ARCHIVED';
 
 export function draftFromFont(font: AdminThemeFontDto | null): ThemeFontDraft {
-    return { key: font?.key ?? '', familyName: font?.familyName ?? '', fallback: font?.fallback ?? 'serif', archived: font?.archived ?? false };
+    return {
+        key: font?.key ?? '',
+        familyName: font?.familyName ?? '',
+        fallback: font?.fallback ?? 'serif',
+        archived: font?.archived ?? false,
+        invitationEventTypes: [...(font?.invitationEventTypes ?? [])].sort(),
+    };
 }
 
 export function validateThemeFontDraft(draft: ThemeFontDraft, isCreate: boolean): ThemeFontDraftErrors {
@@ -32,8 +40,11 @@ export function validateThemeFontDraft(draft: ThemeFontDraft, isCreate: boolean)
     return errors;
 }
 
-export function buildThemeFontCreate(draft: ThemeFontDraft): AdminThemeFontRequestDto {
-    return { key: draft.key, familyName: draft.familyName.trim(), fallback: draft.fallback };
+export function buildThemeFontCreate(draft: ThemeFontDraft, library: ThemeFontLibrary = 'WALL'): AdminThemeFontRequestDto {
+    const input: AdminThemeFontRequestDto = { key: draft.key, familyName: draft.familyName.trim(), fallback: draft.fallback };
+    // The wall's list is the backend's default, so its request stays as it was.
+    if (library !== 'WALL') input.library = library;
+    return input;
 }
 
 export function buildThemeFontPatch(font: AdminThemeFontDto, draft: ThemeFontDraft): AdminThemeFontPatchDto {
@@ -41,6 +52,9 @@ export function buildThemeFontPatch(font: AdminThemeFontDto, draft: ThemeFontDra
     if (draft.familyName.trim() !== font.familyName) patch.familyName = draft.familyName.trim();
     if (draft.fallback !== font.fallback) patch.fallback = draft.fallback;
     if (draft.archived !== font.archived) patch.archived = draft.archived;
+    // Only Save my date fonts carry event types; the backend refuses them on a wall font.
+    if (font.library === 'INVITATION' && !sameEventTypes(draft.invitationEventTypes, font.invitationEventTypes ?? []))
+        patch.invitationEventTypes = draft.invitationEventTypes;
     return patch;
 }
 
