@@ -70,6 +70,20 @@ describe('FeatureAddonsSection', () => {
         expect((screen.getByRole('checkbox', { name: /RSVP/ }) as HTMLInputElement).disabled).toBe(true);
     });
 
+    it('shows a co-host only the note, never a total or the consent', () => {
+        renderSection(storyFeatureAddonsReady({ purchaseBlock: 'primaryHostOnly', canPurchase: false, canPay: false }));
+
+        expect(screen.getByText(messages.Common.primaryHostOnly)).toBeTruthy();
+        expect(screen.queryByText(/^Total:/)).toBeNull();
+        expect(screen.queryByText(messages.CheckoutReviewPage.withdrawalTerms.addonsBody)).toBeNull();
+        expect(screen.queryByRole('button', { name: /^Pay/ })).toBeNull();
+    });
+
+    it("renders nothing while the event's modules can't be read", () => {
+        const { container } = renderSection(storyFeatureAddons({ modulesFailed: true }));
+        expect(container.innerHTML).toBe('');
+    });
+
     it('adds and removes features on a draft, paid with the plan', () => {
         const setDraftAddon = vi.fn(async () => {});
         renderSection(

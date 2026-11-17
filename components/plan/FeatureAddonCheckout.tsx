@@ -55,7 +55,7 @@ export function FeatureAddonCheckout({
             </ul>
 
             {/* Total, consent and payment */}
-            {state.pickedCount > 0 && !state.paused && (
+            {state.canPurchase && state.pickedCount > 0 && !state.paused && (
                 <>
                     <p className="mt-4 text-base font-bold text-ink tabular-nums">{t('total', { amount })}</p>
 

@@ -88,6 +88,17 @@ export const CoHost: Story = {
     },
 };
 
+// A co-host opened the page from "Add the invitation": the note only, nothing ticked or totalled.
+export const CoHostFromInvitation: Story = {
+    args: { state: storyFeatureAddonsReady({ purchaseBlock: 'primaryHostOnly', canPurchase: false, canPay: false }) },
+    play: async ({ canvasElement, globals }) => {
+        const copy = copyFor(globals);
+        const canvas = within(canvasElement);
+        await expect(canvas.getByText(copy.Common.primaryHostOnly)).toBeVisible();
+        await expect(canvas.queryByRole('button')).toBeNull();
+    },
+};
+
 // The server refused the payment.
 export const Refused: Story = {
     args: { state: storyFeatureAddonsReady({ error: 'This feature is already on your event.' }) },

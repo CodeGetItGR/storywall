@@ -1,21 +1,32 @@
 'use client';
 
+import { useQueryClient } from '@tanstack/react-query';
 import { useSearchParams } from 'next/navigation';
 import { type ChangeEvent, type MouseEvent, useCallback, useMemo, useState } from 'react';
 
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useAppConfig } from '@/hooks/useAppConfig';
-import { useAddEventAddon, useAddonCheckout, useEventQuote, useRemoveEventAddon } from '@/hooks/useBilling';
+import { billingKeys, useAddEventAddon, useAddonCheckout, useEventQuote, useRemoveEventAddon } from '@/hooks/useBilling';
 import { useStoragePurchasePaused } from '@/hooks/useBillingWithdrawals';
-import { useEventModules } from '@/hooks/useEventModules';
+import { eventModuleKeys, useEventModules } from '@/hooks/useEventModules';
 import { usePurchaseBlock } from '@/hooks/usePurchaseBlock';
 import { useResetOnBfcacheRestore } from '@/hooks/useResetOnBfcacheRestore';
 import { useWithdrawalConsent } from '@/hooks/useWithdrawalConsent';
+import { ERROR_CODES, getErrorCode } from '@/lib/api/errors';
 import type { EventAddonDto, EventStatus, PlanTierResponseDto } from '@/lib/api/types';
 import { navigateToCheckout } from '@/lib/billing';
 import { featureAddonMode, featureAddonOffers, featureAddonsTotalMinor, pickedFeatureAddons } from '@/lib/featureAddons';
 import { INCIDENT_MODE } from '@/lib/incident';
 import { ADDONS_PRESELECT_PARAM } from '@/lib/routes';
+
+const NO_CODES: ReadonlySet<string> = new Set();
+
+// Refusals that mean the offer list is out of date: the event already has the module, or the plan no longer sells it.
+const STALE_OFFER_CODES = new Set<number | string>([
+    ERROR_CODES.MODULE_ALREADY_GRANTED,
+    ERROR_CODES.PAID_SERVICE_NOT_PURCHASABLE,
+    ERROR_CODES.PAID_SERVICE_NOT_ON_PLAN,
+]);
 
 /**
  * The Add-ons page's "Add features" section (KAN-82): which feature add-ons the event's plan
@@ -33,6 +44,7 @@ export function useFeatureAddons({
     plan: PlanTierResponseDto | null;
     ownedAddons: EventAddonDto[];
 }) {
+    const queryClient = useQueryClient();
     const appConfig = useAppConfig();
     const eventModules = useEventModules(eventId || null);
     const purchaseBlock = usePurchaseBlock();
@@ -65,10 +77,12 @@ export function useFeatureAddons({
 
     // Opening the page from "Add the invitation" ticks that add-on.
     const searchParams = useSearchParams();
-    const [selectedCodes, setSelectedCodes] = useState<ReadonlySet<string>>(() => {
+    const [chosenCodes, setSelectedCodes] = useState<ReadonlySet<string>>(() => {
         const preselected = searchParams.get(ADDONS_PRESELECT_PARAM);
         return new Set(preselected ? [preselected] : []);
     });
+    // Someone who can't pay (a co-host, the demo, incident mode) sees nothing ticked.
+    const selectedCodes = canPurchase ? chosenCodes : NO_CODES;
 
     const picked = useMemo(() => pickedFeatureAddons(offers, selectedCodes), [offers, selectedCodes]);
     const pickedCodes = useMemo(() => picked.map((service) => service.code), [picked]);
@@ -91,6 +105,12 @@ export function useFeatureAddons({
         });
     }, []);
 
+    // Reloads what the event has and what its plan sells, so a stale offer drops out.
+    const refreshOffers = useCallback(() => {
+        void queryClient.invalidateQueries({ queryKey: billingKeys.event(eventId) });
+        void queryClient.invalidateQueries({ queryKey: eventModuleKeys.list(eventId) });
+    }, [eventId, queryClient]);
+
     const pay = useCallback(async () => {
         if (!canPurchase || paused || pickedCodes.length === 0 || !consent.consentSatisfied || !consent.termsVersion) return;
         setError(null);
@@ -107,8 +127,10 @@ export function useFeatureAddons({
         } catch (checkoutError) {
             if (consent.handleCheckoutError(checkoutError)) return;
             setError(toErrorMessage(checkoutError));
+            const code = getErrorCode(checkoutError);
+            if (code !== undefined && STALE_OFFER_CODES.has(code)) refreshOffers();
         }
-    }, [canPurchase, checkout, consent, eventId, paused, pickedCodes, toErrorMessage]);
+    }, [canPurchase, checkout, consent, eventId, paused, pickedCodes, refreshOffers, toErrorMessage]);
 
     // A draft's add-ons go into its activation payment; each change closes any payment page left open.
     const setDraftAddon = useCallback(
@@ -120,12 +142,14 @@ export function useFeatureAddons({
                 if (added) await addAddon.mutateAsync({ paidServiceCode: code });
                 else await removeAddon.mutateAsync(code);
             } catch (draftError) {
-                setError(toErrorMessage(draftError));
+                // Already on the event: the add went through, so just show it.
+                if (added && getErrorCode(draftError) === ERROR_CODES.ADDON_ALREADY_ACTIVE) refreshOffers();
+                else setError(toErrorMessage(draftError));
             } finally {
                 setPendingCode(null);
             }
         },
-        [addAddon, canPurchase, removeAddon, toErrorMessage],
+        [addAddon, canPurchase, refreshOffers, removeAddon, toErrorMessage],
     );
 
     // The rows carry their add-on's code (and a draft's current state) as data attributes.
@@ -150,6 +174,9 @@ export function useFeatureAddons({
         offers,
         // Only once the modules are known: an add-on the event already has must not flash up.
         isLoading: eventModules.isLoading,
+        // Without the event's modules, an add-on it already has could be offered again.
+        modulesFailed: eventModules.isError,
+        isOffered: mode !== null && !eventModules.isLoading && !eventModules.isError && offers.length > 0,
         purchaseBlock,
         canPurchase,
         paused,

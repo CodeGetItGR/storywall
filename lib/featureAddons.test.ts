@@ -1,7 +1,14 @@
 import { describe, expect, it } from 'vitest';
 
 import type { EventAddonDto, EventModuleResponseDto, PaidServiceResponseDto, PlanTierResponseDto, PlatformModuleResponseDto } from '@/lib/api/types';
-import { featureAddonMode, featureAddonOffers, featureAddonsTotalMinor, pickedFeatureAddons, saveMyDateAddon } from '@/lib/featureAddons';
+import {
+    addonsStorageArea,
+    featureAddonMode,
+    featureAddonOffers,
+    featureAddonsTotalMinor,
+    pickedFeatureAddons,
+    saveMyDateAddon,
+} from '@/lib/featureAddons';
 
 function unlock(code: string, moduleKey: string, priceAmountMinor: number, overrides: Partial<PaidServiceResponseDto> = {}): PaidServiceResponseDto {
     return {
@@ -125,5 +132,29 @@ describe('saveMyDateAddon', () => {
         expect(saveMyDateAddon(paidServices, platformModules, { ...plan, moduleKeys: ['posts', 'save_my_date'] })).toBeNull();
         expect(saveMyDateAddon([rsvp], platformModules, plan)).toBeNull();
         expect(saveMyDateAddon(paidServices, platformModules, null)).toBeNull();
+    });
+});
+
+describe('addonsStorageArea', () => {
+    const live = { eventStatus: 'ACTIVE' as const, storagePackCount: 0, featuresOffered: false, featuresSettled: true };
+
+    it('sells storage packs on a live event whose plan has them', () => {
+        expect(addonsStorageArea({ ...live, storagePackCount: 2, featuresOffered: true })).toBe('purchase');
+    });
+
+    it('hides the empty storage area when features are on offer', () => {
+        expect(addonsStorageArea({ ...live, featuresOffered: true })).toBeNull();
+    });
+
+    it('says nothing is available only when the plan sells neither storage nor features', () => {
+        expect(addonsStorageArea(live)).toBe('empty');
+    });
+
+    it('waits for the features before saying nothing is available', () => {
+        expect(addonsStorageArea({ ...live, featuresSettled: false })).toBeNull();
+    });
+
+    it('keeps the storage note on an event that is not live yet', () => {
+        expect(addonsStorageArea({ ...live, eventStatus: 'DRAFT', featuresOffered: true })).toBe('inactive');
     });
 });

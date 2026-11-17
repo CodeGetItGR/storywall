@@ -12,7 +12,7 @@ export function FeatureAddonsSection({ state, className }: { state: FeatureAddon
     const t = useTranslations('EventAddonsSettingsPage.features');
     const tCommon = useTranslations('Common');
 
-    if (!state.mode || state.isLoading || state.offers.length === 0) return null;
+    if (!state.isOffered) return null;
 
     return (
         <section aria-labelledby="feature-addons-title" className={className}>

@@ -30,10 +30,17 @@ const noop = () => {};
 
 // The row handlers call toggle, pay and setDraftAddon, so a story or test can spy on those.
 export function storyFeatureAddons(overrides: Partial<FeatureAddons> = {}): FeatureAddons {
-    const state: Omit<FeatureAddons, 'handleToggleChange' | 'handleDraftAddonClick' | 'handlePayClick'> = {
+    const settled: Pick<FeatureAddons, 'mode' | 'offers' | 'isLoading' | 'modulesFailed'> = {
         mode: 'checkout',
         offers: [storySaveMyDateAddon, storyRsvpAddon, storyGalleryAddon].map((service) => ({ service, added: false })),
         isLoading: false,
+        modulesFailed: false,
+        ...overrides,
+    };
+    const state: Omit<FeatureAddons, 'handleToggleChange' | 'handleDraftAddonClick' | 'handlePayClick'> = {
+        ...settled,
+        // Shown the way the hook decides it, unless a story says otherwise.
+        isOffered: settled.mode !== null && !settled.isLoading && !settled.modulesFailed && settled.offers.length > 0,
         purchaseBlock: null,
         canPurchase: true,
         paused: false,

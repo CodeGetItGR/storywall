@@ -35,9 +35,12 @@ const mocks = vi.hoisted(() => ({
     paused: false,
     purchaseBlock: null as string | null,
     staleHandled: false,
+    invalidate: vi.fn(),
+    modules: { data: [{ moduleKey: 'posts', isEnabled: true }], isLoading: false, isError: false } as Record<string, unknown>,
 }));
 
 vi.mock('next/navigation', () => ({ useSearchParams: () => mocks.params }));
+vi.mock('@tanstack/react-query', () => ({ useQueryClient: () => ({ invalidateQueries: mocks.invalidate }) }));
 vi.mock('@/hooks/useAppConfig', () => ({
     useAppConfig: () => ({
         data: {
@@ -47,9 +50,11 @@ vi.mock('@/hooks/useAppConfig', () => ({
     }),
 }));
 vi.mock('@/hooks/useEventModules', () => ({
-    useEventModules: () => ({ data: [{ moduleKey: 'posts', isEnabled: true }], isLoading: false }),
+    eventModuleKeys: { list: (eventId: string) => ['events', eventId, 'modules'] },
+    useEventModules: () => mocks.modules,
 }));
 vi.mock('@/hooks/useBilling', () => ({
+    billingKeys: { event: (eventId: string) => ['events', eventId, 'billing'] },
     useAddonCheckout: () => ({ mutateAsync: mocks.checkout, isPending: false, reset: vi.fn() }),
     useAddEventAddon: () => ({ mutateAsync: mocks.add }),
     useRemoveEventAddon: () => ({ mutateAsync: mocks.remove }),
@@ -89,6 +94,7 @@ describe('useFeatureAddons', () => {
         mocks.paused = false;
         mocks.purchaseBlock = null;
         mocks.staleHandled = false;
+        mocks.modules = { data: [{ moduleKey: 'posts', isEnabled: true }], isLoading: false, isError: false };
     });
 
     it('ticks the add-on named in the link and totals it', () => {
@@ -200,6 +206,61 @@ describe('useFeatureAddons', () => {
 
         await act(() => result.current.setDraftAddon('SMD', true));
         expect(result.current.error).toBe('api-5031');
+    });
+
+    it("ticks nothing for a co-host who followed the invitation's link", () => {
+        mocks.params = new URLSearchParams({ add: 'SMD' });
+        mocks.purchaseBlock = 'primaryHostOnly';
+        const { result } = render();
+
+        expect(result.current.canPurchase).toBe(false);
+        expect(result.current.selectedCodes.size).toBe(0);
+        expect(result.current.pickedCount).toBe(0);
+        expect(mocks.quote).toHaveBeenLastCalledWith('evt-1', null, false);
+    });
+
+    it('counts a draft add the event already has as done, and reloads the offers', async () => {
+        mocks.add.mockRejectedValue(new ApiError(409, { errorCode: 5038 }));
+        const { result } = render('DRAFT');
+
+        await act(() => result.current.setDraftAddon('SMD', true));
+        expect(result.current.error).toBeNull();
+        expect(mocks.invalidate).toHaveBeenCalledWith({ queryKey: ['events', 'evt-1', 'billing'] });
+        expect(mocks.invalidate).toHaveBeenCalledWith({ queryKey: ['events', 'evt-1', 'modules'] });
+    });
+
+    it.each([5155, 5036, 5040])('reloads the offers after checkout refusal %i, keeping the message', async (errorCode) => {
+        mocks.params = new URLSearchParams({ add: 'SMD' });
+        mocks.checkout.mockRejectedValue(new ApiError(409, { errorCode }));
+        const { result } = render();
+
+        await act(() => result.current.pay());
+        expect(result.current.error).toBe(`api-${errorCode}`);
+        expect(mocks.invalidate).toHaveBeenCalledWith({ queryKey: ['events', 'evt-1', 'billing'] });
+        expect(mocks.invalidate).toHaveBeenCalledWith({ queryKey: ['events', 'evt-1', 'modules'] });
+    });
+
+    it('keeps the offers after an unrelated refusal', async () => {
+        mocks.params = new URLSearchParams({ add: 'SMD' });
+        mocks.checkout.mockRejectedValue(new ApiError(409, { errorCode: 5084 }));
+        const { result } = render();
+
+        await act(() => result.current.pay());
+        expect(mocks.invalidate).not.toHaveBeenCalled();
+    });
+
+    it("offers nothing while the event's modules can't be read", () => {
+        mocks.modules = { data: undefined, isLoading: false, isError: true };
+        const { result } = render();
+
+        expect(result.current.modulesFailed).toBe(true);
+        expect(result.current.isOffered).toBe(false);
+    });
+
+    it('offers the features once the modules are known', () => {
+        expect(render().result.current.isOffered).toBe(true);
+        mocks.modules = { data: undefined, isLoading: true, isError: false };
+        expect(render().result.current.isOffered).toBe(false);
     });
 
     it('never asks for a quote on a draft', () => {

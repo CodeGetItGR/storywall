@@ -79,3 +79,27 @@ export function saveMyDateAddon(
         null
     );
 }
+
+export type AddonsStorageArea = 'purchase' | 'empty' | 'inactive' | null;
+
+/**
+ * What the Add-ons page shows for storage packs. A live event with no packs on its plan says so
+ * only when it has no features for sale either; while the features are still loading, or could
+ * not be read, it shows nothing rather than a line that may be wrong.
+ */
+export function addonsStorageArea({
+    eventStatus,
+    storagePackCount,
+    featuresOffered,
+    featuresSettled,
+}: {
+    eventStatus: EventStatus | null;
+    storagePackCount: number;
+    featuresOffered: boolean;
+    featuresSettled: boolean;
+}): AddonsStorageArea {
+    if (eventStatus !== 'ACTIVE') return 'inactive';
+    if (storagePackCount > 0) return 'purchase';
+    if (!featuresSettled || featuresOffered) return null;
+    return 'empty';
+}
