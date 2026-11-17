@@ -5,7 +5,6 @@ import { useAppConfig } from '@/hooks/useAppConfig';
 import { useGiftSection } from '@/hooks/useGiftSection';
 import { isEventDeleted, isModuleAvailable, isPrimaryHost, readableModuleKeys } from '@/lib/eventLifecycle';
 import { canPickTheme } from '@/lib/eventTheme';
-import { offersOnlineInvitation } from '@/lib/invitation/invitationEvent';
 import { isLiteEvent } from '@/lib/liteEvents';
 import { visibleManageNav, visibleManageSections } from '@/lib/manageSections';
 import { useActiveMember } from '@/providers/EventProvider';
@@ -30,13 +29,12 @@ export function useManageNav() {
         rsvpAvailable,
         giftAvailable: giftSection.available,
         themeAvailable: canPickTheme(activeEvent),
-        invitationAvailable: offersOnlineInvitation(activeEvent.eventType),
         // A lite event takes no guests, so its Members tab is only for co-hosts, when its plan has them.
         membersAvailable: !isLite || isModuleAvailable(activeEvent.modules, 'co_hosts'),
     });
-    // The same rules as the event menu's Share links and Vendors entries (useHostMenuItems).
+    // The same rules as the event menu's Invitations & QR codes and Vendors entries (useHostMenuItems).
     const { groups, showDanger } = visibleManageNav(visibleSections, {
-        shareLinks: !isDeleted && !isDraft && !isLite,
+        invitationsQr: !isDeleted && !isDraft && !isLite,
         vendors: !isDeleted && !isDraft && readableModuleKeys(activeEvent).has('vendors'),
     });
 

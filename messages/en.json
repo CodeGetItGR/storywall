@@ -279,7 +279,7 @@
                 "description": "Overview of your event"
             },
             "invitationsQr": {
-                "label": "Share links",
+                "label": "Invitations & QR codes",
                 "description": "QR codes and links guests can use to join",
                 "descriptionWithUpload": "QR codes and links guests can use to join or upload photos"
             }
@@ -644,6 +644,7 @@
         "choices": {
             "join": "Join the event",
             "open": "Open the event",
+            "invitation": "See the invitation",
             "eventHint": "See what guests share",
             "joinLine": "See everyone's photos, share yours and join in on the day.",
             "freeAccount": "Free account, in a few seconds",
@@ -1339,11 +1340,14 @@
             "billing": "Billing",
             "gift": "Given as a gift",
             "theme": "Theme",
-            "invitation": "Invitation"
+            "invitationsQr": "Invitations & QR codes"
         },
         "navGroups": {
             "event": "Event",
             "people": "People"
+        },
+        "invitationsQr": {
+            "guestsSee": "What guests see"
         },
         "invitation": {
             "notPublished": "Not published",
@@ -1352,7 +1356,6 @@
             "liveUntil": "Live until {date}",
             "edit": "Edit",
             "extend": "Extend",
-            "qrAlt": "QR code for the invitation",
             "empty": "No invitation yet.",
             "chooseTheme": "Choose a theme",
             "artAlt": "Drawing of an online invitation",
@@ -1490,6 +1493,7 @@
             }
         },
         "qr": {
+            "codeAlt": "QR code for {event}",
             "empty": "No share links yet.",
             "emptyTitle": "No share links yet",
             "emptyBody": "Create one for group chats, printed cards, posters, or photo uploads.",
@@ -1529,7 +1533,6 @@
             "share": "Share",
             "sections": {
                 "link": "Link",
-                "qr": "QR code",
                 "linkNote": "Share this link to invite guests to your Storywall."
             }
         },
@@ -2446,8 +2449,22 @@
         "deleteTitle": "Delete this message?",
         "deleteBody": "The message will be removed.",
         "cancel": "Cancel",
+        "myWishesTitle": "Your messages",
+        "edit": "Edit",
+        "editTitle": "Edit message",
+        "save": "Save",
         "wishSentTitle": "Your message is on its way",
         "wishSentBody": "Thank you for taking the time to write something so kind. It's saved now, waiting to be read."
+    },
+    "VoiceWish": {
+        "record": "Record a message",
+        "stop": "Stop",
+        "recordAgain": "Record again",
+        "removeRecording": "Remove recording",
+        "micBlocked": "Microphone access is blocked.",
+        "play": "Play",
+        "pause": "Pause",
+        "cantPlay": "This recording can't be played."
     },
     "PlaylistPage": {
         "backToFeed": "Back to feed",
@@ -6963,9 +6980,7 @@
     },
     "InvitationsQrPage": {
         "title": "Share links",
-        "back": "Back to feed",
-        "subtitle": "QR codes and links guests can use to join right away.",
-        "subtitleWithUpload": "QR codes and links guests can use to join or upload photos."
+        "back": "Back to feed"
     },
     "MediaThumbnail": {
         "processing": "Processing video",
@@ -7022,6 +7037,11 @@
         "emailCodeExpired": "This code has expired. Send a new one.",
         "emailCodeTooManyAttempts": "Too many tries. Send a new code.",
         "emailAlreadyVerified": "This email is already confirmed.",
+        "wishAudioTooLarge": "This recording is too large.",
+        "wishAudioNotAudio": "This recording can't be used. Record it again.",
+        "wishAudioTooLong": "Recordings can be up to 1 minute.",
+        "wishAudioConversionFailed": "This recording couldn't be saved. Try again.",
+        "wishEmpty": "Write a message or record one.",
         "errorRef": "Ref: {ref}",
         "betaFeedbackDisabled": "Reporting problems is turned off.",
         "generic": "Something went wrong. Please try again.",

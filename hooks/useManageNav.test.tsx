@@ -15,7 +15,6 @@ vi.mock('@/components/routing/EventRouteGate', () => ({
 vi.mock('@/providers/EventProvider', () => ({ useActiveMember: () => ({ id: mocks.memberId }) }));
 vi.mock('@/hooks/useAppConfig', () => ({ useAppConfig: () => ({ data: { planTiers: [] } }) }));
 vi.mock('@/hooks/useGiftSection', () => ({ useGiftSection: () => ({ gift: null, available: false, isLoading: false }) }));
-vi.mock('@/lib/invitation/invitationEvent', () => ({ offersOnlineInvitation: () => false }));
 
 function event(moduleKeys: string[], overrides: Record<string, unknown> = {}) {
     return {
@@ -36,12 +35,12 @@ beforeEach(() => {
 });
 
 describe('useManageNav', () => {
-    it('lists Share links and Vendors among the People on a full event', () => {
+    it('lists Invitations & QR codes and Vendors among the People on a full event', () => {
         mocks.event = event(['posts', 'rsvp', 'vendors']);
         const { result } = renderHook(() => useManageNav());
         expect(result.current.groups).toEqual([
             { key: 'event', items: ['overview', 'settings', 'billing'] },
-            { key: 'people', items: ['rsvp', 'shareLinks', 'members', 'vendors'] },
+            { key: 'people', items: ['rsvp', 'invitationsQr', 'members', 'vendors'] },
         ]);
         expect(result.current.showDanger).toBe(true);
     });
@@ -60,11 +59,11 @@ describe('useManageNav', () => {
     });
 
     // The event menu hides both entries on a deleted event.
-    it('hides Share links and Vendors on a deleted event', () => {
+    it('hides Invitations & QR codes and Vendors on a deleted event', () => {
         mocks.event = event(['posts', 'vendors'], { deletedAt: '2027-01-01T00:00:00Z' });
         const { result } = renderHook(() => useManageNav());
         const items = result.current.groups.flatMap((group) => group.items);
-        expect(items).not.toContain('shareLinks');
+        expect(items).not.toContain('invitationsQr');
         expect(items).not.toContain('vendors');
     });
 });

@@ -1,25 +1,24 @@
 'use client';
 
-import { MailOpen } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { InvitationPlanPrompt } from '@/components/manage/invitation/InvitationPlanPrompt';
-import { InvitationShareLink } from '@/components/manage/invitation/InvitationShareLink';
 import { InvitationStatusRow } from '@/components/manage/invitation/InvitationStatusRow';
 import { AppLink } from '@/components/ui/AppLink';
-import { LoadingState } from '@/components/ui/LoadingState';
 import type { EventOnlineInvitation } from '@/hooks/useEventOnlineInvitation';
 
-// Manage → Invitation: the event's online invitation, a way to start one from a theme, or the upgrade when the plan lacks it.
-export function InvitationTab({ invitation }: { invitation: EventOnlineInvitation }) {
+// The invitation row's second line on Invitations & QR codes: where the invitation stands and what the host can do with it.
+export function InvitationChoiceStatus({ invitation }: { invitation: EventOnlineInvitation }) {
     const t = useTranslations('ManagePage.invitation');
     const tEditor = useTranslations('InvitationEditor');
 
-    if (invitation.isLoading) return <LoadingState className="py-10" />;
+    // Loading
+    if (invitation.isLoading) return <div className="h-8 w-40 animate-pulse rounded-full bg-surface-muted" />;
 
+    // Error
     if (invitation.isError) {
         return (
-            <p role="alert" className="py-6 text-sm font-medium text-rose-700">
+            <p role="alert" className="text-sm text-rose-700">
                 {tEditor('loadFailed')}
             </p>
         );
@@ -28,11 +27,10 @@ export function InvitationTab({ invitation }: { invitation: EventOnlineInvitatio
     // Plan
     if (invitation.locked) return <InvitationPlanPrompt invitation={invitation} />;
 
+    // Empty
     if (invitation.status === 'none') {
         return (
-            // Empty
-            <div className="flex flex-col items-center gap-4 py-10 text-center">
-                <MailOpen className="h-8 w-8 text-ink-faint" aria-hidden="true" />
+            <div className="flex flex-wrap items-center gap-3">
                 <p className="text-sm text-ink-muted">{t('empty')}</p>
                 <AppLink
                     href={invitation.catalogueHref}
@@ -45,13 +43,6 @@ export function InvitationTab({ invitation }: { invitation: EventOnlineInvitatio
         );
     }
 
-    return (
-        <div className="flex flex-col gap-6">
-            {/* Status */}
-            <InvitationStatusRow invitation={invitation} />
-
-            {/* Link */}
-            {invitation.publicUrl && invitation.status === 'live' && <InvitationShareLink url={invitation.publicUrl} />}
-        </div>
-    );
+    // Status and actions
+    return <InvitationStatusRow invitation={invitation} />;
 }

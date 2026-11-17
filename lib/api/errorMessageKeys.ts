@@ -330,7 +330,12 @@ export type ApiErrorMessageKey =
     | 'moduleCopyTooLong'
     | 'moduleCopyModuleUnsupported'
     | 'withdrawalNotPrimaryHost'
-    | 'oauthEmailUnverified';
+    | 'oauthEmailUnverified'
+    | 'wishAudioTooLarge'
+    | 'wishAudioNotAudio'
+    | 'wishAudioTooLong'
+    | 'wishAudioConversionFailed'
+    | 'wishEmpty';
 
 export const API_ERROR_MESSAGE_KEYS = {
     [AUTH_ERROR_CODES.ACCESS_DENIED]: 'accessDenied',
@@ -362,6 +367,7 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.DISCOUNT_CAMPAIGN_LINK_NAME_TAKEN]: 'discountCampaignLinkNameTaken',
     [ERROR_CODES.CAMPAIGN_INVALID]: 'discountCampaignInvalid',
     [ERROR_CODES.CAMPAIGN_DISCOUNT_ADMIN_ONLY]: 'campaignDiscountAdminOnly',
+    [ERROR_CODES.WISHBOOK_EDIT_NOT_AUTHOR]: 'accessDenied',
     [ERROR_CODES.CAMPAIGN_LINK_MOVE_DISCOUNT]: 'campaignLinkMoveDiscount',
     [ERROR_CODES.CAMPAIGN_CLOSED_FOR_LINKS]: 'campaignClosedForLinks',
     [ERROR_CODES.CAMPAIGN_LINK_NAME_TAKEN]: 'discountCampaignLinkNameTaken',
@@ -419,6 +425,11 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.EMAIL_CODE_NOT_REQUESTED]: 'emailCodeExpired',
     [ERROR_CODES.EMAIL_CODE_TOO_MANY_ATTEMPTS]: 'emailCodeTooManyAttempts',
     [ERROR_CODES.EMAIL_ALREADY_VERIFIED]: 'emailAlreadyVerified',
+    [ERROR_CODES.WISH_AUDIO_TOO_LARGE]: 'wishAudioTooLarge',
+    [ERROR_CODES.WISH_AUDIO_NOT_AUDIO]: 'wishAudioNotAudio',
+    [ERROR_CODES.WISH_AUDIO_TOO_LONG]: 'wishAudioTooLong',
+    [ERROR_CODES.WISH_AUDIO_CONVERSION_FAILED]: 'wishAudioConversionFailed',
+    [ERROR_CODES.WISH_EMPTY]: 'wishEmpty',
     [ERROR_CODES.ACCOUNT_DELETE_ADMIN]: 'accountDeleteAdmin',
     [ERROR_CODES.ACCOUNT_DELETE_HAS_HOSTED_EVENTS]: 'accountDeleteHasHostedEvents',
     [ERROR_CODES.QR_UPLOAD_ACCEPTANCE_REQUIRED]: 'qrUploadAcceptanceRequired',

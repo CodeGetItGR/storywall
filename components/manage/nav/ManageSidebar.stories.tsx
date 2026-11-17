@@ -8,7 +8,7 @@ import type { ManageNavGroup } from '@/lib/manageSections';
 
 const groups: ManageNavGroup[] = [
     { key: 'event', items: ['overview', 'settings', 'theme', 'billing'] },
-    { key: 'people', items: ['rsvp', 'invitation', 'shareLinks', 'members', 'vendors'] },
+    { key: 'people', items: ['rsvp', 'invitationsQr', 'members', 'vendors'] },
 ];
 
 const meta = {
