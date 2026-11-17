@@ -4,6 +4,7 @@ import { expect, fireEvent, fn, userEvent, waitFor, within } from 'storybook/tes
 import { withAppContext } from '@/.storybook/appContext';
 import { copyFor } from '@/.storybook/copy';
 import { storyTheme, themeConflictHandlers, themeHandlers, withEditorScreen } from '@/.storybook/editor';
+import { storyUser } from '@/.storybook/fixtures';
 import { waitForOpen } from '@/.storybook/waitForOpen';
 import { ThemeEditor } from '@/components/saveMyDate/editor/ThemeEditor';
 
@@ -11,7 +12,8 @@ const meta = {
     title: 'SaveMyDate/Editor/ThemeEditor',
     component: ThemeEditor,
     decorators: [withEditorScreen, withAppContext],
-    parameters: { layout: 'fullscreen' },
+    // Only admins open the theme editor.
+    parameters: { layout: 'fullscreen', app: { user: { ...storyUser, role: 'ADMIN' } } },
     args: { theme: storyTheme(), onReload: fn() },
     beforeEach({ msw }) {
         msw.use(...themeHandlers());
@@ -89,5 +91,17 @@ export const StyleSheet: Story = {
         await userEvent.click(within(canvasElement).getByRole('button', { name: copy.settings }));
         const sheet = await waitForOpen('dialog');
         await expect(within(sheet).getByLabelText(copy.themeStyle.mainColor)).toBeInTheDocument();
+    },
+};
+
+// The family sections pick which of the theme's elements they show, right on the canvas.
+export const ElementSlot: Story = {
+    tags: ['visual-skip'],
+    play: async ({ canvasElement, globals }) => {
+        const copy = copyFor(globals).InvitationEditor;
+        const pickers = await within(canvasElement).findAllByRole('combobox', { name: copy.assets.pickElement }, SLOW);
+        const decorated = pickers.find((picker) => (picker as HTMLSelectElement).value !== '') ?? pickers[0];
+        await userEvent.selectOptions(decorated, '');
+        await waitFor(() => expect(within(canvasElement).getByRole('button', { name: copy.undo })).toBeEnabled(), SLOW);
     },
 };

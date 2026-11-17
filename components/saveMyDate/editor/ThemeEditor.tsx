@@ -1,7 +1,7 @@
 'use client';
 
 import { EditorFrame } from '@/components/saveMyDate/editor/EditorFrame';
-import { ThemeAssetsPanel } from '@/components/saveMyDate/editor/ThemeAssetsPanel';
+import { ThemeAssetLibrary } from '@/components/saveMyDate/editor/themeAssets/ThemeAssetLibrary';
 import { ThemeStylePanel } from '@/components/saveMyDate/editor/themeStyle/ThemeStylePanel';
 import { useThemeEditor } from '@/hooks/useThemeEditor';
 import type { EditableTheme } from '@/lib/invitation/themeEditing';
@@ -27,7 +27,7 @@ export function ThemeEditor({ theme, uploadedFonts, onReload, isReloading = fals
             isBusy={editor.isBusy}
             primary={editor.save}
             subject="theme"
-            assets={<ThemeAssetsPanel />}
+            assets={<ThemeAssetLibrary assets={editor.assets} design={editor.style.design} share={editor.share} media={editor.media} />}
             settings={<ThemeStylePanel style={editor.style} />}
             uploadedFonts={uploadedFonts}
             onReload={onReload}

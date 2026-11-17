@@ -7,11 +7,14 @@ import { readCodeSentAt, rememberCodeSentAt } from '@/lib/emailCode';
 
 const api = vi.hoisted(() => ({ post: vi.fn(), put: vi.fn() }));
 const refetchMe = vi.hoisted(() => vi.fn());
+const flow = vi.hoisted(() => ({ trackFlow: vi.fn(), useFlowEvent: vi.fn() }));
 
 vi.mock('@/lib/api/client', async (original) => ({ ...(await original<typeof import('@/lib/api/client')>()), api }));
 vi.mock('@/hooks/useAuth', () => ({ useAuth: () => ({ user: { userId: 'u1', email: 'anna@example.com' } }) }));
 vi.mock('@tanstack/react-query', () => ({ useQueryClient: () => ({ invalidateQueries: refetchMe }) }));
 vi.mock('@/hooks/useApiErrorMessage', () => ({ useApiErrorMessage: () => () => 'generic' }));
+vi.mock('@/hooks/useFlowEvent', () => ({ useFlowEvent: flow.useFlowEvent }));
+vi.mock('@/lib/flowTracking', () => ({ trackFlow: flow.trackFlow }));
 
 beforeEach(() => {
     window.sessionStorage.clear();
@@ -43,6 +46,20 @@ describe('useEmailCode', () => {
         await act(() => result.current.verify('123456'));
         expect(api.post).toHaveBeenCalledWith('/api/auth/email-code/verify', { code: '123456' });
         expect(refetchMe).toHaveBeenCalled();
+        expect(flow.trackFlow).toHaveBeenCalledWith({ name: 'Email Confirmed', result: 'verified', plan: 'kept' });
+    });
+
+    it('counts the code screen as the confirm-your-email step', () => {
+        rememberCodeSentAt('u1', Date.now());
+        renderHook(() => useEmailCode());
+        expect(flow.useFlowEvent).toHaveBeenCalledWith({ name: 'Verify Wall' });
+    });
+
+    it('counts a resent code', async () => {
+        rememberCodeSentAt('u1', Date.now());
+        const { result } = renderHook(() => useEmailCode());
+        await act(() => result.current.resend());
+        expect(flow.trackFlow).toHaveBeenCalledWith({ name: 'Verify Resend' });
     });
 
     it('shows the wrong-code message and clears the boxes', async () => {
@@ -53,6 +70,7 @@ describe('useEmailCode', () => {
         await act(() => result.current.verify('123456'));
         expect(result.current.errorKey).toBe('wrong');
         expect(result.current.code).toBe('');
+        expect(flow.trackFlow).toHaveBeenCalledWith({ name: 'Email Confirmed', result: 'error', plan: 'kept' });
     });
 
     it('treats an already verified email as done', async () => {

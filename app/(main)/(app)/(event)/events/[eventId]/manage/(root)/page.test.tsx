@@ -207,6 +207,18 @@ describe('ManagePage (server)', () => {
         );
     });
 
+    it('prefetches the RSVP page report, also from an old ?section= link', async () => {
+        await visit({ tab: 'rsvp', section: 'list' });
+
+        expect(mocks.serverGet).toHaveBeenCalledWith(expect.stringContaining('STATISTICS'), 'token-1');
+    });
+
+    it('leaves the RSVP report out on another section', async () => {
+        await visit({ tab: 'members' });
+
+        expect(mocks.serverGet).not.toHaveBeenCalledWith(expect.stringContaining('STATISTICS'), 'token-1');
+    });
+
     it("skips the journey's reads on another section", async () => {
         mocks.resolveServerEventDetail.mockResolvedValue(journeyEvent);
 

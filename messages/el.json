@@ -1701,7 +1701,6 @@
             }
         },
         "openDashboard": "Άνοιγμα πίνακα",
-        "rsvpOverview": "Επισκόπηση RSVP",
         "usage": {
             "eventTitle": "Χρήση πλάνου"
         },
@@ -1753,6 +1752,9 @@
             "all": "Όλοι",
             "empty": "Κανένας καλεσμένος με αυτό το φίλτρο."
         },
+        "rsvpGuests": {
+            "title": "Καλεσμένοι"
+        },
         "rsvpDuplicate": {
             "label": "Πιθανή διπλή απάντηση",
             "hint": "Ίδιο τηλέφωνο με άλλη απάντηση",
@@ -1786,11 +1788,6 @@
             "removeFailed": "Δεν ήταν δυνατή η αφαίρεση του μέλους. Δοκιμάστε ξανά.",
             "moreFor": "Περισσότερες επιλογές για {name}"
         },
-        "rsvpTabs": {
-            "stats": "Στατιστικά",
-            "list": "Λίστα",
-            "reports": "Αναφορές"
-        },
         "rsvpStats": {
             "daysToGo": "{count, plural, one {# ημέρα απομένει} other {# ημέρες απομένουν}}",
             "deadlineLabel": "Προθεσμία RSVP",
@@ -1800,7 +1797,8 @@
             "adults": "Ενήλικες",
             "kids": "Παιδιά",
             "byCategory": "Παρουσία ανά κατηγορία",
-            "deadlineField": "Προθεσμία RSVP"
+            "deadlineField": "Προθεσμία RSVP",
+            "editDeadline": "Επεξεργασία προθεσμίας RSVP"
         },
         "rsvpReport": {
             "people": "{count, plural, one {# άτομο} other {# άτομα}}",
@@ -1825,7 +1823,6 @@
         },
         "rsvpReports": {
             "title": "Αναφορές RSVP",
-            "description": "Ανοίξτε μια αναφορά για να την εκτυπώσετε ή να την κατεβάσετε ως PDF.",
             "types": {
                 "STATISTICS": {
                     "label": "Αναφορά στατιστικών",
@@ -10368,6 +10365,32 @@
         "themeLoadFailed": "Δεν ήταν δυνατή η φόρτωση του θέματος.",
         "themeConflictTitle": "Υπάρχουν νεότερες αλλαγές σε αυτό το θέμα.",
         "themeConflictBody": "Αποθηκεύτηκε σε άλλη καρτέλα ή από άλλον διαχειριστή. Οι αλλαγές που δεν αποθηκεύτηκαν εδώ θα χαθούν.",
+        "assets": {
+            "tabs": {
+                "illustrations": "Εικονογραφήσεις",
+                "elements": "Στοιχεία",
+                "frames": "Κορνίζες",
+                "transitions": "Μεταβάσεις",
+                "share": "Εικόνα κοινοποίησης"
+            },
+            "art": {
+                "main": "Κύρια εικονογράφηση",
+                "ceremonyIcon": "Εικονίδιο τελετής",
+                "welcomeIcon": "Εικονίδιο υποδοχής",
+                "receptionIcon": "Εικονίδιο δεξίωσης"
+            },
+            "frameArt": "Σχέδιο",
+            "mask": "Μάσκα",
+            "upload": "Ανέβασμα",
+            "replace": "Αντικατάσταση",
+            "addElement": "Προσθήκη στοιχείου",
+            "addFrame": "Προσθήκη κορνίζας",
+            "addTransition": "Προσθήκη μετάβασης",
+            "name": "Όνομα",
+            "uploadFailed": "Η εικόνα δεν ανέβηκε. Δοκιμάστε ξανά.",
+            "pickElement": "Επιλογή στοιχείου",
+            "noElement": "Χωρίς στοιχείο"
+        },
         "themeStyle": {
             "mainColor": "Κύριο χρώμα",
             "secondColor": "Δεύτερο χρώμα",

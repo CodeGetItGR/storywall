@@ -50,8 +50,8 @@ export function themeSaveMode(status: InvitationThemeStatus): ThemeSaveMode {
     return status === 'DRAFT' ? 'auto' : 'manual';
 }
 
-// What the editor saves: the design and the default invitation.
-export type ThemeContent = { design: ThemeDesign; document: InvitationDocument };
+// What the editor saves: the design, the default invitation and the share image.
+export type ThemeContent = { design: ThemeDesign; document: InvitationDocument; shareImageId: string | null };
 
 // A PUT replaces every field: the loaded theme's details with the edited content.
 export function themeContentRequest(dto: AdminInvitationThemeDto, content: ThemeContent, revision: number): AdminInvitationThemeRequestDto {
@@ -59,6 +59,7 @@ export function themeContentRequest(dto: AdminInvitationThemeDto, content: Theme
         ...themeUpdateRequest(dto, themeDetails(dto)),
         design: content.design as unknown as Record<string, unknown>,
         document: content.document as unknown as Record<string, unknown>,
+        ogImageAssetId: content.shareImageId,
         revision,
     };
 }
