@@ -75,6 +75,7 @@
     --color-status-violet-wash: var(--status-violet-wash);
     --color-status-teal: var(--status-teal);
     --color-status-teal-wash: var(--status-teal-wash);
+    --color-mint: var(--mint);
 
     /* ── Radii ── */
     --radius-sm: 0.5rem;
@@ -180,6 +181,9 @@
     --ink: #241f1a;
     --ink-muted: #8a7c70;
     --ink-faint: #c4b5a6;
+
+    /* Mint: the floating Overview button */
+    --mint: #6ee7b7;
 
     /* Brand coral */
     --primary: #ff7a59;
