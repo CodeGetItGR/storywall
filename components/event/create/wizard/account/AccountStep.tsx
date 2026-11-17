@@ -17,7 +17,7 @@ export function AccountStep() {
     const { view, open, show, onSignedIn, isFinishingSignIn } = useCreateEventWizardAccount();
     const { user } = useAuth();
     const preview = useCreateEventWizardAccountPreview();
-    const oauth = useLoginForm({ inviteToken: null, initialEmail: '', onSignedIn });
+    const oauth = useLoginForm({ inviteToken: null, entry: 'create', initialEmail: '', onSignedIn });
 
     // Signed in but unverified: only the code screens apply.
     if (user && (view === 'code' || view === 'email')) return <AccountCodeScreens view={view} show={show} />;

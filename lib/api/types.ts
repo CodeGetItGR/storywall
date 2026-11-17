@@ -2265,7 +2265,7 @@ export interface UpgradeOptionResponseDto {
     // What moving to this plan asks of the event (event-capabilities-fe-integration.md §3).
     requirements: PlanRequirementsDto;
 }
-export type OrderKind = 'ACTIVATION' | 'UPGRADE' | 'STORAGE_PACK' | 'EXTENSION';
+export type OrderKind = 'ACTIVATION' | 'UPGRADE' | 'STORAGE_PACK' | 'EXTENSION' | 'MODULE_UNLOCK';
 // REFUNDED: the order was paid and the money went back (a withdrawal or a lost dispute).
 export type OrderStatus = 'PENDING' | 'PAID' | 'FAILED' | 'CANCELLED' | 'REFUNDED';
 
@@ -2406,9 +2406,11 @@ export interface WithdrawalStorageAfterDto {
 // POST /api/events/{eventId}/quote (2026-09-24) — prices an activation or a
 // storage pack before checkout; answers a PriceBreakdown. Read-only.
 export interface QuoteRequestDto {
-    kind: 'ACTIVATION' | 'STORAGE_PACK';
+    kind: 'ACTIVATION' | 'STORAGE_PACK' | 'MODULE_UNLOCK';
     // Required for STORAGE_PACK, refused for ACTIVATION.
     paidServiceCode?: string;
+    // Required for MODULE_UNLOCK (KAN-82): the feature add-ons bought together.
+    paidServiceCodes?: string[];
 }
 
 // GET /api/legal/withdrawal-terms(/{version})?locale=en|el — public (2026-09-24).
@@ -2778,7 +2780,7 @@ export interface FunnelMetricsResponseDto {
         }[];
         byKind: {
             currency: string;
-            /** OrderKind: ACTIVATION | UPGRADE | STORAGE_PACK | EXTENSION */
+            /** OrderKind: ACTIVATION | UPGRADE | STORAGE_PACK | EXTENSION | MODULE_UNLOCK */
             kind: string;
             orders: number;
             amountMinor: number;
@@ -4035,6 +4037,11 @@ export interface EventUsageResponseDto {
 // Consent required since 2026-09-23, when storage packs became withdrawable.
 export interface StorageCheckoutRequestDto extends WithdrawalConsentDto {
     paidServiceCode: string;
+}
+
+// POST /api/events/{eventId}/addon-checkout — a live event buys feature add-ons (MODULE_UNLOCK) in one payment (KAN-82).
+export interface AddonCheckoutRequestDto extends WithdrawalConsentDto {
+    paidServiceCodes: string[];
 }
 
 export interface OriginalMediaUrlDto {

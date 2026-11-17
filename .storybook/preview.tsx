@@ -13,6 +13,8 @@ import { defaultLocale, type Locale } from '@/i18n/config';
 import el from '@/messages/el.json';
 import en from '@/messages/en.json';
 
+import { waitForAssets } from './waitForAssets';
+
 const messages = { en, el } as const;
 
 // A fixed zone and clock keep dates in snapshots the same on every machine.
@@ -83,8 +85,19 @@ const withProviders: Decorator = (Story, context) => (
     </StoryQueryClient>
 );
 
+// Renders the story as the React renderer's own mount does, then waits for its fonts and images, so a play
+// function never measures or scrolls a half-loaded page. Storybook mounts every story this way, with or without
+// a play function.
+const mountWhenLoaded: Preview['mount'] = (context) => async (ui) => {
+    if (ui !== undefined) context.originalStoryFn = () => ui;
+    await context.renderToCanvas();
+    await waitForAssets();
+    return context.canvas;
+};
+
 const preview: Preview = {
     decorators: [withProviders],
+    mount: mountWhenLoaded,
     // Stories that show server data add their handlers with msw.use() in beforeEach;
     // any other request reaches the network as usual.
     loaders: [mswLoader(startMockWorker)],

@@ -5,6 +5,7 @@ import { useCallback, useEffect } from 'react';
 
 import { useAuth } from '@/hooks/useAuth';
 import { useCreateEventWizardAccountView } from '@/hooks/useCreateEventWizardAccountView';
+import { useFlowEvent } from '@/hooks/useFlowEvent';
 import { localeCookieChanged } from '@/hooks/useNavigateAfterSignIn';
 import { accountDestination } from '@/lib/createEventWizardAccount';
 import { routes } from '@/lib/routes';
@@ -22,6 +23,10 @@ export function useCreateEventWizardAccount() {
     const destination =
         isBootstrapping || isRefreshingSession ? null : accountDestination(user ? { emailVerified: user.emailVerified, role: user.role } : null);
     const { view, show } = accountView;
+
+    // The wizard's sign-in and sign-up screens count as the login and register pages of the create funnel.
+    const authPage = step !== 'account' ? null : view === 'signin' ? 'login' : view === 'signup' ? 'register' : null;
+    useFlowEvent(authPage ? { name: 'Auth Page', page: authPage, from: 'create' } : null);
 
     useEffect(() => {
         if (step !== 'account' || !destination) return;

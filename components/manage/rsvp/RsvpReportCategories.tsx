@@ -5,13 +5,22 @@ import { useTranslations } from 'next-intl';
 import type { RsvpReportCategoryDto } from '@/lib/api/types';
 import { reportSectionKey } from '@/lib/rsvpReport';
 
-export function RsvpReportCategories({ categories }: { categories: RsvpReportCategoryDto[] }) {
+const defaultHeadingClass = 'mb-3 text-xs font-bold tracking-wide text-ink-faint uppercase';
+
+// headingClassName: the RSVP page gives the heading its own look; the report page keeps this one.
+export function RsvpReportCategories({
+    categories,
+    headingClassName = defaultHeadingClass,
+}: {
+    categories: RsvpReportCategoryDto[];
+    headingClassName?: string;
+}) {
     const t = useTranslations('ManagePage');
 
     return (
         <section>
             {/* Heading */}
-            <h2 className="mb-3 text-xs font-bold tracking-wide text-ink-faint uppercase">{t('rsvpStats.byCategory')}</h2>
+            <h2 className={headingClassName}>{t('rsvpStats.byCategory')}</h2>
 
             {/* Categories */}
             <ul className="flex flex-col gap-3">

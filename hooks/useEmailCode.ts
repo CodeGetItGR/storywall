@@ -5,12 +5,14 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useAuth } from '@/hooks/useAuth';
+import { useFlowEvent } from '@/hooks/useFlowEvent';
 import { meQueryKey } from '@/hooks/useMe';
 import { useSecondsLeft } from '@/hooks/useSecondsLeft';
 import { api, ApiError } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
 import { ERROR_CODES, getErrorCode } from '@/lib/api/errors';
 import { type EmailCodeError, emailCodeError, onlyDigits, readCodeSentAt, rememberCodeSentAt } from '@/lib/emailCode';
+import { trackFlow } from '@/lib/flowTracking';
 
 // The code screen: the six digits, verify, resend with its countdown, and change email.
 export function useEmailCode() {
@@ -26,6 +28,8 @@ export function useEmailCode() {
     const [errorKey, setErrorKey] = useState<EmailCodeError | null>(null);
     const [error, setError] = useState<string | null>(null);
     const secondsLeft = useSecondsLeft(sentAt);
+    // The create wizard's code screen counts as the same step as the email link's "confirm your email" screen.
+    useFlowEvent({ name: 'Verify Wall' });
 
     const markSent = useCallback(() => {
         if (!userId) return;
@@ -51,6 +55,7 @@ export function useEmailCode() {
         setError(null);
         try {
             await api.post(endpoints.auth.emailCode.send);
+            trackFlow({ name: 'Verify Resend' });
             markSent();
             setResent(true);
         } catch (err) {
@@ -80,12 +85,15 @@ export function useEmailCode() {
             setError(null);
             try {
                 await api.post(endpoints.auth.emailCode.verify, { code: value });
+                trackFlow({ name: 'Email Confirmed', result: 'verified', plan: 'kept' });
                 await refreshAccount();
             } catch (err) {
                 if (getErrorCode(err) === ERROR_CODES.EMAIL_ALREADY_VERIFIED) {
+                    trackFlow({ name: 'Email Confirmed', result: 'verified', plan: 'kept' });
                     await refreshAccount();
                     return;
                 }
+                trackFlow({ name: 'Email Confirmed', result: 'error', plan: 'kept' });
                 failWith(err);
                 setCodeValue('');
             } finally {

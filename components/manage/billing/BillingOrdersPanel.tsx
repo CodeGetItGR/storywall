@@ -1,24 +1,12 @@
 import { useLocale, useTranslations } from 'next-intl';
 
-import { OrderWithdrawButton } from '@/components/manage/billing/OrderWithdrawButton';
-import { type BillingData, type BillingDerived, type BillingInsights, useBillingDate } from '@/hooks/useEventBillingPanel';
-import type { EventBillingResponseDto } from '@/lib/api/types';
-import { formatOptionalMoney, isOrderPaidByAnother } from '@/lib/billing';
-import { cn } from '@/lib/utils';
+import { BillingOrderRow } from '@/components/manage/billing/BillingOrderRow';
+import { useBillingOrderRows } from '@/hooks/useBillingOrderRows';
+import type { BillingData, BillingDerived, BillingInsights } from '@/hooks/useEventBillingPanel';
+import type { OrderSummaryDto } from '@/lib/api/types';
+import { formatOptionalMoney } from '@/lib/billing';
 
-type Order = EventBillingResponseDto['orders'][number];
-
-function orderStatusClassName(status: Order['status']) {
-    return cn(
-        'inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold',
-        status === 'PAID' && 'bg-emerald-50 text-emerald-700',
-        status === 'PENDING' && 'bg-amber-50 text-amber-700',
-        status === 'FAILED' && 'bg-red-50 text-red-700',
-        status === 'CANCELLED' && 'bg-surface-muted text-ink-muted',
-        status === 'REFUNDED' && 'bg-sky-50 text-sky-700',
-    );
-}
-
+// Order history: one row per order on every screen size, then the total paid.
 export function BillingOrdersPanel({
     data,
     derived,
@@ -33,122 +21,52 @@ export function BillingOrdersPanel({
     onShowAllOrders: () => void;
     // Orders that get "Withdraw from contract here" (primary host, window open).
     withdrawableOrderIds?: ReadonlySet<string>;
-    onWithdrawAction?: (order: Order) => void;
+    onWithdrawAction?: (order: OrderSummaryDto) => void;
 }) {
     const t = useTranslations('EventPlanSettingsPage');
     const locale = useLocale();
-    const formatDate = useBillingDate();
-    const { visibleOrders, hiddenOrderCount } = derived;
-
-    const coverageLabel = (order: Order) => {
-        if (order.kind === 'UPGRADE') return t('orders.upgradeCoverage');
-        if (order.kind === 'STORAGE_PACK') return t('orders.storageCoverage');
-        // An extension's own span is what the host is looking for.
-        if (order.kind === 'EXTENSION' && order.coverageStartsAt && order.coverageEndsAt)
-            return t('orders.coverageRange', { from: formatDate(order.coverageStartsAt), until: formatDate(order.coverageEndsAt) });
-        return null;
-    };
-    const withdrawAction = (order: Order) =>
-        onWithdrawAction && withdrawableOrderIds?.has(order.id) ? <OrderWithdrawButton order={order} onWithdrawAction={onWithdrawAction} /> : null;
+    const rows = useBillingOrderRows(derived.visibleOrders, withdrawableOrderIds);
     const totalPaidLabel = formatOptionalMoney(insights.paidTotalMinor, insights.orderCurrency, locale);
 
-    const amountCell = (order: Order) =>
-        isOrderPaidByAnother(order) ? (
-            t('orders.gift')
-        ) : (
-            <>
-                {formatOptionalMoney(order.amountMinor, order.currency, locale) ?? '—'}
-                {order.addonAmountMinor ? (
-                    <span className="block text-[10px] font-normal text-ink-muted">
-                        {t('orders.addonAmount', { amount: formatOptionalMoney(order.addonAmountMinor, order.currency, locale) ?? '' })}
-                    </span>
-                ) : null}
-            </>
-        );
-
-    if (data.orders.length === 0) {
-        return <p className="text-sm text-ink-muted">{t('orders.empty')}</p>;
-    }
-
     return (
-        <div>
-            {/* Orders (small screens) */}
-            <div className="divide-y divide-ink/10 md:hidden">
-                {visibleOrders.map((order) => (
-                    <article key={order.id} className="py-3 text-sm first:pt-0" title={order.id}>
-                        <div className="flex items-start justify-between gap-3">
-                            <div className="min-w-0 space-y-1">
-                                <div className="flex flex-wrap items-center gap-2">
-                                    <p className="font-semibold text-ink">{t(`orders.kind.${order.kind}`)}</p>
-                                    <span className={orderStatusClassName(order.status)}>{t(`orderStatus.${order.status}`)}</span>
-                                </div>
-                                <p className="text-xs text-ink-muted">{formatDate(order.paidAt ?? order.createdAt)}</p>
-                            </div>
-                            <p className="shrink-0 text-right font-semibold text-ink">{amountCell(order)}</p>
-                        </div>
-                        {coverageLabel(order) && <p className="mt-1.5 text-xs leading-relaxed text-ink-muted">{coverageLabel(order)}</p>}
-                        {withdrawAction(order)}
-                    </article>
-                ))}
-                {/* Total (small screens) */}
-                {totalPaidLabel && (
-                    <div className="flex items-center justify-between gap-3 py-3 text-sm">
-                        <p className="text-ink-muted">{t('facts.totalPaid')}</p>
-                        <p className="font-semibold text-ink tabular-nums">{totalPaidLabel}</p>
-                    </div>
-                )}
-            </div>
+        <section aria-labelledby="billing-orders-title" className="flex flex-col gap-1">
+            {/* Heading */}
+            <h2 id="billing-orders-title" className="text-[17px] font-bold text-ink">
+                {t('orders.title')}
+            </h2>
 
-            {/* Orders (desktop) */}
-            <div className="hidden overflow-hidden rounded-lg border border-ink/10 md:block">
-                <table className="w-full table-fixed text-left text-sm">
-                    <thead className="bg-surface-muted text-[11px] tracking-wide text-ink-faint uppercase">
-                        <tr>
-                            <th className="px-3 py-2 font-semibold">{t('orders.columns.kind')}</th>
-                            <th className="px-3 py-2 font-semibold md:w-28">{t('orders.columns.status')}</th>
-                            <th className="px-3 py-2 font-semibold md:w-36">{t('orders.columns.date')}</th>
-                            <th className="px-3 py-2 text-right font-semibold md:w-32">{t('orders.columns.amount')}</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {visibleOrders.map((order) => (
-                            <tr key={order.id} className="align-top odd:bg-card/40" title={order.id}>
-                                <td className="px-3 py-2.5">
-                                    <p className="font-medium text-ink">{t(`orders.kind.${order.kind}`)}</p>
-                                    {coverageLabel(order) && <p className="mt-0.5 truncate text-xs text-ink-muted">{coverageLabel(order)}</p>}
-                                    {withdrawAction(order)}
-                                </td>
-                                <td className="px-3 py-2.5">
-                                    <span className={orderStatusClassName(order.status)}>{t(`orderStatus.${order.status}`)}</span>
-                                </td>
-                                <td className="px-3 py-2.5 text-ink-muted">{formatDate(order.paidAt ?? order.createdAt)}</td>
-                                <td className="px-3 py-2.5 text-right font-semibold text-ink">{amountCell(order)}</td>
-                            </tr>
+            {data.orders.length === 0 ? (
+                /* Empty */
+                <p className="pt-2 text-sm text-ink-muted">{t('orders.empty')}</p>
+            ) : (
+                <>
+                    {/* Orders */}
+                    <ul className="flex flex-col">
+                        {rows.map((row) => (
+                            <BillingOrderRow key={row.order.id} row={row} onWithdrawAction={onWithdrawAction} />
                         ))}
-                    </tbody>
+                    </ul>
+
+                    {/* Older orders */}
+                    {derived.hiddenOrderCount > 0 && (
+                        <button
+                            type="button"
+                            onClick={onShowAllOrders}
+                            className="inline-flex min-h-11 items-center self-start text-xs font-semibold text-primary-dark"
+                        >
+                            {t('orders.showAll', { count: derived.hiddenOrderCount })}
+                        </button>
+                    )}
+
                     {/* Total */}
                     {totalPaidLabel && (
-                        <tfoot className="border-t border-ink/10">
-                            <tr>
-                                <td colSpan={3} className="px-3 py-2.5 text-ink-muted">
-                                    {t('facts.totalPaid')}
-                                </td>
-                                <td className="px-3 py-2.5 text-right font-semibold text-ink tabular-nums">{totalPaidLabel}</td>
-                            </tr>
-                        </tfoot>
+                        <p className="flex justify-between gap-3 border-t border-border pt-3 text-sm">
+                            <span className="text-ink-muted">{t('facts.totalPaid')}</span>
+                            <strong className="font-bold text-ink tabular-nums">{totalPaidLabel}</strong>
+                        </p>
                     )}
-                </table>
-            </div>
-
-            {hiddenOrderCount > 0 && (
-                <button
-                    type="button"
-                    onClick={onShowAllOrders}
-                    className="mt-3 inline-flex min-h-11 items-center justify-center text-xs font-semibold text-primary-dark"
-                >
-                    {t('orders.showAll', { count: hiddenOrderCount })}
-                </button>
+                </>
             )}
-        </div>
+        </section>
     );
 }
