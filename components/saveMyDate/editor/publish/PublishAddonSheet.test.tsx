@@ -1,4 +1,4 @@
-import { cleanup, render, screen } from '@testing-library/react';
+import { act, cleanup, render, screen } from '@testing-library/react';
 import { NextIntlClientProvider } from 'next-intl';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -78,5 +78,28 @@ describe('PublishAddonSheet', () => {
         mocks.pending = true;
         renderSheet();
         expect(screen.queryByRole('button', { name: messages.InvitationEditor.close })).toBeNull();
+    });
+
+    it('ignores Back while paying, and closes on Back otherwise', async () => {
+        mocks.offer = { isLoading: false, failed: false, step: storyAddonStepCheckout().step };
+        const pressBack = async () => {
+            // The sheet adds its history entry in a microtask; Back then pops it.
+            await act(async () => {
+                await Promise.resolve();
+                window.dispatchEvent(new PopStateEvent('popstate', { state: null }));
+            });
+        };
+
+        mocks.pending = true;
+        const paying = renderSheet();
+        await pressBack();
+        expect(paying.close).not.toHaveBeenCalled();
+        expect(screen.getByRole('heading', { name: 'Add the invitation to your plan' })).toBeTruthy();
+        cleanup();
+
+        mocks.pending = false;
+        const idle = renderSheet();
+        await pressBack();
+        expect(idle.close).toHaveBeenCalled();
     });
 });

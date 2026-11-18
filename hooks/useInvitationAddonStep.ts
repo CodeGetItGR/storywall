@@ -75,6 +75,18 @@ export function useAddonStepFallback(
 }
 
 /**
+ * The sheet's close while payment may be in flight. closeDisabled covers the close button, Esc and
+ * the backdrop; Back calls close directly, so it is ignored here too, and a later error still shows.
+ */
+export function useAddonSheetLock(close: () => void) {
+    const [isPaying, setIsPaying] = useState(false);
+    const lockedClose = useCallback(() => {
+        if (!isPaying) close();
+    }, [close, isPaying]);
+    return { isPaying, setIsPaying, close: lockedClose };
+}
+
+/**
  * Keeps the last value seen while settled. A draft's total joins billing and its quote, which
  * refetch separately after an opt-in: between the two it would be briefly wrong.
  */
@@ -193,10 +205,12 @@ export function useInvitationAddonCheckout({
     );
 
     // A draft opts in and out first; one already on the event counts as added. When the payment
-    // can't open after all, the opt-ins go back as they were.
+    // can't open after all, the opt-ins go back as they were. The step stays busy until then, so a
+    // second tap can't pay while the rollback is still taking an add-on back out.
     const payDraft = useCallback(async () => {
         const { add, remove } = draftAddonChanges(step, rsvpTicked);
         const applied = { added: [] as string[], removed: [] as string[] };
+        let opened = false;
         setIsSaving(true);
         try {
             for (const code of add) {
@@ -211,20 +225,17 @@ export function useInvitationAddonCheckout({
                 await removeAddon.mutateAsync(code);
                 applied.removed.push(code);
             }
+            opened = await draftCheckout.submit();
         } catch (changeError) {
             setError(toErrorMessage(changeError));
+        }
+        if (opened) {
+            setIsRedirecting(true);
+        } else {
             await rollBack(applied);
             refreshOffers();
-            setIsSaving(false);
-            return;
         }
         setIsSaving(false);
-        if (await draftCheckout.submit()) {
-            setIsRedirecting(true);
-            return;
-        }
-        await rollBack(applied);
-        refreshOffers();
     }, [addAddon, draftCheckout, refreshOffers, removeAddon, rollBack, rsvpTicked, step, toErrorMessage]);
 
     const submit = useCallback(

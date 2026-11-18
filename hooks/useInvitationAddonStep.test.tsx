@@ -297,4 +297,20 @@ describe('useInvitationAddonCheckout', () => {
         expect(result.current.isPending).toBe(true);
         expect(onPendingChange).toHaveBeenLastCalledWith(true);
     });
+
+    it("stays busy until a draft's rollback is done, so a second tap can't pay", async () => {
+        let finishRollback = () => {};
+        mocks.remove.mockReturnValueOnce(new Promise<void>((resolve) => (finishRollback = resolve)));
+        mocks.draftSubmit.mockResolvedValue(false);
+        const { result } = render(draftStep());
+
+        act(() => result.current.submit(submitEvent));
+        await vi.waitFor(() => expect(mocks.remove).toHaveBeenCalledWith('SMD'));
+        expect(result.current.isPending).toBe(true);
+        expect(result.current.canSubmit).toBe(false);
+
+        await act(async () => finishRollback());
+        expect(result.current.isPending).toBe(false);
+        expect(mocks.draftSubmit).toHaveBeenCalledTimes(1);
+    });
 });
