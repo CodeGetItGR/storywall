@@ -81,9 +81,9 @@ export const OptedOutMenu: Story = {
     play: async ({ canvasElement, globals }) => {
         const copy = copyFor(globals);
         await userEvent.click(within(canvasElement).getByRole('button', { name: copy.ManagePage.members.moreFor.replace('{name}', 'Lumière Studio') }));
-        await waitForOpen('menu');
-        const body = within(canvasElement.ownerDocument.body);
-        await expect(body.getByRole('menuitem', { name: copy.Vendors.manage.remove })).toBeVisible();
-        await expect(body.queryByRole('menuitem', { name: copy.Vendors.manage.show })).not.toBeInTheDocument();
+        const menu = within(await waitForOpen('menu'));
+        // The menu fades in, so wait for the item rather than asserting it is visible straight away.
+        await expect(await menu.findByRole('menuitem', { name: copy.Vendors.manage.remove })).toBeInTheDocument();
+        await expect(menu.queryByRole('menuitem', { name: copy.Vendors.manage.show })).not.toBeInTheDocument();
     },
 };

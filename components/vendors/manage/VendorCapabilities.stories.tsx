@@ -15,10 +15,10 @@ function CapabilitiesForEvent() {
     return <VendorCapabilities items={useVendorCapabilities(EVENT.id)} />;
 }
 
+// The default story modules have no vendors module, so add one carrying the allowed types.
 function eventAllowing(allowedTypes: PartnerRole[]) {
-    return storyEvent({
-        modules: storyModules().map((module) => (module.moduleKey === 'vendors' ? { ...module, configuration: { maxVendors: 5, allowedTypes } } : module)),
-    });
+    const [vendors] = storyModules(['vendors']);
+    return storyEvent({ modules: [...storyModules(), { ...vendors, configuration: { maxVendors: 5, allowedTypes } }] });
 }
 
 const meta = {
