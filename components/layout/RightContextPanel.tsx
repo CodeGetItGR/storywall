@@ -6,9 +6,9 @@ import { HostContextSections } from '@/components/layout/right-context-panel/Hos
 import { MemberActionsSection } from '@/components/layout/right-context-panel/MemberActionsSection';
 import { useRightContextPanel } from '@/hooks/useRightContextPanel';
 
-export function RightContextPanel() {
+export function RightContextPanel({ liteHome = false }: { liteHome?: boolean }) {
     const t = useTranslations('RightContextPanel');
-    const panel = useRightContextPanel();
+    const panel = useRightContextPanel({ liteHome });
 
     if (!panel.visible || !panel.activeEvent) return null;
 
@@ -18,7 +18,11 @@ export function RightContextPanel() {
             className="sticky top-0 no-scrollbar hidden h-[calc(100vh-var(--site-notice-h,0px))] w-75 shrink-0 flex-col overflow-y-auto border-l border-border bg-event md:flex"
         >
             <div className="flex h-full flex-col p-5">
-                {panel.isHost ? <HostContextSections panel={panel} /> : <MemberActionsSection items={panel.actionItems} />}
+                {panel.isHost ? (
+                    <HostContextSections panel={panel} showMembersUsage={!liteHome} />
+                ) : (
+                    <MemberActionsSection items={panel.actionItems} />
+                )}
             </div>
         </aside>
     );
