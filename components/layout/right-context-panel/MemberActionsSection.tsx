@@ -1,9 +1,17 @@
 import { useTranslations } from 'next-intl';
+import type { MouseEvent } from 'react';
 
 import { AppLink } from '@/components/ui/AppLink';
 import { VendorToolIcon } from '@/components/vendors/VendorToolIcon';
 import { type ToolMenuItem } from '@/hooks/useToolsMenuItems';
+import { handleAnnouncementLinkClick } from '@/lib/announcementComposer';
 import { handleRoleSheetLinkClick } from '@/lib/myRoleSheetRequests';
+
+// The role sheet and, on the feed, the announcement composer open in place.
+function handleToolLinkClick(event: MouseEvent<HTMLAnchorElement>) {
+    handleRoleSheetLinkClick(event);
+    if (!event.defaultPrevented) handleAnnouncementLinkClick(event);
+}
 
 /**
  * The member-facing counterpart to HostContextSections: just the plain tool
@@ -24,7 +32,7 @@ export function MemberActionsSection({ items }: { items: ToolMenuItem[] }) {
                     <AppLink
                         key={key}
                         href={href}
-                        onClick={handleRoleSheetLinkClick}
+                        onClick={handleToolLinkClick}
                         className="group flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-ink-muted transition-colors hover:bg-surface-muted hover:text-ink"
                     >
                         {vendorTool ? (
