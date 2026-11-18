@@ -101,13 +101,14 @@ export const routes = {
             // section: a part of the page to scroll to on arrival (VendorPageSection).
             vendorMe: (eventId: string, params: { section?: string | null } = {}) => withQuery(`${eventBasePath(eventId)}/tools/vendors/me`, params),
             playlistLive: (eventId: string) => `${eventBasePath(eventId)}/tools/playlist/live`,
-            announcement: (eventId: string) => `${eventBasePath(eventId)}/tools/announcement`,
         },
         storySchedule: (eventId: string) => `${eventBasePath(eventId)}/story/schedule`,
         // The .ics file for one calendar entry; no session = the event's own date.
         calendar: (eventId: string, session?: string | null) => withQuery(`${eventBasePath(eventId)}/calendar`, { session }),
         location: (eventId: string, role?: 'main' | 'secondary' | null) => `${eventBasePath(eventId)}/location${role ? `/${role}` : ''}`,
-        feed: (eventId: string, params: { post?: string | null; sheet?: 'role' | null } = {}) => withQuery(`${eventBasePath(eventId)}/feed`, params),
+        // compose: opens the composer in that mode (lib/announcementComposer.ts).
+        feed: (eventId: string, params: { post?: string | null; sheet?: 'role' | null; compose?: 'announcement' | null } = {}) =>
+            withQuery(`${eventBasePath(eventId)}/feed`, params),
         settingsAddons: (eventId: string, { add }: { add?: string | null } = {}) =>
             withQuery(`${eventBasePath(eventId)}/settings/addons`, { [ADDONS_PRESELECT_PARAM]: add }),
         // code: the plan (upgrade) or paid service (storage); option: the upgrade's or extension's coverage option id.
