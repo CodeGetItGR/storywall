@@ -45,7 +45,8 @@ export function useCreateEventWizardFooter(): WizardFooterAction | null {
         return { ...base, label: t('plan.continue'), disabled: !form.canContinuePlan, onClick: form.goToDetails };
     }
     if (form.step === 'details') {
-        return { ...base, label: t('plan.continue'), disabled: !form.canSubmitDetails, submitsForm: form.formId };
+        // Never disabled: tapping it shows which field is still missing.
+        return { ...base, label: t('plan.continue'), disabled: false, submitsForm: form.formId };
     }
     if (form.step === 'theme') {
         return { ...base, label: t('plan.continue'), disabled: false, onClick: form.goToNextStep };

@@ -75,6 +75,7 @@ export function EventScheduleVenueFields({
                     onChange={onStartAtChange}
                     min={startAtMin}
                     max={startAtMax}
+                    aria-invalid={Boolean(scheduleError)}
                     inputClassName="rounded-xl bg-surface-muted px-4 py-3 text-sm text-ink transition outline-none focus:ring-2 focus:ring-primary/30"
                 />
                 {scheduleError ? <span className="text-xs text-rose-500">{scheduleError}</span> : startAtHint}
