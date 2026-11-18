@@ -8,7 +8,7 @@ import { useHostMenuItems } from '@/hooks/useToolsMenuItems';
 import { useWishbookCount } from '@/hooks/useWishbook';
 import type { EventDetailResponseDto } from '@/lib/api/types';
 import { formatTime } from '@/lib/datetime';
-import { type JourneyStopModel, type JourneyStopStatus, sessionsByPhase, sessionStates } from '@/lib/eventJourney';
+import { type JourneyStopModel, type JourneyStopStatus, journeyTimeZone, sessionsByPhase, sessionStates } from '@/lib/eventJourney';
 import { readableModuleKeys } from '@/lib/eventLifecycle';
 import type { JourneyIconKey } from '@/lib/journeyIcons';
 import { routes } from '@/lib/routes';
@@ -28,7 +28,7 @@ export function useDayJourney(event: EventDetailResponseDto, now: Date = new Dat
     const hostItems = useHostMenuItems();
     const gallery = useGallerySummary(event.id, readable.has('gallery'));
     const wishbook = useWishbookCount(readable.has('wishbook') ? event.id : null);
-    const timeZone = event.schedule.timezone;
+    const timeZone = journeyTimeZone(event);
 
     const daySessions = sessionsByPhase(event).day;
     const states = sessionStates(daySessions, timeZone, now);

@@ -32,10 +32,11 @@ export function resolveRsvpReportCloseHref(eventId: string, from: string | null)
     return routes.events.manage(eventId, { tab: 'rsvp' });
 }
 
-export type RsvpCountdown = { labelKey: 'deadlineLabel' | 'eventDateLabel'; target: string; daysLeft: number };
+export type RsvpCountdown = { labelKey: 'deadlineLabel' | 'eventDateLabel'; target: string | null; daysLeft: number };
 
 // The RSVP page's countdown: to the deadline, or to the event when none is set.
-export function rsvpCountdown(rsvpDeadline: string | null, startAt: string, now: Date = new Date()): RsvpCountdown {
+// An event with no date yet and no deadline has nothing to count down to: no target, 0 days.
+export function rsvpCountdown(rsvpDeadline: string | null, startAt: string | null, now: Date = new Date()): RsvpCountdown {
     const target = rsvpDeadline ?? startAt;
     return { labelKey: rsvpDeadline ? 'deadlineLabel' : 'eventDateLabel', target, daysLeft: getDaysUntil(target, now) ?? 0 };
 }

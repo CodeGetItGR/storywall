@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
+import { planRequirementsOf } from '@/lib/__fixtures__/planRequirements';
 import type {
     AppMediaConfigDto,
     CoverageOptionResponseDto,
@@ -48,6 +49,7 @@ function makePlan(overrides: Partial<PlanTierResponseDto> = {}): PlanTierRespons
         sharedGroupKey: null,
         initialOptions: [makeOption()],
         extensionOptions: [],
+        requirements: planRequirementsOf(overrides.moduleKeys ?? ['gallery']),
         ...overrides,
     };
 }

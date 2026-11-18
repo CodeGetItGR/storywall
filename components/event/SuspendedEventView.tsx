@@ -22,7 +22,7 @@ export function SuspendedEventView({ event, billingHref = null }: { event: Event
     const tStatement = useTranslations('ModerationStatement');
     const locale = useLocale();
     const suspension = event.suspension;
-    const timeZone = event.schedule.timezone;
+    const timeZone = event.schedule.timezone ?? undefined;
     const deletesOn = suspension?.closedAt ? suspension.deletesOn : null;
     const headingRef = useRef<HTMLHeadingElement>(null);
 
@@ -90,9 +90,7 @@ export function SuspendedEventView({ event, billingHref = null }: { event: Event
             <div className="space-y-2 text-sm text-ink-muted">
                 <p>{t('humanDecision')}</p>
                 {suspension?.contactEmail ? (
-                    <p className="break-words">
-                        {t('redressWithContact', { email: suspension.contactEmail, reference: suspension.reference })}
-                    </p>
+                    <p className="break-words">{t('redressWithContact', { email: suspension.contactEmail, reference: suspension.reference })}</p>
                 ) : null}
             </div>
 

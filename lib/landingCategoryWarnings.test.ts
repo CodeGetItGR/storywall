@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
+import { planRequirementsOf } from '@/lib/__fixtures__/planRequirements';
 import type { AdminLandingCategoryDto, AppEventTypeResponseDto, PlanTierResponseDto } from '@/lib/api/types';
 import { landingCategoryWarnings } from '@/lib/landingCategoryWarnings';
 
@@ -9,7 +10,16 @@ function category(eventTypeKeys: AdminLandingCategoryDto['eventTypeKeys']): Admi
 
 // /api/config.eventTypes lists enabled types only.
 function enabled(keys: AppEventTypeResponseDto['eventTypeKey'][]): AppEventTypeResponseDto[] {
-    return keys.map((eventTypeKey, sortOrder) => ({ id: eventTypeKey, eventTypeKey, icon: 'x', accentToken: 'rose', isEnabled: true, sortOrder, imageUrl: null, hasDemo: false }));
+    return keys.map((eventTypeKey, sortOrder) => ({
+        id: eventTypeKey,
+        eventTypeKey,
+        icon: 'x',
+        accentToken: 'rose',
+        isEnabled: true,
+        sortOrder,
+        imageUrl: null,
+        hasDemo: false,
+    }));
 }
 
 function plan(overrides: Partial<PlanTierResponseDto>): PlanTierResponseDto {
@@ -40,6 +50,7 @@ function plan(overrides: Partial<PlanTierResponseDto>): PlanTierResponseDto {
         sharedGroupKey: null,
         initialOptions: [{ id: 'o', kind: 'INITIAL', months: 3, priceAmountMinor: 100, promoPriceAmountMinor: null, sortOrder: 0, active: true }],
         extensionOptions: [],
+        requirements: planRequirementsOf(overrides.moduleKeys ?? []),
         ...overrides,
     };
 }
@@ -86,7 +97,11 @@ describe('landingCategoryWarnings', () => {
     });
 
     it('flags a category whose only plan has no duration on sale, as the landing hides its tab', () => {
-        const offSale = plan({ initialOptions: [{ id: 'o', kind: 'INITIAL', months: 3, priceAmountMinor: 100, promoPriceAmountMinor: null, sortOrder: 0, active: false }] });
+        const offSale = plan({
+            initialOptions: [
+                { id: 'o', kind: 'INITIAL', months: 3, priceAmountMinor: 100, promoPriceAmountMinor: null, sortOrder: 0, active: false },
+            ],
+        });
         expect(landingCategoryWarnings(category(['SOCIAL_EVENT']), [offSale], enabled(['SOCIAL_EVENT']), {}).noVisiblePlan).toBe(true);
     });
 

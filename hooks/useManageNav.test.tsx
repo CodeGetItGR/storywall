@@ -3,6 +3,7 @@ import { renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { useManageNav } from '@/hooks/useManageNav';
+import { capabilitiesOf } from '@/lib/__fixtures__/eventCapabilities';
 
 const mocks = vi.hoisted(() => ({
     event: null as Record<string, unknown> | null,
@@ -17,6 +18,7 @@ vi.mock('@/hooks/useAppConfig', () => ({ useAppConfig: () => ({ data: { planTier
 vi.mock('@/hooks/useGiftSection', () => ({ useGiftSection: () => ({ gift: null, available: false, isLoading: false }) }));
 
 function event(moduleKeys: string[], overrides: Record<string, unknown> = {}) {
+    const modules = moduleKeys.map((moduleKey) => ({ moduleKey, isEnabled: true, isAvailable: true, configuration: {} }));
     return {
         id: 'e1',
         status: 'ACTIVE',
@@ -25,7 +27,8 @@ function event(moduleKeys: string[], overrides: Record<string, unknown> = {}) {
         eventType: 'BIRTHDAY',
         schedule: { startAt: '2027-06-01T10:00:00Z', endAt: null },
         hosts: [{ memberId: 'm1', displayOrder: 0 }],
-        modules: moduleKeys.map((moduleKey) => ({ moduleKey, isEnabled: true, isAvailable: true, configuration: {} })),
+        modules,
+        capabilities: capabilitiesOf(modules),
         ...overrides,
     };
 }

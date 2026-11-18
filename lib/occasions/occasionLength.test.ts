@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
+import { planRequirementsOf } from '@/lib/__fixtures__/planRequirements';
 import type { AppConfigResponseDto, CoverageOptionResponseDto, PlanTierResponseDto } from '@/lib/api/types';
 import { occasionLengthValues } from '@/lib/occasions/occasionLength';
 
@@ -44,6 +45,7 @@ function makePlan(overrides: Partial<PlanTierResponseDto> = {}): PlanTierRespons
         sharedGroupKey: null,
         initialOptions: [makeOption()],
         extensionOptions: [],
+        requirements: planRequirementsOf(overrides.moduleKeys ?? ['gallery', 'posts']),
         ...overrides,
     };
 }

@@ -230,3 +230,22 @@ export const AfterDesktop: Story = {
     tags: ['visual-desktop-only'],
     args: { steps: afterSteps, selected: 'after' },
 };
+
+// A lite event without a date: no phases, one path from its details to its media, wishbook and plan.
+const undatedArgs = {
+    undated: true,
+    steps: [],
+    before: { stops: [{ ...detailsStop, links: [] }], allDone: true, printHref: galleryHref },
+    after: { stops: afterStops.filter((stop) => stop.key !== 'announcement') },
+};
+
+export const UndatedMobile: Story = {
+    tags: ['visual-mobile-only'],
+    globals: { viewport: { value: 'mobile' } },
+    args: undatedArgs,
+};
+
+export const UndatedDesktop: Story = {
+    tags: ['visual-desktop-only'],
+    args: undatedArgs,
+};

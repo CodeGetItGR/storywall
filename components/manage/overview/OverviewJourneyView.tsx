@@ -18,11 +18,24 @@ export type OverviewJourneyViewProps = {
     day: { stops: JourneyStopModel[]; tools: QuickTool[]; totals: JourneyTotal[] };
     after: { stops: JourneyStopModel[] };
     planLine: OverviewPlanLine | null;
+    // An event without a date (a lite event) has no phases: one path, its setup then what comes after.
+    undated?: boolean;
 };
 
 /** The Overview of a live event: the phase stepper and that phase's journey. */
-export function OverviewJourneyView({ labels, steps, selected, onSelectPhase, before, day, after, planLine }: OverviewJourneyViewProps) {
+export function OverviewJourneyView({ labels, steps, selected, onSelectPhase, before, day, after, planLine, undated = false }: OverviewJourneyViewProps) {
     const plan = planLine ? <PlanLine line={planLine} /> : null;
+
+    if (undated) {
+        // Only one stop is current: the next setup stop while there is one.
+        const later = before.allDone ? after.stops : after.stops.map((stop) => (stop.status === 'current' ? { ...stop, status: 'upcoming' as const } : stop));
+        return (
+            <div className="flex flex-col gap-6">
+                {/* Path: setup, then the gallery, wishbook and plan */}
+                <JourneyPath label={labels.getReady} stops={[...before.stops, ...later]} end="heart" endLabel={labels.afterEvent} />
+            </div>
+        );
+    }
 
     return (
         <div className="flex flex-col gap-6">

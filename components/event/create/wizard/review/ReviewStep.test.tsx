@@ -22,7 +22,7 @@ vi.mock('@/components/common/ProtectedImage', () => ({
     ProtectedImage: ({ src, alt }: { src: string; alt: string }) => <img src={src} alt={alt} />,
 }));
 
-function setup() {
+function setup({ asksDetails = true } = {}) {
     const goToDetails = vi.fn();
     const goToPlan = vi.fn();
     form.current = {
@@ -33,6 +33,7 @@ function setup() {
         locationName: 'Agios Nikolaos',
         selectedPlan: { name: 'STORY', maxMembers: 300, storageBytes: null },
         selectedOption: { months: 6 },
+        asksDetails,
         goToDetails,
         goToPlan,
     };
@@ -50,6 +51,13 @@ describe('ReviewStep (wizard)', () => {
         expect(screen.getByText(/2027 · Agios Nikolaos/)).toBeInTheDocument();
         expect(screen.getByText('STORY · Durations.months:6')).toBeInTheDocument();
         expect(screen.getByText('LandingPage.pricing.guestsUpTo:300 · LandingPage.pricing.storageUnlimited')).toBeInTheDocument();
+    });
+
+    it('leaves out a date and place a lite plan never asked for', () => {
+        setup({ asksDetails: false });
+        expect(screen.getByText('Anna & Kostas')).toBeInTheDocument();
+        expect(screen.queryByText(/Agios Nikolaos/)).not.toBeInTheDocument();
+        expect(screen.queryByText(/2027/)).not.toBeInTheDocument();
     });
 
     it('goes to details from Edit and to the plan from Change', () => {
