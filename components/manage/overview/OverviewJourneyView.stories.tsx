@@ -108,7 +108,7 @@ const dayStops: JourneyStopModel[] = [
 
 const tools: QuickTool[] = [
     { key: 'invitationsQr', label: 'Share links', href: qrHref, icon: 'invitations' },
-    { key: 'announcement', label: 'Announcement', href: routes.events.tools.announcement(STORY_EVENT_ID), icon: 'announcement' },
+    { key: 'announcement', label: 'Announcement', href: routes.events.feed(STORY_EVENT_ID, { compose: 'announcement' }), icon: 'announcement' },
     { key: 'playlist', label: 'Playlist', href: routes.events.tools.playlist(STORY_EVENT_ID), icon: 'playlist' },
 ];
 
@@ -140,7 +140,7 @@ const afterStops: JourneyStopModel[] = [
         title: 'Announcement',
         icon: 'announcement',
         status: 'upcoming',
-        href: routes.events.tools.announcement(STORY_EVENT_ID),
+        href: routes.events.feed(STORY_EVENT_ID, { compose: 'announcement' }),
         detail: 'Thank your guests',
     },
     {

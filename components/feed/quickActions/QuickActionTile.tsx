@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import type { MouseEventHandler, ReactNode } from 'react';
 
 import { AppLink } from '@/components/ui/AppLink';
 
@@ -11,13 +11,15 @@ interface QuickActionTileProps {
     // A link, or a button when null.
     href: string | null;
     onClick?: () => void;
+    // A link's own click handler (e.g. to open something in place).
+    onLinkClick?: MouseEventHandler<HTMLAnchorElement>;
 }
 
 // One tile of the feed's quick actions: an icon over its label.
-export function QuickActionTile({ icon, label, href, onClick }: QuickActionTileProps) {
+export function QuickActionTile({ icon, label, href, onClick, onLinkClick }: QuickActionTileProps) {
     if (href) {
         return (
-            <AppLink href={href} className={TILE_CLASS}>
+            <AppLink href={href} onClick={onLinkClick} className={TILE_CLASS}>
                 {icon}
                 <span className={LABEL_CLASS}>{label}</span>
             </AppLink>

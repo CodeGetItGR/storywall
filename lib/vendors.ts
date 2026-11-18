@@ -174,7 +174,8 @@ export type VendorToolKey = 'schedule' | 'announcement' | 'rsvpReport' | 'qr' | 
 // moduleKey: the module the tool's screen needs (the tools menu hides it the same way).
 const VENDOR_TOOLS: { key: VendorToolKey; capability: VendorCapability; moduleKey?: string; href: (eventId: string) => string }[] = [
     { key: 'schedule', capability: 'SCHEDULE_EDIT', href: (eventId) => routes.events.tools.schedule(eventId) },
-    { key: 'announcement', capability: 'ANNOUNCE', href: (eventId) => routes.events.tools.announcement(eventId) },
+    // The feed composer in Announcement mode.
+    { key: 'announcement', capability: 'ANNOUNCE', moduleKey: 'posts', href: (eventId) => routes.events.feed(eventId, { compose: 'announcement' }) },
     { key: 'rsvpReport', capability: 'RSVP_REPORT', moduleKey: 'rsvp', href: (eventId) => routes.events.rsvpReport(eventId, 'FULL_LIST', 'vendor') },
     { key: 'qr', capability: 'QR_READ', href: (eventId) => routes.events.invitationsQr(eventId) },
     { key: 'liveRequests', capability: 'SONG_REQUESTS', moduleKey: 'playlist', href: (eventId) => routes.events.tools.playlistLive(eventId) },

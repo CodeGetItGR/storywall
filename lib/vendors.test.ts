@@ -215,6 +215,7 @@ describe('hasProAllowance', () => {
 describe('vendorToolLinks', () => {
     it('lists a planner’s four tools in a fixed order', () => {
         expect(vendorToolLinks('e1', me()).map((tool) => tool.key)).toEqual(['schedule', 'announcement', 'rsvpReport', 'qr']);
+        expect(vendorToolLinks('e1', me()).find((tool) => tool.key === 'announcement')?.href).toBe('/events/e1/feed?compose=announcement');
         expect(vendorToolLinks('e1', me()).find((tool) => tool.key === 'rsvpReport')?.href).toBe(
             '/events/e1/manage/rsvp/reports/FULL_LIST?from=vendor',
         );
@@ -234,7 +235,8 @@ describe('vendorToolLinks', () => {
     });
 
     it('leaves out tools whose module is off', () => {
-        expect(vendorToolLinks('e1', me(), new Set(['gallery'])).map((tool) => tool.key)).toEqual(['schedule', 'announcement', 'qr']);
+        expect(vendorToolLinks('e1', me(), new Set(['gallery'])).map((tool) => tool.key)).toEqual(['schedule', 'qr']);
+        expect(vendorToolLinks('e1', me(), new Set(['posts'])).map((tool) => tool.key)).toEqual(['schedule', 'announcement', 'qr']);
         expect(
             vendorToolLinks('e1', me({ vendorType: 'MUSIC', capabilities: ['SONG_REQUESTS'] }), new Set(['playlist'])).map((tool) => tool.key),
         ).toEqual(['liveRequests']);
