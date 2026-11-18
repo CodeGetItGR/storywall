@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import type { RsvpReportCategoryDto } from '@/lib/api/types';
-import { formatReportDate, isRsvpReportType, reportSectionKey, resolveRsvpReportCloseHref, resolveRsvpSubTab } from '@/lib/rsvpReport';
+import { formatReportDate, isRsvpReportType, reportSectionKey, resolveRsvpReportCloseHref, rsvpCountdown } from '@/lib/rsvpReport';
 
 describe('isRsvpReportType', () => {
     it('accepts the four report types and nothing else', () => {
@@ -29,44 +29,44 @@ describe('reportSectionKey', () => {
     });
 });
 
-describe('resolveRsvpSubTab', () => {
-    it('defaults to stats for null or undefined', () => {
-        expect(resolveRsvpSubTab(null)).toBe('stats');
-        expect(resolveRsvpSubTab(undefined)).toBe('stats');
-    });
-
-    it('accepts a known sub-tab', () => {
-        expect(resolveRsvpSubTab('list')).toBe('list');
-        expect(resolveRsvpSubTab('reports')).toBe('reports');
-    });
-
-    it('falls back to stats for a sub-tab it does not know', () => {
-        expect(resolveRsvpSubTab('coHosts')).toBe('stats');
-    });
-
-    it('takes the first element of a repeated query param', () => {
-        expect(resolveRsvpSubTab(['reports', 'list'])).toBe('reports');
-    });
-
-    it('falls back to stats for an empty array', () => {
-        expect(resolveRsvpSubTab([])).toBe('stats');
-    });
-});
-
 describe('resolveRsvpReportCloseHref', () => {
-    it('returns to the Tools RSVP page, on the Reports sub-tab', () => {
-        expect(resolveRsvpReportCloseHref('e1', 'tools')).toBe('/events/e1/tools/rsvp?section=reports');
+    it('goes back to the RSVP page in the dashboard', () => {
+        expect(resolveRsvpReportCloseHref('e1', null)).toBe('/events/e1/manage?tab=rsvp');
+    });
+
+    it('sends an old from=tools link to the same RSVP page', () => {
+        expect(resolveRsvpReportCloseHref('e1', 'tools')).toBe('/events/e1/manage?tab=rsvp');
+    });
+
+    it('falls back to the RSVP page for a garbage value', () => {
+        expect(resolveRsvpReportCloseHref('e1', 'not-a-real-origin')).toBe('/events/e1/manage?tab=rsvp');
     });
 
     it('returns a vendor to their vendor page', () => {
         expect(resolveRsvpReportCloseHref('e1', 'vendor')).toBe('/events/e1/tools/vendors/me');
     });
+});
 
-    it('returns to Manage for null, the default origin', () => {
-        expect(resolveRsvpReportCloseHref('e1', null)).toBe('/events/e1/manage?tab=rsvp&section=reports');
+describe('rsvpCountdown', () => {
+    const now = new Date('2026-08-12T10:00:00Z');
+
+    it('counts to the RSVP deadline when there is one', () => {
+        expect(rsvpCountdown('2026-08-30T00:00:00Z', '2026-09-20T16:00:00Z', now)).toEqual({
+            labelKey: 'deadlineLabel',
+            target: '2026-08-30T00:00:00Z',
+            daysLeft: 18,
+        });
     });
 
-    it('falls back to Manage for a garbage value', () => {
-        expect(resolveRsvpReportCloseHref('e1', 'not-a-real-origin')).toBe('/events/e1/manage?tab=rsvp&section=reports');
+    it('falls back to the event date when no deadline is set', () => {
+        expect(rsvpCountdown(null, '2026-09-20T16:00:00Z', now)).toEqual({
+            labelKey: 'eventDateLabel',
+            target: '2026-09-20T16:00:00Z',
+            daysLeft: 40,
+        });
+    });
+
+    it('never goes below zero', () => {
+        expect(rsvpCountdown('2026-08-01T00:00:00Z', '2026-09-20T16:00:00Z', now).daysLeft).toBe(0);
     });
 });

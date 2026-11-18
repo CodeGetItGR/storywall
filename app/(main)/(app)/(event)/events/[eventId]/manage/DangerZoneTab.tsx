@@ -1,25 +1,33 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
-
+import { GalleryArchiveDownloadModal } from '@/components/gallery/GalleryArchiveDownloadModal';
 import { EventDangerZone } from '@/components/manage/danger/EventDangerZone';
 import { EventDeleteConfirmModal } from '@/components/manage/danger/EventDeleteConfirmModal';
+import { useDangerZoneDownloads } from '@/hooks/useDangerZoneDownloads';
 import { useEventDeletionFlow } from '@/hooks/useEventDeletionFlow';
 import type { EventDetailResponseDto } from '@/lib/api/types';
 
 export default function DangerZoneTab({ event }: { event: EventDetailResponseDto }) {
-    const t = useTranslations('ManagePage');
-    const deletionFlow = useEventDeletionFlow(event.id);
+    const deletionFlow = useEventDeletionFlow(event.id, { codeFirst: true });
+    const downloads = useDangerZoneDownloads(event);
 
     return (
-        <div className="flex flex-col gap-6">
-            {/* Delete event */}
-            <section>
-                <h3 className="mb-2 text-sm font-semibold text-ink">{t('settings.dangerZone.delete')}</h3>
-                <EventDangerZone onDeleteOpenAction={deletionFlow.openConfirm} disabled={deletionFlow.isDeleting} />
-            </section>
+        <>
+            {/* Danger zone */}
+            <EventDangerZone
+                showGalleryDownload={downloads.showGalleryDownload}
+                wishbook={downloads.wishbook}
+                onDownloadAllAction={downloads.openArchive}
+                onDeleteAction={deletionFlow.startDeletion}
+                isSendingCode={deletionFlow.isSendingCode}
+                // A refused send (rate limit) waits out its cooldown before another try.
+                disabled={deletionFlow.isDeleting || (deletionFlow.step === 'send' && deletionFlow.resendSeconds > 0)}
+                error={deletionFlow.confirmOpen ? null : deletionFlow.deleteError}
+            />
 
+            {/* Code */}
             <EventDeleteConfirmModal
+                variant="sheet"
                 open={deletionFlow.confirmOpen}
                 step={deletionFlow.step}
                 otpCode={deletionFlow.otpCode}
@@ -34,6 +42,11 @@ export default function DangerZoneTab({ event }: { event: EventDetailResponseDto
                 onSendCodeAction={deletionFlow.sendOtp}
                 onConfirmAction={deletionFlow.confirmDelete}
             />
-        </div>
+
+            {/* Download all */}
+            {downloads.showGalleryDownload && (
+                <GalleryArchiveDownloadModal eventId={event.id} open={downloads.archiveOpen} onClose={downloads.closeArchive} />
+            )}
+        </>
     );
 }

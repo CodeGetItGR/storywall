@@ -10,11 +10,13 @@ const auth = vi.hoisted(() => ({
 const router = vi.hoisted(() => ({ replace: vi.fn() }));
 const view = vi.hoisted(() => ({ current: { view: 'choose', open: vi.fn(), show: vi.fn(), back: vi.fn() } }));
 const form = vi.hoisted(() => ({ current: { step: 'account', goToStep: vi.fn() } }));
+const useFlowEvent = vi.hoisted(() => vi.fn());
 
 vi.mock('next/navigation', () => ({ useRouter: () => router }));
 vi.mock('@/hooks/useAuth', () => ({ useAuth: () => auth.current }));
 vi.mock('@/hooks/useCreateEventWizardAccountView', () => ({ useCreateEventWizardAccountView: () => view.current }));
 vi.mock('@/providers/createEvent/CreateEventFormContext', () => ({ useCreateEventForm: () => form.current }));
+vi.mock('@/hooks/useFlowEvent', () => ({ useFlowEvent }));
 
 beforeEach(() => {
     auth.current = { isBootstrapping: false, isRefreshingSession: false, user: null };
@@ -26,6 +28,20 @@ afterEach(() => {
 });
 
 describe('useCreateEventWizardAccount', () => {
+    it.each([
+        ['signin', 'login'],
+        ['signup', 'register'],
+    ])('counts the %s screen as the create funnel %s page', (screenView, page) => {
+        view.current.view = screenView;
+        renderHook(() => useCreateEventWizardAccount());
+        expect(useFlowEvent).toHaveBeenLastCalledWith({ name: 'Auth Page', page, from: 'create' });
+    });
+
+    it('sends no auth page event for the choose screen', () => {
+        renderHook(() => useCreateEventWizardAccount());
+        expect(useFlowEvent).toHaveBeenLastCalledWith(null);
+    });
+
     it('waits on the choose screen while signed out', () => {
         renderHook(() => useCreateEventWizardAccount());
         expect(form.current.goToStep).not.toHaveBeenCalled();

@@ -9,6 +9,7 @@ import {
     isThemeFontUrl,
     themeFontFaceCss,
     themeFontScopeProps,
+    themePreviewTitle,
 } from '@/lib/eventTheme';
 
 describe('isHexColor', () => {
@@ -186,5 +187,18 @@ describe('isThemeFontUrl', () => {
         expect(isThemeFontUrl('/api/theme-fonts/other/1.woff2', 'gfs-didot')).toBe(false);
         expect(isThemeFontUrl('/api/theme-fonts/gfs-didot/01.woff2', 'gfs-didot')).toBe(false);
         expect(isThemeFontUrl('https://evil.example/api/theme-fonts/gfs-didot/1.woff2', 'gfs-didot')).toBe(false);
+    });
+});
+
+describe('themePreviewTitle', () => {
+    it('returns the trimmed title', () => {
+        expect(themePreviewTitle('  Maria & Nikos ')).toBe('Maria & Nikos');
+    });
+
+    it('returns undefined for a blank or missing title', () => {
+        expect(themePreviewTitle('   ')).toBeUndefined();
+        expect(themePreviewTitle('')).toBeUndefined();
+        expect(themePreviewTitle(null)).toBeUndefined();
+        expect(themePreviewTitle(undefined)).toBeUndefined();
     });
 });

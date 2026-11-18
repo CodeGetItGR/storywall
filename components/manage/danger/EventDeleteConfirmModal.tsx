@@ -8,6 +8,7 @@ import type { EventDeletionStep } from '@/hooks/useEventDeletionFlow';
 
 export function EventDeleteConfirmModal({
     draft = false,
+    variant = 'center',
     open,
     step,
     otpCode,
@@ -24,6 +25,7 @@ export function EventDeleteConfirmModal({
 }: {
     // A draft has no guests or content yet, so it gets its own wording.
     draft?: boolean;
+    variant?: 'center' | 'sheet';
     open: boolean;
     step: EventDeletionStep;
     otpCode: string;
@@ -48,10 +50,12 @@ export function EventDeleteConfirmModal({
             open={open}
             title={draft ? t('draft.delete.title') : t('settings.dangerZone.confirmTitle')}
             size="md"
+            variant={variant}
             body={
                 <div className="flex flex-col gap-3">
                     {/* Deletion explanation */}
-                    <p>{isVerifyStep ? t('settings.dangerZone.otp.verifyBody', { digits: codeDigits }) : draft ? t('draft.delete.body') : t('settings.dangerZone.confirmBody')}</p>
+                    {/* A live event's page already says what deleting does, so only a draft shows a warning step. */}
+                    <p>{isVerifyStep ? t('settings.dangerZone.otp.verifyBody', { digits: codeDigits }) : t('draft.delete.body')}</p>
 
                     {isVerifyStep && (
                         <>

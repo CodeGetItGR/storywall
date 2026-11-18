@@ -5,7 +5,8 @@ import type { InvitationDraftImageDto } from '@/lib/invitation/programIconUpload
 
 // Where the editor's uploads go: a host's draft, or the admin's theme. Either way the
 // document names the image by the id the upload answers with.
-export type UploadedImage = { mediaId: string; url: string };
+// A theme asset also says its size, which a frame keeps.
+export type UploadedImage = { mediaId: string; url: string; width?: number; height?: number };
 export type ImageUploader = (file: Blob) => Promise<UploadedImage>;
 
 function formWith(file: Blob): FormData {
@@ -25,6 +26,6 @@ export function draftImageUploader(draftId: string): ImageUploader {
 export function themeImageUploader(themeId: string): ImageUploader {
     return async (file) => {
         const saved = await api.postForm<AdminInvitationThemeAssetDto>(endpoints.admin.invitationThemes.assets(themeId), formWith(file));
-        return { mediaId: saved.assetId, url: saved.url };
+        return { mediaId: saved.assetId, url: saved.url, width: saved.width, height: saved.height };
     };
 }

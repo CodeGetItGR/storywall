@@ -38,7 +38,7 @@ export function QuickAccessBar() {
             { moduleKey: 'stories', href: '#stories', icon: Image, visible: false, key: 'stories' },
             {
                 moduleKey: 'rsvp',
-                href: isHost ? routes.events.tools.rsvp(eventId) : routes.events.tools.rsvpSubmit(eventId),
+                href: isHost ? routes.events.manage(eventId, { tab: 'rsvp' }) : routes.events.tools.rsvpSubmit(eventId),
                 icon: Ticket,
                 visible: false,
                 key: 'rsvp',

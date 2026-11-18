@@ -84,8 +84,15 @@ describe('RsvpListPanel', () => {
         expect(phoneList().getByText('Anna')).toBeTruthy();
         expect(phoneList().queryByText('Host')).toBeNull();
         // Both attending, two guests: the filter counts each person once.
-        expect(screen.getByRole('option', { name: `${t.rsvpFilters.all} (2)` })).toBeTruthy();
-        expect(screen.getByRole('option', { name: `${t.rsvpBreakdown.attending} (2)` })).toBeTruthy();
+        expect(screen.getByRole('button', { name: `${t.rsvpFilters.all} 2` })).toBeTruthy();
+        expect(screen.getByRole('button', { name: `${t.rsvpBreakdown.attending} 2` })).toBeTruthy();
+    });
+
+    it('filters the list from a chip', () => {
+        renderPanel();
+        fireEvent.click(screen.getByRole('button', { name: `${t.rsvpBreakdown.declined} 0` }));
+        expect(screen.getByText(t.rsvpFilters.empty)).toBeTruthy();
+        expect(screen.queryByText('Anna')).toBeNull();
     });
 
     it('marks a possible duplicate and keeps it on the host’s say-so', async () => {

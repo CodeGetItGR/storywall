@@ -11,7 +11,7 @@ import { useLoginForm } from '@/hooks/useLoginForm';
 // isFinishing: signed in, waiting for the next screen; the button stays busy.
 export function AccountSignIn({ onSignedIn, isFinishing }: { onSignedIn: () => void; isFinishing: boolean }) {
     const t = useTranslations('LoginPage');
-    const form = useLoginForm({ inviteToken: null, initialEmail: '', onSignedIn });
+    const form = useLoginForm({ inviteToken: null, entry: 'create', initialEmail: '', onSignedIn });
 
     return (
         <div className="flex flex-col gap-5">

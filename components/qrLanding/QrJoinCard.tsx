@@ -2,6 +2,7 @@ import { useTranslations } from 'next-intl';
 
 import { QrJoinPreview } from '@/components/qrLanding/QrJoinPreview';
 import { AppLink } from '@/components/ui/AppLink';
+import { trackFlow } from '@/lib/flowTracking';
 
 interface QrJoinCardProps {
     choice: 'join' | 'open';
@@ -10,6 +11,15 @@ interface QrJoinCardProps {
     title: string;
     // A guest without an account: sign-up and log-in in place of Join, both carrying the event's invite.
     accountHrefs: { register: string; login: string } | null;
+}
+
+// Counted like the invite page's buttons.
+function handleChooseRegister() {
+    trackFlow({ name: 'Invite Choice', choice: 'register' });
+}
+
+function handleChooseLogin() {
+    trackFlow({ name: 'Invite Choice', choice: 'login' });
 }
 
 const PRIMARY_CLASS =
@@ -36,11 +46,11 @@ export function QrJoinCard({ choice, href, coverSrc, title, accountHrefs }: QrJo
             {/* Actions */}
             {showAccountButtons ? (
                 <>
-                    <AppLink href={accountHrefs.register} className={PRIMARY_CLASS}>
+                    <AppLink href={accountHrefs.register} onClick={handleChooseRegister} className={PRIMARY_CLASS}>
                         {tInvite('createAccount')}
                     </AppLink>
                     <p className="-mt-1 text-center text-xs text-ink-muted">{t('choices.freeAccount')}</p>
-                    <AppLink href={accountHrefs.login} className={LINK_CLASS}>
+                    <AppLink href={accountHrefs.login} onClick={handleChooseLogin} className={LINK_CLASS}>
                         {tInvite('haveAccount')}
                     </AppLink>
                 </>

@@ -14,6 +14,7 @@ import { useCreateEventWizardDraft } from '@/hooks/useCreateEventWizardDraft';
 import { useDurationPicks } from '@/hooks/useDurationPicks';
 import { useCreateEvent, useUpdateEvent } from '@/hooks/useEvent';
 import { useThemePresetsForType } from '@/hooks/useEventTheme';
+import { useFlowEvent } from '@/hooks/useFlowEvent';
 import { useMe } from '@/hooks/useMe';
 import { usePartnerBrandingConsent } from '@/hooks/usePartnerBrandingConsent';
 import { usePlanTiersForEventType } from '@/hooks/usePlanTiersForEventType';
@@ -55,6 +56,7 @@ import { CREATE_EVENT_STEP_PARAM } from '@/lib/createEventWizardUrl';
 import { eventWindowFromLocalStart, formatDate, getScheduleDatetimeLocalBounds, isDatetimeLocalAfter, isDatetimeLocalBefore } from '@/lib/datetime';
 import { getLatestStartAt, projectCoverage } from '@/lib/eventCoverage';
 import { normalizeEventTypeSlug } from '@/lib/eventTypeSlug';
+import { flowErrorCode, trackFlow } from '@/lib/flowTracking';
 import { defaultSelectedPlan, liveInitialOptions, planAsksEventDetails, resolveInitialOption } from '@/lib/planTiers';
 import { getCurrentTimezone, getSupportedTimezones } from '@/lib/timezones';
 import type { CreateEventFormValue, CreateEventStep } from '@/providers/createEvent/CreateEventFormContext';
@@ -184,12 +186,20 @@ export function useCreateEventFormController({ mode = 'legacy' }: { mode?: Creat
     const coverageIfPaidNow = useMemo(() => projectCoverage({ hostingMonths: selectedOption?.months }), [selectedOption?.months]);
     const latestStartAt = getLatestStartAt(coverageIfPaidNow?.coverageEndsAt, appConfig?.coverage.minDaysAfterStart);
     const { startAtMin, startAtMax } = getScheduleDatetimeLocalBounds({ startAt, latestStartAt });
-    const scheduleError =
+    const scheduleIssue =
         startAt && isDatetimeLocalBefore(startAt, startAtMin)
-            ? t('validation.startInPast')
+            ? 'start_past'
             : startAt && latestStartAt && isDatetimeLocalAfter(startAt, startAtMax)
+              ? 'start_too_far'
+              : null;
+    const scheduleError =
+        scheduleIssue === 'start_past'
+            ? t('validation.startInPast')
+            : scheduleIssue === 'start_too_far' && latestStartAt
               ? t('validation.startTooFarAhead', { date: formatDate(locale, latestStartAt, { dateStyle: 'medium' }) })
               : null;
+    useFlowEvent(appConfig ? { name: 'Create Step', step, type: selectedEventType } : null);
+    useFlowEvent(asksDetails && scheduleIssue ? { name: 'Create Blocked', reason: scheduleIssue } : null);
     const projectedCoverage = asksDetails && scheduleError ? null : coverageIfPaidNow;
     const timezoneError = timezone && !isTimezoneValid ? t('validation.invalidTimezone') : null;
     const trimmedTitle = title.trim();
@@ -460,6 +470,7 @@ export function useCreateEventFormController({ mode = 'legacy' }: { mode?: Creat
                     });
                 } catch (err) {
                     setIsCheckoutPending(false);
+                    trackFlow({ name: 'Checkout Error', from: 'wizard', code: flowErrorCode(err) });
                     const errors = getFieldErrors(err) ?? {};
                     if (asksDetails && Object.keys(errors).length > 0) {
                         goToStep('details');
@@ -545,9 +556,11 @@ export function useCreateEventFormController({ mode = 'legacy' }: { mode?: Creat
                 if (run) rememberCreateEventCheckout(run, eventId);
                 // The run is done: the next wizard starts fresh, and Back from checkout opens the draft.
                 if (isWizard) clearDraft();
+                trackFlow({ name: 'Checkout Open', from: 'wizard', plan: selectedCode });
                 navigateToCheckout(eventId, checkout);
             } catch (checkoutError) {
                 setIsCheckoutPending(false);
+                trackFlow({ name: 'Checkout Error', from: 'wizard', code: flowErrorCode(checkoutError) });
                 if (consent.handleCheckoutError(checkoutError)) return;
                 // The duration was retired after it was picked: reload the plans
                 // so the host can choose one that is still on sale.

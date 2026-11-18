@@ -58,7 +58,7 @@ export function useBeforeJourney(event: EventDetailResponseDto, counts: JourneyC
 
     const settingsHref = routes.events.manage(event.id, { tab: 'settings' });
     const scheduleHref = routes.events.tools.schedule(event.id);
-    const rsvpHref = routes.events.tools.rsvp(event.id);
+    const rsvpHref = routes.events.manage(event.id, { tab: 'rsvp' });
     const giftHref = routes.events.tools.gifts(event.id);
     const qrHref = routes.events.invitationsQr(event.id);
 
