@@ -804,7 +804,7 @@ Replace the whole of `scripts/visual/ci.ts` with:
 //   capture-base --share 0/6 --plan <file> --storybook <dir> --out <dir>    capture one share of the base build's stories
 //   compare-share --share 0/6 --plan <file> --base <sha> --base-records <file> --base-storybook <dir>
 //                                                                           compare one share with the base into visual-output/report
-//   join-report --storybook <dir> --base <sha> --timings <file>             join the share reports into manifest.json
+//   join-report --plan <file> --storybook <dir> --base <sha> --timings <file>  join the share reports into manifest.json
 //   join --storybook <dir> --dir <dir> --sha <sha> [--timings <file>]       join the shares' records into captures.json
 //   base-state --sha <sha> --cache-hit <true|false>                         write state=saved|pending|missing and run-id to $GITHUB_OUTPUT
 //   wait-baseline --run <id> --minutes <n>                                  wait for that run to finish
@@ -949,7 +949,9 @@ async function compareShare() {
 function joinReport() {
     const baseSha = required('base');
     const added = git('diff', '--diff-filter=A', '--name-only', baseSha, 'HEAD').split('\n').filter(Boolean);
+    const { total } = readJson<SharePlan>(required('plan'));
     const { manifest, headRecords } = joinShareReports(REPORT_DIR, targetsFrom(required('storybook')), {
+        total,
         baseSha,
         headSha: git('rev-parse', 'HEAD'),
         missingStories: findMissingStories(added, existsSync),
@@ -969,10 +971,20 @@ function joinRecords() {
     print(`Joined ${joined.length} captures`);
 }
 
+// A failed lookup only means the shares capture the base themselves, so it never fails the build.
+async function pendingRunOrNull(sha: string): Promise<number | null> {
+    try {
+        return await findPendingBaselineRun(github(), sha);
+    } catch (error) {
+        print(`Could not look for a baseline run: ${error instanceof Error ? error.message : String(error)}`);
+        return null;
+    }
+}
+
 // saved: the cache has the base. pending: a visual-baseline run for it is still going. missing: neither.
 async function baseStateStep() {
     const cacheHit = required('cache-hit') === 'true';
-    const runId = cacheHit ? null : await findPendingBaselineRun(github(), required('sha'));
+    const runId = cacheHit ? null : await pendingRunOrNull(required('sha'));
     const state = baseState(cacheHit, runId);
     print(state === 'pending' ? `Baseline run ${runId} is still going` : `The base is ${state}`);
     if (process.env.GITHUB_OUTPUT) appendFileSync(process.env.GITHUB_OUTPUT, `state=${state}\nrun-id=${runId ?? ''}\n`);
@@ -1335,7 +1347,7 @@ In `scripts/visual/workflows.test.ts`:
 
     it('compares in each share', () => {
         expect(job(check, 'capture')).toContain('compare-share --share "$SHARE"');
-        expect(job(check, 'report')).toContain('join-report --storybook storybook-static --base "$BASE_SHA"');
+        expect(job(check, 'report')).toContain('join-report --plan visual-runtime/share-plan.json --storybook storybook-static --base "$BASE_SHA"');
     });
 ```
 
@@ -1595,7 +1607,7 @@ Keep `on`, `concurrency`, `permissions`, `env`, `start` and `publish` as they ar
                   merge-multiple: true
                   path: visual-output/report
 
-            - run: node visual-runtime/ci.mjs join-report --storybook storybook-static --base "$BASE_SHA" --timings visual-output/timings/timings.json
+            - run: node visual-runtime/ci.mjs join-report --plan visual-runtime/share-plan.json --storybook storybook-static --base "$BASE_SHA" --timings visual-output/timings/timings.json
 
             - uses: actions/upload-artifact@v7
               with:
