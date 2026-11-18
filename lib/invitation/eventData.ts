@@ -11,7 +11,8 @@ export function invitationEventDataFromDetail(event: EventDetailResponseDto, joi
     return {
         eventType: event.eventType,
         title: event.title,
-        timezone: event.schedule.timezone,
+        // Only a lite event has no date or time zone, and then nothing here is shown in one.
+        timezone: event.schedule.timezone ?? 'UTC',
         startAt: event.schedule.startAt || null,
         rsvp: has('rsvp') ? { deadline: event.schedule.rsvpDeadline } : null,
         cover: cover && cover.mediaType === 'IMAGE' ? { mediaId: cover.id, width: cover.width, height: cover.height } : null,

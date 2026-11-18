@@ -46,6 +46,7 @@ export function OverviewDraftPanel({
     eventType,
     startAt,
     endAt,
+    asksStartDate,
     projectedCoverage,
     currentPlan,
     currentOption,
@@ -65,6 +66,8 @@ export function OverviewDraftPanel({
     eventType: EventTypeConvention;
     startAt: string | null;
     endAt: string | null;
+    // A lite draft is paid for without a date, and has none to move.
+    asksStartDate: boolean;
     projectedCoverage: ProjectedCoverageDto | null;
     currentPlan: PlanTierResponseDto | undefined;
     // The draft's duration while it is on sale; null once it was retired.
@@ -88,10 +91,15 @@ export function OverviewDraftPanel({
     const tBilling = useTranslations('EventPlanSettingsPage');
     const locale = useLocale();
     const eventTypeCopy = useLocalizedAppEventTypeCopy();
-    const canPay = Boolean(startAt);
+    const canPay = !asksStartDate || Boolean(startAt);
     const planActivation = currentPlan && currentOption ? getOptionPriceDetails(currentPlan, currentOption) : null;
 
-    const duration = useDraftDuration({ eventId, options: durationOptions, currentOptionId: savedOptionId, startAt });
+    const duration = useDraftDuration({
+        eventId,
+        options: durationOptions,
+        currentOptionId: savedOptionId,
+        startAt: asksStartDate ? startAt : null,
+    });
     // Checkout needs the main host, a duration on sale that covers the start, and no duration save in flight.
     const canCheckout = canPurchase && Boolean(currentOption) && !duration.isSaving && !duration.selectedTooShort;
     // Only quoted once there is a start date too.
@@ -246,7 +254,7 @@ export function OverviewDraftPanel({
                 )}
 
                 {/* Activation disclosures */}
-                {canPay && <ActivationDisclosures projectedCoverage={projectedCoverage} />}
+                {canPay && <ActivationDisclosures projectedCoverage={projectedCoverage} hasEventDate={asksStartDate} />}
 
                 {/* Gift account: like buying, only the main host may set it (4019 otherwise) */}
                 {wishlistAvailable && canPurchase && (
@@ -301,7 +309,7 @@ export function OverviewDraftPanel({
             </div>
 
             {/* Move the date */}
-            <DraftStartDateModal date={startDate} eventType={eventType} />
+            {asksStartDate && <DraftStartDateModal date={startDate} eventType={eventType} />}
         </div>
     );
 }

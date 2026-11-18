@@ -109,7 +109,7 @@ export function eventsForInvitation({
     const hosted = new Set(memberships.filter((member) => member.role === 'HOST' && !member.deletedAt).map((member) => member.eventId));
     return events
         .filter((event) => hosted.has(event.id) && event.eventType === eventType && !event.deletedAt && !eventsWithInvitation.has(event.id))
-        .sort((left, right) => left.schedule.startAt.localeCompare(right.schedule.startAt));
+        .sort((left, right) => (left.schedule.startAt ?? '').localeCompare(right.schedule.startAt ?? ''));
 }
 
 // The new event's request: the invitation's details, the host's answers where it had none, the plan.

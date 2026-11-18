@@ -2,6 +2,7 @@ import { act, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { useMarketingPlanOptions } from '@/hooks/useMarketingPlanOptions';
+import { planRequirementsOf } from '@/lib/__fixtures__/planRequirements';
 import type { AppMediaConfigDto, PlanTierResponseDto } from '@/lib/api/types';
 
 vi.mock('next-intl', () => ({ useLocale: () => 'en' }));
@@ -37,6 +38,7 @@ function plan(code: string, moduleKeys: string[], amountMinor: number, sortOrder
             { id: `${code}-o`, kind: 'INITIAL', months: 3, priceAmountMinor: amountMinor, promoPriceAmountMinor: null, sortOrder: 0, active: true },
         ],
         extensionOptions: [],
+        requirements: planRequirementsOf(moduleKeys),
     } as unknown as PlanTierResponseDto;
 }
 

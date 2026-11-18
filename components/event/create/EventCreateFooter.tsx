@@ -20,10 +20,11 @@ export function EventCreateFooter() {
         isEmailVerified,
         consentSatisfied,
         goToType,
-        goToDetails,
         goToPlan,
-        goToTheme,
         goToOverview,
+        goToNextStep,
+        goToPreviousStep,
+        stepAfterPlan,
         themeStepAvailable,
     } = useCreateEventForm();
 
@@ -55,10 +56,14 @@ export function EventCreateFooter() {
                         <button
                             type="button"
                             disabled={!canContinuePlan}
-                            onClick={goToDetails}
+                            onClick={goToNextStep}
                             className="min-h-11 flex-2 rounded-full text-sm font-semibold text-white transition-opacity bg-gradient-brand hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
                         >
-                            {t('continueToDetails')}
+                            {stepAfterPlan === 'details'
+                                ? t('continueToDetails')
+                                : stepAfterPlan === 'theme'
+                                  ? t('continueToTheme')
+                                  : t('continueToOverview')}
                         </button>
                     </div>
                 )}
@@ -87,7 +92,7 @@ export function EventCreateFooter() {
                     <div className="flex gap-3">
                         <button
                             type="button"
-                            onClick={goToDetails}
+                            onClick={goToPreviousStep}
                             className="min-h-11 flex-1 rounded-full border border-border text-sm font-semibold text-ink"
                         >
                             {t('actions.back')}
@@ -111,7 +116,7 @@ export function EventCreateFooter() {
                     <div className="flex gap-3">
                         <button
                             type="button"
-                            onClick={themeStepAvailable ? goToTheme : goToDetails}
+                            onClick={goToPreviousStep}
                             disabled={isSubmitPending}
                             className="min-h-11 flex-1 rounded-full border border-border text-sm font-semibold text-ink"
                         >
@@ -120,7 +125,7 @@ export function EventCreateFooter() {
                         <button
                             form={formId}
                             type="submit"
-                            disabled={INCIDENT_MODE || isSubmitPending || !isEmailVerified || !consentSatisfied}
+                            disabled={INCIDENT_MODE || isSubmitPending || !isEmailVerified || !consentSatisfied || !canSubmitDetails}
                             className="flex min-h-11 flex-2 items-center justify-center gap-2 rounded-full text-sm font-semibold text-white transition-opacity bg-gradient-brand hover:opacity-90 disabled:opacity-40"
                         >
                             {isSubmitPending ? <Loader2 className="h-4 w-4 animate-spin" /> : t('submitAndPay')}

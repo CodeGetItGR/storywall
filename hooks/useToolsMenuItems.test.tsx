@@ -2,6 +2,7 @@ import { renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { useHostMenuItems, useToolsMenuItems } from '@/hooks/useToolsMenuItems';
+import { capabilitiesOf } from '@/lib/__fixtures__/eventCapabilities';
 
 const mocks = vi.hoisted(() => ({
     activeEvent: null as Record<string, unknown> | null,
@@ -215,7 +216,8 @@ describe('useHostMenuItems', () => {
     // A lite event (no posts) has no upload or invitation codes: its guest code lives on its home.
     it('hides both QR pages on a lite event and keeps only its gallery and wishbook tools', () => {
         mocks.isHost = true;
-        mocks.activeEvent = { ...event(), modules: event().modules.filter((module) => module.moduleKey !== 'posts') };
+        const modules = event().modules.filter((module) => module.moduleKey !== 'posts');
+        mocks.activeEvent = { ...event(), modules, capabilities: capabilitiesOf(modules) };
         expect(renderHook(() => useHostMenuItems()).result.current.map((item) => item.key)).toEqual(['manage']);
         expect(renderHook(() => useToolsMenuItems()).result.current.map((item) => item.key)).toEqual(['gallery', 'wishbook']);
     });

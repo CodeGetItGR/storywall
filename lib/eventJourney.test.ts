@@ -1,10 +1,12 @@
 import { describe, expect, it } from 'vitest';
 
 import type { HelpProgress } from '@/hooks/useHelpProgress';
+import { capabilitiesOf } from '@/lib/__fixtures__/eventCapabilities';
 import type { EventSessionResponseDto } from '@/lib/api/types';
 import { addDays, daysBetween, localDay } from '@/lib/datetime';
 import {
     currentPhase,
+    hasEventDate,
     isOverviewPath,
     journeyPrintHref,
     journeyStepsLeft,
@@ -106,7 +108,7 @@ describe('sessionStates', () => {
 
 describe('journeyPrintHref', () => {
     function withModules(modules: { moduleKey: string; isEnabled: boolean; isAvailable: boolean }[]) {
-        return { id: 'e1', status: 'ACTIVE', deletedAt: null, modules } as never;
+        return { id: 'e1', status: 'ACTIVE', deletedAt: null, modules, capabilities: capabilitiesOf(modules) } as never;
     }
 
     it('opens the gallery on a lite event', () => {
@@ -120,19 +122,20 @@ describe('journeyPrintHref', () => {
 const posts = { moduleKey: 'posts', isEnabled: true, isAvailable: true };
 
 function fullEvent(over: Record<string, unknown> = {}) {
-    return {
+    const event = {
         id: 'e1',
         status: 'ACTIVE',
         sessions: [],
         schedule: { startAt: '2026-12-12T16:00:00Z', timezone: tz },
-        // `posts` makes it a full event: isLiteEvent says lite when the plan leaves out the feed.
+        // `posts` makes it a full event: its capabilities say lite when the plan leaves out the feed.
         modules: [
             posts,
             { moduleKey: 'rsvp', isEnabled: true, isAvailable: true },
             { moduleKey: 'wishlist', isEnabled: true, isAvailable: true },
         ],
         ...over,
-    } as never;
+    };
+    return { ...event, capabilities: capabilitiesOf(event.modules) } as never;
 }
 
 const noneDone: HelpProgress = { details: false, rsvp: false, giftAccount: false, schedule: false, invitations: false };
@@ -145,8 +148,8 @@ describe('setupStepKeys', () => {
     it('drops RSVP and the gift account when those modules are off', () => {
         expect(setupStepKeys(fullEvent({ modules: [posts] }))).toEqual(['details', 'schedule', 'invitations']);
     });
-    it('drops invitations for a lite event', () => {
-        expect(setupStepKeys(fullEvent({ modules: [] }))).toEqual(['details', 'schedule']);
+    it('drops the schedule and invitations for a lite event', () => {
+        expect(setupStepKeys(fullEvent({ modules: [] }))).toEqual(['details']);
     });
 });
 
@@ -187,5 +190,20 @@ describe('isOverviewPath', () => {
         expect(isOverviewPath('e1', routes.events.manage('e1'), 'tab=members')).toBe(false);
         expect(isOverviewPath('e1', routes.events.invitationsQr('e1'), '')).toBe(false);
         expect(isOverviewPath('e1', routes.events.feed('e1'), '')).toBe(false);
+    });
+});
+
+// A lite event may have no date or time zone: it stays before its day and has no primary day.
+describe('an event without a date', () => {
+    const undated = { sessions: [], schedule: { startAt: null, timezone: null } } as never;
+
+    it('has no primary day and is always before it', () => {
+        expect(hasEventDate(undated)).toBe(false);
+        expect(primaryDay(undated)).toBeNull();
+        expect(currentPhase(undated, new Date('2030-01-01T10:00:00Z'))).toBe('before');
+    });
+
+    it('still has a date when it has one', () => {
+        expect(hasEventDate(event([]))).toBe(true);
     });
 });

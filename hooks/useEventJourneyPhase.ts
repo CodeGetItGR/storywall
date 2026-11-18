@@ -5,7 +5,7 @@ import { useMemo, useState } from 'react';
 
 import type { EventDetailResponseDto } from '@/lib/api/types';
 import { daysBetween, formatDate, localDay } from '@/lib/datetime';
-import { afterStartDay, currentPhase, JOURNEY_PHASES, type JourneyPhase, primaryDay } from '@/lib/eventJourney';
+import { afterStartDay, currentPhase, JOURNEY_PHASES, type JourneyPhase, journeyTimeZone, primaryDay } from '@/lib/eventJourney';
 
 export type PhaseStep = { phase: JourneyPhase; label: string; caption: string; state: 'done' | 'current' | 'upcoming' };
 
@@ -14,7 +14,7 @@ function formatDay(locale: string, day: string, options: Intl.DateTimeFormatOpti
     return formatDate(locale, `${day}T12:00:00Z`, { ...options, timeZone: 'UTC' });
 }
 
-/** The phase the event is in, the phase on screen, and the stepper's three steps. */
+/** The phase the event is in, the phase on screen, and the stepper's three steps (none for an event without a date). */
 export function useEventJourneyPhase(event: Pick<EventDetailResponseDto, 'sessions' | 'schedule'>, now: Date = new Date()) {
     const t = useTranslations('ManagePage.journey');
     const locale = useLocale();
@@ -23,12 +23,14 @@ export function useEventJourneyPhase(event: Pick<EventDetailResponseDto, 'sessio
 
     const steps = useMemo<PhaseStep[]>(() => {
         const primary = primaryDay(event);
-        const today = localDay(now, event.schedule.timezone);
+        const afterStart = afterStartDay(event);
+        if (primary === null || afterStart === null) return [];
+        const today = localDay(now, journeyTimeZone(event));
         const currentIndex = JOURNEY_PHASES.indexOf(current);
         const captions: Record<JourneyPhase, string> = {
             before: currentIndex > 0 ? t('phases.done') : t('phases.daysToGo', { count: Math.max(0, daysBetween(today, primary)) }),
             day: current === 'day' ? t('phases.today') : formatDay(locale, primary, { weekday: 'short', day: 'numeric', month: 'short' }),
-            after: t('phases.from', { date: formatDay(locale, afterStartDay(event), { day: 'numeric', month: 'short' }) }),
+            after: t('phases.from', { date: formatDay(locale, afterStart, { day: 'numeric', month: 'short' }) }),
         };
         return JOURNEY_PHASES.map((phase, index) => ({
             phase,

@@ -15,6 +15,7 @@ import type {
     PlanTierResponseDto,
     PlatformModuleResponseDto,
 } from '@/lib/api/types';
+import { eventCapabilities } from '@/lib/eventCapabilities';
 
 export default function OverviewTab({
     event,
@@ -81,6 +82,7 @@ export default function OverviewTab({
                 eventType={eventType}
                 startAt={schedule.startAt}
                 endAt={schedule.endAt}
+                asksStartDate={eventCapabilities(event)?.showsDetailsSettings ?? true}
                 projectedCoverage={schedule.projectedCoverage}
                 currentPlan={currentPlan}
                 currentOption={currentOption}

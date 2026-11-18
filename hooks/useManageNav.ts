@@ -3,9 +3,9 @@
 import { useEventRouteContext } from '@/components/routing/EventRouteGate';
 import { useAppConfig } from '@/hooks/useAppConfig';
 import { useGiftSection } from '@/hooks/useGiftSection';
+import { eventCapabilities } from '@/lib/eventCapabilities';
 import { isEventDeleted, isModuleAvailable, isPrimaryHost, readableModuleKeys } from '@/lib/eventLifecycle';
 import { canPickTheme } from '@/lib/eventTheme';
-import { isLiteEvent } from '@/lib/liteEvents';
 import { visibleManageNav, visibleManageSections } from '@/lib/manageSections';
 import { useActiveMember } from '@/providers/EventProvider';
 
@@ -18,7 +18,9 @@ export function useManageNav() {
     const isDeleted = isEventDeleted(activeEvent);
     const canDelete = isPrimaryHost(activeEvent.hosts, activeMember?.id);
     const rsvpAvailable = isModuleAvailable(activeEvent.modules, 'rsvp');
-    const isLite = isLiteEvent(activeEvent);
+    const capabilities = eventCapabilities(activeEvent);
+    const takesGuests = capabilities?.takesGuests ?? true;
+    const showsShareLinks = capabilities?.showsShareLinks ?? true;
     const giftSection = useGiftSection(isHost && !isDraft && !isDeleted ? eventId : null, {
         isPrimaryHost: canDelete,
         eventModules: activeEvent.modules,
@@ -30,11 +32,11 @@ export function useManageNav() {
         giftAvailable: giftSection.available,
         themeAvailable: canPickTheme(activeEvent),
         // A lite event takes no guests, so its Members tab is only for co-hosts, when its plan has them.
-        membersAvailable: !isLite || isModuleAvailable(activeEvent.modules, 'co_hosts'),
+        membersAvailable: takesGuests || isModuleAvailable(activeEvent.modules, 'co_hosts'),
     });
     // The same rules as the event menu's Invitations & QR codes and Vendors entries (useHostMenuItems).
     const { groups, showDanger } = visibleManageNav(visibleSections, {
-        invitationsQr: !isDeleted && !isDraft && !isLite,
+        invitationsQr: !isDeleted && !isDraft && showsShareLinks,
         vendors: !isDeleted && !isDraft && readableModuleKeys(activeEvent).has('vendors'),
     });
 

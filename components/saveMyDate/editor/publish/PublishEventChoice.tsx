@@ -43,9 +43,10 @@ export function PublishEventChoice({ choice, onNew }: PublishEventChoiceProps) {
                                 <CalendarHeart className="h-5 w-5 shrink-0 text-ink-muted" aria-hidden="true" />
                                 <span className="min-w-0 flex-1">
                                     <span className="block truncate font-medium text-ink">{event.title}</span>
-                                    <span className="block text-ink-muted">
-                                        {formatDate(locale, event.schedule.startAt, { dateStyle: 'medium' })}
-                                    </span>
+                                    {/* A lite event may have no date. */}
+                                    {event.schedule.startAt && (
+                                        <span className="block text-ink-muted">{formatDate(locale, event.schedule.startAt, { dateStyle: 'medium' })}</span>
+                                    )}
                                 </span>
                                 {choice.choosingId === event.id ? (
                                     <Loader2 className="h-4 w-4 shrink-0 animate-spin text-ink-muted" aria-hidden="true" />

@@ -34,12 +34,14 @@ import { navigateToCheckout } from '@/lib/billing';
 import { checkoutAttribution } from '@/lib/campaignAttribution';
 import { getInitialSessionTitleKey } from '@/lib/createEventCatalog';
 import {
+    adjacentCreateEventStep,
     CREATE_EVENT_CODE_PARAM,
     CREATE_EVENT_OPTION_PARAM,
     CREATE_EVENT_PLAN_PARAM,
     CREATE_EVENT_RUN_PARAM,
     CREATE_EVENT_STEPS,
     CREATE_EVENT_TYPE_PARAM,
+    createEventDetailsRequest,
     effectiveThemePresetId,
     focusFirstInvalidField,
     isThemeStepAvailable,
@@ -56,7 +58,7 @@ import { eventWindowFromLocalStart, formatDate, getScheduleDatetimeLocalBounds, 
 import { getLatestStartAt, projectCoverage } from '@/lib/eventCoverage';
 import { normalizeEventTypeSlug } from '@/lib/eventTypeSlug';
 import { flowErrorCode, trackFlow } from '@/lib/flowTracking';
-import { defaultSelectedPlan, liveInitialOptions, resolveInitialOption } from '@/lib/planTiers';
+import { defaultSelectedPlan, liveInitialOptions, planAsksEventDetails, resolveInitialOption } from '@/lib/planTiers';
 import { getCurrentTimezone, getSupportedTimezones } from '@/lib/timezones';
 import type { CreateEventFormValue, CreateEventStep } from '@/providers/createEvent/CreateEventFormContext';
 
@@ -111,6 +113,7 @@ export function useCreateEventFormController({ mode = 'legacy' }: { mode?: Creat
     const [createdDraftSelection, setCreatedDraftSelection] = useState<{
         planCode: string;
         optionId: string;
+        title: string;
         startAt: string;
         themePresetId: string | null;
     } | null>(null);
@@ -165,7 +168,14 @@ export function useCreateEventFormController({ mode = 'legacy' }: { mode?: Creat
     const themePresets = planHasTheme ? themePresetsQuery.data : undefined;
     const themeStepAvailable = isThemeStepAvailable({ planHasTheme, isLoading: themePresetsQuery.isLoading, presets: themePresets });
     const selectedThemePresetId = effectiveThemePresetId(themePresetId, themePresets);
-    const steps = visibleCreateEventSteps(themeStepAvailable, showAccountStep);
+    const asksDetails = planAsksEventDetails(selectedPlan);
+    // The old page leaves the details step out when the plan asks for no date or place, and asks for the title on
+    // the overview step. The wizard keeps the step for the title.
+    const detailsStepShown = asksDetails || isWizard;
+    const steps = useMemo(
+        () => visibleCreateEventSteps(themeStepAvailable, showAccountStep, detailsStepShown),
+        [detailsStepShown, showAccountStep, themeStepAvailable],
+    );
     const { reset: resetGift, saveToDraft: saveGiftToDraft } = gift;
     const initialSessionTitleKey = getInitialSessionTitleKey(selectedEventType);
     const initialSessionTitle = t.has(initialSessionTitleKey) ? t(initialSessionTitleKey) : undefined;
@@ -190,8 +200,8 @@ export function useCreateEventFormController({ mode = 'legacy' }: { mode?: Creat
               ? t('validation.startTooFarAhead', { date: formatDate(locale, latestStartAt, { dateStyle: 'medium' }) })
               : null;
     useFlowEvent(appConfig ? { name: 'Create Step', step, type: selectedEventType } : null);
-    useFlowEvent(scheduleIssue ? { name: 'Create Blocked', reason: scheduleIssue } : null);
-    const projectedCoverage = scheduleError ? null : coverageIfPaidNow;
+    useFlowEvent(asksDetails && scheduleIssue ? { name: 'Create Blocked', reason: scheduleIssue } : null);
+    const projectedCoverage = asksDetails && scheduleError ? null : coverageIfPaidNow;
     const timezoneError = timezone && !isTimezoneValid ? t('validation.invalidTimezone') : null;
     const trimmedTitle = title.trim();
     const trimmedLocationName = locationName.trim();
@@ -199,10 +209,11 @@ export function useCreateEventFormController({ mode = 'legacy' }: { mode?: Creat
 
     const canReachPlan = eventTypes.length > 0;
     const canReachDetails = canReachPlan && Boolean(selectedCode && selectedOption);
-    const canSubmitDetails = Boolean(
-        trimmedTitle && startAt && isTimezoneValid && !scheduleError && trimmedLocationName && trimmedLocationAddress && gift.isValid,
-    );
-    const canReachOverview = canReachDetails && canSubmitDetails;
+    // What was typed for another plan stays in the form, and counts only on a plan that asks for it.
+    const hasRequiredDetails = !asksDetails || Boolean(startAt && isTimezoneValid && !scheduleError && trimmedLocationName && trimmedLocationAddress);
+    const canSubmitDetails = Boolean(trimmedTitle && hasRequiredDetails && gift.isValid);
+    // Without a details step, the title is asked on the overview step itself.
+    const canReachOverview = canReachDetails && (!detailsStepShown || canSubmitDetails);
     // While the account still needs signing in, review isn't reachable yet: the account step is.
     const reachableStep: CreateEventStep = canReachOverview
         ? needsAccount
@@ -227,6 +238,8 @@ export function useCreateEventFormController({ mode = 'legacy' }: { mode?: Creat
         const next = stepAfter(step, steps);
         if (next) goToStep(next);
     }, [goToStep, step, steps]);
+    // The old page's footer Back: the step before this one among the steps shown.
+    const goToPreviousStep = useCallback(() => goToStep(adjacentCreateEventStep(steps, step, -1)), [goToStep, step, steps]);
     // The top-left Back: the step before this one among the steps shown, over a finished account step.
     const goBack = useCallback(() => {
         const previous = stepBefore(step, steps, !needsAccount);
@@ -246,6 +259,9 @@ export function useCreateEventFormController({ mode = 'legacy' }: { mode?: Creat
         if (!appConfig || planTiersQuery.isLoading || isBootstrapping) return;
         if (CREATE_EVENT_STEPS.indexOf(step) > CREATE_EVENT_STEPS.indexOf(reachableStep)) {
             navigation.replace(reachableStep);
+        } else if (step === 'details' && !detailsStepShown) {
+            // Nothing to fill in for this plan: on to the next step shown.
+            navigation.replace(themeStepAvailable ? 'theme' : showAccountStep ? 'account' : 'overview');
         } else if (step === 'theme' && !themeStepAvailable) {
             // Nothing to pick for this plan or type, or the list failed: skip ahead.
             navigation.replace(showAccountStep ? 'account' : 'overview');
@@ -253,7 +269,7 @@ export function useCreateEventFormController({ mode = 'legacy' }: { mode?: Creat
             // The old flow, or an account that never needed it (a legacy or shared link).
             navigation.replace('overview');
         }
-    }, [appConfig, isBootstrapping, navigation, planTiersQuery.isLoading, reachableStep, showAccountStep, step, themeStepAvailable]);
+    }, [appConfig, detailsStepShown, isBootstrapping, navigation, planTiersQuery.isLoading, reachableStep, showAccountStep, step, themeStepAvailable]);
 
     // The pop-up opens on a URL with no step (it resumes the saved one). Write the step into that entry,
     // so going Back to it later shows that step instead of resuming wherever the host got to.
@@ -414,26 +430,31 @@ export function useCreateEventFormController({ mode = 'legacy' }: { mode?: Creat
                 return;
             }
             if (step !== 'overview') return;
-            if (!isEmailVerified || !consent.consentSatisfied || !partnerBranding.satisfied || !selectedOption) return;
+            if (!isEmailVerified || !consent.consentSatisfied || !partnerBranding.satisfied || !selectedOption || !canSubmitDetails) return;
 
-            let eventId = createdDraftEventId;
+            // A host can't move a draft to another plan, so a plan picked since the draft was created gets its own
+            // draft (as a changed event type does). The old one stays among the host's events, unpaid.
+            const existingDraft = createdDraftSelection?.planCode === selectedCode ? createdDraftSelection : null;
+            let eventId = existingDraft ? createdDraftEventId : null;
+            // A plan that doesn't ask for a date has none, whatever was typed before switching to it.
+            const draftStartAt = asksDetails ? startAt : '';
 
             if (!eventId) {
-                if (!canSubmitDetails) return;
-
                 const input: EventRequestDto = {
                     title: trimmedTitle,
                     planTierCode: selectedCode,
                     coverageOptionId: selectedOption.id,
                     eventType: selectedEventType,
                     visibility: 'PRIVATE',
-                    startAt: new Date(startAt).toISOString(),
-                    timezone,
-                    locationName: trimmedLocationName,
-                    locationAddress: trimmedLocationAddress,
-                    mapsUrl: mapsUrl.trim() || undefined,
+                    ...createEventDetailsRequest(asksDetails, {
+                        startAt,
+                        timezone,
+                        locationName: trimmedLocationName,
+                        locationAddress: trimmedLocationAddress,
+                        mapsUrl,
+                        initialSessionTitle,
+                    }),
                     brandingSettings: {},
-                    initialSessionTitle,
                     themePresetId: selectedThemePresetId ?? undefined,
                 };
 
@@ -442,14 +463,23 @@ export function useCreateEventFormController({ mode = 'legacy' }: { mode?: Creat
                     const event = await createEvent.mutateAsync(input);
                     eventId = event.id;
                     setCreatedDraftEventId(event.id);
-                    setCreatedDraftSelection({ planCode: selectedCode, optionId: selectedOption.id, startAt, themePresetId: selectedThemePresetId });
+                    setCreatedDraftSelection({
+                        planCode: selectedCode,
+                        optionId: selectedOption.id,
+                        title: trimmedTitle,
+                        startAt: draftStartAt,
+                        themePresetId: selectedThemePresetId,
+                    });
                 } catch (err) {
                     setIsCheckoutPending(false);
                     trackFlow({ name: 'Checkout Error', from: 'wizard', code: flowErrorCode(err) });
-                    if (Object.keys(getFieldErrors(err) ?? {}).length > 0) {
+                    const errors = getFieldErrors(err) ?? {};
+                    if (asksDetails && Object.keys(errors).length > 0) {
                         goToStep('details');
                         return;
                     }
+                    // The title's field shows its own error on the overview step.
+                    if (errors.title) return;
                     // The picked theme was archived or withdrawn since the list loaded: back to the step with a fresh list.
                     if (getErrorCode(err) === ERROR_CODES.THEME_PRESET_NOT_SELECTABLE) {
                         setThemePresetId(null);
@@ -463,19 +493,25 @@ export function useCreateEventFormController({ mode = 'legacy' }: { mode?: Creat
                 }
             }
 
-            // The draft exists already: a duration or start picked since then is saved
+            // The draft exists already: a title, duration or start picked since then is saved
             // to it first, because checkout charges the draft's duration and dates.
-            const durationChanged = createdDraftSelection?.planCode === selectedCode && createdDraftSelection.optionId !== selectedOption.id;
-            const startChanged = Boolean(createdDraftSelection && createdDraftSelection.startAt !== startAt);
-            if (createdDraftSelection && (durationChanged || startChanged)) {
+            const durationChanged = Boolean(existingDraft && existingDraft.optionId !== selectedOption.id);
+            const startChanged = Boolean(draftStartAt && existingDraft && existingDraft.startAt !== draftStartAt);
+            const titleChanged = Boolean(existingDraft && existingDraft.title !== trimmedTitle);
+            if (existingDraft && (durationChanged || startChanged || titleChanged)) {
                 const dates = startChanged ? eventWindowFromLocalStart(startAt) : null;
                 try {
                     setIsCheckoutPending(true);
-                    await updateDraft.mutateAsync({ ...(durationChanged ? { coverageOptionId: selectedOption.id } : {}), ...(dates ?? {}) });
+                    await updateDraft.mutateAsync({
+                        ...(titleChanged ? { title: trimmedTitle } : {}),
+                        ...(durationChanged ? { coverageOptionId: selectedOption.id } : {}),
+                        ...(dates ?? {}),
+                    });
                     setCreatedDraftSelection({
-                        ...createdDraftSelection,
-                        optionId: durationChanged ? selectedOption.id : createdDraftSelection.optionId,
-                        startAt,
+                        ...existingDraft,
+                        title: trimmedTitle,
+                        optionId: durationChanged ? selectedOption.id : existingDraft.optionId,
+                        startAt: draftStartAt || existingDraft.startAt,
                     });
                 } catch (updateError) {
                     setIsCheckoutPending(false);
@@ -485,12 +521,12 @@ export function useCreateEventFormController({ mode = 'legacy' }: { mode?: Creat
             }
 
             // A theme picked or cleared after the draft was created is saved to it too.
-            if (createdDraftSelection && createdDraftSelection.themePresetId !== selectedThemePresetId) {
+            if (existingDraft && existingDraft.themePresetId !== selectedThemePresetId) {
                 try {
                     setIsCheckoutPending(true);
                     const body: EventThemeRequestDto = { presetId: selectedThemePresetId };
                     await api.put(endpoints.events.theme(eventId), body);
-                    setCreatedDraftSelection({ ...createdDraftSelection, themePresetId: selectedThemePresetId });
+                    setCreatedDraftSelection({ ...existingDraft, themePresetId: selectedThemePresetId });
                 } catch (themeError) {
                     setIsCheckoutPending(false);
                     setError(toErrorMessage(themeError));
@@ -537,6 +573,7 @@ export function useCreateEventFormController({ mode = 'legacy' }: { mode?: Creat
         },
         [
             appliedCheckoutCode,
+            asksDetails,
             canSubmitDetails,
             clearDraft,
             consent,
@@ -581,7 +618,10 @@ export function useCreateEventFormController({ mode = 'legacy' }: { mode?: Creat
         goToOverview,
         goBack,
         goToNextStep,
+        goToPreviousStep,
         steps,
+        asksDetails,
+        stepAfterPlan: adjacentCreateEventStep(steps, 'plan', 1),
 
         eventTypes,
         selectedEventType,

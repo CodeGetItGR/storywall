@@ -25,6 +25,7 @@ const entry: UpgradeOptionResponseDto = {
     ],
     discountPercent: 10,
     discountLabel: 'Spring offer',
+    requirements: { takesGuests: true, needsSchedule: true, needsVenue: true },
 };
 
 describe('upgradeDurations', () => {

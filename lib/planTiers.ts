@@ -132,9 +132,15 @@ export function findPlansUnlockingModule(plans: PlanTierResponseDto[], moduleKey
     return publicAssignablePlans(plans, 'EVENT').filter((plan) => plan.moduleKeys.includes(moduleKey));
 }
 
-// A lite plan is sold without the posts module (photos or wishes only), so it sits apart from the full plans.
+// A lite plan takes no guests (photos or wishes only), so it sits apart from the full plans.
 export function isLitePlan(plan: PlanTierResponseDto): boolean {
-    return !plan.moduleKeys.includes('posts');
+    return plan.requirements?.takesGuests === false;
+}
+
+// Whether creating an event on the plan asks for its date and place. A lite plan asks for the title only.
+// True until the plan is known, so a full plan's steps don't flicker.
+export function planAsksEventDetails(plan: Pick<PlanTierResponseDto, 'requirements'> | null | undefined): boolean {
+    return plan?.requirements?.needsSchedule !== false;
 }
 
 // The plans split into full and lite, each in the input order.
