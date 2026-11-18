@@ -16,15 +16,21 @@ export function writeShareReport(dir: string, index: number, report: ShareReport
 }
 
 // Joins every share report in `dir` into manifest.json, then removes the share files.
+// Exactly share-0.json to share-(total-1).json must be there: removed (base-only) entries live only in share 0's
+// file, so a lost file could hide a removal even when every head capture is still covered.
 // The head records must cover the story list exactly once, as in joinShares. A share compares only its own
 // head records, so that also means no entry is reported twice. The joined head records feed the timings file.
 export function joinShareReports(
     dir: string,
     targets: CaptureTarget[],
-    { baseSha, headSha, missingStories }: { baseSha: string; headSha: string; missingStories: string[] },
+    { baseSha, headSha, missingStories, total }: { baseSha: string; headSha: string; missingStories: string[]; total: number },
 ): { manifest: Manifest; headRecords: CaptureRecord[] } {
     const files = existsSync(dir) ? readdirSync(dir).filter((name) => SHARE_FILE.test(name)) : [];
-    if (files.length === 0) throw new Error(`No share reports in ${dir}`);
+    for (let index = 0; index < total; index += 1) {
+        if (!files.includes(`share-${index}.json`)) throw new Error(`No report from share ${index + 1} of ${total}`);
+    }
+    const extra = files.find((name) => Number(name.slice('share-'.length, -'.json'.length)) >= total);
+    if (extra) throw new Error(`Unexpected share report: ${extra}`);
     const reports = files.map((name) => JSON.parse(readFileSync(join(dir, name), 'utf8')) as ShareReport);
     const headRecords = joinShares(
         targets,

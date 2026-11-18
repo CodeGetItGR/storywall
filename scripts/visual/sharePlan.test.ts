@@ -41,6 +41,10 @@ describe('planShares', () => {
         expect(planShares(targets('a', 'b'), { a: -1, b: Number.NaN }, 2).shares).toEqual([['a'], ['b']]);
     });
 
+    it.each([0, -1, 1.5, Number.NaN])('needs at least one whole share, not %s', (total) => {
+        expect(() => planShares(targets('a'), {}, total)).toThrow(`Expected at least 1 share, got ${total}`);
+    });
+
     it('gives every capture to exactly one share', () => {
         const ids = Array.from({ length: 50 }, (_, index) => `s${index}`);
         const timings = Object.fromEntries(ids.map((id, index) => [id, (index * 37) % 11]));

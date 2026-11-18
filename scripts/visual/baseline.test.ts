@@ -64,6 +64,25 @@ describe('waitForRun', () => {
             throw new Error('502');
         });
         await expect(waitForRun({ getStatus, sleep, now, limitMs: 60_000, intervalMs: 30_000 })).resolves.toBe('timeout');
-        expect(getStatus).toHaveBeenCalled();
+        // Polls at 0, 30s and 60s; at 60s nothing is left, so it stops.
+        expect(getStatus).toHaveBeenCalledTimes(3);
+        expect(now()).toBe(60_000);
+    });
+
+    it('rejects a limit that is not a number, instead of waiting forever', async () => {
+        const { now, sleep } = clock();
+        const getStatus = vi.fn(async () => 'in_progress');
+        await expect(waitForRun({ getStatus, sleep, now, limitMs: Number.NaN, intervalMs: 30_000 })).rejects.toThrow(
+            'Expected a limit and an interval in ms, got NaN and 30000',
+        );
+        expect(getStatus).not.toHaveBeenCalled();
+    });
+
+    it('rejects an interval of zero', async () => {
+        const { now, sleep } = clock();
+        const getStatus = vi.fn(async () => 'in_progress');
+        await expect(waitForRun({ getStatus, sleep, now, limitMs: 60_000, intervalMs: 0 })).rejects.toThrow(
+            'Expected a limit and an interval in ms, got 60000 and 0',
+        );
     });
 });

@@ -14,6 +14,7 @@ const usable = (ms: unknown): ms is number => typeof ms === 'number' && Number.i
 // Slowest first, each into the share with the least planned time. A capture with no timing counts as the median.
 // With no timings at all it deals round-robin, like shareOf.
 export function planShares(targets: CaptureTarget[], timings: Timings, total: number): SharePlan {
+    if (!Number.isInteger(total) || total < 1) throw new Error(`Expected at least 1 share, got ${total}`);
     const known = targets.map((target) => timings[target.id]).filter(usable);
     if (known.length === 0) {
         return { total, shares: Array.from({ length: total }, (_, index) => shareOf(targets, { index, total }).map((target) => target.id)) };
