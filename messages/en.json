@@ -270,10 +270,6 @@
                 "label": "Vendors",
                 "description": "Invite links and who joined."
             },
-            "announcement": {
-                "label": "Announcement",
-                "description": "Post a message for everyone."
-            },
             "manage": {
                 "label": "Dashboard",
                 "description": "Overview of your event"
@@ -9773,13 +9769,6 @@
             "playedGroup": "{count, plural, one {# song played} other {# songs played}}",
             "allPlayed": "All requests have been played.",
             "open": "Live list"
-        },
-        "announcement": {
-            "title": "Announcement",
-            "back": "Back",
-            "label": "Message",
-            "send": "Post",
-            "empty": "Write a message first."
         },
         "admin": {
             "title": "Vendors",
