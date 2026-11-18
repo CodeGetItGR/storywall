@@ -71,7 +71,7 @@ describe('base build for the recheck', () => {
         const buildKey = { 'visual-check': 'base-key', 'visual-baseline': 'key' } as const;
         for (const name of ['visual-check', 'visual-baseline'] as const) {
             const workflow = read(name);
-            const steps = workflow.split(/\n {12}- /).filter((step) => step.includes('actions/cache/'));
+            const steps = workflow.split(/\n {12}- /).filter((step) => step.includes('actions/cache/') && !step.includes('visual-timings-'));
             expect(steps.length, name).toBeGreaterThan(0);
             const output = `${buildKey[name]}: \${{ steps.lookup.outputs.cache-primary-key }}`;
             expect(job(workflow, 'build'), name).toContain(output);
@@ -85,9 +85,9 @@ describe('base build for the recheck', () => {
     });
 
     it('keeps the base build in the saved base folder', () => {
-        const compare = job(read('visual-check'), 'compare');
-        expect(compare).toMatch(/name: visual-base-storybook\n\s+path: visual-output\/base\/storybook\n/);
-        expect(compare).toContain('join --storybook visual-output/base/storybook --dir visual-output/base');
+        const report = job(read('visual-check'), 'report');
+        expect(report).toMatch(/name: visual-base-storybook\n\s+path: visual-output\/base\/storybook\n/);
+        expect(report).toContain('join --storybook visual-output/base/storybook --dir visual-output/base');
         const save = job(read('visual-baseline'), 'save');
         expect(save).toMatch(/name: visual-storybook\n\s+path: visual-output\/base\/storybook\n/);
         expect(save).toContain('join --storybook visual-output/base/storybook --dir visual-output/base');
@@ -127,7 +127,7 @@ describe('visual-check workflow', () => {
     });
 
     it('reports a failure in any job', () => {
-        expect(job(check, 'finish')).toContain('needs: [start, build, capture, compare, publish]');
+        expect(job(check, 'finish')).toContain('needs: [start, build, capture, report, publish]');
     });
 
     it('takes the base from the PR event, so a merge that lands meanwhile cannot move it', () => {
@@ -137,21 +137,67 @@ describe('visual-check workflow', () => {
         expect(check).not.toContain('origin/$BASE_REF');
     });
 
-    it.each(['build', 'capture', 'compare'])('gives %s, which runs PR code, read access only and no secrets', (name) => {
+    it.each(['build', 'capture', 'report'])('gives %s, which runs PR code, read access only and no secrets', (name) => {
         const block = job(check, name);
         expect(block).toMatch(/permissions:\n\s+contents: read\n/);
         expect(block).not.toMatch(/: write\b/);
         expect(block).not.toContain('secrets.');
-        expect(block).toContain('persist-credentials: false');
+        if (block.includes('actions/checkout')) expect(block).toContain('persist-credentials: false');
     });
 
-    it('gives compare time to capture the whole base itself when its saved captures were dropped', () => {
-        expect(job(check, 'compare')).toContain('timeout-minutes: 60');
+    it('lets only build and capture read Actions runs, to find and wait for the baseline run', () => {
+        expect(job(check, 'build')).toMatch(/permissions:\n\s+contents: read\n\s+actions: read\n/);
+        expect(job(check, 'capture')).toMatch(/permissions:\n\s+contents: read\n\s+actions: read\n/);
+        expect(job(check, 'report')).not.toContain('actions: read');
     });
 
-    it('compares only after every share is captured, and publishes after that', () => {
-        expect(job(check, 'compare')).toContain('needs: [build, capture]');
-        expect(job(check, 'publish')).toContain('needs: compare');
+    it('joins the report only after every share has compared, and publishes after that', () => {
+        expect(job(check, 'report')).toContain('needs: [build, capture]');
+        expect(job(check, 'publish')).toContain('needs: report');
+        expect(check).not.toMatch(/\n {4}compare:\n/);
+    });
+
+    it('runs npm ci only in the build job', () => {
+        expect(job(check, 'build')).toContain('run: npm ci');
+        for (const name of ['capture', 'report']) expect(job(check, name), name).not.toMatch(/\bnpm (ci|install|run)\b/);
+    });
+
+    it('packs the runtime in build and runs every later step from it', () => {
+        const build = job(check, 'build');
+        expect(build).toContain('node scripts/visual/pack.mjs');
+        expect(build).toContain('node visual-runtime/ci.mjs selfcheck');
+        expect(build).toMatch(/name: visual-runtime\n\s+path: visual-runtime\n/);
+        for (const name of ['capture', 'report']) expect(job(check, name), name).toContain('node visual-runtime/ci.mjs');
+    });
+
+    it('plans the shares from the newest timings', () => {
+        const build = job(check, 'build');
+        expect(build).toContain('restore-keys: visual-timings-');
+        expect(build).toContain('plan --storybook storybook-static --timings visual-output/timings/timings.json --out visual-runtime/share-plan.json');
+        expect(job(check, 'capture')).toContain('--plan visual-runtime/share-plan.json');
+        expect(job(check, 'report')).toContain('key: visual-timings-${{ github.run_id }}');
+    });
+
+    it('works out the base state in build', () => {
+        expect(job(check, 'build')).toContain('base-state --sha "$BASE_SHA" --cache-hit "$CACHE_HIT"');
+    });
+
+    it('waits up to 15 minutes for a baseline run that is still going', () => {
+        const capture = job(check, 'capture');
+        expect(capture).toContain("if: needs.build.outputs.base-state == 'pending'");
+        expect(capture).toContain('wait-baseline --run "$BASELINE_RUN" --minutes 15');
+        expect(capture.indexOf('wait-baseline')).toBeGreaterThan(capture.indexOf(' capture --share'));
+    });
+
+    it('captures its share of the base only when the cache still has none', () => {
+        const capture = job(check, 'capture');
+        expect(capture).toContain("if: steps.restore.outputs.cache-hit != 'true'");
+        expect(capture).toContain('capture-base --share "$SHARE" --plan visual-runtime/share-plan.json --storybook visual-output/base-storybook --out visual-output/base');
+    });
+
+    it('compares in each share', () => {
+        expect(job(check, 'capture')).toContain('compare-share --share "$SHARE"');
+        expect(job(check, 'report')).toContain('join-report --plan visual-runtime/share-plan.json --storybook storybook-static --base "$BASE_SHA"');
     });
 
     it('fails when the committed report page is out of date', () => {
