@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import type { VendorMeDto } from '@/lib/api/types';
 import { SITE_URL } from '@/lib/seo';
 import {
+    allowedVendorTypes,
     capabilitiesOfType,
     hasProAllowance,
     hasVendorCapability,
@@ -18,6 +19,7 @@ import {
     sortByVendorType,
     VENDOR_TYPES,
     vendorApplySearch,
+    vendorCapabilityRows,
     vendorCardActions,
     vendorInviteUrl,
     vendorQuickActions,
@@ -302,5 +304,41 @@ describe('vendorCardActions', () => {
 
     it('leaves out what is missing or unsafe to open', () => {
         expect(vendorCardActions({ website: 'javascript:alert(1)', phone: 'call me', email: null })).toEqual([]);
+    });
+});
+
+describe('allowedVendorTypes', () => {
+    const vendors = (allowedTypes: unknown) => [{ moduleKey: 'vendors' as const, configuration: { allowedTypes } }];
+
+    it('reads the vendors module allowedTypes in VENDOR_TYPES order', () => {
+        expect(allowedVendorTypes(vendors(['MUSIC', 'PLANNER', 'NOPE']))).toEqual(['PLANNER', 'MUSIC']);
+    });
+
+    it('reads a missing key, a missing module or no modules as none', () => {
+        expect(allowedVendorTypes([{ moduleKey: 'vendors', configuration: {} }])).toEqual([]);
+        expect(allowedVendorTypes([{ moduleKey: 'vendors', configuration: null }])).toEqual([]);
+        expect(allowedVendorTypes([{ moduleKey: 'gallery', configuration: { allowedTypes: ['PLANNER'] } }])).toEqual([]);
+        expect(allowedVendorTypes(undefined)).toEqual([]);
+    });
+});
+
+describe('vendorCapabilityRows', () => {
+    it('gives each tool type its own row and groups the rest in one', () => {
+        expect(vendorCapabilityRows(VENDOR_TYPES)).toEqual([
+            { kind: 'tools', type: 'PLANNER' },
+            { kind: 'tools', type: 'PHOTOGRAPHER' },
+            { kind: 'tools', type: 'VIDEOGRAPHER' },
+            { kind: 'tools', type: 'MUSIC' },
+            { kind: 'listed', types: ['VENUE', 'DECORATION', 'CATERING', 'OTHER'] },
+        ]);
+    });
+
+    it('lists only the allowed types and drops an empty group', () => {
+        expect(vendorCapabilityRows(['MUSIC', 'CATERING'])).toEqual([
+            { kind: 'tools', type: 'MUSIC' },
+            { kind: 'listed', types: ['CATERING'] },
+        ]);
+        expect(vendorCapabilityRows(['PHOTOGRAPHER'])).toEqual([{ kind: 'tools', type: 'PHOTOGRAPHER' }]);
+        expect(vendorCapabilityRows([])).toEqual([]);
     });
 });

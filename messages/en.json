@@ -9555,7 +9555,17 @@
             "removeNamed": "Remove {name}",
             "seats": "{used} / {max}",
             "full": "This event has reached its vendor limit.",
-            "fullWithUpgrade": "This event has reached its vendor limit. Upgrade to {plan} for {count, plural, one {# vendor} other {# vendors}}."
+            "fullWithUpgrade": "This event has reached its vendor limit. Upgrade to {plan} for {count, plural, one {# vendor} other {# vendors}}.",
+            "seatsSpoken": "{used} of {max} vendor seats used",
+            "can": {
+                "title": "What vendors can do",
+                "PLANNER": "Edits the schedule, posts announcements, sees the RSVP list and shares links.",
+                "PHOTOGRAPHER": "Adds pro photos, shares a sneak peek and gets your print picks.",
+                "VIDEOGRAPHER": "Adds pro videos and shares a sneak peek.",
+                "MUSIC": "Sees song requests live.",
+                "listed": "Shown in the vendor list.",
+                "others": "other vendors"
+            }
         },
         "bannerAlt": "Cover: {name}",
         "serviceTags": {

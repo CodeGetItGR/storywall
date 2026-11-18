@@ -1,4 +1,12 @@
-import type { EventUsageResponseDto, PartnerRole, VendorCapability, VendorMeDto, VendorRowDto, VendorServiceTag } from '@/lib/api/types';
+import type {
+    EventModuleResponseDto,
+    EventUsageResponseDto,
+    PartnerRole,
+    VendorCapability,
+    VendorMeDto,
+    VendorRowDto,
+    VendorServiceTag,
+} from '@/lib/api/types';
 import { APPLICATION_ROLES } from '@/lib/forBusinessApplication';
 import { routes } from '@/lib/routes';
 import { absoluteUrl } from '@/lib/seo';
@@ -253,3 +261,25 @@ export const SAMPLE_PRINT_SIZES: readonly { label: string; priceCents: number }[
 
 // How many of the vendor's own photos the vendor page header shows.
 export const VENDOR_HERO_PHOTOS_MAX = 5;
+
+// The vendor types this event's plan allows: its vendors module's allowedTypes, in VENDOR_TYPES order.
+// A missing key reads as none (the backend never treats it as "all"); no modules loaded yet reads as none too.
+export function allowedVendorTypes(modules: readonly Pick<EventModuleResponseDto, 'moduleKey' | 'configuration'>[] | undefined): PartnerRole[] {
+    const allowed = modules?.find((module) => module.moduleKey === 'vendors')?.configuration?.allowedTypes;
+    if (!Array.isArray(allowed)) return [];
+    return VENDOR_TYPES.filter((type) => allowed.includes(type));
+}
+
+// Types with tools of their own get a row each on the host's "What vendors can do"; the rest share one row.
+export type VendorToolType = 'PLANNER' | 'PHOTOGRAPHER' | 'VIDEOGRAPHER' | 'MUSIC';
+const VENDOR_TOOL_TYPES: readonly VendorToolType[] = ['PLANNER', 'PHOTOGRAPHER', 'VIDEOGRAPHER', 'MUSIC'];
+
+export type VendorCapabilityRow = { kind: 'tools'; type: VendorToolType } | { kind: 'listed'; types: PartnerRole[] };
+
+// The rows for the allowed types: one per tool type in VENDOR_TOOL_TYPES order, then one shared row
+// for every other allowed type (in VENDOR_TYPES order), left out when there are none.
+export function vendorCapabilityRows(allowed: readonly PartnerRole[]): VendorCapabilityRow[] {
+    const rows: VendorCapabilityRow[] = VENDOR_TOOL_TYPES.filter((type) => allowed.includes(type)).map((type) => ({ kind: 'tools', type }));
+    const listed = VENDOR_TYPES.filter((type) => allowed.includes(type) && !(VENDOR_TOOL_TYPES as readonly PartnerRole[]).includes(type));
+    return listed.length > 0 ? [...rows, { kind: 'listed', types: listed }] : rows;
+}
