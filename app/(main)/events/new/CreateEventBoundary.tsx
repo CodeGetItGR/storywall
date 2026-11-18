@@ -82,6 +82,8 @@ function CreateEventFormBody() {
         onSelectPlan,
         onSelectPlanDuration,
         isPlansLoading,
+        selectedPlan,
+        asksDetails,
     } = useCreateEventForm();
     const formShellRef = useRef<HTMLDivElement>(null);
     useScrollTopOnChange(formShellRef, step);
@@ -128,7 +130,8 @@ function CreateEventFormBody() {
                             />
                         )}
 
-                        {step === 'details' && <EventDetailsStep />}
+                        {/* Not until the plan is known: a link to a plan that asks for no details moves on to the overview. */}
+                        {step === 'details' && selectedPlan && asksDetails && <EventDetailsStep />}
 
                         {step === 'theme' && <EventThemeStep />}
 

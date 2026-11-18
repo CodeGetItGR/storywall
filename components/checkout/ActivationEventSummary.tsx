@@ -10,7 +10,8 @@ export function ActivationEventSummary({
     eventTypeName,
     startAt,
 }: {
-    eventTitle: string;
+    // Null when the page asks for the title in its own field.
+    eventTitle: string | null;
     eventTypeName: string;
     startAt: string | null;
 }) {
@@ -25,7 +26,7 @@ export function ActivationEventSummary({
                 <h3 id="activation-event-heading" className="text-[11px] font-semibold tracking-wide text-ink-faint uppercase">
                     {t('overview.event')}
                 </h3>
-                <p className="mt-1 font-semibold text-ink">{eventTitle}</p>
+                {eventTitle && <p className="mt-1 font-semibold text-ink">{eventTitle}</p>}
                 <p className="mt-0.5 text-sm text-ink-muted">
                     {eventTypeName}
                     {startAt && ` · ${dateFormatter.format(new Date(startAt))}`}

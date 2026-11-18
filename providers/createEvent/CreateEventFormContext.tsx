@@ -33,8 +33,15 @@ export interface CreateEventFormValue {
     goBack: () => void;
     // On to the next step shown (details → theme → account → review).
     goToNextStep: () => void;
-    // The steps shown for the current type and plan (the theme step only when there is one to pick).
+    // The old page's footer Back: the step before this one among the steps shown.
+    goToPreviousStep: () => void;
+    // The steps shown for the current type and plan (details unless the plan asks for nothing there, the theme
+    // step only when there is one to pick).
     steps: CreateEventStep[];
+    // The plan asks for the date and place. When it doesn't, the title and gift are asked on the overview step.
+    asksDetails: boolean;
+    // The step the plan step continues to.
+    stepAfterPlan: CreateEventStep;
 
     // Type step
     eventTypes: AppEventTypeResponseDto[];
