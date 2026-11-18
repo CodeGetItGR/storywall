@@ -56,6 +56,14 @@ export const Posted: Story = {
     args: { job: { ...postJob, status: 'success' } },
 };
 
+export const PostedWithShare: Story = {
+    args: { job: { ...postJob, status: 'success' }, onShare: fn() },
+};
+
+export const StoriesPostedWithShare: Story = {
+    args: { job: { ...storyJob, status: 'success', postedCount: 3 }, onShare: fn() },
+};
+
 export const PostFailed: Story = {
     args: { job: { ...postJob, status: 'error' } },
 };
