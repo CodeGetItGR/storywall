@@ -5,7 +5,7 @@ import { useMemo } from 'react';
 
 import { useAllowedVendorTypes } from '@/hooks/useAllowedVendorTypes';
 import type { PartnerRole } from '@/lib/api/types';
-import { vendorCapabilityTypes } from '@/lib/vendors';
+import { capitalizeFirst, vendorCapabilityTypes } from '@/lib/vendors';
 
 export type VendorCapabilityItem = { type: PartnerRole; title: string; body: string };
 
@@ -18,7 +18,7 @@ export function useVendorCapabilities(eventId: string): VendorCapabilityItem[] {
         () =>
             vendorCapabilityTypes(allowed).map((type) =>
                 type === 'OTHER'
-                    ? { type, title: t('manage.can.others'), body: t('manage.can.listed') }
+                    ? { type, title: capitalizeFirst(t('manage.can.others')), body: t('manage.can.listed') }
                     : { type, title: t(`types.${type}`), body: t(`manage.can.${type}`) },
             ),
         [allowed, t],

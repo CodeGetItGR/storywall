@@ -14,7 +14,7 @@ beforeEach(() => {
 });
 
 describe('useVendorCapabilities', () => {
-    it('gives every allowed type its own row, other vendors last', () => {
+    it('gives every allowed type its own row in picture order, other vendors last and capitalised', () => {
         const { result } = renderHook(() => useVendorCapabilities('e1'));
         expect(result.current).toEqual([
             { type: 'VENUE', title: 'types.VENUE', body: 'manage.can.VENUE' },
@@ -22,7 +22,7 @@ describe('useVendorCapabilities', () => {
             { type: 'PLANNER', title: 'types.PLANNER', body: 'manage.can.PLANNER' },
             { type: 'CATERING', title: 'types.CATERING', body: 'manage.can.CATERING' },
             { type: 'MUSIC', title: 'types.MUSIC', body: 'manage.can.MUSIC' },
-            { type: 'OTHER', title: 'manage.can.others', body: 'manage.can.listed' },
+            { type: 'OTHER', title: 'Manage.can.others', body: 'manage.can.listed' },
         ]);
     });
 

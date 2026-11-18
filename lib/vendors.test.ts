@@ -5,6 +5,7 @@ import { SITE_URL } from '@/lib/seo';
 import {
     allowedVendorTypes,
     capabilitiesOfType,
+    capitalizeFirst,
     hasProAllowance,
     hasVendorCapability,
     instagramHandle,
@@ -321,6 +322,14 @@ describe('allowedVendorTypes', () => {
         expect(allowedVendorTypes([{ moduleKey: 'vendors', configuration: null }])).toEqual([]);
         expect(allowedVendorTypes([{ moduleKey: 'gallery', configuration: { allowedTypes: ['PLANNER'] } }])).toEqual([]);
         expect(allowedVendorTypes(undefined)).toEqual([]);
+    });
+});
+
+describe('capitalizeFirst', () => {
+    it('upper-cases only the first letter, keeping the Greek accent', () => {
+        expect(capitalizeFirst('other vendors')).toBe('Other vendors');
+        expect(capitalizeFirst('άλλοι επαγγελματίες')).toBe('Άλλοι επαγγελματίες');
+        expect(capitalizeFirst('')).toBe('');
     });
 });
 

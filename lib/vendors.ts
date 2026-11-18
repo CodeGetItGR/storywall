@@ -297,6 +297,12 @@ export function vendorSceneMarkerPosition(type: VendorSceneType): { left: number
     };
 }
 
+// The text with its first letter in upper case ("other vendors" → "Other vendors"). Plain toUpperCase keeps
+// the Greek accent (ά → Ά); the Greek locale's upper case drops it.
+export function capitalizeFirst(text: string): string {
+    return text.charAt(0).toUpperCase() + text.slice(1);
+}
+
 // The order of the "What vendors can do" rows: the picture's order, then OTHER.
 const VENDOR_CAPABILITY_ORDER: readonly PartnerRole[] = [...VENDOR_SCENE_TYPES, 'OTHER'];
 
