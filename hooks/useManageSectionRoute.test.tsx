@@ -6,9 +6,10 @@ import { useManageSectionRoute } from '@/hooks/useManageSectionRoute';
 import type { ManageSection } from '@/lib/manageSections';
 import { routes } from '@/lib/routes';
 
-const mocks = vi.hoisted(() => ({ query: '', replacePageUrl: vi.fn(), pushPageEntry: vi.fn() }));
+const mocks = vi.hoisted(() => ({ query: '', replacePageUrl: vi.fn(), pushPageEntry: vi.fn(), scrollAppToTop: vi.fn() }));
 vi.mock('next/navigation', () => ({ useSearchParams: () => new URLSearchParams(mocks.query) }));
 vi.mock('@/lib/overlayHistory', () => ({ replacePageUrl: mocks.replacePageUrl, pushPageEntry: mocks.pushPageEntry }));
+vi.mock('@/lib/scrollContainer', () => ({ scrollAppToTop: mocks.scrollAppToTop }));
 
 const visibleSections: ManageSection[] = ['overview', 'settings', 'rsvp', 'members', 'billing'];
 const options = { eventId: 'e1', isDraft: false, isDeleted: false, visibleSections, pendingSections: [] };
@@ -16,8 +17,8 @@ const options = { eventId: 'e1', isDraft: false, isDeleted: false, visibleSectio
 beforeEach(() => {
     mocks.replacePageUrl.mockClear();
     mocks.pushPageEntry.mockClear();
+    mocks.scrollAppToTop.mockClear();
     window.history.replaceState(null, '');
-    vi.spyOn(window, 'scrollTo').mockImplementation(() => undefined);
     vi.spyOn(window.history, 'back').mockImplementation(() => undefined);
 });
 
@@ -48,7 +49,7 @@ describe('useManageSectionRoute', () => {
         act(() => result.current.navigateToSection('rsvp'));
         expect(mocks.pushPageEntry).toHaveBeenCalledWith(`${routes.events.manage('e1')}?tab=rsvp`, { manageOpenedFromOverview: true });
         expect(mocks.replacePageUrl).not.toHaveBeenCalled();
-        expect(window.scrollTo).toHaveBeenCalled();
+        expect(mocks.scrollAppToTop).toHaveBeenCalled();
     });
 
     it('moving between sections replaces the entry', () => {
