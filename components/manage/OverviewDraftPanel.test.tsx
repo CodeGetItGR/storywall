@@ -1,9 +1,13 @@
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { OverviewDraftPanel } from '@/components/manage/OverviewDraftPanel';
 
-const mocks = vi.hoisted(() => ({ durationStartAt: undefined as string | null | undefined, quoteEnabled: undefined as boolean | undefined }));
+const mocks = vi.hoisted(() => ({
+    durationStartAt: undefined as string | null | undefined,
+    quoteEnabled: undefined as boolean | undefined,
+    openDetails: vi.fn(),
+}));
 
 vi.mock('next-intl', () => ({
     useLocale: () => 'en',
@@ -33,7 +37,9 @@ vi.mock('@/hooks/useDraftActivationCheckout', () => ({
     },
 }));
 vi.mock('@/hooks/useDraftStartDate', () => ({ useDraftStartDate: () => ({ open: vi.fn() }) }));
+vi.mock('@/hooks/useDraftEventDetails', () => ({ useDraftEventDetails: () => ({ open: mocks.openDetails }) }));
 vi.mock('@/components/manage/DraftStartDateModal', () => ({ DraftStartDateModal: () => <div>start date modal</div> }));
+vi.mock('@/components/manage/DraftEventDetailsModal', () => ({ DraftEventDetailsModal: () => <div>event details modal</div> }));
 vi.mock('@/components/manage/DraftDeleteSection', () => ({ DraftDeleteSection: () => null }));
 vi.mock('@/components/checkout/CollaborationCodeSection', () => ({ CollaborationCodeSection: () => null }));
 vi.mock('@/components/checkout/WithdrawalConsentSection', () => ({ WithdrawalConsentSection: () => <div>consent</div> }));
@@ -96,11 +102,22 @@ describe('OverviewDraftPanel', () => {
         expect(mocks.quoteEnabled).toBe(false);
     });
 
+    it('opens the date and place from the button that asks for them', () => {
+        renderPanel({ asksStartDate: true, startAt: null });
+
+        expect(screen.getByText('event details modal')).toBeTruthy();
+        expect(screen.queryByText('start date modal')).toBeNull();
+
+        fireEvent.click(screen.getByRole('button', { name: /draft.addStartDate/ }));
+        expect(mocks.openDetails).toHaveBeenCalledOnce();
+    });
+
     it('lets a full draft with a date pay, as before', () => {
         renderPanel({ asksStartDate: true, startAt: '2027-06-01T10:00:00Z' });
 
         expect(screen.getByRole('button', { name: /draft.payAndPublish/ })).toBeTruthy();
         expect(screen.getByText('start date modal')).toBeTruthy();
+        expect(screen.queryByText('event details modal')).toBeNull();
         expect(screen.getByText('datesFixedTitle')).toBeTruthy();
         expect(mocks.durationStartAt).toBe('2027-06-01T10:00:00Z');
     });

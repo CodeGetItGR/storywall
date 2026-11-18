@@ -1,10 +1,11 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
 
 import type { ThemePresetDto } from '@/lib/api/types';
 import {
     adjacentCreateEventStep,
     createEventDetailsRequest,
     effectiveThemePresetId,
+    focusFirstInvalidField,
     isThemeStepAvailable,
     parseCreateEventStep,
     resolveCreateEventStep,
@@ -129,5 +130,34 @@ describe('stepAfter and stepBefore', () => {
 
     it('steps back over the account step once it is done', () => {
         expect(stepBefore('overview', steps, true)).toBe('details');
+    });
+});
+
+describe('focusFirstInvalidField', () => {
+    afterEach(() => {
+        document.body.innerHTML = '';
+    });
+
+    function renderForm(html: string) {
+        document.body.innerHTML = `<form id="f">${html}</form>`;
+        Element.prototype.scrollIntoView = () => {};
+    }
+
+    it('focuses the first required field holding only spaces', () => {
+        renderForm('<input id="a" required value="Title" /><input id="b" required value="   " /><input id="c" required />');
+        focusFirstInvalidField('f');
+        expect(document.activeElement?.id).toBe('b');
+    });
+
+    it('focuses a field marked invalid', () => {
+        renderForm('<input id="a" required value="Title" /><input id="b" aria-invalid="true" value="2020-01-01" />');
+        focusFirstInvalidField('f');
+        expect(document.activeElement?.id).toBe('b');
+    });
+
+    it('leaves focus alone when nothing is missing', () => {
+        renderForm('<input id="a" required value="Title" />');
+        focusFirstInvalidField('f');
+        expect(document.activeElement).toBe(document.body);
     });
 });
