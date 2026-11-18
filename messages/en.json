@@ -8124,7 +8124,11 @@
         "retry": "Retry",
         "dismiss": "Dismiss",
         "uploadBusy": "The server is busy. Retrying shortly…",
-        "uploadSlow": "Slow connection. This may take a little longer, keep this page open."
+        "uploadSlow": "Slow connection. This may take a little longer, keep this page open.",
+        "share": "Share",
+        "shareSheetTitle": "Share the moment",
+        "shareSheetBody": "Share it on Instagram, Facebook or your favorite social media.",
+        "notNow": "Not now"
     },
     "EmailVerificationBanner": {
         "message": "Confirm your email address to create an event.",
