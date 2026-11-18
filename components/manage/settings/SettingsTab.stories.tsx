@@ -1,10 +1,9 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
-import { expect, userEvent, within } from 'storybook/test';
+import { expect, userEvent, waitFor, within } from 'storybook/test';
 
 import { withAppContext } from '@/.storybook/appContext';
 import { copyFor } from '@/.storybook/copy';
 import { storyEvent, storyHostMember, storyMedia, storySession } from '@/.storybook/fixtures';
-import { waitForOpen } from '@/.storybook/waitForOpen';
 import SettingsTab from '@/app/(main)/(app)/(event)/events/[eventId]/manage/SettingsTab';
 import type { EventCapabilitiesDto } from '@/lib/api/types';
 
@@ -90,8 +89,9 @@ export const EditingTitlePhone: Story = {
         const copy = copyFor(globals);
         const title = copy.CreateEventPage.fieldLabels.WEDDING.title;
         await userEvent.click(canvas.getByRole('button', { name: copy.ManagePage.sessionManagement.editNamed.replace('{title}', title) }));
-        const dialog = await waitForOpen('dialog');
-        await expect(within(dialog).getByRole('heading', { name: title })).toBeVisible();
+        // A sheet on phones, a panel on desktop: wait for the editor heading to finish sliding in.
+        const heading = await within(document.body).findByRole('heading', { name: title }, { timeout: 10_000 });
+        await waitFor(() => expect(heading).toBeVisible(), { timeout: 10_000 });
     },
 };
 
