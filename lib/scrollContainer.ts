@@ -6,3 +6,10 @@ export function closestScrollContainer(element: HTMLElement | null): HTMLElement
     }
     return (document.scrollingElement as HTMLElement | null) ?? document.documentElement;
 }
+
+// Back to the top of the app's scroll area (the app shell's <main>) and of the page itself.
+export function scrollAppToTop(): void {
+    const main = document.querySelector('main');
+    if (main) main.scrollTop = 0;
+    window.scrollTo({ top: 0 });
+}
