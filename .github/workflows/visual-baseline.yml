@@ -56,6 +56,30 @@ jobs:
                   retention-days: 1
                   if-no-files-found: error
 
+            - if: steps.lookup.outputs.cache-hit != 'true'
+              run: node scripts/visual/pack.mjs
+
+            - if: steps.lookup.outputs.cache-hit != 'true'
+              run: node visual-runtime/ci.mjs selfcheck
+
+            - if: steps.lookup.outputs.cache-hit != 'true'
+              uses: actions/cache/restore@v6
+              with:
+                  path: visual-output/timings
+                  key: visual-timings-${{ github.run_id }}
+                  restore-keys: visual-timings-
+
+            - if: steps.lookup.outputs.cache-hit != 'true'
+              run: npm run visual:ci -- plan --storybook storybook-static --timings visual-output/timings/timings.json --out visual-runtime/share-plan.json
+
+            - if: steps.lookup.outputs.cache-hit != 'true'
+              uses: actions/upload-artifact@v7
+              with:
+                  name: visual-runtime
+                  path: visual-runtime
+                  retention-days: 1
+                  if-no-files-found: error
+
     capture:
         needs: build
         if: needs.build.outputs.saved != 'true'
@@ -68,25 +92,21 @@ jobs:
         env:
             SHARE: ${{ strategy.job-index }}/${{ strategy.job-total }}
         steps:
-            - uses: actions/checkout@v7
-              with:
-                  persist-credentials: false
-
             - uses: actions/setup-node@v7
               with:
                   node-version: 22
-                  cache: npm
 
-            - run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
-
-            - run: npm ci
+            - uses: actions/download-artifact@v8
+              with:
+                  name: visual-runtime
+                  path: visual-runtime
 
             - uses: actions/download-artifact@v8
               with:
                   name: visual-storybook
                   path: storybook-static
 
-            - run: npm run visual:ci -- capture --share "$SHARE" --storybook storybook-static --out visual-output/base
+            - run: node visual-runtime/ci.mjs capture --share "$SHARE" --plan visual-runtime/share-plan.json --storybook storybook-static --out visual-output/base
 
             - uses: actions/upload-artifact@v7
               with:
@@ -102,18 +122,14 @@ jobs:
         timeout-minutes: 10
         container: mcr.microsoft.com/playwright:v1.55.0-noble
         steps:
-            - uses: actions/checkout@v7
-              with:
-                  persist-credentials: false
-
             - uses: actions/setup-node@v7
               with:
                   node-version: 22
-                  cache: npm
 
-            - run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
-
-            - run: npm ci
+            - uses: actions/download-artifact@v8
+              with:
+                  name: visual-runtime
+                  path: visual-runtime
 
             # Kept inside the base folder, so the cache saves it for the base recheck.
             - uses: actions/download-artifact@v8
@@ -127,9 +143,14 @@ jobs:
                   merge-multiple: true
                   path: visual-output/base
 
-            - run: npm run visual:ci -- join --storybook visual-output/base/storybook --dir visual-output/base --sha "$GITHUB_SHA"
+            - run: node visual-runtime/ci.mjs join --storybook visual-output/base/storybook --dir visual-output/base --sha "$GITHUB_SHA" --timings visual-output/timings/timings.json
 
             - uses: actions/cache/save@v6
               with:
                   path: visual-output/base
                   key: ${{ needs.build.outputs.key }}
+
+            - uses: actions/cache/save@v6
+              with:
+                  path: visual-output/timings
+                  key: visual-timings-${{ github.run_id }}

@@ -227,4 +227,22 @@ describe('visual-baseline workflow', () => {
     it('saves after every share is captured', () => {
         expect(job(baseline, 'save')).toContain('needs: [build, capture]');
     });
+
+    it('runs npm ci only in the build job, and only when the base is not saved', () => {
+        expect(job(baseline, 'build')).toContain('run: npm ci');
+        for (const name of ['capture', 'save']) expect(job(baseline, name), name).not.toMatch(/\bnpm (ci|install|run)\b/);
+    });
+
+    it('captures from the share plan with the runtime pack', () => {
+        expect(job(baseline, 'build')).toContain('node scripts/visual/pack.mjs');
+        expect(job(baseline, 'capture')).toContain(
+            'node visual-runtime/ci.mjs capture --share "$SHARE" --plan visual-runtime/share-plan.json --storybook storybook-static --out visual-output/base',
+        );
+    });
+
+    it('saves the timings for the next plan', () => {
+        const save = job(baseline, 'save');
+        expect(save).toContain('--timings visual-output/timings/timings.json');
+        expect(save).toContain('key: visual-timings-${{ github.run_id }}');
+    });
 });
