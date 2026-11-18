@@ -17,6 +17,7 @@ export function EventCreateFooter() {
         canContinueType,
         canContinuePlan,
         isSubmitPending,
+        canSubmitDetails,
         isEmailVerified,
         consentSatisfied,
         goToType,
