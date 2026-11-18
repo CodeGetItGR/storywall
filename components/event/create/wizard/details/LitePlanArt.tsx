@@ -20,9 +20,13 @@ export function LitePlanArt({ kind, title, alt, eventType = null }: LitePlanArtP
     const Banner = art.hasGallery && art.hasWishbook ? BundleBanner : art.hasGallery ? GalleryBanner : WishbookBanner;
 
     return (
-        <div role="img" aria-label={alt} className="w-full">
+        <div role="img" aria-label={alt} className="@container w-full">
             {/* The pieces are real app screens: kept out of the tab order and the accessibility tree. */}
-            <div aria-hidden="true" inert className="relative h-[200px] overflow-hidden rounded-3xl bg-linear-to-br from-accent to-[#ffe6d6] md:h-[220px]">
+            <div
+                aria-hidden="true"
+                inert
+                className="relative h-[200px] overflow-hidden rounded-3xl bg-linear-to-br from-accent to-[#ffe6d6] md:h-[220px] @xl:h-[220px]"
+            >
                 <Banner art={art} title={title} />
             </div>
         </div>
@@ -45,15 +49,19 @@ function GalleryBanner({ art, title }: BannerProps) {
 }
 
 // Wishbook: the printed book's cover with a page fanning out, the open book peeking behind, and wishes, written and recorded, around it.
+// A wide banner (the full page on desktop) shows five wishes instead of two, so the right side isn't empty.
 function WishbookBanner({ art, title }: BannerProps) {
     return (
         <>
             {/* Book */}
             <LiteBookSpread art={art} scale={0.3} className="top-[86px] left-[20%] rotate-6" />
             <LiteBookCover art={art} title={title} scale={0.4} className="top-4 left-[7%] z-10" />
-            {/* Wishes */}
-            <LiteFloatingWish art={art} index={2} scale={0.4} className="top-5 left-[60%] z-20 rotate-2" />
-            <LiteFloatingWish art={art} index={3} scale={0.4} className="top-[118px] left-[56%] z-20 -rotate-2" />
+            {/* Wishes: on a wide banner, three more fill the right side */}
+            <LiteFloatingWish art={art} index={2} scale={0.4} className="top-5 left-[60%] z-20 rotate-2 @xl:top-3.5 @xl:left-[50%]" />
+            <LiteFloatingWish art={art} index={3} scale={0.4} className="top-[118px] left-[56%] z-20 -rotate-2 @xl:top-[122px] @xl:left-[49%]" />
+            <LiteFloatingWish art={art} index={1} scale={0.4} className="top-[66px] left-[66%] z-20 hidden -rotate-3 @xl:block" />
+            <LiteFloatingWish art={art} index={0} scale={0.4} className="top-4 left-[80%] z-20 hidden rotate-3 @xl:block" />
+            <LiteFloatingWish art={art} index={4} scale={0.4} className="top-[132px] left-[79%] z-20 hidden rotate-2 @xl:block" />
         </>
     );
 }
@@ -66,9 +74,12 @@ function BundleBanner({ art, title }: BannerProps) {
             <LitePhone art={art} title={title} width={122} tabs actions className="absolute top-6 left-[6%] -rotate-4" />
             {/* Book */}
             <LiteBookSpread art={art} scale={0.34} className="top-[78px] left-[34%] z-10 rotate-2" />
-            {/* Wishes */}
-            <LiteFloatingWish art={art} index={2} scale={0.38} className="top-3 left-[58%] z-20 rotate-2" />
+            {/* Wishes: on a wide banner, three more fill the space around the book */}
+            <LiteFloatingWish art={art} index={2} scale={0.38} className="top-3 left-[58%] z-20 rotate-2 @xl:top-2.5 @xl:left-[35%] @xl:-rotate-2" />
             <LiteFloatingWish art={art} index={3} scale={0.38} className="top-[150px] left-[40%] z-20 -rotate-2" />
+            <LiteFloatingWish art={art} index={1} scale={0.38} className="top-[26px] left-[58%] z-20 hidden rotate-2 @xl:block" />
+            <LiteFloatingWish art={art} index={0} scale={0.38} className="top-[62px] left-[79%] z-20 hidden -rotate-3 @xl:block" />
+            <LiteFloatingWish art={art} index={4} scale={0.38} className="top-[158px] left-[68%] z-20 hidden rotate-3 @xl:block" />
         </>
     );
 }
