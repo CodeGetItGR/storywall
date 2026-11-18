@@ -7,7 +7,15 @@ import { useInvitationAddonCheck } from '@/hooks/useInvitationAddonCheck';
 import { ApiError } from '@/lib/api/client';
 import type { PaidServiceResponseDto } from '@/lib/api/types';
 
-const mocks = vi.hoisted(() => ({ billing: vi.fn(), modules: vi.fn(), withdrawals: vi.fn(), incident: { value: false } }));
+const mocks = vi.hoisted(() => ({
+    billing: vi.fn(),
+    modules: vi.fn(),
+    withdrawals: vi.fn(),
+    memberships: vi.fn(),
+    event: vi.fn(),
+    accessMode: { value: 'standard' },
+    incident: { value: false },
+}));
 
 const saveMyDate = {
     id: 'svc-SMD',
@@ -45,6 +53,9 @@ vi.mock('@/hooks/useEventModules', () => ({
     eventModuleKeys: { list: (id: string) => ['events', id, 'modules'] },
     fetchEventModules: mocks.modules,
 }));
+vi.mock('@/hooks/useMyEvents', () => ({ myEventsKeys: { all: ['me', 'events'] }, fetchMyEvents: mocks.memberships }));
+vi.mock('@/hooks/useEvent', () => ({ eventKeys: { detail: (id: string) => ['events', id] }, fetchEventDetail: mocks.event }));
+vi.mock('@/providers/EventProvider', () => ({ useContentAccessMode: () => mocks.accessMode.value }));
 vi.mock('@/lib/incident', () => ({
     get INCIDENT_MODE() {
         return mocks.incident.value;
@@ -61,6 +72,9 @@ describe('useInvitationAddonCheck', () => {
     beforeEach(() => {
         vi.clearAllMocks();
         mocks.incident.value = false;
+        mocks.accessMode.value = 'standard';
+        mocks.memberships.mockResolvedValue([{ id: 'mem-host', eventId: 'evt-1', role: 'HOST', deletedAt: null }]);
+        mocks.event.mockResolvedValue({ hosts: [{ memberId: 'mem-host', displayOrder: 0 }] });
         mocks.billing.mockResolvedValue({ eventStatus: 'ACTIVE', planTierCode: 'LITE', addons: [], orders: [] });
         mocks.modules.mockResolvedValue([{ moduleKey: 'posts', isEnabled: true }]);
         mocks.withdrawals.mockResolvedValue([]);
@@ -71,8 +85,25 @@ describe('useInvitationAddonCheck', () => {
         expect(mocks.billing).toHaveBeenCalledWith('evt-1');
     });
 
-    it('stays shut for someone who cannot read billing, such as a co-host', async () => {
-        mocks.billing.mockRejectedValue(new ApiError(403, { errorCode: 4001 }));
+    it('stays shut for a co-host: only the main host buys', async () => {
+        mocks.event.mockResolvedValue({
+            hosts: [
+                { memberId: 'mem-main', displayOrder: 0 },
+                { memberId: 'mem-host', displayOrder: 1 },
+            ],
+        });
+        await expect(check()).resolves.toBe(false);
+        expect(mocks.billing).not.toHaveBeenCalled();
+    });
+
+    it('stays shut in the demo', async () => {
+        mocks.accessMode.value = 'demoVisitor';
+        await expect(check()).resolves.toBe(false);
+        expect(mocks.event).not.toHaveBeenCalled();
+    });
+
+    it('stays shut when a read fails', async () => {
+        mocks.billing.mockRejectedValue(new ApiError(500, { errorCode: 1000 }));
         await expect(check()).resolves.toBe(false);
     });
 

@@ -1,11 +1,15 @@
 import type {
     EventBillingResponseDto,
+    EventDetailResponseDto,
+    EventMemberResponseDto,
     EventModuleResponseDto,
     PaidServiceResponseDto,
     PlanTierResponseDto,
     PlatformModuleResponseDto,
+    PriceBreakdown,
     WithdrawalResponseDto,
 } from '@/lib/api/types';
+import { isPrimaryHost } from '@/lib/eventLifecycle';
 import { type FeatureAddonMode, featureAddonMode, type FeatureAddonOffer, featureAddonOffers } from '@/lib/featureAddons';
 import type { InvitationDocument } from '@/lib/invitation/document';
 import { scopedPlans } from '@/lib/planTiers';
@@ -64,6 +68,21 @@ export function opensInvitationAddonStep(sources: AddonStepSources & { withdrawa
     const step = invitationAddonStep(sources, false);
     if (!step) return false;
     return step.mode === 'draft' || !withdrawalPurchaseBlocks(sources.withdrawals, sources.billing.orders).storageBlocked;
+}
+
+// Only the event's main host may buy, as on the event's own pages (usePurchaseBlock).
+export function isPrimaryHostOf(eventId: string, memberships: EventMemberResponseDto[], event: Pick<EventDetailResponseDto, 'hosts'>): boolean {
+    const member = memberships.find((membership) => membership.eventId === eventId && !membership.deletedAt);
+    return isPrimaryHost(event.hosts, member?.id);
+}
+
+/**
+ * A draft's activation quote without the step's own add-ons, which the step lists as choices:
+ * the plan and any other add-on the draft already opted into.
+ */
+export function draftQuoteOtherItems(breakdown: PriceBreakdown, step: InvitationAddonStep): PriceBreakdown {
+    const stepCodes = new Set([step.saveMyDate.service.code, ...(step.rsvp ? [step.rsvp.service.code] : [])]);
+    return { ...breakdown, items: breakdown.items.filter((item) => !item.paidServiceCode || !stepCodes.has(item.paidServiceCode)) };
 }
 
 // The add-on codes the host keeps: Save my date always, RSVP when ticked.

@@ -1,13 +1,14 @@
 'use client';
 
 import { useQueryClient } from '@tanstack/react-query';
-import { type ChangeEvent, type SubmitEvent, useCallback, useMemo, useState } from 'react';
+import { type ChangeEvent, type SubmitEvent, useCallback, useEffect, useMemo, useState } from 'react';
 
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useAppConfig } from '@/hooks/useAppConfig';
 import { billingKeys, useAddEventAddon, useAddonCheckout, useEventBilling, useEventQuote, useRemoveEventAddon } from '@/hooks/useBilling';
 import { useDraftActivationCheckout } from '@/hooks/useDraftActivationCheckout';
 import { eventModuleKeys, useEventModules } from '@/hooks/useEventModules';
+import type { AddonStepFallback } from '@/hooks/usePublishInvitation';
 import { useResetOnBfcacheRestore } from '@/hooks/useResetOnBfcacheRestore';
 import { useWithdrawalConsent } from '@/hooks/useWithdrawalConsent';
 import { ERROR_CODES, getErrorCode } from '@/lib/api/errors';
@@ -17,6 +18,7 @@ import {
     addonStepCodes,
     draftAddonChanges,
     draftAddonStepTotalMinor,
+    draftQuoteOtherItems,
     type InvitationAddonStep,
     invitationAddonStep,
     showsRsvpSection,
@@ -47,14 +49,57 @@ export function useInvitationAddonOffer({ eventId, document }: { eventId: string
         );
     }, [appConfig.data, billing.data, document, eventModules.data]);
 
-    return { isLoading: appConfig.isLoading || billing.isLoading || eventModules.isLoading, step };
+    return {
+        isLoading: appConfig.isLoading || billing.isLoading || eventModules.isLoading,
+        // A failed read: the step can't say what the event lacks.
+        failed: appConfig.isError || billing.isError || eventModules.isError,
+        step,
+    };
+}
+
+/**
+ * Leaves the step when it has nothing to offer after all, with no message of its own: a failed
+ * read goes to the plan dialog, and an event that has the invitation now (switched on elsewhere,
+ * or a refusal refreshed the offers) goes on publishing.
+ */
+export function useAddonStepFallback(
+    offer: ReturnType<typeof useInvitationAddonOffer>,
+    fallBack: (to: AddonStepFallback) => void,
+    // Off while payment is in flight: the sheet stays until the browser leaves.
+    enabled = true,
+) {
+    const target: AddonStepFallback | null = !enabled ? null : offer.failed ? 'plan' : !offer.isLoading && !offer.step ? 'publish' : null;
+    useEffect(() => {
+        if (target) fallBack(target);
+    }, [fallBack, target]);
+}
+
+/**
+ * Keeps the last value seen while settled. A draft's total joins billing and its quote, which
+ * refetch separately after an opt-in: between the two it would be briefly wrong.
+ */
+function useSettledValue<T>(value: T, settled: boolean): T {
+    const [kept, setKept] = useState(value);
+    if (settled && kept !== value) setKept(value);
+    return settled ? value : kept;
 }
 
 /**
  * The step's choices and payment. A live event pays for the add-ons on their own; a draft opts
  * into them and pays with its plan. Paying brings the host back to the editor, which publishes.
  */
-export function useInvitationAddonCheckout({ eventId, draftId, step }: { eventId: string; draftId: string; step: InvitationAddonStep }) {
+export function useInvitationAddonCheckout({
+    eventId,
+    draftId,
+    step,
+    onPendingChange,
+}: {
+    eventId: string;
+    draftId: string;
+    step: InvitationAddonStep;
+    // Told while payment is in flight, so the sheet can't be dismissed.
+    onPendingChange?: (isPending: boolean) => void;
+}) {
     const queryClient = useQueryClient();
     const toErrorMessage = useApiErrorMessage();
     const isDraft = step.mode === 'draft';
@@ -63,16 +108,24 @@ export function useInvitationAddonCheckout({ eventId, draftId, step }: { eventId
     const [rsvpTicked, setRsvpTicked] = useState(step.rsvp?.added ?? false);
     const [error, setError] = useState<string | null>(null);
     const [isSaving, setIsSaving] = useState(false);
+    // The payment page is opening: the sheet stays put until the browser leaves.
+    const [isRedirecting, setIsRedirecting] = useState(false);
 
     const codes = useMemo(() => addonStepCodes(step, rsvpTicked), [rsvpTicked, step]);
     const liveConsent = useWithdrawalConsent();
+    const billing = useEventBilling(eventId);
     const addonCheckout = useAddonCheckout(eventId);
     const draftCheckout = useDraftActivationCheckout(eventId, { quoteEnabled: isDraft, startAt: null, returnTo });
     const addAddon = useAddEventAddon(eventId);
     const removeAddon = useRemoveEventAddon(eventId);
     const consent = isDraft ? draftCheckout.consent : liveConsent;
 
-    useResetOnBfcacheRestore(addonCheckout.reset);
+    useResetOnBfcacheRestore(
+        useCallback(() => {
+            addonCheckout.reset();
+            setIsRedirecting(false);
+        }, [addonCheckout]),
+    );
 
     // A live event's server total; the catalogue sum stands in until it answers (no discount applies).
     const liveQuote = useEventQuote(eventId, isDraft ? null : { kind: 'MODULE_UNLOCK', paidServiceCodes: codes }, !isDraft);
@@ -80,14 +133,24 @@ export function useInvitationAddonCheckout({ eventId, draftId, step }: { eventId
         () => [step.saveMyDate, ...(step.rsvp ? [step.rsvp] : [])].map((offer) => offer.service).filter((service) => codes.includes(service.code)),
         [codes, step],
     );
-    const totalMinor = isDraft
-        ? draftAddonStepTotalMinor(step, rsvpTicked, draftCheckout.breakdown?.totalMinor ?? null)
-        : (liveQuote.data?.totalMinor ?? featureAddonsTotalMinor(services));
+    const draftTotalMinor = useSettledValue(
+        isDraft ? draftAddonStepTotalMinor(step, rsvpTicked, draftCheckout.breakdown?.totalMinor ?? null) : null,
+        !billing.isFetching && !draftCheckout.isQuoteFetching,
+    );
+    const totalMinor = isDraft ? draftTotalMinor : (liveQuote.data?.totalMinor ?? featureAddonsTotalMinor(services));
     const currency = (isDraft ? draftCheckout.breakdown?.currency : liveQuote.data?.currency) ?? step.saveMyDate.service.priceCurrency;
+    // The plan and the draft's other add-ons, listed above the step's own.
+    const draftItems = useMemo(
+        () => (isDraft && draftCheckout.breakdown ? draftQuoteOtherItems(draftCheckout.breakdown, step) : null),
+        [draftCheckout.breakdown, isDraft, step],
+    );
 
-    const isPending = isSaving || addonCheckout.isPending || draftCheckout.isPending;
-    const canSubmit =
-        consent.consentSatisfied && Boolean(consent.termsVersion) && (!isDraft || draftCheckout.partnerBranding.satisfied) && !isPending;
+    const isPending = isSaving || isRedirecting || addonCheckout.isPending || draftCheckout.isPending;
+    useEffect(() => onPendingChange?.(isPending), [isPending, onPendingChange]);
+    // A draft pays only a priced activation: a passed start or a failed quote can't be paid.
+    const draftPayable =
+        totalMinor !== null && !draftCheckout.startPassed && !draftCheckout.quoteError && draftCheckout.partnerBranding.satisfied;
+    const canSubmit = consent.consentSatisfied && Boolean(consent.termsVersion) && (!isDraft || draftPayable) && !isPending;
 
     const refreshOffers = useCallback(() => {
         void queryClient.invalidateQueries({ queryKey: billingKeys.event(eventId) });
@@ -102,6 +165,7 @@ export function useInvitationAddonCheckout({ eventId, draftId, step }: { eventId
                 acknowledgesWithdrawalTerms: liveConsent.acknowledgesWithdrawalTerms,
                 termsVersion: liveConsent.termsVersion!,
             });
+            setIsRedirecting(true);
             navigateToCheckout(eventId, response, undefined, returnTo);
         } catch (checkoutError) {
             if (liveConsent.handleCheckoutError(checkoutError)) return;
@@ -110,28 +174,58 @@ export function useInvitationAddonCheckout({ eventId, draftId, step }: { eventId
         }
     }, [addonCheckout, codes, eventId, liveConsent, refreshOffers, returnTo, toErrorMessage]);
 
-    // A draft opts in and out first; one already on the event counts as added.
+    // Puts back what this step changed on the draft, best effort: the draft ends as it began.
+    const rollBack = useCallback(
+        async ({ added, removed }: { added: string[]; removed: string[] }) => {
+            const undo = [
+                ...added.map((code) => () => removeAddon.mutateAsync(code)),
+                ...removed.map((code) => () => addAddon.mutateAsync({ paidServiceCode: code })),
+            ];
+            for (const undoChange of undo) {
+                try {
+                    await undoChange();
+                } catch {
+                    // Nothing more to do: the refreshed offers show the draft as it is.
+                }
+            }
+        },
+        [addAddon, removeAddon],
+    );
+
+    // A draft opts in and out first; one already on the event counts as added. When the payment
+    // can't open after all, the opt-ins go back as they were.
     const payDraft = useCallback(async () => {
         const { add, remove } = draftAddonChanges(step, rsvpTicked);
+        const applied = { added: [] as string[], removed: [] as string[] };
         setIsSaving(true);
         try {
             for (const code of add) {
                 try {
                     await addAddon.mutateAsync({ paidServiceCode: code });
+                    applied.added.push(code);
                 } catch (addError) {
                     if (getErrorCode(addError) !== ERROR_CODES.ADDON_ALREADY_ACTIVE) throw addError;
                 }
             }
-            for (const code of remove) await removeAddon.mutateAsync(code);
+            for (const code of remove) {
+                await removeAddon.mutateAsync(code);
+                applied.removed.push(code);
+            }
         } catch (changeError) {
             setError(toErrorMessage(changeError));
+            await rollBack(applied);
             refreshOffers();
-            return;
-        } finally {
             setIsSaving(false);
+            return;
         }
-        await draftCheckout.submit();
-    }, [addAddon, draftCheckout, refreshOffers, removeAddon, rsvpTicked, step, toErrorMessage]);
+        setIsSaving(false);
+        if (await draftCheckout.submit()) {
+            setIsRedirecting(true);
+            return;
+        }
+        await rollBack(applied);
+        refreshOffers();
+    }, [addAddon, draftCheckout, refreshOffers, removeAddon, rollBack, rsvpTicked, step, toErrorMessage]);
 
     const submit = useCallback(
         (event: SubmitEvent<HTMLFormElement>) => {
@@ -152,12 +246,13 @@ export function useInvitationAddonCheckout({ eventId, draftId, step }: { eventId
         step,
         rsvpTicked,
         handleRsvpChange,
+        draftItems,
         totalMinor,
         currency,
         consent,
         canSubmit,
         isPending,
-        error: error ?? (isDraft ? draftCheckout.error : null),
+        error: error ?? (isDraft ? (draftCheckout.error ?? draftCheckout.quoteError) : null),
         submit,
     };
 }

@@ -3,7 +3,13 @@ import { expect, fn, userEvent, within } from 'storybook/test';
 
 import { withAppContext } from '@/.storybook/appContext';
 import { copyFor } from '@/.storybook/copy';
-import { storyAddonStepCheckout, storyAddonStepReady, storyRsvpAddon, storySaveMyDateAddon } from '@/.storybook/featureAddons';
+import {
+    storyAddonStepCheckout,
+    storyAddonStepReady,
+    storyDraftActivationItems,
+    storyRsvpAddon,
+    storySaveMyDateAddon,
+} from '@/.storybook/featureAddons';
 import { PublishAddonStep } from '@/components/saveMyDate/editor/publish/PublishAddonStep';
 
 // Publish on an event whose plan lacks the invitation but sells it as an add-on (KAN-82).
@@ -65,23 +71,34 @@ export const InvitationOnly: Story = {
     },
 };
 
-// A draft event pays with its plan: the total is the plan's payment with the add-ons.
+const draftStep = {
+    mode: 'draft',
+    saveMyDate: { service: storySaveMyDateAddon, added: false },
+    rsvp: { service: storyRsvpAddon, added: true },
+} as const;
+
+// A draft event pays with its plan: the plan and its other add-ons come first, and the total is the whole first payment.
 export const Draft: Story = {
     args: {
-        checkout: storyAddonStepCheckout({
-            step: {
-                mode: 'draft',
-                saveMyDate: { service: storySaveMyDateAddon, added: false },
-                rsvp: { service: storyRsvpAddon, added: true },
-            },
-            rsvpTicked: true,
-            totalMinor: 12_900,
-        }),
+        checkout: storyAddonStepCheckout({ step: draftStep, rsvpTicked: true, draftItems: storyDraftActivationItems(), totalMinor: 15_300 }),
+    },
+    play: async ({ canvasElement, globals }) => {
+        const canvas = within(canvasElement);
+        await expect(canvas.getByText(new RegExp(copyFor(globals).PriceBreakdown.items.activation.replace('{plan}', 'Lite')))).toBeVisible();
+        await expect(canvas.getByText(copyFor(globals).CheckoutReviewPage.withdrawalTerms.body)).toBeVisible();
     },
 };
 
-// The total waits for the draft's price.
-export const DraftPricing: Story = { args: { checkout: storyAddonStepCheckout({ totalMinor: null }) } };
+// The total waits for the draft's price, and payment with it.
+export const DraftPricing: Story = {
+    args: { checkout: storyAddonStepReady({ step: draftStep, rsvpTicked: true, totalMinor: null, canSubmit: false }) },
+    play: async ({ canvasElement, globals }) => {
+        const canvas = within(canvasElement);
+        const totalPrefix = copyFor(globals).EventAddonsSettingsPage.features.total.split('{')[0];
+        await expect(canvas.queryByText((text) => text.startsWith(totalPrefix))).toBeNull();
+        await expect(canvas.getByRole('button', { name: copyFor(globals).InvitationEditor.continueToPayment })).toBeDisabled();
+    },
+};
 
 // The payment page is opening.
 export const Paying: Story = { args: { checkout: storyAddonStepReady({ canSubmit: false, isPending: true }) } };

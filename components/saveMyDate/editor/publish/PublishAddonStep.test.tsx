@@ -2,7 +2,13 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { NextIntlClientProvider } from 'next-intl';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { storyAddonStepCheckout, storyAddonStepReady, storyRsvpAddon, storySaveMyDateAddon } from '@/.storybook/featureAddons';
+import {
+    storyAddonStepCheckout,
+    storyAddonStepReady,
+    storyDraftActivationItems,
+    storyRsvpAddon,
+    storySaveMyDateAddon,
+} from '@/.storybook/featureAddons';
 import { PublishAddonStep } from '@/components/saveMyDate/editor/publish/PublishAddonStep';
 import type { InvitationAddonCheckout } from '@/hooks/useInvitationAddonStep';
 import messages from '@/messages/en.json';
@@ -68,5 +74,22 @@ describe('PublishAddonStep', () => {
         renderStep(storyAddonStepReady({ error: 'This feature is already on your event.' }));
 
         expect(screen.getByRole('alert').textContent).toBe('This feature is already on your event.');
+    });
+
+    it("lists a draft's plan and add-ons with the plan's withdrawal terms", () => {
+        renderStep(
+            storyAddonStepCheckout({
+                step: { mode: 'draft', saveMyDate: { service: storySaveMyDateAddon, added: false }, rsvp: { service: storyRsvpAddon, added: true } },
+                rsvpTicked: true,
+                draftItems: storyDraftActivationItems(),
+                totalMinor: 15_300,
+            }),
+        );
+
+        expect(screen.getByText('Activation: Lite')).toBeTruthy();
+        expect(screen.getByText('Add-on: Guest book')).toBeTruthy();
+        expect(screen.getByText('Total: €153.00')).toBeTruthy();
+        expect(screen.getByText(messages.CheckoutReviewPage.withdrawalTerms.body)).toBeTruthy();
+        expect(screen.queryByText(messages.CheckoutReviewPage.withdrawalTerms.addonsBody)).toBeNull();
     });
 });

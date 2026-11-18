@@ -3,6 +3,7 @@
 import { Loader2 } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 
+import { PriceBreakdownSummary } from '@/components/checkout/PriceBreakdownSummary';
 import { WithdrawalConsentSection } from '@/components/checkout/WithdrawalConsentSection';
 import { FeatureAddonLabel } from '@/components/plan/FeatureAddonLabel';
 import type { InvitationAddonCheckout } from '@/hooks/useInvitationAddonStep';
@@ -17,6 +18,7 @@ const ROW_CLASS = 'flex min-h-14 items-center gap-3 py-2';
 const CHECKBOX_CLASS = 'h-5 w-5 shrink-0 accent-primary';
 
 // The invitation as an add-on, with RSVP when the invitation asks for replies, then payment.
+// A draft pays its plan with them, so its plan and other add-ons are listed first.
 export function PublishAddonStep({ checkout, onCancel }: PublishAddonStepProps) {
     const t = useTranslations('InvitationEditor');
     const tFeatures = useTranslations('EventAddonsSettingsPage.features');
@@ -27,6 +29,9 @@ export function PublishAddonStep({ checkout, onCancel }: PublishAddonStepProps) 
         <form onSubmit={checkout.submit} className="flex flex-col gap-4">
             {/* Title */}
             <h2 className="pr-10 text-base font-semibold">{t('addOnTitle')}</h2>
+
+            {/* Draft: the plan and the add-ons already on it */}
+            {checkout.draftItems && <PriceBreakdownSummary breakdown={checkout.draftItems} showTotal={false} />}
 
             {/* Add-ons */}
             <ul className="divide-y divide-ink/10">
@@ -53,7 +58,7 @@ export function PublishAddonStep({ checkout, onCancel }: PublishAddonStepProps) 
                 )}
             </ul>
 
-            {/* Total */}
+            {/* Total: a draft's waits for its price */}
             {checkout.totalMinor !== null && (
                 <p className="text-base font-bold tabular-nums">
                     {tFeatures('total', { amount: formatMoney(locale, checkout.totalMinor, checkout.currency) })}
@@ -62,7 +67,7 @@ export function PublishAddonStep({ checkout, onCancel }: PublishAddonStepProps) 
 
             {/* Consent */}
             <WithdrawalConsentSection
-                bodyKey="addonsBody"
+                bodyKey={checkout.step.mode === 'draft' ? 'body' : 'addonsBody'}
                 requestsImmediateStart={checkout.consent.requestsImmediateStart}
                 acknowledgesWithdrawalTerms={checkout.consent.acknowledgesWithdrawalTerms}
                 staleTerms={checkout.consent.staleTerms}

@@ -3,18 +3,22 @@ import { describe, expect, it } from 'vitest';
 import type {
     EventAddonDto,
     EventBillingResponseDto,
+    EventMemberResponseDto,
     EventModuleResponseDto,
     EventStatus,
     PaidServiceResponseDto,
     PlanTierResponseDto,
     PlatformModuleResponseDto,
+    PriceBreakdown,
     WithdrawalResponseDto,
 } from '@/lib/api/types';
 import {
     addonStepCodes,
     draftAddonChanges,
     draftAddonStepTotalMinor,
+    draftQuoteOtherItems,
     invitationAddonStep,
+    isPrimaryHostOf,
     opensInvitationAddonStep,
     showsRsvpSection,
 } from '@/lib/invitation/addonStep';
@@ -145,5 +149,29 @@ describe('the codes and changes the step sends', () => {
         expect(draftAddonStepTotalMinor(draft, true, 10_000)).toBe(12_900);
         expect(draftAddonStepTotalMinor(draft, false, 10_000)).toBe(12_000);
         expect(draftAddonStepTotalMinor(draft, true, null)).toBeNull();
+    });
+
+    it("lists a draft's plan and other add-ons apart from the step's own", () => {
+        const quote = {
+            totalMinor: 13_400,
+            items: [
+                { code: 'ACTIVATION', paidServiceCode: null },
+                { code: 'ADDON', paidServiceCode: 'GUESTBOOK' },
+                { code: 'ADDON', paidServiceCode: 'RSVP' },
+            ],
+        } as unknown as PriceBreakdown;
+        expect(draftQuoteOtherItems(quote, draft).items.map((item) => item.paidServiceCode)).toEqual([null, 'GUESTBOOK']);
+        expect(draftQuoteOtherItems(quote, draft).totalMinor).toBe(13_400);
+    });
+});
+
+describe('isPrimaryHostOf', () => {
+    const memberships = [{ id: 'mem-1', eventId: 'evt-1', deletedAt: null }] as EventMemberResponseDto[];
+    const host = (memberId: string, displayOrder: number) => ({ id: memberId, eventId: 'evt-1', memberId, displayOrder, createdAt: '' });
+
+    it("is true only for the event's main host", () => {
+        expect(isPrimaryHostOf('evt-1', memberships, { hosts: [host('mem-1', 0)] })).toBe(true);
+        expect(isPrimaryHostOf('evt-1', memberships, { hosts: [host('mem-0', 0), host('mem-1', 1)] })).toBe(false);
+        expect(isPrimaryHostOf('evt-2', memberships, { hosts: [host('mem-1', 0)] })).toBe(false);
     });
 });

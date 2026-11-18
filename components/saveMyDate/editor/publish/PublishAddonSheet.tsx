@@ -1,11 +1,12 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
+import { useState } from 'react';
 
 import { PublishAddonStep } from '@/components/saveMyDate/editor/publish/PublishAddonStep';
 import { LoadingState } from '@/components/ui/LoadingState';
 import { Modal } from '@/components/ui/modal';
-import { useInvitationAddonCheckout, useInvitationAddonOffer } from '@/hooks/useInvitationAddonStep';
+import { useAddonStepFallback, useInvitationAddonCheckout, useInvitationAddonOffer } from '@/hooks/useInvitationAddonStep';
 import type { PublishAddonStepState } from '@/hooks/usePublishInvitation';
 import type { InvitationAddonStep } from '@/lib/invitation/addonStep';
 import type { InvitationDocument } from '@/lib/invitation/document';
@@ -25,14 +26,37 @@ export function PublishAddonSheet({ step, draftId, document }: PublishAddonSheet
 function OpenPublishAddonSheet({ step, eventId, draftId, document }: PublishAddonSheetProps & { eventId: string }) {
     const t = useTranslations('InvitationEditor');
     const offer = useInvitationAddonOffer({ eventId, document });
+    // While payment is in flight the sheet can't be dismissed, so it can't close on a redirect.
+    const [isPaying, setIsPaying] = useState(false);
+    useAddonStepFallback(offer, step.fallBack, !isPaying);
 
     return (
-        <Modal open onClose={step.close} variant="sheet" size="sm" ariaLabel={t('addOnTitle')} closeLabel={t('close')}>
+        <Modal
+            open
+            onClose={step.close}
+            variant="sheet"
+            size="sm"
+            ariaLabel={t('addOnTitle')}
+            closeLabel={t('close')}
+            closeDisabled={isPaying}
+        >
             <Modal.Body className="px-5 pt-5 pb-8 text-sm text-ink">
                 {offer.step ? (
-                    <PublishAddonCheckout eventId={eventId} draftId={draftId} addonStep={offer.step} onCancel={step.close} />
+                    <>
+                        {/* Choices and payment */}
+                        <PublishAddonCheckout
+                            eventId={eventId}
+                            draftId={draftId}
+                            addonStep={offer.step}
+                            onCancel={step.close}
+                            onPendingChange={setIsPaying}
+                        />
+                    </>
                 ) : (
-                    offer.isLoading && <LoadingState className="py-6" />
+                    <>
+                        {/* Loading */}
+                        {offer.isLoading && <LoadingState className="py-6" />}
+                    </>
                 )}
             </Modal.Body>
         </Modal>
@@ -44,12 +68,14 @@ function PublishAddonCheckout({
     draftId,
     addonStep,
     onCancel,
+    onPendingChange,
 }: {
     eventId: string;
     draftId: string;
     addonStep: InvitationAddonStep;
     onCancel: () => void;
+    onPendingChange: (isPending: boolean) => void;
 }) {
-    const checkout = useInvitationAddonCheckout({ eventId, draftId, step: addonStep });
+    const checkout = useInvitationAddonCheckout({ eventId, draftId, step: addonStep, onPendingChange });
     return <PublishAddonStep checkout={checkout} onCancel={onCancel} />;
 }

@@ -88,4 +88,21 @@ describe('useDraftActivationCheckout', () => {
         expect(result.current.startPassed).toBe(false);
         expect(result.current.error).toBe('api-5017');
     });
+
+    it('says whether the payment page is opening', async () => {
+        mocks.checkout.mockResolvedValueOnce({ orderId: 'ord-1', redirectUrl: 'https://pay.test' });
+        const { result } = renderHook(() => useDraftActivationCheckout('event-1', { quoteEnabled: false, startAt: START }));
+        await act(async () => expect(await result.current.submit()).toBe(true));
+
+        mocks.checkout.mockRejectedValueOnce(new ApiError(409, { errorCode: 5017 }));
+        await act(async () => expect(await result.current.submit()).toBe(false));
+    });
+
+    it("exposes any failed quote for screens that show only the quote's total", () => {
+        mocks.quote = { data: undefined, error: new ApiError(409, { errorCode: 5017 }) };
+        const { result } = renderHook(() => useDraftActivationCheckout('event-1', { quoteEnabled: true, startAt: START }));
+
+        expect(result.current.quoteError).not.toBeNull();
+        expect(result.current.error).toBeNull();
+    });
 });

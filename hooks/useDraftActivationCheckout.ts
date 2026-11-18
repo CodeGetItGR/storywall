@@ -49,8 +49,9 @@ export function useDraftActivationCheckout(
         setCollaborationPreview(nextPreview);
     }, []);
 
-    const submit = useCallback(async () => {
-        if (!consent.consentSatisfied || !consent.termsVersion || !partnerBranding.satisfied) return;
+    // Resolves true once the payment page is opening.
+    const submit = useCallback(async (): Promise<boolean> => {
+        if (!consent.consentSatisfied || !consent.termsVersion || !partnerBranding.satisfied) return false;
         setFailure(null);
         try {
             const response = await checkout.mutateAsync({
@@ -63,9 +64,10 @@ export function useDraftActivationCheckout(
             trackFlow({ name: 'Checkout Open', from: 'draft' });
             // Paying brings the host back to returnTo when one is given (Publish's add-on step).
             navigateToCheckout(eventId, response, undefined, returnTo);
+            return true;
         } catch (checkoutError) {
             trackFlow({ name: 'Checkout Error', from: 'draft', code: flowErrorCode(checkoutError) });
-            if (consent.handleCheckoutError(checkoutError)) return;
+            if (consent.handleCheckoutError(checkoutError)) return false;
             // The draft's duration was retired: reload the plans and the draft so
             // the overview asks for another one.
             if (getErrorCode(checkoutError) === ERROR_CODES.COVERAGE_OPTION_UNAVAILABLE) {
@@ -77,6 +79,7 @@ export function useDraftActivationCheckout(
                 startPassed: getErrorCode(checkoutError) === ERROR_CODES.EVENT_START_PASSED,
                 startAt,
             });
+            return false;
         }
     }, [checkout, collaborationCode, consent, eventId, partnerBranding, queryClient, returnTo, startAt, toErrorMessage]);
 
@@ -93,6 +96,9 @@ export function useDraftActivationCheckout(
         submit,
         error: currentFailure?.message ?? (quoteStartPassed ? toErrorMessage(quote.error) : null),
         startPassed: Boolean(currentFailure?.startPassed) || quoteStartPassed,
+        // Any quote failure, for a screen that shows only the quote's total (Publish's add-on step).
+        quoteError: quoteEnabled && quote.error ? toErrorMessage(quote.error) : null,
+        isQuoteFetching: quoteEnabled && quote.isFetching,
         isPending: checkout.isPending,
     };
 }

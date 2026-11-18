@@ -40,6 +40,8 @@ const mocks = vi.hoisted(() => ({
     quoteData: undefined as unknown,
     draftBreakdown: null as unknown,
     draftOptions: vi.fn(),
+    draftState: { startPassed: false, quoteError: null as string | null, isQuoteFetching: false },
+    billingFetching: false,
 }));
 
 const consent = {
@@ -60,7 +62,7 @@ vi.mock('@/hooks/useAppConfig', () => ({ useAppConfig: vi.fn() }));
 vi.mock('@/hooks/useEventModules', () => ({ eventModuleKeys: { list: (id: string) => ['events', id, 'modules'] }, useEventModules: vi.fn() }));
 vi.mock('@/hooks/useBilling', () => ({
     billingKeys: { event: (id: string) => ['events', id, 'billing'] },
-    useEventBilling: vi.fn(),
+    useEventBilling: () => ({ isFetching: mocks.billingFetching }),
     useAddonCheckout: () => ({ mutateAsync: mocks.checkout, isPending: false, reset: vi.fn() }),
     useAddEventAddon: () => ({ mutateAsync: mocks.add }),
     useRemoveEventAddon: () => ({ mutateAsync: mocks.remove }),
@@ -78,6 +80,7 @@ vi.mock('@/hooks/useDraftActivationCheckout', () => ({
             breakdown: mocks.draftBreakdown,
             submit: mocks.draftSubmit,
             error: null,
+            ...mocks.draftState,
             isPending: false,
         };
     },
@@ -95,6 +98,18 @@ function draftStep(rsvpAdded = false): InvitationAddonStep {
     return { mode: 'draft', saveMyDate: { service: saveMyDate, added: false }, rsvp: { service: rsvp, added: rsvpAdded } };
 }
 
+// A draft's activation quote: the plan, and RSVP when the draft has it.
+function breakdown(totalMinor: number, rsvpAdded = false) {
+    return {
+        totalMinor,
+        currency: 'EUR',
+        items: [
+            { code: 'ACTIVATION', paidServiceCode: null, priceMinor: 10_000 },
+            ...(rsvpAdded ? [{ code: 'ADDON', paidServiceCode: 'RSVP', priceMinor: 900 }] : []),
+        ],
+    };
+}
+
 function render(step: InvitationAddonStep) {
     return renderHook(() => useInvitationAddonCheckout({ eventId: 'evt-1', draftId: 'draft-1', step }));
 }
@@ -102,8 +117,14 @@ function render(step: InvitationAddonStep) {
 describe('useInvitationAddonCheckout', () => {
     beforeEach(() => {
         vi.clearAllMocks();
+        mocks.add.mockReset();
+        mocks.remove.mockReset();
+        mocks.checkout.mockReset();
         mocks.quoteData = undefined;
-        mocks.draftBreakdown = null;
+        mocks.draftBreakdown = breakdown(10_000);
+        mocks.draftState = { startPassed: false, quoteError: null, isQuoteFetching: false };
+        mocks.billingFetching = false;
+        mocks.draftSubmit.mockResolvedValue(true);
     });
 
     it('pays for Save my date alone on a live event, and comes back to publish', async () => {
@@ -165,7 +186,7 @@ describe('useInvitationAddonCheckout', () => {
     });
 
     it("starts with a draft's earlier RSVP ticked, and takes it out when unticked", async () => {
-        mocks.draftBreakdown = { totalMinor: 10_000, currency: 'EUR' };
+        mocks.draftBreakdown = breakdown(10_000);
         const { result } = render(draftStep(true));
 
         expect(result.current.rsvpTicked).toBe(true);
@@ -187,5 +208,93 @@ describe('useInvitationAddonCheckout', () => {
         expect(result.current.error).toBe('api-5036');
         expect(mocks.draftSubmit).not.toHaveBeenCalled();
         expect(mocks.invalidate).toHaveBeenCalled();
+    });
+
+    it("waits for a draft's price before it can pay", () => {
+        mocks.draftBreakdown = null;
+        const { result } = render(draftStep());
+
+        expect(result.current.totalMinor).toBeNull();
+        expect(result.current.canSubmit).toBe(false);
+    });
+
+    it("shows a draft's failed quote and keeps payment off", () => {
+        mocks.draftBreakdown = null;
+        mocks.draftState = { startPassed: false, quoteError: 'api-3001', isQuoteFetching: false };
+        const { result } = render(draftStep());
+
+        expect(result.current.error).toBe('api-3001');
+        expect(result.current.canSubmit).toBe(false);
+    });
+
+    it("keeps payment off once a draft's start date has passed", () => {
+        mocks.draftState = { startPassed: true, quoteError: 'api-3035', isQuoteFetching: false };
+        const { result } = render(draftStep());
+
+        expect(result.current.canSubmit).toBe(false);
+    });
+
+    it("puts the draft's opt-ins back when its payment can't open", async () => {
+        mocks.draftSubmit.mockResolvedValue(false);
+        const { result } = render(draftStep(true));
+
+        act(() => result.current.handleRsvpChange({ currentTarget: { checked: false } } as never));
+        await act(async () => result.current.submit(submitEvent));
+        expect(mocks.add).toHaveBeenNthCalledWith(1, { paidServiceCode: 'SMD' });
+        expect(mocks.remove).toHaveBeenNthCalledWith(1, 'RSVP');
+        // Rolled back: Save my date taken out again, RSVP put back.
+        expect(mocks.remove).toHaveBeenNthCalledWith(2, 'SMD');
+        expect(mocks.add).toHaveBeenNthCalledWith(2, { paidServiceCode: 'RSVP' });
+    });
+
+    it('rolls back only what it added when a later change is refused', async () => {
+        mocks.remove.mockRejectedValueOnce(new ApiError(409, { errorCode: 5036 }));
+        const { result } = render(draftStep(true));
+
+        act(() => result.current.handleRsvpChange({ currentTarget: { checked: false } } as never));
+        await act(async () => result.current.submit(submitEvent));
+        expect(result.current.error).toBe('api-5036');
+        expect(mocks.remove).toHaveBeenLastCalledWith('SMD');
+        expect(mocks.add).toHaveBeenCalledTimes(1);
+        expect(mocks.draftSubmit).not.toHaveBeenCalled();
+    });
+
+    it('leaves alone an add-on the draft already had', async () => {
+        mocks.add.mockRejectedValue(new ApiError(409, { errorCode: 5038 }));
+        mocks.draftSubmit.mockResolvedValue(false);
+        const { result } = render(draftStep());
+
+        await act(async () => result.current.submit(submitEvent));
+        expect(mocks.remove).not.toHaveBeenCalled();
+    });
+
+    it("keeps a draft's last total while billing and the quote refresh", () => {
+        const { result, rerender } = render(draftStep());
+        expect(result.current.totalMinor).toBe(12_900);
+
+        // Billing has the opt-in already, the quote not yet: the old total stays.
+        mocks.billingFetching = true;
+        mocks.draftBreakdown = breakdown(12_900);
+        rerender();
+        expect(result.current.totalMinor).toBe(12_900);
+    });
+
+    it('lists the plan and the draft\'s other add-ons, not the step\'s own', () => {
+        mocks.draftBreakdown = breakdown(10_900, true);
+        const { result } = render(draftStep(true));
+
+        expect(result.current.draftItems?.items.map((item) => item.code)).toEqual(['ACTIVATION']);
+    });
+
+    it('locks the sheet while payment is in flight', async () => {
+        mocks.checkout.mockResolvedValue({ orderId: 'ord-1', redirectUrl: 'https://pay.test' });
+        const onPendingChange = vi.fn();
+        const { result } = renderHook(() =>
+            useInvitationAddonCheckout({ eventId: 'evt-1', draftId: 'draft-1', step: liveStep(), onPendingChange }),
+        );
+
+        await act(async () => result.current.submit(submitEvent));
+        expect(result.current.isPending).toBe(true);
+        expect(onPendingChange).toHaveBeenLastCalledWith(true);
     });
 });

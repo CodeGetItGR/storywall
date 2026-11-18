@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
-import { http, HttpResponse } from 'msw';
-import { expect, fn, within } from 'storybook/test';
+import { delay, http, HttpResponse } from 'msw';
+import { expect, fn, waitFor, within } from 'storybook/test';
 
 import { withAppContext } from '@/.storybook/appContext';
 import { copyFor } from '@/.storybook/copy';
@@ -53,7 +53,7 @@ const meta = {
     component: PublishAddonSheet,
     decorators: [withAppContext],
     parameters: { app: { appConfig } },
-    args: { step: { open: true, eventId: 'evt-wedding', close: fn() }, draftId: draft.id, document },
+    args: { step: { open: true, eventId: 'evt-wedding', close: fn(), fallBack: fn() }, draftId: draft.id, document },
 } satisfies Meta<typeof PublishAddonSheet>;
 
 export default meta;
@@ -81,5 +81,44 @@ export const DraftEvent: Story = {
         const copy = copyFor(globals).InvitationEditor;
         const sheet = within(await waitForOpen('dialog'));
         await expect(await sheet.findByRole('heading', { name: copy.addOnTitle }, SLOW)).toBeVisible();
+    },
+};
+
+// The event's billing and features are still loading.
+export const Loading: Story = {
+    beforeEach({ msw }) {
+        msw.use(http.get('*/api/events/:eventId/billing', () => delay('infinite')), ...handlers('ACTIVE'));
+    },
+    play: async () => {
+        const sheet = within(await waitForOpen('dialog'));
+        await expect(await sheet.findByRole('status', {}, SLOW)).toBeVisible();
+    },
+};
+
+// The invitation was switched on elsewhere meanwhile: publishing goes on, with no step.
+export const CoveredNow: Story = {
+    beforeEach({ msw }) {
+        msw.use(
+            http.get('*/api/events/:eventId/modules', () =>
+                HttpResponse.json([
+                    { id: 'posts', moduleKey: 'posts', isEnabled: true, isAvailable: true },
+                    { id: 'save_my_date', moduleKey: 'save_my_date', isEnabled: true, isAvailable: true },
+                ]),
+            ),
+            ...handlers('ACTIVE'),
+        );
+    },
+    play: async ({ args }) => {
+        await waitFor(() => expect(args.step.fallBack).toHaveBeenCalledWith('publish'), SLOW);
+    },
+};
+
+// The event's features can't be read: the plan dialog takes over.
+export const ReadFailed: Story = {
+    beforeEach({ msw }) {
+        msw.use(http.get('*/api/events/:eventId/modules', () => new HttpResponse(null, { status: 500 })), ...handlers('ACTIVE'));
+    },
+    play: async ({ args }) => {
+        await waitFor(() => expect(args.step.fallBack).toHaveBeenCalledWith('plan'), SLOW);
     },
 };

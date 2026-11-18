@@ -92,4 +92,26 @@ describe('usePublishInvitation and the add-on step', () => {
         act(() => result.current.addonStep.close());
         expect(result.current.addonStep.open).toBe(false);
     });
+
+    it('goes on to the link when the step finds the invitation covered now', async () => {
+        const offersInvitationAddon = vi.fn(async () => true);
+        const { result } = render({ eventId: null, offersInvitationAddon });
+        await act(async () => result.current.eventStep.onAttached('evt-1'));
+
+        await act(async () => result.current.addonStep.fallBack('publish'));
+
+        expect(result.current.addonStep.open).toBe(false);
+        expect(result.current.sheet.open).toBe(true);
+        expect(offersInvitationAddon).toHaveBeenCalledTimes(1);
+    });
+
+    it("shows the plan dialog when the step can't read the event", async () => {
+        const { result } = render({ eventId: null, offersInvitationAddon: async () => true });
+        await act(async () => result.current.eventStep.onAttached('evt-1'));
+
+        act(() => result.current.addonStep.fallBack('plan'));
+
+        expect(result.current.addonStep.open).toBe(false);
+        expect(result.current.planPrompt).toBe('plan-missing');
+    });
 });
