@@ -1,6 +1,7 @@
 // components/manage/nav/ManageShell.tsx
 'use client';
 
+import { ArrowDown } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { type ReactNode, useCallback } from 'react';
 
@@ -11,6 +12,7 @@ import { useEventRouteContext } from '@/components/routing/EventRouteGate';
 import { BackButton } from '@/components/ui/BackButton';
 import type { ManageNav } from '@/hooks/useManageNav';
 import { useManageSectionLabel } from '@/hooks/useManageSectionLabel';
+import { useSectionMenuScroll } from '@/hooks/useSectionMenuScroll';
 import type { ManageNavKey, ManageSection } from '@/lib/manageSections';
 import { routes } from '@/lib/routes';
 import { eventStatusBadgeTone } from '@/lib/statusTones';
@@ -33,10 +35,13 @@ type ManageShellProps = {
 export function ManageShell({ nav, active, onSelectSection, children }: ManageShellProps) {
     const { activeEvent } = useEventRouteContext();
     const t = useTranslations('ManagePage');
+    const tTabBar = useTranslations('MobileTabBar');
     const label = useManageSectionLabel();
     const showNav = !nav.isDraft;
     const onOverview = active === 'overview';
     const showSectionHeader = showNav && !onOverview;
+    const showSectionList = showNav && onOverview;
+    const { menuRef, scrollToMenu } = useSectionMenuScroll();
     const backToOverview = useCallback(() => onSelectSection?.('overview'), [onSelectSection]);
 
     return (
@@ -69,6 +74,18 @@ export function ManageShell({ nav, active, onSelectSection, children }: ManageSh
                     >
                         {t(`status.${activeEvent.status}`)}
                     </span>
+
+                    {/* Menu (small screens): jumps to the section menu at the end of the Overview */}
+                    {showSectionList && (
+                        <button
+                            type="button"
+                            onClick={scrollToMenu}
+                            className="-my-1 flex min-h-8 shrink-0 items-center gap-1.5 rounded-full bg-ink px-3 text-xs font-bold text-background transition-opacity hover:opacity-90 focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:outline-none lg:hidden"
+                        >
+                            <ArrowDown className="h-3.5 w-3.5" aria-hidden="true" />
+                            {tTabBar('menu')}
+                        </button>
+                    )}
                 </div>
             </div>
 
@@ -98,13 +115,14 @@ export function ManageShell({ nav, active, onSelectSection, children }: ManageSh
                     {children}
 
                     {/* Sections (small screens): the Overview is the menu */}
-                    {showNav && onOverview && (
+                    {showSectionList && (
                         <ManageSectionList
+                            ref={menuRef}
                             eventId={nav.eventId}
                             groups={nav.groups}
                             showDanger={nav.showDanger}
                             onSelectSection={onSelectSection}
-                            className="mt-8 lg:hidden"
+                            className="mt-8 scroll-mt-24 lg:hidden"
                         />
                     )}
                 </div>

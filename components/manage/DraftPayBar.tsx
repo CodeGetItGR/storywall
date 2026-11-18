@@ -26,6 +26,7 @@ export function DraftPayBar({
     onShowConsentAction,
     onPayAction,
     onChangeDateAction,
+    onAddDetailsAction,
 }: {
     totalLabel: string;
     error: string | null;
@@ -39,6 +40,7 @@ export function DraftPayBar({
     onShowConsentAction: () => void;
     onPayAction: () => void;
     onChangeDateAction: () => void;
+    onAddDetailsAction: () => void;
 }) {
     const t = useTranslations('ManagePage');
     const tCommon = useTranslations('Common');
@@ -96,7 +98,7 @@ export function DraftPayBar({
                         {isPending ? t('draft.openingCheckout') : t('draft.payAndPublish')}
                     </button>
                 ) : (
-                    <button type="button" disabled className={ACTION_CLASS}>
+                    <button type="button" onClick={onAddDetailsAction} disabled={!canPurchase} className={ACTION_CLASS}>
                         {t('draft.addStartDate')}
                     </button>
                 )}

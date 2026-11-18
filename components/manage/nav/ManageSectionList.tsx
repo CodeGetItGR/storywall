@@ -3,7 +3,7 @@
 
 import { ChevronRight } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useId } from 'react';
+import { type Ref, useId } from 'react';
 
 import { manageNavIcons } from '@/components/manage/nav/manageNavIcons';
 import { ManageNavLink } from '@/components/manage/nav/ManageNavLink';
@@ -17,10 +17,12 @@ type ManageSectionListProps = {
     showDanger: boolean;
     onSelectSection?: (section: ManageSection) => void;
     className?: string;
+    // The Overview's Menu button scrolls here.
+    ref?: Ref<HTMLElement>;
 };
 
 /** Small screens: the Overview is the menu, listing every other entry by group, Danger zone last. */
-export function ManageSectionList({ eventId, groups, showDanger, onSelectSection, className }: ManageSectionListProps) {
+export function ManageSectionList({ eventId, groups, showDanger, onSelectSection, className, ref }: ManageSectionListProps) {
     const t = useTranslations('ManagePage');
     const idPrefix = useId();
     const listedGroups = groups
@@ -28,7 +30,7 @@ export function ManageSectionList({ eventId, groups, showDanger, onSelectSection
         .filter((group) => group.items.length > 0);
 
     return (
-        <nav aria-label={t('title')} className={cn('flex flex-col gap-4', className)}>
+        <nav ref={ref} aria-label={t('title')} className={cn('flex flex-col gap-4', className)}>
             {/* Groups */}
             {listedGroups.map((group) => (
                 <div key={group.key} role="group" aria-labelledby={`${idPrefix}-${group.key}`} className="flex flex-col">

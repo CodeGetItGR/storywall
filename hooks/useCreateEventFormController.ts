@@ -43,6 +43,7 @@ import {
     CREATE_EVENT_TYPE_PARAM,
     createEventDetailsRequest,
     effectiveThemePresetId,
+    focusFirstInvalidField,
     isThemeStepAvailable,
     rememberCreateEventCheckout,
     resolveCreateEventStep,
@@ -425,6 +426,7 @@ export function useCreateEventFormController({ mode = 'legacy' }: { mode?: Creat
             setStartPassed(false);
             if (step === 'details') {
                 if (canSubmitDetails) goToNextStep();
+                else focusFirstInvalidField(CREATE_EVENT_FORM_ID);
                 return;
             }
             if (step !== 'overview') return;
