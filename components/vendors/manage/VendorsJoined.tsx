@@ -5,6 +5,9 @@ import { useTranslations } from 'next-intl';
 
 import { VendorRow } from '@/components/vendors/manage/VendorRow';
 import { VendorSeatsBar } from '@/components/vendors/manage/VendorSeatsBar';
+import { VendorsEmpty } from '@/components/vendors/manage/VendorsEmpty';
+import type { VendorCapabilityItem } from '@/hooks/useVendorCapabilities';
+import type { VendorScene } from '@/hooks/useVendorScene';
 import type { VendorRowDto } from '@/lib/api/types';
 
 type Props = {
@@ -14,6 +17,9 @@ type Props = {
     seats: { seatsLabel: string | null; seatsSpoken: string | null; percent: number };
     // Shown instead of the Invite button: the event is full, or has no invite links yet.
     notice: string | null;
+    // Shown while no vendor has joined: the picture and what each allowed type can do.
+    scene: VendorScene;
+    capabilities: VendorCapabilityItem[];
     onInviteAction: () => void;
     onOpenAction: (vendorId: string) => void;
     onToggleHiddenAction: (vendorId: string) => void;
@@ -27,6 +33,8 @@ export function VendorsJoined({
     patchingVendorId,
     seats,
     notice,
+    scene,
+    capabilities,
     onInviteAction,
     onOpenAction,
     onToggleHiddenAction,
@@ -71,7 +79,7 @@ export function VendorsJoined({
 
             {/* Rows */}
             {vendors.length === 0 ? (
-                <p className="text-sm text-ink-muted">{t('manage.joinedEmpty')}</p>
+                <VendorsEmpty scene={scene} items={capabilities} />
             ) : (
                 <ul className="flex flex-col gap-1">
                     {vendors.map((vendor) => (

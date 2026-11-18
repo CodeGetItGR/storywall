@@ -14,7 +14,9 @@ import { useManageVendors } from '@/hooks/useManageVendors';
 import { useModuleReadable } from '@/hooks/useModuleReadable';
 import { useVendorCapabilities } from '@/hooks/useVendorCapabilities';
 import { useVendorInvite } from '@/hooks/useVendorInvite';
+import { useVendorScene } from '@/hooks/useVendorScene';
 import { useVendorSeats } from '@/hooks/useVendorSeats';
+import { cn } from '@/lib/utils';
 
 export function ManageVendorsScreen() {
     const t = useTranslations('Vendors');
@@ -26,6 +28,10 @@ export function ManageVendorsScreen() {
     const removeName = page.removeTarget?.businessName ?? t('manage.noProfile');
     const resetType = invite.link ? t(`types.${invite.link.vendorType}`) : '';
     const capabilities = useVendorCapabilities(eventId);
+    const scene = useVendorScene(eventId);
+    const isLoading = page.isLoading || invite.isLoading;
+    // While nobody has joined, the empty state shows what each type can do, so the side section steps aside.
+    const isEmpty = !isLoading && page.vendors.length === 0;
     // Shown instead of the Invite button.
     const inviteNotice = seats.fullNotice ?? (invite.links.length === 0 ? t('manage.linksEmpty') : null);
 
@@ -34,9 +40,9 @@ export function ManageVendorsScreen() {
             {!vendorsOn ? (
                 <p className="rounded-[20px] bg-surface-muted px-4 py-3 text-sm text-ink-muted">{t('manage.unavailable')}</p>
             ) : (
-                <div className="flex flex-col gap-8 lg:grid lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start lg:gap-12">
+                <div className={cn('flex flex-col gap-8', !isEmpty && 'lg:grid lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start lg:gap-12')}>
                     {/* Joined */}
-                    {page.isLoading || invite.isLoading ? (
+                    {isLoading ? (
                         <VendorRowsSkeleton rows={4} />
                     ) : (
                         <VendorsJoined
@@ -45,6 +51,8 @@ export function ManageVendorsScreen() {
                             patchingVendorId={page.patchingVendorId}
                             seats={seats}
                             notice={inviteNotice}
+                            scene={scene}
+                            capabilities={capabilities}
                             onInviteAction={invite.openInvite}
                             onOpenAction={page.openVendor}
                             onToggleHiddenAction={page.toggleHidden}
@@ -53,7 +61,7 @@ export function ManageVendorsScreen() {
                     )}
 
                     {/* What vendors can do */}
-                    <VendorCapabilities items={capabilities} />
+                    {!isEmpty && !isLoading && <VendorCapabilities items={capabilities} />}
                 </div>
             )}
 

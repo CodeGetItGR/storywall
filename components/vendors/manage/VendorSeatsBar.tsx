@@ -8,7 +8,9 @@ export function VendorSeatsBar({ label, spoken, percent }: { label: string; spok
             </span>
 
             {/* Count */}
-            <span aria-hidden="true">{label}</span>
+            <span aria-hidden="true" className="whitespace-nowrap">
+                {label}
+            </span>
         </span>
     );
 }

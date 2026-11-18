@@ -1,10 +1,13 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
+import type { ComponentProps } from 'react';
 import { expect, fn, within } from 'storybook/test';
 
 import { withAppContext } from '@/.storybook/appContext';
 import { copyFor } from '@/.storybook/copy';
-import { storyHostMember } from '@/.storybook/fixtures';
+import { STORY_EVENT_ID, storyEventAllowingVendors, storyHostMember } from '@/.storybook/fixtures';
 import { VendorsJoined } from '@/components/vendors/manage/VendorsJoined';
+import { useVendorCapabilities } from '@/hooks/useVendorCapabilities';
+import { useVendorScene } from '@/hooks/useVendorScene';
 import type { VendorRowDto } from '@/lib/api/types';
 
 function vendor(id: string, vendorType: VendorRowDto['vendorType'], businessName: string, hiddenByHost = false): VendorRowDto {
@@ -18,18 +21,25 @@ const VENDORS = [
     vendor('petros', 'MUSIC', 'DJ Petros', true),
 ];
 
+const ALL_TYPES = ['PLANNER', 'VENUE', 'PHOTOGRAPHER', 'VIDEOGRAPHER', 'DECORATION', 'CATERING', 'MUSIC', 'OTHER'] as const;
+
+// The list as the page builds it: the picture and the rows come from the story event's allowed types.
+function JoinedForEvent(props: Omit<ComponentProps<typeof VendorsJoined>, 'scene' | 'capabilities'>) {
+    return <VendorsJoined {...props} scene={useVendorScene(STORY_EVENT_ID)} capabilities={useVendorCapabilities(STORY_EVENT_ID)} />;
+}
+
 const meta = {
     title: 'Manage/Vendors/VendorsJoined',
-    component: VendorsJoined,
+    component: JoinedForEvent,
     decorators: [
         (Story) => (
-            <div className="max-w-[640px] p-5">
+            <div className="max-w-[760px] p-5">
                 <Story />
             </div>
         ),
         withAppContext,
     ],
-    parameters: { app: { member: storyHostMember } },
+    parameters: { app: { member: storyHostMember, event: storyEventAllowingVendors([...ALL_TYPES]) } },
     args: {
         vendors: VENDORS,
         listError: null,
@@ -41,7 +51,7 @@ const meta = {
         onToggleHiddenAction: fn(),
         onRemoveAction: fn(),
     },
-} satisfies Meta<typeof VendorsJoined>;
+} satisfies Meta<typeof JoinedForEvent>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
@@ -67,7 +77,25 @@ export const Full: Story = {
     },
 };
 
-// No vendors yet.
+// No vendors yet, every type allowed: the whole picture and a row per type.
 export const Empty: Story = {
     args: { vendors: [], seats: { seatsLabel: '0 / 5', seatsSpoken: '0 of 5 vendor seats used', percent: 0 } },
+    play: async ({ canvasElement, globals }) => {
+        const copy = copyFor(globals);
+        const canvas = within(canvasElement);
+        await expect(canvas.getByText(copy.Vendors.manage.joinedEmpty)).toBeVisible();
+        await expect(canvas.getAllByRole('listitem')).toHaveLength(8);
+        await expect(canvasElement.querySelectorAll('svg [data-vendor-type]')).toHaveLength(8);
+    },
+};
+
+// No vendors yet on a plan with a photographer, a planner and music: only those are drawn and listed.
+export const EmptyPlanSubset: Story = {
+    args: { vendors: [], seats: { seatsLabel: '0 / 3', seatsSpoken: '0 of 3 vendor seats used', percent: 0 } },
+    parameters: { app: { member: storyHostMember, event: storyEventAllowingVendors(['PHOTOGRAPHER', 'PLANNER', 'MUSIC']) } },
+    play: async ({ canvasElement }) => {
+        const canvas = within(canvasElement);
+        await expect(canvas.getAllByRole('listitem')).toHaveLength(3);
+        await expect(canvasElement.querySelectorAll('svg [data-vendor-type]')).toHaveLength(4);
+    },
 };

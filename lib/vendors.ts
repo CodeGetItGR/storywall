@@ -270,16 +270,42 @@ export function allowedVendorTypes(modules: readonly Pick<EventModuleResponseDto
     return VENDOR_TYPES.filter((type) => allowed.includes(type));
 }
 
-// Types with tools of their own get a row each on the host's "What vendors can do"; the rest share one row.
-export type VendorToolType = 'PLANNER' | 'PHOTOGRAPHER' | 'VIDEOGRAPHER' | 'MUSIC';
-const VENDOR_TOOL_TYPES: readonly VendorToolType[] = ['PLANNER', 'PHOTOGRAPHER', 'VIDEOGRAPHER', 'MUSIC'];
+// The types drawn in the Vendors empty-state picture, left to right. OTHER has no figure.
+export type VendorSceneType = Exclude<PartnerRole, 'OTHER'>;
+export const VENDOR_SCENE_TYPES: readonly VendorSceneType[] = ['PHOTOGRAPHER', 'VIDEOGRAPHER', 'VENUE', 'DECORATION', 'PLANNER', 'CATERING', 'MUSIC'];
 
-export type VendorCapabilityRow = { kind: 'tools'; type: VendorToolType } | { kind: 'listed'; types: PartnerRole[] };
+// Where each type's marker sits on the picture, in the scene's viewBox units.
+export const VENDOR_SCENE_MARKERS: Record<VendorSceneType, { x: number; y: number }> = {
+    PHOTOGRAPHER: { x: 80, y: 72 },
+    VIDEOGRAPHER: { x: 160, y: 74 },
+    VENUE: { x: 330, y: 62 },
+    DECORATION: { x: 282, y: 142 },
+    PLANNER: { x: 450, y: 72 },
+    CATERING: { x: 516, y: 106 },
+    MUSIC: { x: 600, y: 74 },
+};
 
-// The rows for the allowed types: one per tool type in VENDOR_TOOL_TYPES order, then one shared row
-// for every other allowed type (in VENDOR_TYPES order), left out when there are none.
-export function vendorCapabilityRows(allowed: readonly PartnerRole[]): VendorCapabilityRow[] {
-    const rows: VendorCapabilityRow[] = VENDOR_TOOL_TYPES.filter((type) => allowed.includes(type)).map((type) => ({ kind: 'tools', type }));
-    const listed = VENDOR_TYPES.filter((type) => allowed.includes(type) && !(VENDOR_TOOL_TYPES as readonly PartnerRole[]).includes(type));
-    return listed.length > 0 ? [...rows, { kind: 'listed', types: listed }] : rows;
+// The picture's crop, in its own units.
+export const VENDOR_SCENE_VIEWBOX = { x: 0, y: 30, width: 640, height: 200 };
+
+// A type's marker centre as a percentage of the cropped picture, for placing it over the drawing.
+export function vendorSceneMarkerPosition(type: VendorSceneType): { left: number; top: number } {
+    const { x, y } = VENDOR_SCENE_MARKERS[type];
+    return {
+        left: ((x - VENDOR_SCENE_VIEWBOX.x) * 100) / VENDOR_SCENE_VIEWBOX.width,
+        top: ((y - VENDOR_SCENE_VIEWBOX.y) * 100) / VENDOR_SCENE_VIEWBOX.height,
+    };
+}
+
+// The order of the "What vendors can do" rows: the picture's order, then OTHER.
+const VENDOR_CAPABILITY_ORDER: readonly PartnerRole[] = [...VENDOR_SCENE_TYPES, 'OTHER'];
+
+// The allowed types as "What vendors can do" rows, one each.
+export function vendorCapabilityTypes(allowed: readonly PartnerRole[]): PartnerRole[] {
+    return VENDOR_CAPABILITY_ORDER.filter((type) => allowed.includes(type));
+}
+
+// The allowed types the empty-state picture draws, left to right.
+export function vendorSceneTypes(allowed: readonly PartnerRole[]): VendorSceneType[] {
+    return VENDOR_SCENE_TYPES.filter((type) => allowed.includes(type));
 }

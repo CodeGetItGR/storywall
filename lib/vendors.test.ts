@@ -19,10 +19,12 @@ import {
     sortByVendorType,
     VENDOR_TYPES,
     vendorApplySearch,
-    vendorCapabilityRows,
+    vendorCapabilityTypes,
     vendorCardActions,
     vendorInviteUrl,
     vendorQuickActions,
+    vendorSceneMarkerPosition,
+    vendorSceneTypes,
     vendorToolLinks,
     websiteHref,
 } from '@/lib/vendors';
@@ -322,23 +324,28 @@ describe('allowedVendorTypes', () => {
     });
 });
 
-describe('vendorCapabilityRows', () => {
-    it('gives each tool type its own row and groups the rest in one', () => {
-        expect(vendorCapabilityRows(VENDOR_TYPES)).toEqual([
-            { kind: 'tools', type: 'PLANNER' },
-            { kind: 'tools', type: 'PHOTOGRAPHER' },
-            { kind: 'tools', type: 'VIDEOGRAPHER' },
-            { kind: 'tools', type: 'MUSIC' },
-            { kind: 'listed', types: ['VENUE', 'DECORATION', 'CATERING', 'OTHER'] },
-        ]);
+describe('vendorCapabilityTypes', () => {
+    it('gives every allowed type its own row in the picture order, OTHER last', () => {
+        expect(vendorCapabilityTypes(VENDOR_TYPES)).toEqual(['PHOTOGRAPHER', 'VIDEOGRAPHER', 'VENUE', 'DECORATION', 'PLANNER', 'CATERING', 'MUSIC', 'OTHER']);
     });
 
-    it('lists only the allowed types and drops an empty group', () => {
-        expect(vendorCapabilityRows(['MUSIC', 'CATERING'])).toEqual([
-            { kind: 'tools', type: 'MUSIC' },
-            { kind: 'listed', types: ['CATERING'] },
-        ]);
-        expect(vendorCapabilityRows(['PHOTOGRAPHER'])).toEqual([{ kind: 'tools', type: 'PHOTOGRAPHER' }]);
-        expect(vendorCapabilityRows([])).toEqual([]);
+    it('lists only the allowed types', () => {
+        expect(vendorCapabilityTypes(['MUSIC', 'OTHER', 'CATERING'])).toEqual(['CATERING', 'MUSIC', 'OTHER']);
+        expect(vendorCapabilityTypes([])).toEqual([]);
+    });
+});
+
+describe('vendorSceneMarkerPosition', () => {
+    it('places a marker as a share of the cropped picture', () => {
+        expect(vendorSceneMarkerPosition('PHOTOGRAPHER')).toEqual({ left: 12.5, top: 21 });
+        expect(vendorSceneMarkerPosition('DECORATION')).toEqual({ left: 44.0625, top: 56 });
+    });
+});
+
+describe('vendorSceneTypes', () => {
+    it('draws the allowed types left to right and never OTHER', () => {
+        expect(vendorSceneTypes(VENDOR_TYPES)).toEqual(['PHOTOGRAPHER', 'VIDEOGRAPHER', 'VENUE', 'DECORATION', 'PLANNER', 'CATERING', 'MUSIC']);
+        expect(vendorSceneTypes(['MUSIC', 'PLANNER', 'OTHER'])).toEqual(['PLANNER', 'MUSIC']);
+        expect(vendorSceneTypes(['OTHER'])).toEqual([]);
     });
 });
