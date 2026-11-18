@@ -11,7 +11,7 @@ import { rsvpCountdown } from '@/lib/rsvpReport';
 type RsvpDeadlineCardProps = {
     eventId: string;
     rsvpDeadline: string | null;
-    startAt: string;
+    startAt: string | null;
     // The pencil shows only while the event can still be changed.
     canWrite: boolean;
 };
@@ -22,7 +22,7 @@ export function RsvpDeadlineCard({ eventId, rsvpDeadline, startAt, canWrite }: R
     const locale = useLocale();
     const [editing, setEditing] = useState(false);
     const countdown = rsvpCountdown(rsvpDeadline, startAt);
-    const date = formatDate(locale, countdown.target, { day: 'numeric', month: 'long', year: 'numeric' });
+    const date = countdown.target ? formatDate(locale, countdown.target, { day: 'numeric', month: 'long', year: 'numeric' }) : null;
 
     function openSheet() {
         setEditing(true);
@@ -43,7 +43,8 @@ export function RsvpDeadlineCard({ eventId, rsvpDeadline, startAt, canWrite }: R
             <div className="min-w-0 flex-1">
                 <p className="text-xs font-bold text-ink-muted">{t(countdown.labelKey)}</p>
                 <p className="text-[15px] font-bold wrap-break-word text-ink">
-                    {t('daysToGo', { count: countdown.daysLeft })} · {date}
+                    {t('daysToGo', { count: countdown.daysLeft })}
+                    {date && ` · ${date}`}
                 </p>
             </div>
 

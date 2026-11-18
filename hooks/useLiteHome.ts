@@ -4,8 +4,7 @@ import { useMemo } from 'react';
 
 import { usePlanUpgradeHref } from '@/hooks/usePlanUpgradeHref';
 import { useEventQrLinks } from '@/hooks/useQrLinks';
-import { isEventDeleted } from '@/lib/eventLifecycle';
-import { isLiteEvent, type LiteHomeModule } from '@/lib/liteEvents';
+import { isLiveLiteEvent, type LiteModulePage, liteModulePages } from '@/lib/eventCapabilities';
 import { findGuestQrLink } from '@/lib/qrLinks';
 import { routes } from '@/lib/routes';
 import { useActiveEvent, useIsHost } from '@/providers/EventProvider';
@@ -15,10 +14,10 @@ export type LiteQuickActionKey = 'qr' | 'share' | 'download' | 'upgrade';
 // Whether this gallery or wishbook page is a lite event's home, and what its header shows: the Bundle's tabs
 // and the host's quick actions. onDownload is the page's own "download everything" (the gallery archive, or
 // the wishbook book); leave it out while there is nothing to download.
-export function useLiteHome(page: LiteHomeModule, { onDownload }: { onDownload?: () => void } = {}) {
+export function useLiteHome(page: LiteModulePage, { onDownload }: { onDownload?: () => void } = {}) {
     const activeEvent = useActiveEvent();
     const isHost = useIsHost();
-    const isHome = Boolean(activeEvent) && isLiteEvent(activeEvent) && activeEvent?.status !== 'DRAFT' && !isEventDeleted(activeEvent);
+    const isHome = isLiveLiteEvent(activeEvent);
     const eventId = isHome && isHost ? (activeEvent?.id ?? null) : null;
     const { data: qrLinks } = useEventQrLinks(eventId);
     const upgradeHref = usePlanUpgradeHref(activeEvent?.id ?? '');
@@ -26,9 +25,8 @@ export function useLiteHome(page: LiteHomeModule, { onDownload }: { onDownload?:
 
     return useMemo(() => {
         if (!isHome || !activeEvent) return { isHome: false as const };
-        const has = (key: string) => activeEvent.modules.some((module_) => module_.moduleKey === key && module_.isEnabled);
         const tabs =
-            has('gallery') && has('wishbook')
+            liteModulePages(activeEvent.modules).length > 1
                 ? {
                       active: page,
                       hrefs: { gallery: routes.events.tools.gallery(activeEvent.id), wishbook: routes.events.tools.wishbook(activeEvent.id) },

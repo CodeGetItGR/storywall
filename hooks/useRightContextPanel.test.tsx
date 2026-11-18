@@ -2,6 +2,7 @@ import { renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { useRightContextPanel } from '@/hooks/useRightContextPanel';
+import { capabilitiesOf } from '@/lib/__fixtures__/eventCapabilities';
 
 const mocks = vi.hoisted(() => ({ activeEvent: null as Record<string, unknown> | null }));
 
@@ -22,8 +23,8 @@ vi.mock('@/hooks/useWishbook', () => ({ useWishbook: () => ({ data: undefined })
 
 const galleryWithQr = { moduleKey: 'gallery', isEnabled: true, isAvailable: true, configuration: { qrUploadEnabled: true } };
 
-function event(modules: unknown[]) {
-    return { id: 'e1', status: 'ACTIVE', deletedAt: null, modules };
+function event(modules: { moduleKey: string; isEnabled: boolean; isAvailable: boolean }[]) {
+    return { id: 'e1', status: 'ACTIVE', deletedAt: null, modules, capabilities: capabilitiesOf(modules) };
 }
 
 describe('useRightContextPanel links', () => {

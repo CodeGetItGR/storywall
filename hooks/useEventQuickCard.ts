@@ -7,8 +7,8 @@ import type { EventGridItem } from '@/hooks/useEventGridItems';
 import { useLocalizedAppEventTypeCopy } from '@/hooks/useLocalizedAppEventTypeCopy';
 import { useMemberRoleLabel } from '@/hooks/useMemberRoleLabel';
 import { formatDate, formatEventListDate } from '@/lib/datetime';
+import { eventHomeHref } from '@/lib/eventCapabilities';
 import { eventCardStatus, isEventDeleted } from '@/lib/eventLifecycle';
-import { eventHomeHref } from '@/lib/liteEvents';
 import { routes } from '@/lib/routes';
 
 // Display values for one card in the home events rail.

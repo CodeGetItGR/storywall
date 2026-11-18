@@ -2,6 +2,7 @@ import { renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { useBeforeJourney } from '@/hooks/useBeforeJourney';
+import { capabilitiesOf } from '@/lib/__fixtures__/eventCapabilities';
 import { routes } from '@/lib/routes';
 
 const progress = vi.hoisted(() => ({ value: { details: true, rsvp: true, giftAccount: false, schedule: false, invitations: false } }));
@@ -15,7 +16,7 @@ vi.mock('@/hooks/useModuleCopy', () => ({ useModuleCopy: () => (key: string) => 
 const modules = (keys: string[]) => keys.map((moduleKey) => ({ moduleKey, isEnabled: true, isAvailable: true }));
 
 function event(overrides: Record<string, unknown> = {}) {
-    return {
+    const base = {
         id: 'e1',
         eventType: 'WEDDING',
         title: 'Maria & Nikos',
@@ -25,7 +26,8 @@ function event(overrides: Record<string, unknown> = {}) {
         schedule: { startAt: '2026-12-12T16:00:00Z', timezone: 'Europe/Athens', rsvpDeadline: '2026-12-01T00:00:00Z' },
         rsvpSummary: { totalMembers: 81, attending: 42, declined: 8, noResponse: 31 },
         ...overrides,
-    } as never;
+    };
+    return { ...base, capabilities: capabilitiesOf(base.modules as { moduleKey: string; isEnabled: boolean }[]) } as never;
 }
 
 const counts = { memberCount: 58, memberLimit: 100, seatsClaimed: 60 };
@@ -136,10 +138,11 @@ describe('useBeforeJourney', () => {
         expect(result.current.stops.every((stop) => stop.status === 'done')).toBe(true);
     });
 
-    it('leaves out RSVP, the gift account and invitations when the event has none of them', () => {
+    // A lite event takes no guests: no schedule or invitations either.
+    it('leaves out RSVP, the gift account, the schedule and invitations on a lite event', () => {
         const lite = event({ modules: modules(['gallery']), rsvpSummary: null });
         const keys = renderHook(() => useBeforeJourney(lite, counts, now)).result.current.stops.map((stop) => stop.key);
-        expect(keys).toEqual(['details', 'schedule']);
+        expect(keys).toEqual(['details']);
     });
 
     it('adds sessions dated before the primary day after the setup stops', () => {

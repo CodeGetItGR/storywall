@@ -36,4 +36,12 @@ describe('useEventJourneyPhase', () => {
         expect(result.current.selected).toBe('after');
         expect(result.current.current).toBe('before');
     });
+
+    // A lite event without a date has no phases to step through.
+    it('has no steps for an event without a date', () => {
+        const undated = { sessions: [], schedule: { startAt: null, timezone: null } } as never;
+        const { result } = renderHook(() => useEventJourneyPhase(undated, new Date('2026-11-18T10:00:00Z')));
+        expect(result.current.current).toBe('before');
+        expect(result.current.steps).toEqual([]);
+    });
 });

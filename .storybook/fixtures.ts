@@ -1,3 +1,4 @@
+import { planRequirementsOf } from '@/lib/__fixtures__/planRequirements';
 import type {
     AppConfigResponseDto,
     AuthorDto,
@@ -343,6 +344,7 @@ function storyWizardPlan(
             active: true,
         })),
         extensionOptions: [],
+        requirements: planRequirementsOf(moduleKeys),
     } as unknown as PlanTierResponseDto;
 }
 

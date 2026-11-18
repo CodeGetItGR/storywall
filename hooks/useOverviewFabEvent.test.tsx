@@ -2,6 +2,7 @@ import { renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { useOverviewFabEvent } from '@/hooks/useOverviewFabEvent';
+import { capabilitiesOf } from '@/lib/__fixtures__/eventCapabilities';
 
 const posts = { moduleKey: 'posts', isEnabled: true, isAvailable: true };
 const liveEvent = { id: 'e1', status: 'ACTIVE', deletedAt: null, modules: [posts] };
@@ -34,7 +35,7 @@ describe('useOverviewFabEvent', () => {
         ['on the Overview', { pathname: '/events/e1/manage', search: '' }],
         ['for a guest', { isHost: false }],
         ['for a draft', { event: { ...liveEvent, status: 'DRAFT' } }],
-        ['for a lite event', { event: { ...liveEvent, modules: [] } }],
+        ['for a lite event', { event: { ...liveEvent, modules: [], capabilities: capabilitiesOf([]) } }],
         ['for a deleted event', { event: { ...liveEvent, deletedAt: '2026-11-01T00:00:00Z' } }],
         ['with no event', { event: null }],
     ])('is null %s', (_label, change) => {
