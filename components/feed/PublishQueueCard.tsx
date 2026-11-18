@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import { useEffect } from 'react';
 
 import { useSlowUpload } from '@/hooks/useSlowUpload';
+import { cn } from '@/lib/utils';
 import type { PublishJob } from '@/providers/publishQueue/PublishQueueContext';
 
 const SUCCESS_DISMISS_DELAY_MS = 4000;
@@ -23,18 +24,22 @@ interface PublishQueueCardProps {
     job: PublishJob;
     onRetry: (jobId: string) => void;
     onDismiss: (jobId: string) => void;
+    // Set once the job's files can go to the phone's share menu: the success card then shows
+    // Share and stays until the guest taps Share or ✕.
+    onShare?: (jobId: string) => void;
 }
 
-export function PublishQueueCard({ job, onRetry, onDismiss }: PublishQueueCardProps) {
+export function PublishQueueCard({ job, onRetry, onDismiss, onShare }: PublishQueueCardProps) {
     const t = useTranslations('PublishQueue');
     // Songs send no files, so only posts and stories can be slow to upload.
     const isSlow = useSlowUpload(job.status === 'pending' && job.kind !== 'song');
+    const canShare = Boolean(onShare);
 
     useEffect(() => {
-        if (job.status !== 'success') return;
+        if (job.status !== 'success' || canShare) return;
         const timeout = setTimeout(() => onDismiss(job.id), SUCCESS_DISMISS_DELAY_MS);
         return () => clearTimeout(timeout);
-    }, [job.id, job.status, onDismiss]);
+    }, [job.id, job.status, onDismiss, canShare]);
 
     const labels = getJobLabels(job, t);
 
@@ -44,6 +49,10 @@ export function PublishQueueCard({ job, onRetry, onDismiss }: PublishQueueCardPr
 
     function handleDismissClick() {
         onDismiss(job.id);
+    }
+
+    function handleShareClick() {
+        onShare?.(job.id);
     }
 
     return (
@@ -67,7 +76,27 @@ export function PublishQueueCard({ job, onRetry, onDismiss }: PublishQueueCardPr
                     <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-primary text-white" aria-hidden="true">
                         <Check className="h-3 w-3" strokeWidth={3} />
                     </span>
-                    <span className="min-w-0 flex-1 truncate text-ink">{labels.success}</span>
+                    <span className={cn('min-w-0 flex-1 text-ink', canShare ? 'line-clamp-2 leading-snug' : 'truncate')}>{labels.success}</span>
+                    {/* Share */}
+                    {canShare && (
+                        <>
+                            <button
+                                type="button"
+                                onClick={handleShareClick}
+                                className="flex min-h-9 shrink-0 items-center rounded-full bg-primary px-3.5 text-sm font-semibold text-primary-foreground"
+                            >
+                                {t('share')}
+                            </button>
+                            <button
+                                type="button"
+                                onClick={handleDismissClick}
+                                aria-label={t('dismiss')}
+                                className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-ink-faint hover:text-ink"
+                            >
+                                <X className="h-4 w-4" />
+                            </button>
+                        </>
+                    )}
                 </>
             )}
             {job.status === 'error' && (
