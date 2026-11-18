@@ -12,7 +12,6 @@ import { BugReportsPanel } from '@/components/admin/betaFeedback/BugReportsPanel
 import { ErrorEventsPanel } from '@/components/admin/betaFeedback/ErrorEventsPanel';
 import { BillingOpsPanel } from '@/components/admin/BillingOpsPanel';
 import { CampaignsPanel } from '@/components/admin/campaigns/CampaignsPanel';
-import { CampaignOverviewPanel } from '@/components/admin/campaigns/overview/CampaignOverviewPanel';
 import { CollaborationsSection } from '@/components/admin/collaborations/CollaborationsSection';
 import { CostTrackingPanel } from '@/components/admin/CostTrackingPanel';
 import { DemoEventsSection } from '@/components/admin/demoEvents/DemoEventsSection';
@@ -41,7 +40,7 @@ import { WithdrawalsSection } from '@/components/admin/WithdrawalsSection';
 
 export function AdminConsole() {
     const t = useTranslations('AdminPage');
-    const { tab } = useAdminNavigation();
+    const { tab, role } = useAdminNavigation();
 
     // The Paid Services panel supplies its own page head (title, stat tiles,
     // primary action) — the shared eyebrow/title block would just duplicate it.
@@ -50,8 +49,7 @@ export function AdminConsole() {
     if (tab === 'visitors') return <VisitorsPanel />;
     if (tab === 'outreach') return <OutreachSection />;
     if (tab === 'outreachRequests') return <OutreachRequestsSection />;
-    if (tab === 'campaignOverview') return <CampaignOverviewPanel />;
-    if (tab === 'campaigns') return <CampaignsPanel />;
+    if (tab === 'campaigns') return <CampaignsPanel canEditDiscount={role === 'ADMIN'} />;
     if (tab === 'moduleUsage') return <ModuleUsagePanel />;
     if (tab === 'paidServices') return <PaidServicesCatalogPanel />;
     if (tab === 'plans') return <PlansSection />;

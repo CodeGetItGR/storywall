@@ -281,7 +281,7 @@ export function ThemePresetDrawer({
 
                     {/* Illustration */}
                     <AdminField label={t('illustration')} hint={fileHint ?? (form.hasPendingFile ? t('illustrationPending') : t('illustrationHint'))}>
-                        <label className="inline-flex min-h-10 w-fit cursor-pointer items-center gap-2 rounded-md border border-border px-3 text-sm font-semibold text-ink hover:bg-canvas">
+                        <label className="relative inline-flex min-h-10 w-fit cursor-pointer items-center gap-2 rounded-md border border-border px-3 text-sm font-semibold text-ink hover:bg-canvas">
                             <ImagePlus className="h-4 w-4" aria-hidden="true" />
                             {t('illustrationChoose')}
                             <input type="file" accept={THEME_ILLUSTRATION_ACCEPT} onChange={form.handleFileChange} className="sr-only" />

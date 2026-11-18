@@ -10,6 +10,7 @@ import { useLocalizedText } from '@/hooks/useLocalizedText';
 import { useModuleCopy } from '@/hooks/useModuleCopy';
 import { useThemePicker } from '@/hooks/useThemePicker';
 import type { EventDetailResponseDto } from '@/lib/api/types';
+import { themePreviewTitle } from '@/lib/eventTheme';
 
 // `showHeading` is off in the Theme section, whose section title already names it.
 export function ThemePicker({ event, canWrite, showHeading = true }: { event: EventDetailResponseDto; canWrite: boolean; showHeading?: boolean }) {
@@ -80,6 +81,7 @@ export function ThemePicker({ event, canWrite, showHeading = true }: { event: Ev
                     labelledBy={headingId}
                     disabled={picker.disabled}
                     savingPresetId={picker.isSaving ? picker.savingPresetId : undefined}
+                    previewTitle={themePreviewTitle(event.title)}
                     onSelectAction={picker.select}
                 />
             )}

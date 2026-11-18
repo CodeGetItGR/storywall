@@ -22,6 +22,7 @@ import { useDraftActivationCheckout } from '@/hooks/useDraftActivationCheckout';
 import { useDraftDuration } from '@/hooks/useDraftDuration';
 import { useDraftEventDetails } from '@/hooks/useDraftEventDetails';
 import { useDraftStartDate } from '@/hooks/useDraftStartDate';
+import { useFlowEvent } from '@/hooks/useFlowEvent';
 import { useLocalizedAppEventTypeCopy } from '@/hooks/useLocalizedAppEventTypeCopy';
 import type {
     CoverageOptionResponseDto,
@@ -32,6 +33,7 @@ import type {
 } from '@/lib/api/types';
 import { formatMoney, formatOptionalMoney } from '@/lib/billing';
 import { focusFirstUncheckedBox } from '@/lib/createEventSteps';
+import { trackFlow } from '@/lib/flowTracking';
 import { GIFT_ACCOUNT_SECTION_ID } from '@/lib/manageSectionTargets';
 import { getOptionPriceDetails } from '@/lib/planTiers';
 
@@ -108,7 +110,11 @@ export function OverviewDraftPanel({
     const startDate = useDraftStartDate(eventId, { startAt, endAt, coverageEndsAt: projectedCoverage?.coverageEndsAt ?? null });
     const eventDetails = useDraftEventDetails(eventId, { hostingMonths: currentOption?.months });
     const consentReady = consent.consentSatisfied && partnerBranding.satisfied;
-    const showConsent = useCallback(() => focusFirstUncheckedBox(DRAFT_CONSENT_ID), []);
+    const showConsent = useCallback(() => {
+        trackFlow({ name: 'Consent Hint', from: 'draft' });
+        focusFirstUncheckedBox(DRAFT_CONSENT_ID);
+    }, []);
+    useFlowEvent(cancelledCheckout ? { name: 'Checkout Result', result: 'cancelled' } : null);
 
     // activationTotal already bundles the plan's own (non-collaboration-code) price with
     // whichever add-ons count toward activation (see useEventOverviewPlan). A collaboration

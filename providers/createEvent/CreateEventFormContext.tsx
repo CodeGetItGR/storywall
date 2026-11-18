@@ -17,7 +17,7 @@ import type {
     ThemePresetDto,
 } from '@/lib/api/types';
 
-export type CreateEventStep = 'type' | 'plan' | 'details' | 'theme' | 'overview';
+export type CreateEventStep = 'type' | 'plan' | 'details' | 'theme' | 'account' | 'overview';
 
 export interface CreateEventFormValue {
     formId: string;
@@ -29,10 +29,14 @@ export interface CreateEventFormValue {
     goToDetails: () => void;
     goToTheme: () => void;
     goToOverview: () => void;
+    // Back one step (the wizard's top-left button). One history entry back when the wizard pushed it.
+    goBack: () => void;
+    // On to the next step shown (details → theme → account → review).
     goToNextStep: () => void;
+    // The old page's footer Back: the step before this one among the steps shown.
     goToPreviousStep: () => void;
-    // The steps shown for the current type and plan (details only when the plan asks for them, the theme step
-    // only when there is one to pick).
+    // The steps shown for the current type and plan (details unless the plan asks for nothing there, the theme
+    // step only when there is one to pick).
     steps: CreateEventStep[];
     // The plan asks for the date and place. When it doesn't, the title and gift are asked on the overview step.
     asksDetails: boolean;

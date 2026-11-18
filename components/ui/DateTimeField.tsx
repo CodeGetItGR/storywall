@@ -15,6 +15,8 @@ interface DateTimeFieldProps {
     min?: string;
     max?: string;
     required?: boolean;
+    // Optional field that must be complete once started: both inputs become required as soon as either has a value.
+    requireBoth?: boolean;
     disabled?: boolean;
     'aria-invalid'?: boolean;
     inputClassName?: string;
@@ -34,9 +36,10 @@ const NATIVE_RESET = cn(
 );
 const ICON_CLASS = 'pointer-events-none absolute top-1/2 right-4 hidden size-4 -translate-y-1/2 text-ink-muted pointer-coarse:block';
 
-export function DateTimeField({ value, onChange, name, min, max, required, disabled, inputClassName, ...aria }: DateTimeFieldProps) {
+export function DateTimeField({ value, onChange, name, min, max, required, requireBoth, disabled, inputClassName, ...aria }: DateTimeFieldProps) {
     const t = useTranslations('Common');
     const field = useDateTimeField({ value, onChange, min, max });
+    const isRequired = required || (requireBoth && field.hasValue);
 
     return (
         <div className="flex min-w-0 gap-2 max-[379px]:flex-col">
@@ -48,7 +51,7 @@ export function DateTimeField({ value, onChange, name, min, max, required, disab
                     onChange={field.handleDateChange}
                     min={field.dateMin}
                     max={field.dateMax}
-                    required={required}
+                    required={isRequired}
                     disabled={disabled}
                     aria-invalid={aria['aria-invalid']}
                     className={cn(inputClassName, NATIVE_RESET)}
@@ -64,7 +67,7 @@ export function DateTimeField({ value, onChange, name, min, max, required, disab
                     onChange={field.handleTimeChange}
                     min={field.timeMin}
                     max={field.timeMax}
-                    required={required}
+                    required={isRequired}
                     disabled={disabled}
                     aria-label={t('time')}
                     aria-invalid={aria['aria-invalid']}

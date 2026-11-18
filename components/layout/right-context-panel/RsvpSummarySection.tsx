@@ -21,7 +21,7 @@ export function RsvpSummarySection({ eventId, title, summary }: RsvpSummarySecti
     return (
         <div>
             <AppLink
-                href={routes.events.tools.rsvp(eventId)}
+                href={routes.events.manage(eventId, { tab: 'rsvp' })}
                 className="group mb-2 flex items-center gap-1 text-sm font-semibold text-ink hover:text-ink-muted"
             >
                 {title}

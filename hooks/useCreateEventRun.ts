@@ -3,6 +3,7 @@
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 
+import type { CreateEventFlowMode } from '@/hooks/useCreateEventStepNavigation';
 import { useResetOnBfcacheRestore } from '@/hooks/useResetOnBfcacheRestore';
 import { clearPendingCheckout } from '@/lib/billing';
 import {
@@ -15,6 +16,9 @@ import {
     readCreateEventCheckout,
     rememberCreateEventCheckout,
 } from '@/lib/createEventSteps';
+import { readCreateEventWizardDraft } from '@/lib/createEventWizardDraft';
+import { replaceWizardEntry } from '@/lib/createEventWizardHistory';
+import { withWizardParams } from '@/lib/createEventWizardUrl';
 import { replacePageUrl } from '@/lib/overlayHistory';
 import { routes } from '@/lib/routes';
 
@@ -29,7 +33,7 @@ const STEP_BACK_FALLBACK_MS = 1000;
  * the draft's page, and the run's earlier entries step back past themselves.
  * The form stays hidden until the run is known to have no checkout.
  */
-export function useCreateEventRun(): { isReady: boolean } {
+export function useCreateEventRun(mode: CreateEventFlowMode = 'legacy'): { isReady: boolean } {
     const router = useRouter();
     const searchParams = useSearchParams();
     const run = searchParams.get(CREATE_EVENT_RUN_PARAM);
@@ -51,7 +55,15 @@ export function useCreateEventRun(): { isReady: boolean } {
             // Deferred a task: on a full page load this effect runs before the Next router's own
             // (a parent's) has wrapped history.replaceState, and an unwrapped write never reaches
             // useSearchParams, which would leave the run, and the form, waiting forever.
-            const write = window.setTimeout(() => replacePageUrl(routes.events.new({ step, run: newCreateEventRunId(), type, plan, option, code })));
+            const write = window.setTimeout(() => {
+                if (mode === 'wizard') {
+                    // The wizard lives on whatever page it opened over; a saved run carries on.
+                    const nextRun = readCreateEventWizardDraft()?.run ?? newCreateEventRunId();
+                    replaceWizardEntry(withWizardParams(new URL(window.location.href), { run: nextRun }));
+                    return;
+                }
+                replacePageUrl(routes.events.new({ step, run: newCreateEventRunId(), type, plan, option, code }));
+            });
             return () => window.clearTimeout(write);
         }
         if (checkedRun === run) return;
@@ -74,7 +86,7 @@ export function useCreateEventRun(): { isReady: boolean } {
         window.history.back();
         const fallback = window.setTimeout(() => router.replace(draftPage), STEP_BACK_FALLBACK_MS);
         return () => window.clearTimeout(fallback);
-    }, [checkedRun, code, option, plan, router, run, step, type]);
+    }, [checkedRun, code, mode, option, plan, router, run, step, type]);
 
     return { isReady: Boolean(run) && checkedRun === run };
 }

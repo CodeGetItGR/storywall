@@ -79,7 +79,7 @@ export function ThemePresetRadioGroup({
             role="radiogroup"
             aria-labelledby={labelledBy}
             onKeyDown={handleKeyDown}
-            className={cn('mt-4 grid grid-cols-2', size === 'default' ? 'gap-4 sm:grid-cols-3 xl:grid-cols-4' : '-mx-2 gap-4')}
+            className={cn('mt-4 grid grid-cols-2', size === 'default' ? 'gap-2.5 sm:grid-cols-3 lg:grid-cols-4' : '-mx-2 gap-4')}
         >
             {fonts.map((font) => (
                 <ThemeFontFace key={font.key} font={font} />

@@ -1,72 +1,57 @@
 'use client';
 
-import { ChevronDown, Filter } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { type ChangeEvent, useCallback } from 'react';
 
-import { type RosterFilter, type RosterMember, type RosterRsvp, useRsvpRoster } from '@/hooks/useRsvpRoster';
+import { useRsvpDuplicateActions } from '@/hooks/useRsvpDuplicateActions';
+import { type RsvpListRow, useRsvpListRows } from '@/hooks/useRsvpListRows';
+import { type RosterMember, type RosterRsvp, useRsvpRoster } from '@/hooks/useRsvpRoster';
 
+import { RsvpDuplicateMark } from './RsvpDuplicateMark';
+import { RsvpFilterChips } from './RsvpFilterChips';
+import { RsvpGuestSummary } from './RsvpGuestSummary';
+import { RsvpRemoveReplyModal } from './RsvpRemoveReplyModal';
 import { RsvpStatusPill } from './RsvpStatusPill';
 
-const filters: { key: RosterFilter; labelKey: string }[] = [
-    { key: 'all', labelKey: 'rsvpFilters.all' },
-    { key: 'ATTENDING', labelKey: 'rsvpBreakdown.attending' },
-    { key: 'DECLINED', labelKey: 'rsvpBreakdown.declined' },
-    { key: 'NO_RESPONSE', labelKey: 'rsvpBreakdown.noResponse' },
-];
+type RsvpListPanelProps = {
+    eventId: string;
+    members: RosterMember[];
+    rsvps: RosterRsvp[];
+    canWrite: boolean;
+};
 
-export function RsvpListPanel({ members, rsvps }: { members: RosterMember[]; rsvps: RosterRsvp[] }) {
+export function RsvpListPanel({ eventId, members, rsvps, canWrite }: RsvpListPanelProps) {
     const t = useTranslations('ManagePage');
-    const { filter, setFilter, counts, guestCount, visibleGuests, rsvpByMember, statusOf } = useRsvpRoster(members, rsvps);
+    const { filter, setFilter, counts, guestCount, visibleGuests } = useRsvpRoster(members, rsvps);
+    const rows = useRsvpListRows(visibleGuests);
+    const duplicates = useRsvpDuplicateActions(eventId);
 
-    const handleFilterChange = useCallback(
-        (event: ChangeEvent<HTMLSelectElement>) => {
-            setFilter(event.target.value as RosterFilter);
-        },
-        [setFilter],
-    );
-
-    const rows = visibleGuests.map((member) => {
-        const rsvp = rsvpByMember.get(member.id);
-        const status = statusOf(member.id);
-        const adultCount = rsvp?.adultCount ?? 0;
-        const childCount = rsvp?.childCount ?? 0;
-
-        const partyParts = [
-            adultCount > 0 ? t('rsvpPartyAdults', { count: adultCount }) : null,
-            childCount > 0 ? t('rsvpPartyChildren', { count: childCount }) : null,
-        ].filter(Boolean);
-
-        return {
-            id: member.id,
-            name: member.displayName,
-            status,
-            partyLabel: partyParts.length > 0 ? partyParts.join(', ') : t('rsvpParty', { count: 0 }),
-            notes: rsvp?.notes ?? null,
-        };
-    });
+    const duplicateMark = (row: RsvpListRow) =>
+        row.possibleDuplicate ? (
+            <RsvpDuplicateMark
+                entry={row.entry}
+                canAct={canWrite}
+                keeping={duplicates.keepingId === row.entry.rsvp?.id}
+                onKeepAction={duplicates.keep}
+                onRemoveAction={duplicates.askToRemove}
+            />
+        ) : null;
 
     return (
-        <div className="flex flex-col gap-4">
+        <section aria-labelledby="rsvp-guests-title" className="flex flex-col gap-4">
+            {/* Heading */}
+            <h2 id="rsvp-guests-title" className="text-[17px] font-bold text-ink">
+                {t('rsvpGuests.title')}
+            </h2>
+
             {/* Filters */}
-            <div className="relative ml-auto inline-block w-max">
-                <Filter className="pointer-events-none absolute top-1/2 left-3 h-3.5 w-3.5 -translate-y-1/2 text-ink-faint" />
-                <select
-                    value={filter}
-                    onChange={handleFilterChange}
-                    className="min-h-5 appearance-none rounded-md border border-border bg-background py-2 pr-9 pl-8 text-sm font-semibold text-ink transition-colors hover:border-ink-faint focus:ring-2 focus:ring-primary/30 focus:outline-none"
-                >
-                    {filters.map(({ key, labelKey }) => {
-                        const count = key === 'all' ? guestCount : counts[key];
-                        return (
-                            <option key={key} value={key}>
-                                {t(labelKey)} ({count})
-                            </option>
-                        );
-                    })}
-                </select>
-                <ChevronDown className="pointer-events-none absolute top-1/2 right-3 h-4 w-4 -translate-y-1/2 text-ink-faint" />
-            </div>
+            {guestCount > 0 && <RsvpFilterChips filter={filter} counts={counts} guestCount={guestCount} onChangeAction={setFilter} />}
+
+            {/* Action error */}
+            {duplicates.error && (
+                <p role="alert" className="text-sm text-rose-600">
+                    {duplicates.error}
+                </p>
+            )}
 
             {/* Roster */}
             {guestCount === 0 ? (
@@ -78,13 +63,21 @@ export function RsvpListPanel({ members, rsvps }: { members: RosterMember[]; rsv
                     {/* Roster rows (small screens) */}
                     <ul className="divide-y divide-border border-t md:hidden">
                         {rows.map((row) => (
-                            <li key={row.id} className="flex items-start justify-between gap-3 py-3">
-                                <div className="min-w-0">
-                                    <p className="truncate text-sm leading-tight font-semibold text-ink">{row.name}</p>
-                                    <p className="mt-0.5 text-xs text-ink-faint">{row.partyLabel}</p>
-                                    {row.notes && <p className="mt-1 text-xs leading-6 text-ink-muted">{row.notes}</p>}
+                            <li key={row.id} className="py-3">
+                                <div className="flex items-start justify-between gap-3">
+                                    <RsvpGuestSummary
+                                        row={row}
+                                        details={
+                                            <>
+                                                <p className="mt-0.5 text-xs text-ink-faint">{row.partyLabel}</p>
+                                                {row.notes && <p className="mt-1 text-xs leading-6 text-ink-muted">{row.notes}</p>}
+                                            </>
+                                        }
+                                    />
+                                    <RsvpStatusPill status={row.status} className="shrink-0" />
                                 </div>
-                                <RsvpStatusPill status={row.status} className="shrink-0" />
+                                {/* Duplicate: full width, so the mark and both actions fit on a phone */}
+                                {duplicateMark(row)}
                             </li>
                         ))}
                     </ul>
@@ -104,7 +97,7 @@ export function RsvpListPanel({ members, rsvps }: { members: RosterMember[]; rsv
                                 {rows.map((row) => (
                                     <tr key={row.id} className="border-b border-border last:border-b-0">
                                         <td className="max-w-64 py-2.5 pr-3">
-                                            <p className="truncate font-semibold text-ink">{row.name}</p>
+                                            <RsvpGuestSummary row={row} mark={duplicateMark(row)} />
                                         </td>
                                         <td className="px-3 py-2.5 whitespace-nowrap text-ink-muted">{row.partyLabel}</td>
                                         <td className="px-3 py-2.5">
@@ -122,6 +115,14 @@ export function RsvpListPanel({ members, rsvps }: { members: RosterMember[]; rsv
                     </div>
                 </>
             )}
-        </div>
+
+            {/* Remove confirmation */}
+            <RsvpRemoveReplyModal
+                toRemove={duplicates.toRemove}
+                isRemoving={duplicates.isRemoving}
+                onCancelAction={duplicates.cancelRemove}
+                onConfirmAction={duplicates.confirmRemove}
+            />
+        </section>
     );
 }

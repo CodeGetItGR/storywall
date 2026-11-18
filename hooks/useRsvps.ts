@@ -137,6 +137,22 @@ export function useUpdateRsvp(id: string, eventId?: string) {
     });
 }
 
+// DELETE /api/rsvps/{id}/duplicate-mark — HOST only. Keeps a reply marked as a
+// possible duplicate: answers the RSVP with the mark cleared, otherwise untouched.
+export function useClearRsvpDuplicateMark(eventId: string) {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: ({ id }: { id: string }) => api.del<RsvpResponseDto>(endpoints.rsvps.duplicateMark(id)),
+        onSuccess: (rsvp) => {
+            queryClient.setQueryData<RsvpResponseDto[]>(rsvpKeys.list(eventId), (rsvps) => rsvps?.map((item) => (item.id === rsvp.id ? rsvp : item)));
+            queryClient.invalidateQueries({ queryKey: rsvpKeys.detail(rsvp.id) });
+        },
+    });
+}
+
+// DELETE /api/rsvps/{id}. For a reply-only guest the backend removes the guest
+// too; they were never in the member caches, so only the RSVP list changes.
 export function useDeleteRsvp(eventId?: string) {
     const queryClient = useQueryClient();
 

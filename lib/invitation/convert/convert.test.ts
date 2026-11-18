@@ -42,13 +42,19 @@ describe('convertState', () => {
         const program = result.document.sections[0];
         expect(program.textStyles).toEqual({ 'items.a1.label': { color: '#ff0000', marginTop: 12, marginBottom: 12 } });
         expect(result.warnings.some((w) => w.includes('items.5.label'))).toBe(true);
-        expect(result.ok).toBe(true);
+        expect(result.errors).toEqual([]);
     });
 
     it('turns the action button into an empty custom section', () => {
         const result = convert([section('actionButton', { title: 'x', buttonText: 'y', url: 'https://a.gr' })]);
         expect(result.document.sections[0]).toMatchObject({ type: 'blank', data: {} });
         expect(result.unmapped).toEqual([]);
+    });
+
+    it('keeps a saved footer height under 80px', () => {
+        const result = convert([section('footer', { text: 'Τέλος', link: '' }, { style: { mode: 'color', color: '#fff', image: '', minHeight: 59, paddingY: 20 } })]);
+        expect(result.ok).toBe(true);
+        expect(result.document.sections[0].style.minHeight).toBe(59);
     });
 
     it('keeps the footer last and locked', () => {

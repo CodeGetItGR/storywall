@@ -9,6 +9,7 @@ import { usageKeys } from '@/hooks/useUsage';
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
 import type {
+    AddonCheckoutRequestDto,
     CheckoutRequestDto,
     CheckoutResponseDto,
     CollaborationCodePreviewRequestDto,
@@ -30,6 +31,7 @@ import type {
     WithdrawalRequestDto,
     WithdrawalResponseDto,
 } from '@/lib/api/types';
+import { checkoutAttribution } from '@/lib/campaignAttribution';
 
 // The server can now legitimately refuse to settle an order (amount collected
 // disagrees with the price), so a PENDING order is no longer guaranteed to
@@ -96,7 +98,8 @@ export function useCheckout(eventId: string) {
     return useMutation({
         // A body is required as of 2026-09 — requestsImmediateStart/acknowledgesWithdrawalTerms
         // are mandatory consent, not optional metadata (billing-fe-guide §6).
-        mutationFn: (input: CheckoutRequestDto) => api.post<CheckoutResponseDto>(endpoints.events.checkout(eventId), input),
+        mutationFn: (input: CheckoutRequestDto) =>
+            api.post<CheckoutResponseDto>(endpoints.events.checkout(eventId), { ...input, ...checkoutAttribution() }),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: billingKeys.event(eventId) });
             // Only the event itself (exact): without it, every query under
@@ -146,7 +149,8 @@ export function usePreviewCreateEventCode() {
 export function useUpgradeCheckout(eventId: string) {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: (input: UpgradeCheckoutRequestDto) => api.post<CheckoutResponseDto>(endpoints.events.upgradeCheckout(eventId), input),
+        mutationFn: (input: UpgradeCheckoutRequestDto) =>
+            api.post<CheckoutResponseDto>(endpoints.events.upgradeCheckout(eventId), { ...input, ...checkoutAttribution() }),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: billingKeys.event(eventId) });
             queryClient.invalidateQueries({ queryKey: usageKeys.event(eventId) });
@@ -189,6 +193,29 @@ export function useAddEventAddon(eventId: string) {
     });
 }
 
+// DELETE /api/events/{id}/addons/{code} — takes a draft's feature add-on back out of its activation payment (KAN-82).
+export function useRemoveEventAddon(eventId: string) {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: (paidServiceCode: string) => api.del<void>(endpoints.events.addon(eventId, paidServiceCode)),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: billingKeys.event(eventId) });
+            queryClient.invalidateQueries({ queryKey: ['events', eventId] });
+        },
+    });
+}
+
+// POST /api/events/{id}/addon-checkout — a live event pays for feature add-ons on their own (KAN-82).
+export function useAddonCheckout(eventId: string) {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: (input: AddonCheckoutRequestDto) => api.post<CheckoutResponseDto>(endpoints.events.addonCheckout(eventId), input),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: billingKeys.event(eventId) });
+        },
+    });
+}
+
 // GET /api/events/{id}/withdrawals — the host's own history, newest first, so the
 // most recent outcome (and its lines/refusals) survives a reload.
 export function useEventWithdrawals(eventId: string | null, enabled = true) {
@@ -204,7 +231,8 @@ export function useEventWithdrawals(eventId: string | null, enabled = true) {
 
 export const quoteKeys = {
     all: (eventId: string) => ['events', eventId, 'quote'] as const,
-    event:(eventId: string, request: QuoteRequestDto) => ['events', eventId, 'quote', request.kind, request.paidServiceCode ?? null] as const,
+    event: (eventId: string, request: QuoteRequestDto) =>
+        ['events', eventId, 'quote', request.kind, request.paidServiceCode ?? null, request.paidServiceCodes?.join(',') ?? null] as const,
 };
 
 // POST /api/events/{id}/quote — read-only pricing of an activation or a storage
@@ -230,9 +258,7 @@ export const withdrawalKeys = {
 type WithdrawalTarget = Pick<OrderSummaryDto, 'id' | 'kind'>;
 
 function withdrawalPreviewPath(eventId: string, order: WithdrawalTarget): string {
-    return order.kind === 'ACTIVATION'
-        ? endpoints.events.withdrawalPreview(eventId)
-        : endpoints.events.orderWithdrawalPreview(eventId, order.id);
+    return order.kind === 'ACTIVATION' ? endpoints.events.withdrawalPreview(eventId) : endpoints.events.orderWithdrawalPreview(eventId, order.id);
 }
 
 export function useOrderWithdrawalPreview(eventId: string, order: WithdrawalTarget | null) {

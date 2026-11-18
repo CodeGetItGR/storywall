@@ -1,13 +1,14 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import type { ChangeEvent } from 'react';
 
+import { CodeInput } from '@/components/ui/CodeInput';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import type { EventDeletionStep } from '@/hooks/useEventDeletionFlow';
 
 export function EventDeleteConfirmModal({
     draft = false,
+    variant = 'center',
     open,
     step,
     otpCode,
@@ -24,11 +25,12 @@ export function EventDeleteConfirmModal({
 }: {
     // A draft has no guests or content yet, so it gets its own wording.
     draft?: boolean;
+    variant?: 'center' | 'sheet';
     open: boolean;
     step: EventDeletionStep;
     otpCode: string;
     codeDigits: number;
-    onOtpChangeAction: (event: ChangeEvent<HTMLInputElement>) => void;
+    onOtpChangeAction: (value: string) => void;
     otpInvalid: boolean;
     deleteError: string | null;
     resendSeconds: number;
@@ -48,10 +50,12 @@ export function EventDeleteConfirmModal({
             open={open}
             title={draft ? t('draft.delete.title') : t('settings.dangerZone.confirmTitle')}
             size="md"
+            variant={variant}
             body={
                 <div className="flex flex-col gap-3">
                     {/* Deletion explanation */}
-                    <p>{isVerifyStep ? t('settings.dangerZone.otp.verifyBody', { digits: codeDigits }) : draft ? t('draft.delete.body') : t('settings.dangerZone.confirmBody')}</p>
+                    {/* A live event's page already says what deleting does, so only a draft shows a warning step. */}
+                    <p>{isVerifyStep ? t('settings.dangerZone.otp.verifyBody', { digits: codeDigits }) : t('draft.delete.body')}</p>
 
                     {isVerifyStep && (
                         <>
@@ -60,17 +64,12 @@ export function EventDeleteConfirmModal({
                                 <span className="text-xs font-semibold tracking-wide text-ink-muted uppercase">
                                     {t('settings.dangerZone.otp.label')}
                                 </span>
-                                <input
-                                    type="text"
-                                    inputMode="numeric"
-                                    autoComplete="one-time-code"
-                                    pattern="[0-9]*"
-                                    maxLength={codeDigits}
+                                <CodeInput
+                                    length={codeDigits}
                                     value={otpCode}
                                     onChange={onOtpChangeAction}
-                                    aria-invalid={otpInvalid}
-                                    aria-describedby={otpInvalid ? 'event-delete-otp-error' : undefined}
-                                    className="w-full rounded-xl bg-surface-muted px-3 py-2.5 font-mono text-base tracking-[0.3em] text-ink outline-none focus:ring-2 focus:ring-primary/30"
+                                    invalid={otpInvalid}
+                                    describedBy={otpInvalid ? 'event-delete-otp-error' : undefined}
                                 />
                                 {otpInvalid && (
                                     <span id="event-delete-otp-error" role="alert" className="text-xs text-rose-600">

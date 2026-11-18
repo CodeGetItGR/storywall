@@ -1,4 +1,5 @@
 // @vitest-environment node
+import { unstable_doesMiddlewareMatch } from 'next/experimental/testing/server';
 import { NextRequest } from 'next/server';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -7,7 +8,13 @@ import { PUBLIC_LOCALE_HEADER } from '@/i18n/publicMessages';
 import { AUTH_COOKIES, REFRESH_TOKEN_MAX_AGE_SECONDS, SESSION_REFRESHED_HEADER } from '@/lib/auth/authCookies';
 import { SpringAuthError } from '@/lib/auth/springAuth';
 
-import { proxy } from './proxy';
+import { config, proxy } from './proxy';
+
+const createWizard = vi.hoisted(() => ({ on: false }));
+vi.mock('@/lib/unreleasedPages', async (importOriginal) => ({
+    ...(await importOriginal<typeof import('@/lib/unreleasedPages')>()),
+    showsCreateWizard: () => createWizard.on,
+}));
 
 const refresh = vi.hoisted(() => vi.fn());
 vi.mock('@/lib/auth/springAuth', async (importOriginal) => {
@@ -24,9 +31,32 @@ function request(cookies: Partial<Record<keyof typeof AUTH_COOKIES, string>> = {
 
 beforeEach(() => {
     refresh.mockReset();
+    createWizard.on = false;
 });
 
 describe('proxy', () => {
+    describe('with the create wizard on', () => {
+        beforeEach(() => {
+            createWizard.on = true;
+        });
+
+        it('lets a signed-out visitor open /events/new', async () => {
+            const res = await proxy(request({}, 'http://localhost/events/new?step=plan'));
+            expect(res.headers.get('location')).toBeNull();
+            expect(res.status).toBe(200);
+        });
+
+        it('still passes a signed-in visitor their token', async () => {
+            const res = await proxy(request({ accessToken: 'jwt' }, 'http://localhost/events/new'));
+            expect(res.headers.get('x-middleware-request-x-storywall-access-token')).toBe('jwt');
+        });
+
+        it('keeps every other events page behind sign-in', async () => {
+            const res = await proxy(request({}, 'http://localhost/events/abc/manage'));
+            expect(new URL(res.headers.get('location')!).pathname).toBe('/login');
+        });
+    });
+
     it('does not call Spring when a fresh access-token cookie is present', async () => {
         const res = await proxy(request({ accessToken: 'at-1', refreshToken: 'rt' }));
         expect(refresh).not.toHaveBeenCalled();
@@ -334,5 +364,108 @@ describe('proxy wedding QR page on the production site', () => {
         const location = new URL(res.headers.get('location') ?? '');
         expect(location.pathname).toBe('/qr-code-for-wedding-photos');
         expect(location.searchParams.get('utm_source')).toBe('instagram');
+    });
+});
+
+describe('proxy invitation editor', () => {
+    afterEach(() => {
+        vi.unstubAllEnvs();
+    });
+
+    it('starts a draft signed out, without sending the visit to login', async () => {
+        const res = await proxy(new NextRequest('http://localhost/save-my-date/editor?theme=olive'));
+        expect(res.status).toBe(200);
+        expect(res.headers.get('location')).toBeNull();
+    });
+
+    it('opens a draft signed out', async () => {
+        const res = await proxy(new NextRequest('http://localhost/save-my-date/editor/draft-1'));
+        expect(res.status).toBe(200);
+        expect(res.headers.get('location')).toBeNull();
+    });
+
+    it('hands a signed-in visit its session for the prefetch', async () => {
+        const res = await proxy(request({ accessToken: 'at-1', refreshToken: 'rt' }, 'http://localhost/save-my-date/editor/draft-1'));
+        expect(res.status).toBe(200);
+        expect(res.headers.get('x-middleware-request-x-storywall-access-token')).toBe('at-1');
+    });
+
+    it('lets the production site show its not-found page', async () => {
+        vi.stubEnv('VERCEL_ENV', 'production');
+        const res = await proxy(new NextRequest('http://localhost/save-my-date/editor/draft-1'));
+        expect(res.status).toBe(200);
+    });
+});
+
+describe('proxy invite host', () => {
+    it('draws the invitation at its link, without reading a session', async () => {
+        const res = await proxy(request({ refreshToken: 'rt' }, 'https://invite.storywall.gr/maria-and-nikos'));
+        expect(new URL(res.headers.get('x-middleware-rewrite') ?? '').pathname).toBe('/save-my-date/i/maria-and-nikos');
+        expect(res.headers.get('x-robots-tag')).toBe('noindex, nofollow');
+        expect(res.headers.get('x-middleware-request-x-storywall-access-token')).toBeNull();
+        expect(refresh).not.toHaveBeenCalled();
+    });
+
+    it('sends the home page and every other path to the main site', async () => {
+        const home = await proxy(new NextRequest('https://invite.storywall.gr/'));
+        expect(home.status).toBe(307);
+        expect(home.headers.get('location')).toBe('https://www.storywall.gr/');
+
+        const other = await proxy(new NextRequest('https://invite.staging.storywall.gr/events/e1/feed?x=1'));
+        expect(other.headers.get('location')).toBe('https://staging.storywall.gr/events/e1/feed?x=1');
+    });
+
+    it('serves the files an invitation loads', async () => {
+        const res = await proxy(new NextRequest('https://invite.storywall.gr/save-my-date/calendar-icons/apple.png'));
+        expect(res.status).toBe(200);
+        expect(res.headers.get('location')).toBeNull();
+        expect(res.headers.get('x-middleware-rewrite')).toBeNull();
+    });
+
+    it('goes by the Host header, which names the domain behind a proxy', async () => {
+        const viaHost = new NextRequest('http://localhost:3211/maria-and-nikos', { headers: { host: 'invite.localhost:3211' } });
+        expect(new URL((await proxy(viaHost)).headers.get('x-middleware-rewrite') ?? '').pathname).toBe('/save-my-date/i/maria-and-nikos');
+
+        const home = new NextRequest('http://localhost:3211/', { headers: { host: 'invite.localhost:3211' } });
+        expect((await proxy(home)).headers.get('location')).toBe('http://localhost:3211/');
+    });
+
+    it('leaves the main site alone', async () => {
+        const res = await proxy(new NextRequest('https://www.storywall.gr/maria-and-nikos'));
+        expect(res.headers.get('x-middleware-rewrite')).toBeNull();
+        expect(res.headers.get('location')).toBeNull();
+    });
+});
+
+describe('proxy matcher', () => {
+    function runs(url: string) {
+        return unstable_doesMiddlewareMatch({ config, url });
+    }
+
+    it('skips the API, Sentry tunnel and static files, as whole segments', () => {
+        for (const path of [
+            '/api',
+            '/api/auth/session',
+            '/monitoring',
+            '/monitoring?o=1',
+            '/_next/static/chunks/a.js',
+            '/_next/image',
+            '/favicon.ico',
+        ]) {
+            expect(runs(path)).toBe(false);
+        }
+    });
+
+    it('runs for pages and invitation links that only start with those words', () => {
+        for (const path of ['/', '/feed', '/el', '/events/e1', '/apiraki-and-eleni', '/monitoring-day', '/maria-giorgos']) {
+            expect(runs(path)).toBe(true);
+        }
+    });
+
+    it('rewrites an invitation link that starts with api or monitoring', async () => {
+        for (const slug of ['apiraki-and-eleni', 'monitoring-day']) {
+            const res = await proxy(new NextRequest(`https://invite.storywall.gr/${slug}`));
+            expect(new URL(res.headers.get('x-middleware-rewrite') ?? '').pathname).toBe(`/save-my-date/i/${slug}`);
+        }
     });
 });

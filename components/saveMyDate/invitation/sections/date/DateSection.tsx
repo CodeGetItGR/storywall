@@ -13,6 +13,8 @@ type DateSectionProps = {
 export function DateSection({ section, contrast, ctx }: DateSectionProps) {
     return (
         <div className="section-inner">
+            {/* Top space */}
+            <div className="date-top-space" />
             {/* Date */}
             <DateVisual section={section} contrast={contrast} ctx={ctx} />
             {/* Calendar */}

@@ -1,46 +1,103 @@
 import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
+import { redirect } from 'next/navigation';
 
+import { billingKeys, extensionOptionsKeys, upgradeOptionsKeys } from '@/hooks/useBilling';
 import { eventInvitationKeys } from '@/hooks/useEventInvitations';
 import { eventMemberKeys } from '@/hooks/useEventMembers';
 import { eventThemeKeys } from '@/hooks/useEventTheme';
+import { galleryArchiveKeys } from '@/hooks/useGalleryArchive';
 import { giftKeys } from '@/hooks/useGift';
+import { giftAccountKeys } from '@/hooks/useGiftAccount';
+import { qrLinkKeys } from '@/hooks/useQrLinks';
 import { rsvpKeys } from '@/hooks/useRsvps';
 import { usageKeys } from '@/hooks/useUsage';
+import { wishbookKeys } from '@/hooks/useWishbook';
 import { getServerLocale } from '@/i18n/serverLocale';
 import { endpoints } from '@/lib/api/endpoints';
 import { normalizeList } from '@/lib/api/pagination';
 import { serverGet, serverGetOrNull } from '@/lib/api/serverFetch';
 import type {
+    EventBillingResponseDto,
+    EventDetailResponseDto,
+    EventGiftAccountResponseDto,
     EventInvitationResponseDto,
     EventMemberResponseDto,
     EventUsageResponseDto,
+    ExtensionOptionResponseDto,
     GiftHandoverResponseDto,
+    MediaSummaryDto,
+    QrLinkResponseDto,
     RsvpReportDto,
     RsvpResponseDto,
     ThemePresetDto,
+    UpgradeOptionResponseDto,
 } from '@/lib/api/types';
 import { resolveServerEventContext, resolveServerEventDetail } from '@/lib/auth/serverEventContext';
-import { isEventDeleted, isModuleAvailable } from '@/lib/eventLifecycle';
+import { canExtendCoverage } from '@/lib/billing';
+import { isEventDeleted, isModuleAvailable, isPrimaryHost, readableModuleKeys } from '@/lib/eventLifecycle';
 import { canPickTheme } from '@/lib/eventTheme';
+import { parseManageSection } from '@/lib/manageSections';
 import { makeQueryClient } from '@/lib/queryClient';
-import { resolveRsvpSubTab } from '@/lib/rsvpReport';
+import { routes } from '@/lib/routes';
 
 import ManagePage from '../PageClient';
 
-type PageProps = { params: Promise<{ eventId: string }>; searchParams: Promise<{ tab?: string; section?: string }> };
+// The Overview's journey (OverviewJourney): the setup progress (useHelpProgress reads the gift
+// account and the share links) and the totals (the gallery summary and the wishbook count).
+// Each mirrors its hook's gate: the module readable on this event, none for the QR links.
+// Each seeds on its own; a failure leaves it to the client. Resolves to the seeding step, so the
+// reads can run alongside the others while the cache still fills in a fixed order.
+async function prefetchJourney(event: EventDetailResponseDto, eventId: string, accessToken: string) {
+    const readable = readableModuleKeys(event);
+    const [giftAccount, qrLinks, mediaSummary, wishbookCount] = await Promise.all([
+        readable.has('wishlist')
+            ? serverGetOrNull<EventGiftAccountResponseDto>(endpoints.events.giftAccount(eventId), accessToken).catch(() => undefined)
+            : undefined,
+        serverGet<QrLinkResponseDto[]>(endpoints.events.qrLinks(eventId), accessToken).catch(() => null),
+        readable.has('gallery') ? serverGet<MediaSummaryDto>(endpoints.events.mediaSummary(eventId), accessToken).catch(() => null) : null,
+        readable.has('wishbook') ? serverGet<number>(endpoints.events.wishbookCount(eventId), accessToken).catch(() => null) : null,
+    ]);
+    return (queryClient: ReturnType<typeof makeQueryClient>) => {
+        if (giftAccount !== undefined) queryClient.setQueryData(giftAccountKeys.event(eventId), giftAccount);
+        if (qrLinks) queryClient.setQueryData(qrLinkKeys.list(eventId), normalizeList(qrLinks).items);
+        if (mediaSummary) queryClient.setQueryData(galleryArchiveKeys.summary(eventId), mediaSummary);
+        if (wishbookCount !== null) queryClient.setQueryData(wishbookKeys.count(eventId), wishbookCount);
+    };
+}
+
+// Billing (BillingTab): the billing read for every host; the upgrade and extension options only
+// for the main host, as useEventBillingPanel and useCoverageExtensionSection ask for them.
+async function prefetchBilling(event: EventDetailResponseDto, eventId: string, accessToken: string, primaryHost: boolean) {
+    const canExtend = canExtendCoverage({ isPrimaryHost: primaryHost, eventStatus: event.status, coverageEndsAt: event.schedule.coverageEndsAt });
+    const [billing, upgradeOptions, extensionOptions] = await Promise.all([
+        serverGet<EventBillingResponseDto>(endpoints.events.billing(eventId), accessToken).catch(() => null),
+        primaryHost ? serverGet<UpgradeOptionResponseDto[]>(endpoints.events.upgradeOptions(eventId), accessToken).catch(() => null) : null,
+        canExtend ? serverGet<ExtensionOptionResponseDto[]>(endpoints.events.extensionOptions(eventId), accessToken).catch(() => null) : null,
+    ]);
+    return (queryClient: ReturnType<typeof makeQueryClient>) => {
+        if (billing) queryClient.setQueryData(billingKeys.event(eventId), billing);
+        if (upgradeOptions) queryClient.setQueryData(upgradeOptionsKeys.event(eventId), upgradeOptions);
+        if (extensionOptions) queryClient.setQueryData(extensionOptionsKeys.event(eventId), extensionOptions);
+    };
+}
+
+type PageProps = { params: Promise<{ eventId: string }>; searchParams: Promise<{ tab?: string }> };
 
 // ManageScreen fires five host-only calls in parallel on mount (members,
 // rsvps, invitations, usage, the gift) — the biggest single client-side waterfall in
 // the app. Mirrors ManageScreen's own gating (isHost, isDraft for everything
 // but usage, and the plan including RSVP for rsvps) so a prefetch is never wasted on data the client
-// wouldn't have requested anyway. QR links have their own dedicated page
-// (manage/qr) with their own prefetch.
-// The RSVP stats sub-tab's STATISTICS report is prefetched when that sub-tab opens.
+// wouldn't have requested anyway. A live event's Overview also prefetches its
+// journey's reads (gift account, QR links, media summary, wishbook count; see
+// prefetchJourney), alongside the rest.
+// The RSVP page's STATISTICS report is prefetched when that page opens.
 export default async function Page({ params, searchParams }: PageProps) {
     const { eventId } = await params;
-    const { tab, section } = await searchParams;
-    // RsvpTab opens on its stats sub-tab, which reads the STATISTICS report (see useRsvpSubTab).
-    const opensRsvpStats = tab === 'rsvp' && resolveRsvpSubTab(section) === 'stats';
+    const { tab } = await searchParams;
+    // The Invitation tab moved into Invitations & QR codes (KAN-225); old links land there.
+    if (tab === 'invitation') redirect(routes.events.invitationsQr(eventId));
+    // The RSVP page shows the STATISTICS report's numbers and attendance (KAN-227: no sub-tabs).
+    const opensRsvp = tab === 'rsvp';
     const queryClient = makeQueryClient();
     // The event doesn't depend on the memberships, so both load at once.
     const [context, event] = await Promise.all([resolveServerEventContext(eventId), resolveServerEventDetail(eventId)]);
@@ -60,6 +117,14 @@ export default async function Page({ params, searchParams }: PageProps) {
             // (every ?tab= resolves to it) or an active event's theme tab. An ended event
             // answers 5144; the catch leaves that to the client, which renders nothing.
             const wantsThemePresets = canPickTheme(event) && (isDraft || tab === 'theme');
+            // The journey shows on a live event's Overview only (a draft's Overview is its plan panel).
+            // It starts with the reads below, not after them, and seeds once they have.
+            const opensOverview = !isDraft && (tab === undefined || tab === 'overview');
+            const journey = opensOverview ? prefetchJourney(event, eventId, accessToken) : null;
+            // Billing, and its older ?tab= names (parseManageSection), on a live event only.
+            const opensBilling = !isDraft && parseManageSection(tab ?? null) === 'billing';
+            const membership = context.memberships.find((m) => m.eventId === eventId);
+            const billing = opensBilling ? prefetchBilling(event, eventId, accessToken, isPrimaryHost(event.hosts, membership?.id)) : null;
             const [usage, gift, lists, themePresets] = await Promise.all([
                 serverGet<EventUsageResponseDto>(endpoints.events.usage(eventId), accessToken).catch(() => null),
                 isDraft ? undefined : serverGetOrNull<GiftHandoverResponseDto>(endpoints.events.gift(eventId), accessToken).catch(() => undefined),
@@ -69,7 +134,7 @@ export default async function Page({ params, searchParams }: PageProps) {
                           serverGet<EventMemberResponseDto[]>(endpoints.events.members(eventId), accessToken),
                           rsvpAvailable ? serverGet<RsvpResponseDto[]>(endpoints.events.rsvps(eventId), accessToken) : null,
                           serverGet<EventInvitationResponseDto[]>(endpoints.events.invitations(eventId), accessToken),
-                          rsvpAvailable && opensRsvpStats
+                          rsvpAvailable && opensRsvp
                               ? // A failed report fetch alone must not discard the members/rsvps/invitations
                                 // prefetches above in the same Promise.all — serverGet throws on !res.ok.
                                 serverGet<RsvpReportDto>(endpoints.events.rsvpReport(eventId, 'STATISTICS'), accessToken).catch(() => null)
@@ -88,6 +153,8 @@ export default async function Page({ params, searchParams }: PageProps) {
                 queryClient.setQueryData(eventInvitationKeys.list(eventId), normalizeList(invitations).items);
                 if (rsvpReport) queryClient.setQueryData(rsvpKeys.report(eventId, 'STATISTICS', await getServerLocale()), rsvpReport);
             }
+            if (journey) (await journey)(queryClient);
+            if (billing) (await billing)(queryClient);
         } catch {
             // Best-effort — ManageScreen's own hooks fetch normally if this fails.
         }

@@ -45,6 +45,9 @@ const nextConfig = {
         NEXT_PUBLIC_APP_VERSION: resolveAppVersion(),
         // Sentry's environment tag: "staging" on the staging deployment, else Vercel's environment.
         NEXT_PUBLIC_SENTRY_ENVIRONMENT: process.env.NEXT_PUBLIC_APP_ENV || process.env.VERCEL_ENV || 'development',
+        // Vercel's environment for browser code, which can't read VERCEL_ENV: client screens hide
+        // unreleased features on production too (lib/unreleasedPages.ts).
+        NEXT_PUBLIC_VERCEL_ENV: process.env.VERCEL_ENV ?? '',
     },
     typescript: {
         ignoreBuildErrors: true,

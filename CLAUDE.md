@@ -18,6 +18,13 @@
 - Opening the PR moves the ticket to In Review. Merging into `staging` does not make it Done.
 - A ticket is Done only after its change has been tested and released: move it to Done once the release PR that contains it is merged into `main` and the **After deploying** checks pass.
 
+## Visual check
+
+- Every PR gets a `visual-regression` check. See [docs/storybook.md](docs/storybook.md).
+- Never tick the visual check's approve box. Only the owner approves.
+- Never merge with `--admin` to get past the check.
+- When the check is red, send the owner the report link and wait.
+
 ## Production releases
 
 A release PR merges `staging` into `main`. Everything in it must be tested before it is opened, and it must not be merged until a person has tested it too.
@@ -53,6 +60,7 @@ Use these sections, in this order:
 - Tag it with the date, `vYYYY.MM.DD` (add `.2`, `.3` for a second or third release that day), and title it like the PR.
 - Its notes are the PR's **What's new / Τι αλλάζει** and **Release notes** sections, copied as they are, with a link to the release PR.
 - Comment on the release PR with the link to the Release.
+- If a guestwall-be release went out with this one, publish its GitHub Release too, following that repo's `CLAUDE.md`.
 - Move every Jira ticket in the release to Done.
 
 ## Workflow

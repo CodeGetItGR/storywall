@@ -4,6 +4,7 @@ import { Trash2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { AppLink } from '@/components/ui/AppLink';
+import { CodeInput } from '@/components/ui/CodeInput';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { useAccountDeletionFlow } from '@/hooks/useAccountDeletionFlow';
 import { useMe } from '@/hooks/useMe';
@@ -76,17 +77,12 @@ export function ProfileDeleteAccountSection() {
                                 {/* Verification code */}
                                 <label className="flex flex-col gap-1.5 text-left">
                                     <span className="text-xs font-semibold tracking-wide text-ink-muted uppercase">{t('otp.label')}</span>
-                                    <input
-                                        type="text"
-                                        inputMode="numeric"
-                                        autoComplete="one-time-code"
-                                        pattern="[0-9]*"
-                                        maxLength={flow.codeDigits}
+                                    <CodeInput
+                                        length={flow.codeDigits}
                                         value={flow.otpCode}
                                         onChange={flow.handleOtpChange}
-                                        aria-invalid={flow.otpInvalid}
-                                        aria-describedby={flow.otpInvalid ? 'account-delete-otp-error' : undefined}
-                                        className="w-full rounded-xl bg-surface-muted px-3 py-2.5 font-mono text-base tracking-[0.3em] text-ink outline-none focus:ring-2 focus:ring-primary/30"
+                                        invalid={flow.otpInvalid}
+                                        describedBy={flow.otpInvalid ? 'account-delete-otp-error' : undefined}
                                     />
                                     {flow.otpInvalid && (
                                         <span id="account-delete-otp-error" role="alert" className="text-xs text-rose-600">

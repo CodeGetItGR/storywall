@@ -4,7 +4,7 @@ import { isRsvpGuest } from '@/lib/rsvpGuests';
 type DemoMember = { id: string; displayName: string; role: string; deletedAt?: string | null };
 type DemoRsvp = Pick<RsvpResponseDto, 'id' | 'eventMemberId' | 'attendanceStatus' | 'phone' | 'adultCount' | 'childCount' | 'notes'>;
 
-const LABELS = {
+export const RSVP_REPORT_LABELS = {
     en: { attending: 'Attending', declined: 'Not attending' },
     el: { attending: 'Θα έρθουν', declined: 'Δεν θα έρθουν' },
 };
@@ -19,7 +19,7 @@ export function buildDemoRsvpReport(input: {
     reportType: RsvpReportType;
     locale: string;
 }): RsvpReportDto {
-    const labels = input.locale.startsWith('el') ? LABELS.el : LABELS.en;
+    const labels = input.locale.startsWith('el') ? RSVP_REPORT_LABELS.el : RSVP_REPORT_LABELS.en;
     const guests = new Map(input.members.filter(isRsvpGuest).map((member) => [member.id, member.displayName]));
     const answered = input.rsvps.filter((rsvp) => guests.has(rsvp.eventMemberId));
     const attending = answered.filter((rsvp) => rsvp.attendanceStatus === 'ATTENDING');

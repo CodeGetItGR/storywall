@@ -12,7 +12,7 @@ import { usePlanDurationsEditor } from '@/hooks/usePlanDurationsEditor';
 import { usePlanEditorState } from '@/hooks/usePlanEditorState';
 import { usePlanEditorUnlocks } from '@/hooks/usePlanEditorUnlocks';
 import { useScrollSpy } from '@/hooks/useScrollSpy';
-import { type PendingPlanSave, planChangeSummary, planPatchFromFormData } from '@/lib/adminPlanEditor';
+import { type PendingPlanSave, planChangeSummary, planPatchFromFormData, planSaveWarnings } from '@/lib/adminPlanEditor';
 import { type Visibility } from '@/lib/adminVisibility';
 import type { PaidServiceResponseDto, PlanTierResponseDto, PlatformEventTypeResponseDto, PlatformModuleResponseDto } from '@/lib/api/types';
 
@@ -149,7 +149,13 @@ export function usePlanEditorCard({
             visibility: editor.visibility,
             isGiftable: editor.isGiftable,
         });
-        setPendingSave({ patch, changes: planChangeSummary(plan, patch, t), memberships: [], moduleKeys: null });
+        setPendingSave({
+            patch,
+            changes: planChangeSummary(plan, patch, t),
+            memberships: [],
+            warnings: planSaveWarnings(plan, patch, t),
+            moduleKeys: null,
+        });
     }
 
     function handleVisibilityChange(next: Visibility) {

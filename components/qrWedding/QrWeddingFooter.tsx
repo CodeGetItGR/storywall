@@ -4,12 +4,12 @@ import { ProtectedImage } from '@/components/common/ProtectedImage';
 import { LandingNewsletter } from '@/components/landing/LandingNewsletter';
 import type { Locale } from '@/i18n/config';
 import { getForBusinessPath, getPublicLandingPath, getQrWeddingPath, localizeLegalHref } from '@/i18n/publicLocale';
+import { showsForBusinessHub } from '@/lib/forBusinessRelease';
 import { loadLiveOccasions } from '@/lib/occasions/liveOccasions.server';
 import { occasionPath } from '@/lib/occasions/occasions';
 import { QR_WEDDING_MEDIA, QR_WEDDING_SECTION, qrWeddingParentPath } from '@/lib/qrWeddingPage';
 import { routes } from '@/lib/routes';
 import { SOCIAL_PROFILES } from '@/lib/seo';
-import { showsUnreleasedPages } from '@/lib/unreleasedPages';
 
 const LABEL = 'mb-5.5 font-[Arial,sans-serif] text-[9px] font-black tracking-[0.16em] text-[rgba(255,255,255,.48)]';
 const LINK =
@@ -38,7 +38,7 @@ export async function QrWeddingFooter({ locale }: { locale: Locale }) {
         { label: landing('reportContent'), href: routes.reportContent },
         { label: landing('legalLinks.cookies'), href: legal(routes.legal.cookies()) },
         { label: landing('legalLinks.withdrawal'), href: legal(routes.legal.withdrawalTerms()) },
-        { label: landing('legalLinks.contact'), href: routes.contact },
+        { label: landing('legalLinks.contact'), href: legal(routes.contact) },
     ];
 
     return (
@@ -76,7 +76,7 @@ export async function QrWeddingFooter({ locale }: { locale: Locale }) {
                     <a aria-current="page" className={LINK} href={getQrWeddingPath(locale)}>
                         {t('links.qrWedding')}
                     </a>
-                    {showsUnreleasedPages() && (
+                    {showsForBusinessHub() && (
                         <a className={LINK} href={getForBusinessPath(locale)}>
                             {t('links.forBusiness')}
                         </a>

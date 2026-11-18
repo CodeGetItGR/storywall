@@ -8,6 +8,7 @@ import { ALWAYS_ICONS, TOOL_ICONS, TYPE_ICONS } from '@/components/vendorPages/v
 import { GRADIENT_TEXT } from '@/components/vendorPages/vendorPageStyles';
 import type { Locale } from '@/i18n/config';
 import { getForBusinessPath, getVendorPagePath, VENDOR_PAGE_TYPES, type VendorPageType } from '@/i18n/publicLocale';
+import { showsForBusinessHub } from '@/lib/forBusinessRelease';
 import { LANDING_TOKENS_CLASS } from '@/lib/landingTokens';
 import { landingSectionAttributes } from '@/lib/landingTracking';
 import { showsUnreleasedPages } from '@/lib/unreleasedPages';
@@ -78,22 +79,24 @@ export async function LandingForBusiness() {
                         />
                     ))}
                     {/* The business page */}
-                    <LandingForBusinessCard
-                        click={{ event: 'business', target: 'all' }}
-                        dark
-                        href={getForBusinessPath(locale)}
-                        icon={Sparkles}
-                        more={t('more')}
-                        title={t('all')}
-                    >
-                        <ProtectedImage
-                            alt={alts('sparkle')}
-                            className="absolute -top-3 -right-2 w-14 rotate-12 opacity-90 min-[761px]:w-18"
-                            height={181}
-                            src="/landing/sw-scene-item-sw-flash.webp"
-                            width={124}
-                        />
-                    </LandingForBusinessCard>
+                    {showsForBusinessHub() && (
+                        <LandingForBusinessCard
+                            click={{ event: 'business', target: 'all' }}
+                            dark
+                            href={getForBusinessPath(locale)}
+                            icon={Sparkles}
+                            more={t('more')}
+                            title={t('all')}
+                        >
+                            <ProtectedImage
+                                alt={alts('sparkle')}
+                                className="absolute -top-3 -right-2 w-14 rotate-12 opacity-90 min-[761px]:w-18"
+                                height={181}
+                                src="/landing/sw-scene-item-sw-flash.webp"
+                                width={124}
+                            />
+                        </LandingForBusinessCard>
+                    )}
                 </ul>
             </div>
         </section>

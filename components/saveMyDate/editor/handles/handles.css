@@ -1,0 +1,48 @@
+/* The column split of a custom section in the editor, placed as in the old editor:
+   centred above the columns on wide screens, between them once they stack. */
+.smd-invitation .wedart-custom-columns:has(> .smd-column-break)::before {
+    content: '';
+    position: absolute;
+    top: -4px;
+    bottom: -4px;
+    left: 50%;
+    z-index: 3;
+    border-left: 1px dashed rgb(120 182 164 / 0.8);
+    transform: translateX(-50%);
+    pointer-events: none;
+}
+.smd-invitation .smd-column-break {
+    position: absolute;
+    top: -40px;
+    left: 50%;
+    z-index: 15;
+    transform: translateX(-50%);
+}
+@container smd-invitation (max-width: 599px) {
+    .smd-invitation .wedart-custom-columns:has(> .smd-column-break)::before { display: none; }
+    .smd-invitation .smd-column-break {
+        position: relative;
+        top: auto;
+        left: auto;
+        grid-column: 1;
+        grid-row: 2;
+        justify-self: center;
+        margin: 22px auto;
+        transform: none;
+    }
+    .smd-invitation .wedart-custom-columns:has(> .smd-column-break) .wedart-custom-column.is-right { margin-top: 0; }
+}
+
+/* The element picker of a family section in an admin's theme editor. */
+.smd-invitation .smd-decoration-picker { display: flex; justify-content: center; margin-top: 8px; }
+.smd-invitation .smd-decoration-picker select {
+    height: 32px;
+    max-width: 100%;
+    padding: 0 10px;
+    border: 1px dashed rgb(120 182 164 / 0.9);
+    border-radius: 8px;
+    background: rgb(255 255 255 / 0.9);
+    color: #2f3b37;
+    font: 600 13px/1 system-ui, sans-serif;
+    cursor: pointer;
+}

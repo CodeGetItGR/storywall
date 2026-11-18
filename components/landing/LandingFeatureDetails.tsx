@@ -82,8 +82,8 @@ export function LandingFeatureDetails({ links }: { links: readonly (string | nul
                     ))}
                 </div>
 
-                {/* Active feature */}
-                <article
+                {/* Active feature — a div: HTML doesn't allow role="tabpanel" on <article> */}
+                <div
                     aria-labelledby={`landing-feature-tab-${selectedIndex}`}
                     className="landing-feature-detail-panel touch-pan-y min-[761px]:grid min-[761px]:grid-cols-2"
                     data-direction={transitionDirection}
@@ -153,7 +153,7 @@ export function LandingFeatureDetails({ links }: { links: readonly (string | nul
                             </button>
                         </div>
                     </div>
-                </article>
+                </div>
             </div>
         </section>
     );

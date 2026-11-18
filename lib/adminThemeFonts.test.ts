@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
     buildThemeFontCreate,
     buildThemeFontPatch,
+    draftFromFont,
     fontFileError,
     THEME_FONT_ACCEPT,
     THEME_FONT_MAX_BYTES,
@@ -14,20 +15,20 @@ import {
 import { ApiError } from '@/lib/api/client';
 import type { AdminThemeFontDto } from '@/lib/api/types';
 
-const FONT: AdminThemeFontDto = { id: '1', key: 'k', familyName: 'A', fallback: 'serif', archived: false, url: null, presetCount: 0 };
+const FONT: AdminThemeFontDto = { id: '1', key: 'k', familyName: 'A', fallback: 'serif', archived: false, url: null, presetCount: 0, library: 'WALL', invitationEventTypes: [] };
 
 describe('validateThemeFontDraft', () => {
     it('needs a key on create and a display name', () => {
-        expect(validateThemeFontDraft({ key: 'A b', familyName: ' ', fallback: 'serif', archived: false }, true)).toEqual({
+        expect(validateThemeFontDraft({ key: 'A b', familyName: ' ', fallback: 'serif', archived: false, invitationEventTypes: [] }, true)).toEqual({
             key: true,
             familyName: true,
         });
-        expect(validateThemeFontDraft({ key: 'dino-serif', familyName: 'Dino Serif', fallback: 'serif', archived: false }, true)).toEqual({});
+        expect(validateThemeFontDraft({ key: 'dino-serif', familyName: 'Dino Serif', fallback: 'serif', archived: false, invitationEventTypes: [] }, true)).toEqual({});
     });
 
     it('ignores the key when editing and caps the name at 100 characters', () => {
-        expect(validateThemeFontDraft({ key: '', familyName: 'x'.repeat(100), fallback: 'serif', archived: false }, false)).toEqual({});
-        expect(validateThemeFontDraft({ key: '', familyName: 'x'.repeat(101), fallback: 'serif', archived: false }, false)).toEqual({
+        expect(validateThemeFontDraft({ key: '', familyName: 'x'.repeat(100), fallback: 'serif', archived: false, invitationEventTypes: [] }, false)).toEqual({});
+        expect(validateThemeFontDraft({ key: '', familyName: 'x'.repeat(101), fallback: 'serif', archived: false, invitationEventTypes: [] }, false)).toEqual({
             familyName: true,
         });
     });
@@ -101,7 +102,7 @@ describe('fontFileError', () => {
 
 describe('buildThemeFontCreate', () => {
     it('trims the display name', () => {
-        expect(buildThemeFontCreate({ key: 'gfs-didot', familyName: ' GFS Didot ', fallback: 'serif', archived: false })).toEqual({
+        expect(buildThemeFontCreate({ key: 'gfs-didot', familyName: ' GFS Didot ', fallback: 'serif', archived: false, invitationEventTypes: [] })).toEqual({
             key: 'gfs-didot',
             familyName: 'GFS Didot',
             fallback: 'serif',
@@ -111,8 +112,38 @@ describe('buildThemeFontCreate', () => {
 
 describe('buildThemeFontPatch', () => {
     it('sends only what changed', () => {
-        expect(buildThemeFontPatch(FONT, { key: 'k', familyName: 'A', fallback: 'sans-serif', archived: false })).toEqual({ fallback: 'sans-serif' });
-        expect(buildThemeFontPatch(FONT, { key: 'k', familyName: ' A ', fallback: 'serif', archived: true })).toEqual({ archived: true });
+        expect(buildThemeFontPatch(FONT, { key: 'k', familyName: 'A', fallback: 'sans-serif', archived: false, invitationEventTypes: [] })).toEqual({ fallback: 'sans-serif' });
+        expect(buildThemeFontPatch(FONT, { key: 'k', familyName: ' A ', fallback: 'serif', archived: true, invitationEventTypes: [] })).toEqual({ archived: true });
+    });
+});
+
+describe('Save my date fonts', () => {
+    const INVITATION: AdminThemeFontDto = { ...FONT, library: 'INVITATION', invitationEventTypes: ['BAPTISM', 'WEDDING'] };
+    const draft = { key: 'k', familyName: 'A', fallback: 'serif' as const, archived: false };
+
+    it("creates into Save my date's list, and leaves the wall's request as it was", () => {
+        expect(buildThemeFontCreate({ ...draft, key: 'theos', invitationEventTypes: [] }, 'INVITATION')).toEqual({
+            key: 'theos',
+            familyName: 'A',
+            fallback: 'serif',
+            library: 'INVITATION',
+        });
+        expect(buildThemeFontCreate({ ...draft, key: 'theos', invitationEventTypes: [] }, 'WALL')).not.toHaveProperty('library');
+    });
+
+    it('starts the draft on the saved event types, sorted', () => {
+        expect(draftFromFont({ ...INVITATION, invitationEventTypes: ['WEDDING', 'BAPTISM'] }).invitationEventTypes).toEqual(['BAPTISM', 'WEDDING']);
+        expect(draftFromFont(null).invitationEventTypes).toEqual([]);
+    });
+
+    it('sends the event types only when they changed', () => {
+        expect(buildThemeFontPatch(INVITATION, { ...draft, invitationEventTypes: ['WEDDING', 'BAPTISM'] })).toEqual({});
+        expect(buildThemeFontPatch(INVITATION, { ...draft, invitationEventTypes: [] })).toEqual({ invitationEventTypes: [] });
+        expect(buildThemeFontPatch(INVITATION, { ...draft, invitationEventTypes: ['BIRTHDAY'] })).toEqual({ invitationEventTypes: ['BIRTHDAY'] });
+    });
+
+    it("never sends event types for a wall font, which the backend refuses", () => {
+        expect(buildThemeFontPatch(FONT, { ...draft, invitationEventTypes: ['WEDDING'] })).toEqual({});
     });
 });
 

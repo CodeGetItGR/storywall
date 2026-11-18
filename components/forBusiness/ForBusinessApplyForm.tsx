@@ -1,12 +1,14 @@
 'use client';
 
 import { ChevronDown, Loader2, MailCheck } from 'lucide-react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { Children, type ComponentProps, type ReactNode } from 'react';
 
 import { ToolEmptyState } from '@/components/tools/ToolEmptyState';
 import { useApplyFormSummary } from '@/hooks/useApplyFormSummary';
 import { useForBusinessApplication } from '@/hooks/useForBusinessApplication';
+import type { Locale } from '@/i18n/config';
+import { localizeLegalHref } from '@/i18n/publicLocale';
 import { APPLICATION_ROLES, type ApplyFormDefaults, type CountryOption, type PrefillableApplyField } from '@/lib/forBusinessApplication';
 import { routes } from '@/lib/routes';
 import { cn } from '@/lib/utils';
@@ -28,6 +30,9 @@ type Props = {
 
 export function ForBusinessApplyForm({ countries, defaultCountry, defaults, search, source }: Props) {
     const t = useTranslations('ForBusinessPage.apply');
+    const locale = useLocale() as Locale;
+    // The privacy page in the form's language: /el/legal/privacy on the Greek pages.
+    const privacyHref = localizeLegalHref(routes.legal.privacy(), locale);
     const form = useForBusinessApplication({ search, source });
     const summary = useApplyFormSummary(defaults, form.fieldErrors);
 
@@ -170,7 +175,7 @@ export function ForBusinessApplyForm({ countries, defaultCountry, defaults, sear
                     {t.rich('consent', {
                         link: (chunks) => (
                             <a
-                                href={routes.legal.privacy()}
+                                href={privacyHref}
                                 target="_blank"
                                 rel="noopener"
                                 className="font-semibold text-[#151313]! underline! underline-offset-2"

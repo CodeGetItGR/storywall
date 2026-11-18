@@ -98,6 +98,30 @@ describe('ThemePresetRadioGroup fonts and title colour', () => {
         expect(container.querySelector('style')).toBeNull();
     });
 
+    it('previews the event title inside the "No theme" square, as the plain page shows it', () => {
+        render(
+            <ThemePresetRadioGroup
+                options={[NONE, preset('a')]}
+                labelledBy="heading"
+                disabled={false}
+                previewTitle="Anna's baptism"
+                onSelectAction={vi.fn()}
+            />,
+        );
+        const titles = screen.getAllByText("Anna's baptism");
+        // "No theme": the square and the row under it; the themed card: only the row.
+        expect(titles).toHaveLength(3);
+        const inSquare = titles.filter((title) => title.classList.contains('alegreya-light'));
+        expect(inSquare).toHaveLength(1);
+        expect(inSquare[0].closest('[role="radio"]')).toBe(screen.getByRole('radio', { name: 'No theme' }));
+        expect(inSquare[0].closest('[aria-hidden="true"]')).not.toBeNull();
+    });
+
+    it('leaves the "No theme" square empty without an event title', () => {
+        renderGroup([NONE]);
+        expect(screen.getByRole('radio', { name: 'No theme' }).querySelector('.alegreya-light')).toBeNull();
+    });
+
     it('is still a radio named by its label on a themed card', () => {
         renderGroup([preset('a', { headingFont: SCRIPT, titleColor: '#7A2E3B' })]);
         expect(screen.getByRole('radio', { name: 'Preset a' })).toBeInTheDocument();
@@ -155,5 +179,27 @@ describe('ThemePresetRadioGroup fonts and title colour', () => {
         const styles = container.querySelectorAll('style');
         expect(styles).toHaveLength(1);
         expect(styles[0].textContent).toContain('/api/theme-fonts/great-vibes/1.woff2');
+    });
+});
+
+describe('ThemePresetRadioGroup layout', () => {
+    it('lays the Theme page out 2 per row on phones, 3 on tablets and 4 on desktop', () => {
+        renderGroup([NONE, preset('a')]);
+        expect(screen.getByRole('radiogroup')).toHaveClass('grid-cols-2', 'sm:grid-cols-3', 'lg:grid-cols-4', 'gap-2.5');
+    });
+
+    it('gives the Theme page cards 18px corners and a 100px art box (120px on desktop)', () => {
+        renderGroup([preset('a')]);
+        const card = screen.getByRole('radio', { name: 'Preset a' });
+        expect(card).toHaveClass('rounded-[18px]');
+        expect(card.firstElementChild).toHaveClass('h-25', 'lg:h-30', 'rounded-md');
+    });
+
+    it('keeps the event-creation step on two square cards per row', () => {
+        render(<ThemePresetRadioGroup options={[preset('a')]} labelledBy="heading" disabled={false} size="large" onSelectAction={vi.fn()} />);
+        const group = screen.getByRole('radiogroup');
+        expect(group).toHaveClass('grid-cols-2');
+        expect(group).not.toHaveClass('lg:grid-cols-4');
+        expect(screen.getByRole('radio', { name: 'Preset a' }).firstElementChild).toHaveClass('aspect-square');
     });
 });

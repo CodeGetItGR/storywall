@@ -23,12 +23,15 @@ export function EventScheduleVenueFields({
     timezoneOptions,
     timezoneError,
     onTimezoneChange,
+    timezoneField,
     locationName,
     locationNameError,
     onLocationNameChange,
     locationAddress,
     locationAddressError,
     onLocationAddressChange,
+    addressPlaceholder,
+    locationNote,
     mapsUrl,
     onMapsUrlChange,
 }: {
@@ -44,12 +47,17 @@ export function EventScheduleVenueFields({
     timezoneOptions: string[];
     timezoneError: string | null;
     onTimezoneChange: (event: ChangeEvent<HTMLInputElement>) => void;
+    // Replaces the time zone field (the wizard shows a one-line summary instead).
+    timezoneField?: ReactNode;
     locationName: string;
     locationNameError?: string;
     onLocationNameChange: (event: ChangeEvent<HTMLInputElement>) => void;
     locationAddress: string;
     locationAddressError?: string;
     onLocationAddressChange: (event: ChangeEvent<HTMLInputElement>) => void;
+    addressPlaceholder?: string;
+    // A line under the venue fields (the wizard's reception note).
+    locationNote?: ReactNode;
     mapsUrl: string;
     onMapsUrlChange: (event: ChangeEvent<HTMLInputElement>) => void;
 }) {
@@ -73,13 +81,15 @@ export function EventScheduleVenueFields({
             </FormFieldLabel>
 
             {/* Timezone */}
-            <EventTimezoneField
-                label={t('fields.timezone')}
-                value={timezone}
-                options={timezoneOptions}
-                error={timezoneError}
-                onChangeAction={onTimezoneChange}
-            />
+            {timezoneField ?? (
+                <EventTimezoneField
+                    label={t('fields.timezone')}
+                    value={timezone}
+                    options={timezoneOptions}
+                    error={timezoneError}
+                    onChangeAction={onTimezoneChange}
+                />
+            )}
 
             {/* Location */}
             <div className="grid gap-3 sm:grid-cols-2">
@@ -101,12 +111,13 @@ export function EventScheduleVenueFields({
                         maxLength={limits.locationAddressMaxLength}
                         value={locationAddress}
                         onChange={onLocationAddressChange}
-                        placeholder={t('placeholders.locationAddress')}
+                        placeholder={addressPlaceholder ?? t('placeholders.locationAddress')}
                         className="rounded-xl bg-surface-muted px-4 py-3 text-sm text-ink transition outline-none placeholder:text-ink-faint focus:ring-2 focus:ring-primary/30"
                     />
                     {locationAddressError && <span className="text-xs text-rose-500">{locationAddressError}</span>}
                 </FormFieldLabel>
             </div>
+            {locationNote}
             <FormFieldLabel label={t('fields.mapsUrl')} optional>
                 <input
                     type="url"

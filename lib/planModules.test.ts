@@ -1,4 +1,4 @@
-import { Palette } from 'lucide-react';
+import { MailOpen, Palette } from 'lucide-react';
 import { describe, expect, it } from 'vitest';
 
 import { getModuleMeta, hasModuleCopyOverride, moduleCopyDraft, moduleCopyPatch, resolveModuleCopy } from '@/lib/planModules';
@@ -8,6 +8,13 @@ describe('getModuleMeta', () => {
         const meta = getModuleMeta('theme', []);
         expect(meta.name).toBe('Theme');
         expect(meta.Icon).toBe(Palette);
+    });
+
+    it('names the Save my date module when the registry has no row for it', () => {
+        const meta = getModuleMeta('save_my_date', []);
+        expect(meta.name).toBe('Online invitation');
+        expect(meta.description).toBe('An online invitation with its own link.');
+        expect(meta.Icon).toBe(MailOpen);
     });
 });
 

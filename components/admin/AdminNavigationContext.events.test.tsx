@@ -20,7 +20,7 @@ afterEach(() => {
 });
 
 describe('Events tab', () => {
-    it.each(['#events', '#events/e-1'])('opens from %s', (hash) => {
+    it.each(['#events', '#events/e-1', '#events/e-1/activity'])('opens from %s', (hash) => {
         window.history.replaceState(null, '', `/admin${hash}`);
         render(
             <NextIntlClientProvider locale="en" messages={messages}>
