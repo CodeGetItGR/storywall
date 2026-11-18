@@ -64,6 +64,7 @@ export function EventDetailsStep({ timezoneField, showScheduleHint = true, addre
                         onChange={onStartAtChange}
                         min={startAtMin}
                         max={startAtMax}
+                        aria-invalid={Boolean(scheduleError)}
                         inputClassName="rounded-xl bg-surface-muted px-4 py-3 text-sm text-ink transition outline-none focus:ring-2 focus:ring-primary/30"
                     />
                     {scheduleError ? (
