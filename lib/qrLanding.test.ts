@@ -10,6 +10,7 @@ import {
     qrLandingPlan,
     qrLandingStart,
     resolveQrLandingToken,
+    showsQrIntro,
     splitQrLandingChoices,
 } from '@/lib/qrLanding';
 import { routes } from '@/lib/routes';
@@ -160,5 +161,18 @@ describe('qrEventDetails', () => {
     it('is null before the preview loads, or with neither date nor place', () => {
         expect(qrEventDetails('en', null)).toBeNull();
         expect(qrEventDetails('en', preview({ eventStartAt: '', eventLocationName: '  ' }))).toBeNull();
+    });
+});
+
+// The intro names joining, photos and a wish, so it needs all three on the page.
+describe('showsQrIntro', () => {
+    it('shows when the page offers joining, photos and a wish', () => {
+        expect(showsQrIntro(['join', 'upload', 'wish'])).toBe(true);
+    });
+
+    it('stays off when one of them is missing', () => {
+        expect(showsQrIntro(['open', 'upload', 'wish'])).toBe(false);
+        expect(showsQrIntro(['join', 'upload'])).toBe(false);
+        expect(showsQrIntro(['upload', 'wish'])).toBe(false);
     });
 });

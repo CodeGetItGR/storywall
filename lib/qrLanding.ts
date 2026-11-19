@@ -57,10 +57,15 @@ export function qrLandingPlan(resolution: QrLinkResolutionDto | null | undefined
     return { choices, joinInviteToken, uploadToken, wishToken, invitationSlug };
 }
 
-// The choice that opens the event gets the big card with the feed preview (KAN-213); the rest are rows below it.
+// The choice that opens the event gets the big card with the feed preview (KAN-213); the rest are rows above it.
 export function splitQrLandingChoices(choices: QrLandingChoice[]): { event: 'join' | 'open' | null; rest: QrLandingChoice[] } {
     const event = choices.find((choice): choice is 'join' | 'open' => choice === 'join' || choice === 'open') ?? null;
     return { event, rest: choices.filter((choice) => choice !== event) };
+}
+
+// The intro names joining, photos and a wish, so it shows only when the page offers all three.
+export function showsQrIntro(choices: QrLandingChoice[]): boolean {
+    return choices.includes('join') && choices.includes('upload') && choices.includes('wish');
 }
 
 // The sample pictures around the event's own cover in the join card's preview. General celebration shots,
