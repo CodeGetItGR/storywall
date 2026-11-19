@@ -3,7 +3,9 @@ import { describe, expect, it } from 'vitest';
 import type { VendorMeDto } from '@/lib/api/types';
 import { SITE_URL } from '@/lib/seo';
 import {
+    allowedVendorTypes,
     capabilitiesOfType,
+    capitalizeFirst,
     hasProAllowance,
     hasVendorCapability,
     instagramHandle,
@@ -18,9 +20,12 @@ import {
     sortByVendorType,
     VENDOR_TYPES,
     vendorApplySearch,
+    vendorCapabilityTypes,
     vendorCardActions,
     vendorInviteUrl,
     vendorQuickActions,
+    vendorSceneMarkerPosition,
+    vendorSceneTypes,
     vendorToolLinks,
     websiteHref,
 } from '@/lib/vendors';
@@ -304,5 +309,54 @@ describe('vendorCardActions', () => {
 
     it('leaves out what is missing or unsafe to open', () => {
         expect(vendorCardActions({ website: 'javascript:alert(1)', phone: 'call me', email: null })).toEqual([]);
+    });
+});
+
+describe('allowedVendorTypes', () => {
+    const vendors = (allowedTypes: unknown) => [{ moduleKey: 'vendors' as const, configuration: { allowedTypes } }];
+
+    it('reads the vendors module allowedTypes in VENDOR_TYPES order', () => {
+        expect(allowedVendorTypes(vendors(['MUSIC', 'PLANNER', 'NOPE']))).toEqual(['PLANNER', 'MUSIC']);
+    });
+
+    it('reads a missing key, a missing module or no modules as none', () => {
+        expect(allowedVendorTypes([{ moduleKey: 'vendors', configuration: {} }])).toEqual([]);
+        expect(allowedVendorTypes([{ moduleKey: 'vendors', configuration: null }])).toEqual([]);
+        expect(allowedVendorTypes([{ moduleKey: 'gallery', configuration: { allowedTypes: ['PLANNER'] } }])).toEqual([]);
+        expect(allowedVendorTypes(undefined)).toEqual([]);
+    });
+});
+
+describe('capitalizeFirst', () => {
+    it('upper-cases only the first letter, keeping the Greek accent', () => {
+        expect(capitalizeFirst('other vendors')).toBe('Other vendors');
+        expect(capitalizeFirst('άλλοι επαγγελματίες')).toBe('Άλλοι επαγγελματίες');
+        expect(capitalizeFirst('')).toBe('');
+    });
+});
+
+describe('vendorCapabilityTypes', () => {
+    it('gives every allowed type its own row in the picture order, OTHER last', () => {
+        expect(vendorCapabilityTypes(VENDOR_TYPES)).toEqual(['PHOTOGRAPHER', 'VIDEOGRAPHER', 'VENUE', 'DECORATION', 'PLANNER', 'CATERING', 'MUSIC', 'OTHER']);
+    });
+
+    it('lists only the allowed types', () => {
+        expect(vendorCapabilityTypes(['MUSIC', 'OTHER', 'CATERING'])).toEqual(['CATERING', 'MUSIC', 'OTHER']);
+        expect(vendorCapabilityTypes([])).toEqual([]);
+    });
+});
+
+describe('vendorSceneMarkerPosition', () => {
+    it('places a marker as a share of the cropped picture', () => {
+        expect(vendorSceneMarkerPosition('PHOTOGRAPHER')).toEqual({ left: 12.5, top: 21 });
+        expect(vendorSceneMarkerPosition('DECORATION')).toEqual({ left: 44.0625, top: 56 });
+    });
+});
+
+describe('vendorSceneTypes', () => {
+    it('draws the allowed types left to right and never OTHER', () => {
+        expect(vendorSceneTypes(VENDOR_TYPES)).toEqual(['PHOTOGRAPHER', 'VIDEOGRAPHER', 'VENUE', 'DECORATION', 'PLANNER', 'CATERING', 'MUSIC']);
+        expect(vendorSceneTypes(['MUSIC', 'PLANNER', 'OTHER'])).toEqual(['PLANNER', 'MUSIC']);
+        expect(vendorSceneTypes(['OTHER'])).toEqual([]);
     });
 });
