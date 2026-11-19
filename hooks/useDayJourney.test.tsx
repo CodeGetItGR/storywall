@@ -1,5 +1,5 @@
 import { renderHook } from '@testing-library/react';
-import { Megaphone, Ticket } from 'lucide-react';
+import { Ticket } from 'lucide-react';
 import { describe, expect, it, vi } from 'vitest';
 
 import { useDayJourney } from '@/hooks/useDayJourney';
@@ -13,9 +13,9 @@ vi.mock('@/hooks/useToolsMenuItems', () => ({
     useHostMenuItems: () => [
         { key: 'manage', href: '/m', icon: Ticket, label: 'Manage' },
         { key: 'invitationsQr', href: '/qr', icon: Ticket, label: 'Share links' },
-        { key: 'announcement', href: '/a', icon: Megaphone, label: 'Announcement' },
     ],
 }));
+vi.mock('@/hooks/useHostAnnouncementLink', () => ({ useHostAnnouncementLink: () => ({ label: 'Announcement', href: '/a' }) }));
 vi.mock('@/hooks/useGalleryArchive', () => ({ useGallerySummary: () => ({ data: { photoCount: 12, videoCount: 2 } }) }));
 vi.mock('@/hooks/useWishbook', () => ({ useWishbookCount: () => ({ data: 3 }) }));
 

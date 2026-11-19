@@ -7,6 +7,8 @@ import { type ChangeEvent, useCallback, useMemo, useState } from 'react';
 
 import { CheckoutReviewSkeleton } from '@/components/checkout/CheckoutSkeletons';
 import { PriceBreakdownSummary } from '@/components/checkout/PriceBreakdownSummary';
+import { UpgradeEventDetailsStep } from '@/components/checkout/UpgradeEventDetailsStep';
+import { UpgradeEventDetailsSummary } from '@/components/checkout/UpgradeEventDetailsSummary';
 import { WithdrawalConsentSection } from '@/components/checkout/WithdrawalConsentSection';
 import { IncidentPausedNote } from '@/components/incident/IncidentPausedNote';
 import { BackButton } from '@/components/ui/BackButton';
@@ -19,6 +21,7 @@ import { useEvent } from '@/hooks/useEvent';
 import { useExtensionCheckoutReview } from '@/hooks/useExtensionCheckoutReview';
 import { useIsPrimaryHost } from '@/hooks/useIsPrimaryHost';
 import { useResetOnBfcacheRestore } from '@/hooks/useResetOnBfcacheRestore';
+import { useUpgradeEventDetails } from '@/hooks/useUpgradeEventDetails';
 import { ERROR_CODES, getErrorCode } from '@/lib/api/errors';
 import { formatBillingDate, formatMoney, navigateToCheckout } from '@/lib/billing';
 import { isCheckoutConsentSatisfied } from '@/lib/businessProfile';
@@ -88,6 +91,13 @@ export default function CheckoutReviewBoundary() {
     const upgradeEntry =
         intent === 'upgrade' && targetPlan ? (upgradeOptions.data?.find((entry) => entry.planTierCode === targetPlan.code) ?? null) : null;
     const upgradeDuration = upgradeEntry ? linkedUpgradeDuration(upgradeEntry, optionId) : null;
+    const upgradeDetails = useUpgradeEventDetails({
+        eventId,
+        event: event.data,
+        entry: upgradeEntry,
+        duration: upgradeDuration,
+        orders: billing.data?.orders,
+    });
 
     if (
         appConfig.isLoading ||
@@ -200,6 +210,7 @@ export default function CheckoutReviewBoundary() {
 
     async function continueToCheckout() {
         if (!valid || !consentSatisfied || !canPurchase) return;
+        if (upgradeDetails.needsDetails && !upgradeDetails.form.isComplete) return;
         setError(null);
         setStaleTerms(false);
         try {
@@ -212,6 +223,7 @@ export default function CheckoutReviewBoundary() {
                         requestsImmediateStart,
                         acknowledgesWithdrawalTerms,
                         termsVersion: termsVersion!,
+                        ...upgradeDetails.requestFields,
                     }),
                     targetPlan.code,
                 );
@@ -240,12 +252,28 @@ export default function CheckoutReviewBoundary() {
             // The page already explains that coverage has ended and hides the action.
             const errorCode = getErrorCode(checkoutError);
             if (errorCode === ERROR_CODES.COVERAGE_ENDED) return;
+            // Back on the details step, the field says what's wrong.
+            if (upgradeDetails.handleCheckoutError(checkoutError)) return;
+            // The event had no date after all: reload it, so the page asks for one.
+            if (errorCode === ERROR_CODES.EVENT_SCHEDULE_REQUIRED) void event.refetch();
             // The duration is no longer offered for this upgrade: reload the offers,
             // so the page shows the purchase as unavailable.
             if (intent === 'upgrade' && (errorCode === ERROR_CODES.COVERAGE_OPTION_INVALID || errorCode === ERROR_CODES.PLAN_TIER_NOT_AN_UPGRADE))
                 void upgradeOptions.refetch();
             setError(toErrorMessage(checkoutError));
         }
+    }
+
+    if (upgradeDetails.showsStep && valid && event.data) {
+        return (
+            <UpgradeEventDetailsStep
+                form={upgradeDetails.form}
+                eventType={event.data.eventType}
+                backHref={backHref}
+                backLabel={t('back')}
+                onSubmitAction={upgradeDetails.handleSubmit}
+            />
+        );
     }
 
     return (
@@ -269,6 +297,9 @@ export default function CheckoutReviewBoundary() {
                         <dt className="text-xs font-semibold text-ink-muted">{t('plan')}</dt>
                         <dd className="mt-1 font-semibold text-ink">{planLabel}</dd>
                     </div>
+                    {upgradeDetails.needsDetails && event.data && (
+                        <UpgradeEventDetailsSummary form={upgradeDetails.form} eventType={event.data.eventType} onEditAction={upgradeDetails.edit} />
+                    )}
                 </dl>
             </section>
 

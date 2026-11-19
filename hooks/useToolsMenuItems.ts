@@ -24,6 +24,7 @@ import { useTranslations } from 'next-intl';
 import { useGiftAccount } from '@/hooks/useGiftAccount';
 import { useModuleCopy } from '@/hooks/useModuleCopy';
 import { useEventVendors, useMyVendorRole } from '@/hooks/useVendors';
+import { announcementComposerHref } from '@/lib/announcementComposer';
 import { eventCapabilities } from '@/lib/eventCapabilities';
 import { isEventDeleted, readableModuleKeys } from '@/lib/eventLifecycle';
 import { canEditOwnRole, ROLE_SHEET_VALUE } from '@/lib/memberRoles';
@@ -90,7 +91,8 @@ export function useToolsMenuItems(): ToolMenuItem[] {
         // Vendors in the event (vendors spec 2026-10-19). Copy comes from ToolsMenu.items.
         { key: 'vendors', href: routes.events.tools.vendors(activeEvent.id), icon: Store },
         { key: 'vendorMe', href: routes.events.tools.vendorMe(activeEvent.id), icon: BriefcaseBusiness },
-        { key: 'announcement', href: routes.events.tools.announcement(activeEvent.id), icon: Megaphone },
+        // Opens the feed composer in Announcement mode.
+        { key: 'announcement', href: announcementComposerHref(activeEvent.id), icon: Megaphone },
         { key: 'rsvpReport', href: routes.events.rsvpReport(activeEvent.id, 'FULL_LIST', 'vendor'), icon: ClipboardList },
         { key: 'vendorQr', href: routes.events.invitationsQr(activeEvent.id), icon: QrCode },
         { key: 'liveRequests', href: routes.events.tools.playlistLive(activeEvent.id), icon: ListMusic },
@@ -108,7 +110,7 @@ export function useToolsMenuItems(): ToolMenuItem[] {
             .filter((tool) => tool.key !== 'rsvp' || me === null)
             .filter((tool) => tool.key !== 'vendors' || hasVendorsListed)
             .filter((tool) => tool.key !== 'vendorMe' || me !== null)
-            .filter((tool) => tool.key !== 'announcement' || hasVendorCapability(me, 'ANNOUNCE'))
+            .filter((tool) => tool.key !== 'announcement' || (availableModules.has('posts') && hasVendorCapability(me, 'ANNOUNCE')))
             .filter((tool) => tool.key !== 'rsvpReport' || (availableModules.has('rsvp') && hasVendorCapability(me, 'RSVP_REPORT')))
             .filter((tool) => tool.key !== 'vendorQr' || hasVendorCapability(me, 'QR_READ'))
             .filter((tool) => tool.key !== 'liveRequests' || (availableModules.has('playlist') && hasVendorCapability(me, 'SONG_REQUESTS')))
@@ -152,7 +154,6 @@ const VENDOR_TOOL_KEYS: Partial<Record<string, VendorActionKey>> = {
 export function useHostMenuItems(): ToolMenuItem[] {
     const t = useTranslations('MobileTabBar.hostMenu');
     const activeEvent = useActiveEvent();
-    const isDemoVisitor = useContentAccessMode() === 'demoVisitor';
 
     // A suspended StoryWall shows only the suspended view: no host menu.
     if (!activeEvent || activeEvent.suspended) return [];
@@ -160,7 +161,6 @@ export function useHostMenuItems(): ToolMenuItem[] {
     const galleryQrEnabled = isGalleryQrFeatureEnabled(activeEvent.modules);
     const readableModules = readableModuleKeys(activeEvent);
     const vendorsOn = readableModules.has('vendors');
-    const postsOn = readableModules.has('posts');
     const isDraft = activeEvent.status === 'DRAFT';
     // Deleted events keep the manage page (deletion notice + billing) and nothing else.
     const isDeleted = isEventDeleted(activeEvent);
@@ -171,8 +171,6 @@ export function useHostMenuItems(): ToolMenuItem[] {
         { key: 'manage', href: routes.events.manage(activeEvent.id), icon: LayoutDashboard },
         { key: 'invitationsQr', href: routes.events.invitationsQr(activeEvent.id), icon: Ticket, hidden: isDeleted || isDraft || !showsShareLinks },
         { key: 'vendors', href: routes.events.manageVendors(activeEvent.id), icon: Store, hidden: isDeleted || isDraft || !vendorsOn },
-        // The public demo has no announcement page.
-        { key: 'announcement', href: routes.events.tools.announcement(activeEvent.id), icon: Megaphone, hidden: isDeleted || isDraft || !postsOn || isDemoVisitor },
     ];
 
     return hostAdminDefinitions

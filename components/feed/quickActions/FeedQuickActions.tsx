@@ -8,6 +8,7 @@ import { VendorToolIcon } from '@/components/vendors/VendorToolIcon';
 import { type FeedQuickAction, useFeedQuickActions } from '@/hooks/useFeedQuickActions';
 import { useScrollEdges } from '@/hooks/useScrollEdges';
 import { useVendorQuickActions } from '@/hooks/useVendorQuickActions';
+import { handleAnnouncementLinkClick } from '@/lib/announcementComposer';
 import type { EventDetailResponseDto } from '@/lib/api/types';
 import { edgeFadeMask } from '@/lib/feedQuickActions';
 
@@ -46,6 +47,8 @@ export function FeedQuickActions({ event, isHost }: { event: EventDetailResponse
                         icon={<VendorToolIcon tool={action.key} />}
                         label={action.key === 'rsvpReport' ? tFeed('rsvpReport') : t(`quickActions.${action.key}`)}
                         href={action.href}
+                        // On the feed, Announcement opens the composer in place.
+                        onLinkClick={action.key === 'announcement' ? handleAnnouncementLinkClick : undefined}
                     />
                 </li>
             ))}

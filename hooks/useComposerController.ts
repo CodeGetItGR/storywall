@@ -3,7 +3,9 @@
 import { useTranslations } from 'next-intl';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
+import { useAnnouncementPost } from '@/hooks/useAnnouncementPost';
 import { useAppConfig } from '@/hooks/useAppConfig';
+import { useCanAnnounce } from '@/hooks/useCanAnnounce';
 import { type StoryComposerController, useStoryComposerController } from '@/hooks/useStoryComposerController';
 import type { EventModuleResponseDto } from '@/lib/api/types';
 import { isEventWritable } from '@/lib/eventLifecycle';
@@ -13,7 +15,7 @@ import type { ComposerContextValue } from '@/providers/composer/ComposerContext'
 import { useActiveEvent, useActiveMember } from '@/providers/EventProvider';
 import { usePublishQueue } from '@/providers/publishQueue/PublishQueueContext';
 
-type ComposerMode = 'post' | 'song';
+export type ComposerMode = 'post' | 'song' | 'announcement';
 
 export interface PendingImage {
     key: string;
@@ -44,15 +46,20 @@ export interface ComposerController {
     canComposePost: boolean;
     canComposeStory: boolean;
     canComposeSong: boolean;
+    canAnnounce: boolean;
+    isAnnouncing: boolean;
+    announcementError: string | null;
     maxImages: number;
     maxCaptionLength: number;
     initials: string;
     openPostComposer: () => void;
     openPostImagePicker: () => void;
     openSongComposer: () => void;
+    openAnnouncementComposer: () => void;
     openStoryCapture: () => void;
     selectPostMode: () => void;
     selectSongMode: () => void;
+    selectAnnouncementMode: () => void;
     closeComposer: () => void;
     closeMediaPreview: () => void;
     advanceMediaPreview: () => void;
@@ -64,13 +71,8 @@ export interface ComposerController {
     handleImageFilterSelection: (event: React.MouseEvent<HTMLButtonElement>) => void;
     setImageFilter: (filterId: string) => void;
     submitPost: (event: React.SubmitEvent<HTMLFormElement>) => void;
-    submitPlaylistSuggestion: (input: {
-        title: string;
-        artist?: string;
-        youtubeUrl?: string;
-        spotifyUrl?: string;
-        comment?: string;
-    }) => void;
+    submitAnnouncement: (event: React.SubmitEvent<HTMLFormElement>) => void;
+    submitPlaylistSuggestion: (input: { title: string; artist?: string; youtubeUrl?: string; spotifyUrl?: string; comment?: string }) => void;
 }
 
 function formatBytes(bytes: number): string {
@@ -102,7 +104,7 @@ export function useComposerController(): ComposerController {
     const textareaRef = useRef<HTMLTextAreaElement>(null);
 
     useEffect(() => {
-        if (!isOpen || composerMode !== 'post') return;
+        if (!isOpen || composerMode === 'song') return;
         const raf = requestAnimationFrame(() => textareaRef.current?.focus());
         return () => cancelAnimationFrame(raf);
     }, [composerMode, isOpen]);
@@ -125,6 +127,8 @@ export function useComposerController(): ComposerController {
     const canComposeStory = canCompose && eventModules.some((module) => module.moduleKey === 'stories' && module.isAvailable);
     const storyComposer = useStoryComposerController(canComposeStory);
     const canComposeSong = canCompose && eventModules.some((module) => module.moduleKey === 'playlist' && module.isAvailable);
+    const canAnnounce = useCanAnnounce(canComposePost);
+    const announcement = useAnnouncementPost();
     const maxMediaPerPost = appConfig?.media.maxMediaPerPost ?? 10;
     const maxBatchUploadFiles = appConfig?.media.maxBatchUploadFiles ?? 10;
     const maxImages = Math.min(maxMediaPerPost, maxBatchUploadFiles);
@@ -132,7 +136,12 @@ export function useComposerController(): ComposerController {
     // The files are sent in as many requests as the request size cap needs, so
     // only each file's own cap limits what can be added.
     const { imageBytes: maxImageBytes, videoBytes: maxVideoBytes } = getUploadLimits(appConfig?.media);
-    const canSubmit = (caption.trim().length > 0 || images.length > 0) && caption.length <= maxCaptionLength && canComposePost;
+    const withinLimit = caption.length <= maxCaptionLength;
+    // An announcement is text only and waits for its own request; a post needs text or media.
+    const canSubmit =
+        composerMode === 'announcement'
+            ? caption.trim().length > 0 && withinLimit && canAnnounce && !announcement.isPosting
+            : (caption.trim().length > 0 || images.length > 0) && withinLimit && canComposePost;
 
     const openPostComposer = useCallback(() => {
         if (!canComposePost) return;
@@ -146,6 +155,12 @@ export function useComposerController(): ComposerController {
         setIsOpen(true);
     }, [canComposeSong]);
 
+    const openAnnouncementComposer = useCallback(() => {
+        if (!canAnnounce) return;
+        setComposerMode('announcement');
+        setIsOpen(true);
+    }, [canAnnounce]);
+
     function selectPostMode() {
         setComposerMode('post');
     }
@@ -153,6 +168,11 @@ export function useComposerController(): ComposerController {
     function selectSongMode() {
         if (!canComposeSong) return;
         setComposerMode('song');
+    }
+
+    function selectAnnouncementMode() {
+        if (!canAnnounce) return;
+        setComposerMode('announcement');
     }
 
     function closeComposer() {
@@ -165,6 +185,7 @@ export function useComposerController(): ComposerController {
         setCountError(null);
         setComposerMode('post');
         setSongComposerKey((current) => current + 1);
+        announcement.reset();
         setIsOpen(false);
     }
 
@@ -295,7 +316,7 @@ export function useComposerController(): ComposerController {
 
     function submitPost(event: React.SubmitEvent<HTMLFormElement>) {
         event.preventDefault();
-        if (!canSubmit || !activeEvent || !activeMember) return;
+        if (composerMode !== 'post' || !canSubmit || !activeEvent || !activeMember) return;
 
         publishQueue.enqueuePost({
             eventId: activeEvent.id,
@@ -305,6 +326,13 @@ export function useComposerController(): ComposerController {
         });
 
         closeComposer();
+    }
+
+    // Text only: photos added in Post mode stay in that draft and are not sent.
+    async function submitAnnouncement(event: React.SubmitEvent<HTMLFormElement>) {
+        event.preventDefault();
+        if (!canSubmit || !activeEvent) return;
+        if (await announcement.post(activeEvent.id, caption)) closeComposer();
     }
 
     function submitPlaylistSuggestion(input: { title: string; artist?: string; youtubeUrl?: string; spotifyUrl?: string; comment?: string }) {
@@ -322,13 +350,26 @@ export function useComposerController(): ComposerController {
             openPostComposer,
             openPostImagePicker,
             openSongComposer,
+            openAnnouncementComposer,
             openStoryCapture: storyComposer.open,
             canCompose,
             canComposePost,
             canComposeStory,
             canComposeSong,
+            canAnnounce,
         }),
-        [canCompose, canComposePost, canComposeSong, canComposeStory, openPostComposer, openPostImagePicker, openSongComposer, storyComposer.open],
+        [
+            canAnnounce,
+            canCompose,
+            canComposePost,
+            canComposeSong,
+            canComposeStory,
+            openAnnouncementComposer,
+            openPostComposer,
+            openPostImagePicker,
+            openSongComposer,
+            storyComposer.open,
+        ],
     );
 
     return {
@@ -350,15 +391,20 @@ export function useComposerController(): ComposerController {
         canComposePost,
         canComposeStory,
         canComposeSong,
+        canAnnounce,
+        isAnnouncing: announcement.isPosting,
+        announcementError: announcement.error,
         maxImages,
         maxCaptionLength,
         initials,
         openPostComposer,
         openPostImagePicker,
         openSongComposer,
+        openAnnouncementComposer,
         openStoryCapture: storyComposer.open,
         selectPostMode,
         selectSongMode,
+        selectAnnouncementMode,
         closeComposer,
         closeMediaPreview,
         advanceMediaPreview,
@@ -370,6 +416,7 @@ export function useComposerController(): ComposerController {
         handleImageFilterSelection,
         setImageFilter,
         submitPost,
+        submitAnnouncement,
         submitPlaylistSuggestion,
     };
 }

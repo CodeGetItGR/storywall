@@ -44,6 +44,8 @@ describe('useVendorSeats', () => {
     it('counts the joined vendors against the event cap and asks for no upgrade below it', () => {
         const { result } = renderHook(() => useVendorSeats('e1', 2));
         expect(result.current.seatsLabel).toBe('seats:{"used":2,"max":5}');
+        expect(result.current.seatsSpoken).toBe('seatsSpoken:{"used":2,"max":5}');
+        expect(result.current.percent).toBe(40);
         expect(result.current.isFull).toBe(false);
         expect(result.current.fullNotice).toBeNull();
         expect(state.upgradeEnabled.every((enabled) => !enabled)).toBe(true);
@@ -74,5 +76,15 @@ describe('useVendorSeats', () => {
         const { result } = renderHook(() => useVendorSeats('e1', 3));
         expect(result.current.seatsLabel).toBeNull();
         expect(result.current.isFull).toBe(false);
+    });
+
+    it('fills the bar to 100 at or over the cap, and has no count without a cap', () => {
+        expect(renderHook(() => useVendorSeats('e1', 7)).result.current.percent).toBe(100);
+        state.modules = [vendorsModule(0)];
+        expect(renderHook(() => useVendorSeats('e1', 0)).result.current.percent).toBe(100);
+        state.modules = [vendorsModule()];
+        const { result } = renderHook(() => useVendorSeats('e1', 1));
+        expect(result.current.seatsLabel).toBeNull();
+        expect(result.current.seatsSpoken).toBeNull();
     });
 });

@@ -1005,9 +1005,11 @@ export interface EventRequestDto {
     description?: string;
     eventType: EventTypeConvention;
     visibility: EventVisibility; // required on this DTO despite the entity's DB default of PRIVATE
-    startAt: string;
+    // Optional since KAN-108: a plan with requirements.needsSchedule false sends none of startAt, endAt, timezone
+    // or location. A plan that needs a schedule gets 400 3122 without startAt, and startAt needs timezone (3008).
+    startAt?: string;
     endAt?: string; // optional — omitted, the server fills startAt + 24h
-    timezone: string;
+    timezone?: string;
     locationName?: string;
     locationAddress?: string;
     mapsUrl?: string;
@@ -2137,11 +2139,24 @@ export interface VoidCollaborationRedemptionRequestDto {
     reason: string;
 }
 // POST /api/events/{eventId}/upgrade-checkout — host, ACTIVE only (billing-fe-guide §7d).
+// The date and place an upgrade gives an event that has none (lite-events-without-date-fe-integration.md §5).
+// The server fills the end when it is left out.
+export interface EventDetailsRequestDto {
+    startAt: string;
+    endAt?: string;
+    timezone: string;
+    locationName: string;
+    locationAddress: string;
+    mapsUrl?: string;
+}
 export interface UpgradeCheckoutRequestDto extends WithdrawalConsentDto {
     attribution?: CheckoutAttributionDto;
     planTierCode: PlanTierCode;
     // Required since 2026-09-23: one of that plan's options[].coverageOptionId.
     coverageOptionId: string;
+    // Needed when the option's requirements.needsSchedule is true and the event has no date (400 3122 without
+    // them); ignored otherwise. They reach the event only when the payment settles.
+    details?: EventDetailsRequestDto;
 }
 // POST /api/events/{eventId}/extension-checkout — primary host, ACTIVE only
 // (coverage-options-and-extensions-fe-integration.md §11). Never discounted.

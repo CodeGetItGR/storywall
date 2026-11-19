@@ -42,12 +42,14 @@ describe('ManageShell', () => {
         expect(screen.getByTestId('section-list')).toBeInTheDocument();
         expect(screen.queryByTestId('section-header')).toBeNull();
         expect(screen.getByText('content')).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: 'Menu' })).toBeInTheDocument();
     });
 
     it('on any other page: header B with its title, no mobile section list', () => {
         renderShell('vendors');
         expect(screen.getByTestId('section-header')).toHaveTextContent('label:vendors');
         expect(screen.queryByTestId('section-list')).toBeNull();
+        expect(screen.queryByRole('button', { name: 'Menu' })).toBeNull();
         expect(screen.getByRole('heading', { level: 2, name: 'label:vendors' })).toBeInTheDocument();
     });
 
@@ -56,5 +58,6 @@ describe('ManageShell', () => {
         expect(screen.queryByTestId('sidebar')).toBeNull();
         expect(screen.queryByTestId('section-list')).toBeNull();
         expect(screen.getByTestId('draft-back')).toBeInTheDocument();
+        expect(screen.queryByRole('button', { name: 'Menu' })).toBeNull();
     });
 });

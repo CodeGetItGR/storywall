@@ -30,6 +30,7 @@ vi.mock('@/components/common/ProtectedImage', () => ({
 
 function setup(overrides: Record<string, unknown> = {}) {
     form.current = {
+        asksDetails: true,
         eventTypes: [{ eventTypeKey: 'WEDDING', imageUrl: null }],
         selectedEventType: 'WEDDING',
         title: 'Anna & Kostas',

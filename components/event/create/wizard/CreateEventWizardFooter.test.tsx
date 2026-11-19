@@ -49,6 +49,12 @@ describe('CreateEventWizardFooter', () => {
         expect(button).toHaveAttribute('form', 'create-form');
     });
 
+    it('keeps Continue on the details step tappable while fields are missing', () => {
+        form.current = { step: 'details', formId: 'create-form', canSubmitDetails: false };
+        render(<CreateEventWizardFooter />);
+        expect(screen.getByRole('button', { name: 'CreateEventPage.wizard.plan.continue' })).toBeEnabled();
+    });
+
     it('continues from the theme step to the next step shown', () => {
         const goToNextStep = vi.fn();
         form.current = { step: 'theme', goToNextStep };
