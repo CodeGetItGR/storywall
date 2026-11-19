@@ -21,6 +21,7 @@ import { useHasOpenOverlay } from '@/hooks/useOverlayPresence';
 import { usePinchZoomBox } from '@/hooks/usePinchZoomBox';
 import { useHostMenuItems, useToolsMenuItems } from '@/hooks/useToolsMenuItems';
 import { useMyVendorRole } from '@/hooks/useVendors';
+import { openAnnouncementComposerFromHref } from '@/lib/announcementComposer';
 import { eventHomeHref } from '@/lib/eventCapabilities';
 import { isEventDeleted } from '@/lib/eventLifecycle';
 import { openMyRoleSheetFromHref } from '@/lib/myRoleSheetRequests';
@@ -97,7 +98,7 @@ export function MobileTabBar() {
 
     function handleDashboardMenuClick(event: MouseEvent<HTMLElement>) {
         const href = event.currentTarget.dataset.href;
-        if (href && !openMyRoleSheetFromHref(href)) router.push(href);
+        if (href && !openMyRoleSheetFromHref(href) && !openAnnouncementComposerFromHref(href)) router.push(href);
     }
 
     if (!showEventNavigation) return null;

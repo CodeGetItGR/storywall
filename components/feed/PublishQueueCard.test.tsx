@@ -41,6 +41,31 @@ describe('PublishQueueCard slow upload note', () => {
         expect(screen.queryByText('uploadSlow')).toBeNull();
     });
 
+    it('keeps a shareable success card until the guest acts on it', () => {
+        const onDismiss = vi.fn();
+        const onShare = vi.fn();
+        render(<PublishQueueCard job={postJob({ status: 'success' })} onRetry={vi.fn()} onDismiss={onDismiss} onShare={onShare} />);
+        act(() => {
+            vi.advanceTimersByTime(10_000);
+        });
+        expect(onDismiss).not.toHaveBeenCalled();
+
+        act(() => screen.getByRole('button', { name: 'share' }).click());
+        expect(onShare).toHaveBeenCalledWith('job-1');
+        act(() => screen.getByRole('button', { name: 'dismiss' }).click());
+        expect(onDismiss).toHaveBeenCalledWith('job-1');
+    });
+
+    it('hides a success card without sharing after a few seconds', () => {
+        const onDismiss = vi.fn();
+        render(<PublishQueueCard job={postJob({ status: 'success' })} onRetry={vi.fn()} onDismiss={onDismiss} />);
+        expect(screen.queryByRole('button', { name: 'share' })).toBeNull();
+        act(() => {
+            vi.advanceTimersByTime(4000);
+        });
+        expect(onDismiss).toHaveBeenCalledWith('job-1');
+    });
+
     it('never shows the note for a song, which sends no files', () => {
         render(<PublishQueueCard job={postJob({ kind: 'song' } as Partial<PublishJob>)} onRetry={vi.fn()} onDismiss={vi.fn()} />);
         act(() => {

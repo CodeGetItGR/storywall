@@ -31,6 +31,7 @@ vi.mock('@/hooks/useAppConfig', () => ({
             planTiers: [{ code: 'BASIC', name: 'Basic', scope: 'EVENT', sortOrder: 0, priceCurrency: 'EUR' }],
             paidServices: [{ code: 'STORAGE_5GB', kind: 'STORAGE_PACK', name: '5 GB', priceAmountMinor: 500, priceCurrency: 'EUR' }],
             withdrawal: { termsVersion: '2026-09-25' },
+            coverage: { minDaysAfterStart: 7 },
         },
     }),
 }));

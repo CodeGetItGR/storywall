@@ -1,5 +1,4 @@
 import { renderHook } from '@testing-library/react';
-import { Megaphone } from 'lucide-react';
 import { describe, expect, it, vi } from 'vitest';
 
 import { useAfterJourney } from '@/hooks/useAfterJourney';
@@ -9,9 +8,7 @@ vi.mock('next-intl', () => ({
     useTranslations: () => (key: string, values?: Record<string, unknown>) => (values ? `${key}:${JSON.stringify(values)}` : key),
 }));
 vi.mock('@/hooks/useModuleCopy', () => ({ useModuleCopy: () => (key: string) => ({ name: `module.${key}` }) }));
-vi.mock('@/hooks/useToolsMenuItems', () => ({
-    useHostMenuItems: () => [{ key: 'announcement', href: '/a', icon: Megaphone, label: 'Announcement' }],
-}));
+vi.mock('@/hooks/useHostAnnouncementLink', () => ({ useHostAnnouncementLink: () => ({ label: 'Announcement', href: '/a' }) }));
 vi.mock('@/hooks/useGalleryArchive', () => ({ useGallerySummary: () => ({ data: { photoCount: 12, videoCount: 2 } }) }));
 vi.mock('@/hooks/useWishbook', () => ({ useWishbookCount: () => ({ data: 3 }) }));
 
