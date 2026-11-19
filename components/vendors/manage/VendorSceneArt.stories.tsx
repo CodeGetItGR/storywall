@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
+import { expect } from 'storybook/test';
 
 import { VendorSceneArt } from '@/components/vendors/manage/VendorSceneArt';
-import { VENDOR_SCENE_TYPES } from '@/lib/vendors';
 
 const meta = {
     title: 'Manage/Vendors/VendorSceneArt',
@@ -13,14 +13,14 @@ const meta = {
             </div>
         ),
     ],
-    args: { types: [...VENDOR_SCENE_TYPES] },
 } satisfies Meta<typeof VendorSceneArt>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-// The full drawing, unfaded and without markers.
-export const AllTypes: Story = {};
-
-// The ground and lights alone.
-export const NoTypes: Story = { args: { types: [] } };
+// The full drawing, unfaded and without markers: the ground and lights plus every type.
+export const Full: Story = {
+    play: async ({ canvasElement }) => {
+        await expect(canvasElement.querySelectorAll('svg [data-vendor-type]')).toHaveLength(8);
+    },
+};

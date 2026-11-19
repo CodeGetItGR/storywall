@@ -25,14 +25,19 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-// Every type drawn, each with its marker.
+// Every type allowed: the full drawing, each with its marker.
 export const AllTypes: Story = {
     play: async ({ canvasElement }) => {
         await expect(within(canvasElement).getByRole('img', { name: /^Vendors at an event/ })).toBeVisible();
     },
 };
 
-// Only a photographer, a planner and music.
+// A plan with a photographer, a planner and music: the full drawing, with only their three markers.
 export const SomeTypes: Story = {
     args: { scene: { types: ['PHOTOGRAPHER', 'PLANNER', 'MUSIC'], alt: 'Vendors at an event: photographer, planner and music' } },
+    play: async ({ canvasElement }) => {
+        const scene = within(canvasElement).getByRole('img', { name: /^Vendors at an event/ });
+        await expect(scene.querySelectorAll('svg [data-vendor-type]')).toHaveLength(8);
+        await expect(scene.querySelectorAll(':scope > span')).toHaveLength(3);
+    },
 };

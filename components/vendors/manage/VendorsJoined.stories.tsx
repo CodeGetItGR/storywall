@@ -89,13 +89,14 @@ export const Empty: Story = {
     },
 };
 
-// No vendors yet on a plan with a photographer, a planner and music: only those are drawn and listed.
+// No vendors yet on a plan with a photographer, a planner and music: the full picture, with only those marked and listed.
 export const EmptyPlanSubset: Story = {
     args: { vendors: [], seats: { seatsLabel: '0 / 3', seatsSpoken: '0 of 3 vendor seats used', percent: 0 } },
     parameters: { app: { member: storyHostMember, event: storyEventAllowingVendors(['PHOTOGRAPHER', 'PLANNER', 'MUSIC']) } },
     play: async ({ canvasElement }) => {
         const canvas = within(canvasElement);
         await expect(canvas.getAllByRole('listitem')).toHaveLength(3);
-        await expect(canvasElement.querySelectorAll('svg [data-vendor-type]')).toHaveLength(4);
+        await expect(canvasElement.querySelectorAll('svg [data-vendor-type]')).toHaveLength(8);
+        await expect(canvasElement.querySelectorAll('[role="img"]:has([data-vendor-type]) > span')).toHaveLength(3);
     },
 };

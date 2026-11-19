@@ -3,13 +3,13 @@ import { VENDOR_TYPE_ICONS } from '@/components/vendors/manage/vendorTypeIcons';
 import type { VendorScene as Scene } from '@/hooks/useVendorScene';
 import { vendorSceneMarkerPosition } from '@/lib/vendors';
 
-// The empty-state picture, faded, with a coral marker over each vendor it draws.
+// The empty-state picture, always drawn in full and faded, with a coral marker over each allowed vendor.
 export function VendorScene({ scene }: { scene: Scene }) {
     return (
         <div role="img" aria-label={scene.alt} className="relative">
             {/* Picture */}
             <div className="opacity-60">
-                <VendorSceneArt types={scene.types} />
+                <VendorSceneArt />
             </div>
 
             {/* Markers */}
