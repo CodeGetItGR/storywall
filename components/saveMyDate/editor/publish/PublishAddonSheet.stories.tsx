@@ -5,7 +5,7 @@ import { expect, fn, waitFor, within } from 'storybook/test';
 import { withAppContext } from '@/.storybook/appContext';
 import { copyFor } from '@/.storybook/copy';
 import { storyDraft } from '@/.storybook/editor';
-import { storyRsvpAddon, storySaveMyDateAddon } from '@/.storybook/featureAddons';
+import { storyDraftActivationItems, storyRsvpAddon, storySaveMyDateAddon } from '@/.storybook/featureAddons';
 import { storyAppConfig } from '@/.storybook/fixtures';
 import { waitForOpen } from '@/.storybook/waitForOpen';
 import { PublishAddonSheet } from '@/components/saveMyDate/editor/publish/PublishAddonSheet';
@@ -33,15 +33,31 @@ const appConfig = {
     })),
 } as unknown as AppConfigResponseDto;
 
+const draftQuote = storyDraftActivationItems();
+const liveQuote = {
+    ...draftQuote,
+    kind: 'MODULE_UNLOCK',
+    items: [
+        {
+            ...draftQuote.items[1],
+            name: storySaveMyDateAddon.name,
+            listMinor: storySaveMyDateAddon.priceAmountMinor,
+            priceMinor: storySaveMyDateAddon.priceAmountMinor,
+            paidServiceCode: storySaveMyDateAddon.code,
+        },
+    ],
+    listTotalMinor: storySaveMyDateAddon.priceAmountMinor,
+    totalMinor: storySaveMyDateAddon.priceAmountMinor,
+};
+
 function handlers(eventStatus: EventStatus) {
     return [
         http.get('*/api/events/:eventId/billing', () =>
             HttpResponse.json({ eventStatus, planTierCode: 'LITE', addons: [], orders: [], storage: null }),
         ),
         http.get('*/api/events/:eventId/modules', () => HttpResponse.json([{ id: 'posts', moduleKey: 'posts', isEnabled: true, isAvailable: true }])),
-        http.post('*/api/events/:eventId/quote', () =>
-            HttpResponse.json({ kind: eventStatus === 'DRAFT' ? 'ACTIVATION' : 'MODULE_UNLOCK', currency: 'EUR', totalMinor: 4900 }),
-        ),
+        // The full PriceBreakdown shape the server sends: a draft's activation, or the add-on alone on a live event.
+        http.post('*/api/events/:eventId/quote', () => HttpResponse.json(eventStatus === 'DRAFT' ? draftQuote : liveQuote)),
     ];
 }
 
@@ -78,9 +94,11 @@ export const DraftEvent: Story = {
         msw.use(...handlers('DRAFT'));
     },
     play: async ({ globals }) => {
-        const copy = copyFor(globals).InvitationEditor;
+        const copy = copyFor(globals);
         const sheet = within(await waitForOpen('dialog'));
-        await expect(await sheet.findByRole('heading', { name: copy.addOnTitle }, SLOW)).toBeVisible();
+        await expect(await sheet.findByRole('heading', { name: copy.InvitationEditor.addOnTitle }, SLOW)).toBeVisible();
+        // The plan's own row, from the activation quote.
+        await expect(await sheet.findByText(copy.PriceBreakdown.items.activation.replace('{plan}', 'Lite'), {}, SLOW)).toBeVisible();
     },
 };
 
