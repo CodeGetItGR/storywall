@@ -1,3 +1,4 @@
+import { ERROR_CODES, getErrorCode } from '@/lib/api/errors';
 import type {
     EventAddonDto,
     EventModuleResponseDto,
@@ -102,4 +103,16 @@ export function addonsStorageArea({
     if (storagePackCount > 0) return 'purchase';
     if (!featuresSettled || featuresOffered) return null;
     return 'empty';
+}
+
+// Refusals that mean the offer list is out of date: the event already has the module, or the plan no longer sells it.
+const STALE_OFFER_CODES = new Set<number | string>([
+    ERROR_CODES.MODULE_ALREADY_GRANTED,
+    ERROR_CODES.PAID_SERVICE_NOT_PURCHASABLE,
+    ERROR_CODES.PAID_SERVICE_NOT_ON_PLAN,
+]);
+
+export function isStaleOfferRefusal(error: unknown): boolean {
+    const code = getErrorCode(error);
+    return code !== undefined && STALE_OFFER_CODES.has(code);
 }

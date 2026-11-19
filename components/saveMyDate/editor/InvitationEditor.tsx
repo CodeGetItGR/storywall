@@ -4,6 +4,7 @@ import { useTranslations } from 'next-intl';
 
 import { EditorFrame } from '@/components/saveMyDate/editor/EditorFrame';
 import { EditorNotice } from '@/components/saveMyDate/editor/EditorNotice';
+import { PublishAddonSheet } from '@/components/saveMyDate/editor/publish/PublishAddonSheet';
 import { PublishEventSheet } from '@/components/saveMyDate/editor/publish/PublishEventSheet';
 import { PublishNotice } from '@/components/saveMyDate/editor/publish/PublishNotice';
 import { PublishPlanDialog } from '@/components/saveMyDate/editor/publish/PublishPlanDialog';
@@ -86,6 +87,7 @@ export function InvitationEditor({ draft, uploadedFonts, onReload, isReloading =
             <PublishSignInDialog signIn={editor.publishing.signIn} />
             <PublishSignInDialog signIn={editor.photos.signIn} title={t('photos.signInTitle')} />
             <PublishEventSheet step={editor.publishing.eventStep} draftId={draft.id} eventType={draft.eventType} document={editor.document} />
+            <PublishAddonSheet step={editor.publishing.addonStep} draftId={draft.id} document={editor.document} />
             <PublishSheet sheet={editor.publishing.sheet} inviteHost={INVITE_HOST} />
             <PublishPlanDialog
                 prompt={editor.publishing.planPrompt}
