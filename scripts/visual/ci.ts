@@ -11,7 +11,7 @@
 //                                                                           compare one share with the base into visual-output/report
 //   join-report --plan <file> --storybook <dir> --base <sha> --timings <file>  join the share reports into manifest.json
 //   join --storybook <dir> --dir <dir> --sha <sha> [--timings <file>]       join the shares' records into captures.json
-//   base-state --sha <sha> --cache-hit <true|false>                         write state=saved|pending|missing and run-id to $GITHUB_OUTPUT
+//   base-state --sha <sha> --cache-hit [true|false|<empty>]                 write state=saved|pending|missing and run-id to $GITHUB_OUTPUT
 //   wait-baseline --run <id> --minutes <n>                                  wait for that run to finish
 //   selfcheck                                                               load playwright-core and sharp, to test the runtime pack
 
@@ -188,7 +188,8 @@ async function pendingRunOrNull(sha: string): Promise<number | null> {
 
 // saved: the cache has the base. pending: a visual-baseline run for it is still going. missing: neither.
 async function baseStateStep() {
-    const cacheHit = required('cache-hit') === 'true';
+    // actions/cache leaves cache-hit empty on a miss, so anything but true is a miss.
+    const cacheHit = args['cache-hit'] === 'true';
     const runId = cacheHit ? null : await pendingRunOrNull(required('sha'));
     const state = baseState(cacheHit, runId);
     print(state === 'pending' ? `Baseline run ${runId} is still going` : `The base is ${state}`);
