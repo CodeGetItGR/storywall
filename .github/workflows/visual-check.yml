@@ -110,7 +110,7 @@ jobs:
             - uses: actions/cache/restore@v6
               with:
                   path: visual-output/timings
-                  key: visual-timings-${{ github.run_id }}
+                  key: visual-timings-${{ github.run_id }}-${{ github.run_attempt }}
                   restore-keys: visual-timings-
 
             - run: npm run visual:ci -- plan --storybook storybook-static --timings visual-output/timings/timings.json --out visual-runtime/share-plan.json
@@ -140,7 +140,7 @@ jobs:
     capture:
         needs: build
         runs-on: ubuntu-latest
-        timeout-minutes: 45
+        timeout-minutes: 55
         container: mcr.microsoft.com/playwright:v1.55.0-noble
         permissions:
             contents: read
@@ -181,16 +181,23 @@ jobs:
                   path: visual-output/base
                   key: ${{ needs.build.outputs.base-key }}
 
-            - if: steps.restore.outputs.cache-hit != 'true'
+            # The build job found the saved base, so it built no base for the shares. If it is gone now
+            # (evicted, or the download failed), this share can't capture it. Re-running all jobs looks it up again.
+            - if: needs.build.outputs.base-state == 'saved' && steps.restore.outputs.cache-hit != 'true'
+              run: |
+                  echo "::error::The saved base disappeared after the build job found it. Use Re-run all jobs."
+                  exit 1
+
+            - if: needs.build.outputs.base-state != 'saved' && steps.restore.outputs.cache-hit != 'true'
               uses: actions/download-artifact@v8
               with:
                   name: visual-base-storybook
                   path: visual-output/base-storybook
 
-            - if: steps.restore.outputs.cache-hit != 'true'
+            - if: needs.build.outputs.base-state != 'saved' && steps.restore.outputs.cache-hit != 'true'
               run: node visual-runtime/ci.mjs capture-base --share "$SHARE" --plan visual-runtime/share-plan.json --storybook visual-output/base-storybook --out visual-output/base
 
-            - if: steps.restore.outputs.cache-hit != 'true'
+            - if: needs.build.outputs.base-state != 'saved' && steps.restore.outputs.cache-hit != 'true'
               uses: actions/upload-artifact@v7
               with:
                   name: visual-base-share-${{ strategy.job-index }}
@@ -266,10 +273,11 @@ jobs:
             - uses: actions/cache/save@v6
               with:
                   path: visual-output/timings
-                  key: visual-timings-${{ github.run_id }}
+                  key: visual-timings-${{ github.run_id }}-${{ github.run_attempt }}
 
-            # Saves the base the shares captured, so later PRs on it find it. It never changes this run's result,
-            # so a share that found the cache after all (and uploaded no base) only skips the save.
+            # Saves the base the shares captured. A cache saved from a PR run is scoped to that PR, so only its
+            # later runs find it. It never changes this run's result, so a share that found the cache
+            # after all (and uploaded no base) only skips the save.
             - id: saved
               if: needs.build.outputs.base-state != 'saved'
               uses: actions/cache/restore@v6

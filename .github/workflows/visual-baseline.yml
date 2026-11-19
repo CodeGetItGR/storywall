@@ -66,7 +66,7 @@ jobs:
               uses: actions/cache/restore@v6
               with:
                   path: visual-output/timings
-                  key: visual-timings-${{ github.run_id }}
+                  key: visual-timings-${{ github.run_id }}-${{ github.run_attempt }}
                   restore-keys: visual-timings-
 
             - if: steps.lookup.outputs.cache-hit != 'true'
@@ -153,4 +153,4 @@ jobs:
             - uses: actions/cache/save@v6
               with:
                   path: visual-output/timings
-                  key: visual-timings-${{ github.run_id }}
+                  key: visual-timings-${{ github.run_id }}-${{ github.run_attempt }}

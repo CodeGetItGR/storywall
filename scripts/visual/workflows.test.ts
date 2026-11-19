@@ -175,7 +175,7 @@ describe('visual-check workflow', () => {
         expect(build).toContain('restore-keys: visual-timings-');
         expect(build).toContain('plan --storybook storybook-static --timings visual-output/timings/timings.json --out visual-runtime/share-plan.json');
         expect(job(check, 'capture')).toContain('--plan visual-runtime/share-plan.json');
-        expect(job(check, 'report')).toContain('key: visual-timings-${{ github.run_id }}');
+        expect(job(check, 'report')).toContain('key: visual-timings-${{ github.run_id }}-${{ github.run_attempt }}');
     });
 
     it('works out the base state in build', () => {
@@ -191,8 +191,26 @@ describe('visual-check workflow', () => {
 
     it('captures its share of the base only when the cache still has none', () => {
         const capture = job(check, 'capture');
-        expect(capture).toContain("if: steps.restore.outputs.cache-hit != 'true'");
+        expect(capture).toContain("if: needs.build.outputs.base-state != 'saved' && steps.restore.outputs.cache-hit != 'true'");
         expect(capture).toContain('capture-base --share "$SHARE" --plan visual-runtime/share-plan.json --storybook visual-output/base-storybook --out visual-output/base');
+    });
+
+    it('stops with a clear error when the saved base is gone and there is no base build to capture from', () => {
+        const capture = job(check, 'capture');
+        expect(capture).toContain("if: needs.build.outputs.base-state == 'saved' && steps.restore.outputs.cache-hit != 'true'");
+        expect(capture).toContain('Use Re-run all jobs.');
+        expect(capture.indexOf('Use Re-run all jobs.')).toBeGreaterThan(capture.indexOf('id: restore'));
+        expect(capture.indexOf('Use Re-run all jobs.')).toBeLessThan(capture.indexOf('name: visual-base-storybook'));
+        expect(capture.match(/needs.build.outputs.base-state != 'saved' && steps.restore/g)?.length).toBe(3);
+        expect(capture).toContain('timeout-minutes: 55');
+    });
+
+    it('saves the timings under a key that is new on every attempt', () => {
+        for (const name of ['visual-check', 'visual-baseline']) {
+            const keys = read(name).match(/key: visual-timings-.*$/gm) ?? [];
+            expect(keys.length, name).toBeGreaterThan(0);
+            for (const key of keys) expect(key, name).toBe('key: visual-timings-${{ github.run_id }}-${{ github.run_attempt }}');
+        }
     });
 
     it('compares in each share', () => {
@@ -243,6 +261,6 @@ describe('visual-baseline workflow', () => {
     it('saves the timings for the next plan', () => {
         const save = job(baseline, 'save');
         expect(save).toContain('--timings visual-output/timings/timings.json');
-        expect(save).toContain('key: visual-timings-${{ github.run_id }}');
+        expect(save).toContain('key: visual-timings-${{ github.run_id }}-${{ github.run_attempt }}');
     });
 });
