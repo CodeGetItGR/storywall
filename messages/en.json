@@ -646,8 +646,11 @@
             "freeAccount": "Free account, in a few seconds",
             "noAccount": "Without an account",
             "uploadLine": "The hosts get them in their photo album",
-            "wishLine": "A message for the wishbook",
-            "moreOptions": "More options"
+            "wishLine": "A message for the wishbook"
+        },
+        "intro": {
+            "title": "Join, share photos, leave a wish",
+            "line": "Everything is on this page"
         },
         "preview": {
             "feed": "The event feed",
@@ -6561,6 +6564,8 @@
             "share": {
                 "copy": "Copy link",
                 "copied": "Copied",
+                "shortLink": "Short link",
+                "fullLink": "Full link",
                 "downloadQr": "Download QR",
                 "qr": "QR code for this link"
             }

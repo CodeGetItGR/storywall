@@ -19,7 +19,7 @@ function renderChoices(plan: QrLandingPlan, isSignedIn = false, eventId: string 
     );
 }
 
-// KAN-213: joining is a card with a preview of the event; the other choices sit below it.
+// KAN-213: joining is a card with a preview of the event; the other choices sit above it.
 describe('QrLandingChoices', () => {
     afterEach(cleanup);
 
@@ -33,6 +33,15 @@ describe('QrLandingChoices', () => {
         expect(screen.getByRole('heading', { name: 'choices.noAccount' })).toBeInTheDocument();
         expect(screen.getByText('guestCode.uploadButton').parentElement).toHaveTextContent('choices.uploadLine');
         expect(screen.getByText('guestCode.wishButton').parentElement).toHaveTextContent('choices.wishLine');
+    });
+
+    // The no-account choices come first, so they are on the first screen of any phone.
+    it('puts the other choices above the join card', () => {
+        renderChoices(GUEST_PLAN);
+
+        const upload = screen.getByText('guestCode.uploadButton');
+        const card = screen.getByRole('link', { name: 'createAccount' });
+        expect(upload.compareDocumentPosition(card) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     });
 
     // The invite page between the card and the forms is skipped: both carry the invite and lead to the feed.
