@@ -1,3 +1,4 @@
+import { planRequirementsOf } from '@/lib/__fixtures__/planRequirements';
 import type {
     AppConfigResponseDto,
     AuthorDto,
@@ -8,6 +9,7 @@ import type {
     EventSessionResponseDto,
     MediaResponseDto,
     ModuleKeyConvention,
+    PartnerRole,
     PlanTierResponseDto,
     PostResponseDto,
     QrLinkResponseDto,
@@ -184,6 +186,12 @@ export function storyModules(keys: ModuleKeyConvention[] = ALL_MODULES): EventMo
     }));
 }
 
+// The story event with a vendors module whose plan allows only these vendor types.
+export function storyEventAllowingVendors(allowedTypes: PartnerRole[]): EventDetailResponseDto {
+    const [vendors] = storyModules(['vendors']);
+    return storyEvent({ modules: [...storyModules(), { ...vendors, configuration: { maxVendors: 5, allowedTypes } }] });
+}
+
 export function storySession(overrides: Partial<EventSessionResponseDto> = {}): EventSessionResponseDto {
     return {
         id: 'ses-main',
@@ -343,6 +351,7 @@ function storyWizardPlan(
             active: true,
         })),
         extensionOptions: [],
+        requirements: planRequirementsOf(moduleKeys),
     } as unknown as PlanTierResponseDto;
 }
 

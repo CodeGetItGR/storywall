@@ -125,8 +125,12 @@ export function NoticeEventSearch({
                                         ) : null}
                                     </p>
                                     <p className="text-xs text-ink-muted">
-                                        {formatDate(locale, candidate.startAt, { dateStyle: 'medium' })}
-                                        {candidate.primaryHostName ? ` · ${t('search.primaryHost')}: ${candidate.primaryHostName}` : ''}
+                                        {[
+                                            candidate.startAt && formatDate(locale, candidate.startAt, { dateStyle: 'medium' }),
+                                            candidate.primaryHostName && `${t('search.primaryHost')}: ${candidate.primaryHostName}`,
+                                        ]
+                                            .filter(Boolean)
+                                            .join(' · ')}
                                     </p>
                                 </div>
                                 <button

@@ -6,11 +6,14 @@ export interface ComposerContextValue {
     openPostComposer: () => void;
     openPostImagePicker: () => void;
     openSongComposer: () => void;
+    openAnnouncementComposer: () => void;
     openStoryCapture: () => void;
     canCompose: boolean;
     canComposePost: boolean;
     canComposeStory: boolean;
     canComposeSong: boolean;
+    // Hosts and planners: the composer's Announcement mode.
+    canAnnounce: boolean;
 }
 
 export const ComposerContext = createContext<ComposerContextValue | null>(null);

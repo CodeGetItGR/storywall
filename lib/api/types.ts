@@ -191,6 +191,15 @@ export interface PlanTierResponseDto {
     initialOptions: CoverageOptionResponseDto[];
     // Coverage bought after activation. Nothing sells these yet (phase 2).
     extensionOptions: CoverageOptionResponseDto[];
+    // What buying the plan asks of the event (event-capabilities-fe-integration.md §2). null on ACCOUNT plans.
+    requirements: PlanRequirementsDto | null;
+}
+
+// All three true when the plan includes posts, false for a lite plan.
+export interface PlanRequirementsDto {
+    takesGuests: boolean;
+    needsSchedule: boolean;
+    needsVenue: boolean;
 }
 
 export type CoverageOptionKind = 'INITIAL' | 'EXTENSION';
@@ -996,9 +1005,11 @@ export interface EventRequestDto {
     description?: string;
     eventType: EventTypeConvention;
     visibility: EventVisibility; // required on this DTO despite the entity's DB default of PRIVATE
-    startAt: string;
+    // Optional since KAN-108: a plan with requirements.needsSchedule false sends none of startAt, endAt, timezone
+    // or location. A plan that needs a schedule gets 400 3122 without startAt, and startAt needs timezone (3008).
+    startAt?: string;
     endAt?: string; // optional — omitted, the server fills startAt + 24h
-    timezone: string;
+    timezone?: string;
     locationName?: string;
     locationAddress?: string;
     mapsUrl?: string;
@@ -1190,11 +1201,12 @@ export interface EventResponseDto {
     description: string | null;
     eventType: EventTypeConvention;
     visibility: EventVisibility;
-    startAt: string;
+    // null on a lite event without a date (KAN-108), with endAt and timezone.
+    startAt: string | null;
     endAt: string | null;
     coverageEndsAt: string | null; // null while DRAFT; pinned at activation
     projectedCoverage: ProjectedCoverageDto | null; // set while DRAFT, null once ACTIVE
-    timezone: string;
+    timezone: string | null;
     locationName: string | null;
     locationAddress: string | null;
     mapsUrl: string | null;
@@ -1212,7 +1224,9 @@ export interface EventResponseDto {
 }
 
 export interface EventScheduleDto {
-    startAt: string;
+    // null on a lite event without a date (lite-events-without-date-fe-integration.md §2), with endAt,
+    // timezone and projectedCoverage. capabilities.hasSchedule says the same.
+    startAt: string | null;
     endAt: string | null;
     // Null while DRAFT. Computed once at activation and never moved by later
     // startAt/endAt edits; only a paid upgrade to a longer duration moves it later.
@@ -1222,7 +1236,7 @@ export interface EventScheduleDto {
     // read, so it follows startAt as the host edits the draft. Exactly one of
     // projectedCoverage / coverageEndsAt is non-null on any event.
     projectedCoverage: ProjectedCoverageDto | null;
-    timezone: string;
+    timezone: string | null;
     rsvpDeadline: string | null;
 }
 
@@ -1243,6 +1257,23 @@ export interface EventRsvpSummaryDto {
     attending: number;
     declined: number;
     noResponse: number;
+}
+
+export type EventKind = 'FULL' | 'LITE';
+export type EventHome = 'FEED' | 'GALLERY' | 'WISHBOOK' | 'MANAGE';
+
+// What an event can do, worked out by the backend (event-capabilities-fe-integration.md §1). Read it through
+// lib/eventCapabilities.ts, never module keys. kind, home and the shows* flags follow what the event paid for,
+// whatever its state; guestCodeActions follows what a guest can do right now.
+export interface EventCapabilitiesDto {
+    kind: EventKind;
+    home: EventHome;
+    takesGuests: boolean;
+    hasSchedule: boolean;
+    showsDetailsSettings: boolean;
+    showsShareLinks: boolean;
+    showsGuestCode: boolean;
+    guestCodeActions: QrGuestAction[];
 }
 
 // Returned by GET /api/events/{id} only (not the list endpoint), added
@@ -1267,6 +1298,8 @@ export interface EventDetailResponseDto {
     theme: EventThemeDto | null;
     hosts: EventHostResponseDto[]; // only the primary host when co_hosts is off
     modules: EventModuleResponseDto[];
+    // Added 2026-11-03 (KAN-107). Missing from a demo snapshot taken before then.
+    capabilities?: EventCapabilitiesDto;
     sessions: EventSessionResponseDto[] | null; // null when schedule is off
     rsvpSummary: EventRsvpSummaryDto | null; // null when rsvp is off
     createdAt: string;
@@ -1842,7 +1875,7 @@ export interface PartnerPortalResponseDto {
 }
 // No titles or ids: the portal opens with the link alone (KAN-28).
 export interface PartnerPortalReachEventDto {
-    startAt: string;
+    startAt: string | null; // null on a lite event without a date
     vendorType: PartnerRole;
     guests: number;
     // Pro item views plus post views.
@@ -1891,7 +1924,7 @@ export interface BusinessOverviewDto {
 export interface BusinessEventDto {
     eventId: string;
     title: string;
-    startAt: string;
+    startAt: string | null; // null on a lite event without a date
     vendorType: PartnerRole;
     guests: number;
     views?: number;
@@ -2106,11 +2139,24 @@ export interface VoidCollaborationRedemptionRequestDto {
     reason: string;
 }
 // POST /api/events/{eventId}/upgrade-checkout — host, ACTIVE only (billing-fe-guide §7d).
+// The date and place an upgrade gives an event that has none (lite-events-without-date-fe-integration.md §5).
+// The server fills the end when it is left out.
+export interface EventDetailsRequestDto {
+    startAt: string;
+    endAt?: string;
+    timezone: string;
+    locationName: string;
+    locationAddress: string;
+    mapsUrl?: string;
+}
 export interface UpgradeCheckoutRequestDto extends WithdrawalConsentDto {
     attribution?: CheckoutAttributionDto;
     planTierCode: PlanTierCode;
     // Required since 2026-09-23: one of that plan's options[].coverageOptionId.
     coverageOptionId: string;
+    // Needed when the option's requirements.needsSchedule is true and the event has no date (400 3122 without
+    // them); ignored otherwise. They reach the event only when the payment settles.
+    details?: EventDetailsRequestDto;
 }
 // POST /api/events/{eventId}/extension-checkout — primary host, ACTIVE only
 // (coverage-options-and-extensions-fe-integration.md §11). Never discounted.
@@ -2231,6 +2277,8 @@ export interface UpgradeOptionResponseDto {
     // Set whenever the promotion takes something off a listed option (percent or
     // promo price); null otherwise, and for a promotion set up without a label.
     discountLabel: string | null;
+    // What moving to this plan asks of the event (event-capabilities-fe-integration.md §3).
+    requirements: PlanRequirementsDto;
 }
 export type OrderKind = 'ACTIVATION' | 'UPGRADE' | 'STORAGE_PACK' | 'EXTENSION' | 'MODULE_UNLOCK';
 // REFUNDED: the order was paid and the money went back (a withdrawal or a lost dispute).
@@ -3093,7 +3141,7 @@ export interface EventDashboardRowDto {
     eventId: string;
     planTierCode: string;
     eventType: string;
-    startAt: string;
+    startAt: string | null; // null on a lite event without a date
     storageQuotaBytes: number | null;
     guestQuotaMax: number | null;
 }
@@ -4937,7 +4985,7 @@ export interface ContentNoticeDetailDto {
 export interface NoticeEventCandidateDto {
     eventId: string;
     title: string;
-    startAt: string;
+    startAt: string | null; // null on a lite event without a date
     primaryHostName: string | null;
     status: EventStatus;
     deleted: boolean;

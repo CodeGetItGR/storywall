@@ -56,6 +56,12 @@ describe('manageSections', () => {
         expect(parseManageSection('help')).toBe('overview');
     });
 
+    it('parseManageSection opens Billing for its older plan, orders and coverage links', () => {
+        expect(parseManageSection('plan')).toBe('billing');
+        expect(parseManageSection('orders')).toBe('billing');
+        expect(parseManageSection('coverage')).toBe('billing');
+    });
+
     it('parseManageSection falls back to "overview" for an unknown or removed section', () => {
         expect(parseManageSection('invitations')).toBe('overview');
         expect(parseManageSection('not-a-section')).toBe('overview');

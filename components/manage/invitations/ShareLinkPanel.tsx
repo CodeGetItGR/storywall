@@ -1,6 +1,6 @@
 'use client';
 
-import { AlertTriangle, BarChart3, Eye, Trash2 } from 'lucide-react';
+import { Eye, Trash2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { AppLink } from '@/components/ui/AppLink';
@@ -13,14 +13,15 @@ import { getQrStatusTone } from '@/lib/statusTones';
 import { cn } from '@/lib/utils';
 
 import { QrCodeCard } from './QrCodeCard';
+import { QrStatsPreview } from './QrStatsPreview';
 import { QrStatsSheet } from './QrStatsSheet';
 import { ShareLinkSection } from './ShareLinkSection';
 
 const SECONDARY_ACTION_CLASS =
     'flex items-center gap-1.5 rounded-full bg-surface-muted px-2.5 py-1.5 text-xs font-medium text-ink-muted transition-colors hover:text-ink';
 
-// One share link as in Q5: its QR code with print and download, the link with copy, share
-// and stats beside it from md up, then the demo preview and Revoke.
+// One share link as in Q5: its QR code with print and download, the link with copy and share
+// and a stats preview beside it from md up, then the demo preview and Revoke.
 export function ShareLinkPanel({
     eventId,
     qrLink,
@@ -57,31 +58,19 @@ export function ShareLinkPanel({
                     <QrCodeCard qrLink={qrLink} cardHref={cardHref} linkActions={false} label={t('qr.codeAlt', { event: eventTitle })} size={200} />
                 </div>
 
-                {/* Link */}
-                <ShareLinkSection
-                    qrLink={qrLink}
-                    className="min-w-0 flex-1"
-                    extra={
-                        stats ? (
-                            <>
-                                <button type="button" onClick={management.openStats} className={SECONDARY_ACTION_CLASS}>
-                                    <BarChart3 className="h-3.5 w-3.5" />
-                                    {t('qr.stats.cta')}
-                                </button>
-                                {management.isLowOnSlots && (
-                                    <button
-                                        type="button"
-                                        onClick={management.openStats}
-                                        className="flex items-center gap-1 px-1 text-xs font-semibold text-amber-700"
-                                    >
-                                        <AlertTriangle className="h-3.5 w-3.5" />
-                                        {t('qr.stats.lowSlots', { count: management.remainingSlots ?? 0 })}
-                                    </button>
-                                )}
-                            </>
-                        ) : undefined
-                    }
-                />
+                {/* Link and stats */}
+                <div className="flex min-w-0 flex-1 flex-col gap-5">
+                    <ShareLinkSection qrLink={qrLink} />
+
+                    {/* Stats preview */}
+                    {stats && (
+                        <QrStatsPreview
+                            stats={stats}
+                            lowSlots={management.isLowOnSlots ? management.remainingSlots : null}
+                            onSeeMore={management.openStats}
+                        />
+                    )}
+                </div>
             </div>
 
             {/* More actions */}

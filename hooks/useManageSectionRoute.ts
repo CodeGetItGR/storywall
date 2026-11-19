@@ -6,6 +6,7 @@ import { useCallback, useEffect } from 'react';
 import { type ManageSection, parseManageSection, resolveManageSection } from '@/lib/manageSections';
 import { pushPageEntry, replacePageUrl } from '@/lib/overlayHistory';
 import { routes } from '@/lib/routes';
+import { scrollAppToTop } from '@/lib/scrollContainer';
 
 // Marks a history entry opened from the dashboard's Overview, so going back to it is a Back step.
 const OPENED_FROM_OVERVIEW_KEY = 'manageOpenedFromOverview';
@@ -52,7 +53,7 @@ export function useManageSectionRoute({
             if (section === 'overview') pushPageEntry(url, { [OPENED_FROM_OVERVIEW_KEY]: true });
             else replacePageUrl(url);
             // On a phone the next page starts at its header, not where the list was scrolled to.
-            window.scrollTo({ top: 0 });
+            scrollAppToTop();
         },
         [eventId, searchParams, section],
     );

@@ -8,6 +8,7 @@ import { LoadingState } from '@/components/ui/LoadingState';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useModuleCopy } from '@/hooks/useModuleCopy';
 import { useThemeRadioOptions } from '@/hooks/useThemeRadioOptions';
+import { themePreviewTitle } from '@/lib/eventTheme';
 import { useCreateEventForm } from '@/providers/createEvent/CreateEventFormContext';
 
 // The creation form's optional theme step. Nothing is saved here: the pick goes out with
@@ -22,7 +23,7 @@ export function EventThemeStep({ showHint = true }: { showHint?: boolean } = {})
     const themeName = useModuleCopy(selectedEventType)('theme').name;
 
     // The cards preview the title from the details step; without one they show just the theme name.
-    const previewTitle = title.trim() || undefined;
+    const previewTitle = themePreviewTitle(title);
     const options = useThemeRadioOptions(themePresets, selectedThemePresetId);
 
     return (

@@ -25,7 +25,8 @@ export function useCreateEventWizardReview() {
             photoSrc: createEventTypePhoto(form.selectedEventType, type?.imageUrl ?? null),
             alt: typeCopy(form.selectedEventType).name,
             title: form.trimmedTitle,
-            line: joinLine([formatEventDateParts(locale, form.startAt, null)?.date, form.locationName]),
+            // A lite plan asks for no date or place: any left from another plan aren't saved.
+            line: form.asksDetails ? joinLine([formatEventDateParts(locale, form.startAt, null)?.date, form.locationName]) : '',
             onEdit: form.goToDetails,
         },
         plan:

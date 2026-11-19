@@ -19,10 +19,16 @@ export function useEventGridItems(memberships: EventMemberResponseDto[], eventDe
     );
 }
 
+// When the event is: its start, or for a lite event without a date, when it was created.
+function eventSortTime(event: EventGridItem['event']): number | null {
+    const at = event ? (event.schedule.startAt ?? event.createdAt) : null;
+    return at ? new Date(at).getTime() : null;
+}
+
 function rankEventItems(items: EventGridItem[], now: number, limit: number): EventGridItem[] {
     const ranked = [...items].sort((a, b) => {
-        const aStart = a.event?.schedule.startAt ? new Date(a.event.schedule.startAt).getTime() : null;
-        const bStart = b.event?.schedule.startAt ? new Date(b.event.schedule.startAt).getTime() : null;
+        const aStart = eventSortTime(a.event);
+        const bStart = eventSortTime(b.event);
 
         if (aStart === null && bStart === null) return 0;
         if (aStart === null) return 1;

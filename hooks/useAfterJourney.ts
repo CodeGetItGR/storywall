@@ -3,12 +3,12 @@
 import { useLocale, useTranslations } from 'next-intl';
 
 import { useGallerySummary } from '@/hooks/useGalleryArchive';
+import { useHostAnnouncementLink } from '@/hooks/useHostAnnouncementLink';
 import { useModuleCopy } from '@/hooks/useModuleCopy';
-import { useHostMenuItems } from '@/hooks/useToolsMenuItems';
 import { useWishbookCount } from '@/hooks/useWishbook';
 import type { EventDetailResponseDto } from '@/lib/api/types';
 import { formatDate } from '@/lib/datetime';
-import { type JourneyStopModel, sessionsByPhase, sessionStates } from '@/lib/eventJourney';
+import { type JourneyStopModel, journeyTimeZone, sessionsByPhase, sessionStates } from '@/lib/eventJourney';
 import { readableModuleKeys } from '@/lib/eventLifecycle';
 import { routes } from '@/lib/routes';
 
@@ -19,10 +19,10 @@ export function useAfterJourney(event: EventDetailResponseDto, planName: string 
     const locale = useLocale();
     const moduleCopy = useModuleCopy(event.eventType);
     const readable = readableModuleKeys(event);
-    const announcement = useHostMenuItems().find((item) => item.key === 'announcement');
+    const announcement = useHostAnnouncementLink(event);
     const gallery = useGallerySummary(event.id, readable.has('gallery'));
     const wishbook = useWishbookCount(readable.has('wishbook') ? event.id : null);
-    const timeZone = event.schedule.timezone;
+    const timeZone = journeyTimeZone(event);
 
     const later = sessionsByPhase(event).after;
     const states = sessionStates(later, timeZone, now);

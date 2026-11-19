@@ -3,12 +3,13 @@
 import { useLocale, useTranslations } from 'next-intl';
 
 import { useGallerySummary } from '@/hooks/useGalleryArchive';
+import { useHostAnnouncementLink } from '@/hooks/useHostAnnouncementLink';
 import { useModuleCopy } from '@/hooks/useModuleCopy';
 import { useHostMenuItems } from '@/hooks/useToolsMenuItems';
 import { useWishbookCount } from '@/hooks/useWishbook';
 import type { EventDetailResponseDto } from '@/lib/api/types';
 import { formatTime } from '@/lib/datetime';
-import { type JourneyStopModel, type JourneyStopStatus, sessionsByPhase, sessionStates } from '@/lib/eventJourney';
+import { type JourneyStopModel, type JourneyStopStatus, journeyTimeZone, sessionsByPhase, sessionStates } from '@/lib/eventJourney';
 import { readableModuleKeys } from '@/lib/eventLifecycle';
 import type { JourneyIconKey } from '@/lib/journeyIcons';
 import { routes } from '@/lib/routes';
@@ -16,7 +17,7 @@ import { routes } from '@/lib/routes';
 export type QuickTool = { key: string; label: string; href: string; icon: JourneyIconKey };
 export type JourneyTotal = { key: string; icon: JourneyIconKey; value: number; label: string };
 
-const QUICK_TOOL_ICONS: Record<string, JourneyIconKey> = { invitationsQr: 'invitations', announcement: 'announcement' };
+const QUICK_TOOL_ICONS: Record<string, JourneyIconKey> = { invitationsQr: 'invitations' };
 
 /** The On the day journey: the primary day's sessions, the quick tools and the totals. */
 export function useDayJourney(event: EventDetailResponseDto, now: Date = new Date()) {
@@ -26,9 +27,10 @@ export function useDayJourney(event: EventDetailResponseDto, now: Date = new Dat
     const moduleCopy = useModuleCopy(event.eventType);
     const readable = readableModuleKeys(event);
     const hostItems = useHostMenuItems();
+    const announcement = useHostAnnouncementLink(event);
     const gallery = useGallerySummary(event.id, readable.has('gallery'));
     const wishbook = useWishbookCount(readable.has('wishbook') ? event.id : null);
-    const timeZone = event.schedule.timezone;
+    const timeZone = journeyTimeZone(event);
 
     const daySessions = sessionsByPhase(event).day;
     const states = sessionStates(daySessions, timeZone, now);
@@ -53,6 +55,7 @@ export function useDayJourney(event: EventDetailResponseDto, now: Date = new Dat
         ...hostItems
             .filter((item) => item.key in QUICK_TOOL_ICONS)
             .map((item) => ({ key: item.key, label: item.label, href: item.href, icon: QUICK_TOOL_ICONS[item.key] })),
+        ...(announcement ? [{ key: 'announcement', label: announcement.label, href: announcement.href, icon: 'announcement' as const }] : []),
         ...(readable.has('playlist')
             ? [{ key: 'playlist', label: moduleCopy('playlist').name, href: routes.events.tools.playlist(event.id), icon: 'playlist' as const }]
             : []),

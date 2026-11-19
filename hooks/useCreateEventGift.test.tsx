@@ -58,6 +58,16 @@ describe('useCreateEventGift', () => {
         expect(mocks.saves).toHaveLength(2);
     });
 
+    it('saves the same details on a new draft without a reset', async () => {
+        const { result } = renderHook(() => useCreateEventGift(giftable));
+        fill(result);
+
+        await act(() => result.current.saveToDraft('draft-1'));
+        await act(() => result.current.saveToDraft('draft-2'));
+
+        expect(mocks.saves.map((save) => save.eventId)).toEqual(['draft-1', 'draft-2']);
+    });
+
     it('saves nothing when the gift is not picked', async () => {
         const { result } = renderHook(() => useCreateEventGift(giftable));
 

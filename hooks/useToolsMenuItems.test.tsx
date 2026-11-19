@@ -2,6 +2,7 @@ import { renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { useHostMenuItems, useToolsMenuItems } from '@/hooks/useToolsMenuItems';
+import { capabilitiesOf } from '@/lib/__fixtures__/eventCapabilities';
 
 const mocks = vi.hoisted(() => ({
     activeEvent: null as Record<string, unknown> | null,
@@ -190,10 +191,11 @@ describe('useHostMenuItems', () => {
         expect(result.current.map((item) => item.key)).toEqual(['manage']);
     });
 
-    it('lists manage, the share links and announcement for a live event', () => {
+    // Announcement is a mode of the feed composer (KAN-232), not a host menu entry.
+    it('lists manage and the share links for a live event', () => {
         mocks.activeEvent = withoutModule('vendors');
         const { result } = renderHook(() => useHostMenuItems());
-        expect(result.current.map((item) => item.key)).toEqual(['manage', 'invitationsQr', 'announcement']);
+        expect(result.current.map((item) => item.key)).toEqual(['manage', 'invitationsQr']);
     });
 
     it('mentions uploads on the share links only when QR upload is on', () => {
@@ -215,7 +217,8 @@ describe('useHostMenuItems', () => {
     // A lite event (no posts) has no upload or invitation codes: its guest code lives on its home.
     it('hides both QR pages on a lite event and keeps only its gallery and wishbook tools', () => {
         mocks.isHost = true;
-        mocks.activeEvent = { ...event(), modules: event().modules.filter((module) => module.moduleKey !== 'posts') };
+        const modules = event().modules.filter((module) => module.moduleKey !== 'posts');
+        mocks.activeEvent = { ...event(), modules, capabilities: capabilitiesOf(modules) };
         expect(renderHook(() => useHostMenuItems()).result.current.map((item) => item.key)).toEqual(['manage']);
         expect(renderHook(() => useToolsMenuItems()).result.current.map((item) => item.key)).toEqual(['gallery', 'wishbook']);
     });
@@ -266,6 +269,15 @@ describe('vendor tools in the menu', () => {
         const keys = keysNow();
         expect(keys).toEqual(expect.arrayContaining(['vendorMe', 'announcement', 'rsvpReport', 'vendorQr']));
         expect(keys).not.toContain('liveRequests');
+    });
+
+    it("opens a planner's Announcement in the feed composer, only while posts are on", () => {
+        vendor.me = role('PLANNER', ['ANNOUNCE']);
+        expect(renderHook(() => useToolsMenuItems()).result.current.find((tool) => tool.key === 'announcement')?.href).toBe(
+            '/events/event-1/feed?compose=announcement',
+        );
+        mocks.activeEvent = withoutModule('posts');
+        expect(keysNow()).not.toContain('announcement');
     });
 
     it('opens the planner RSVP report from the vendor page', () => {
@@ -372,29 +384,18 @@ describe('vendor entries in the host menu', () => {
         mocks.accessMode = 'standard';
     });
 
-    it('adds Vendors and Announcement for a live event with the module', () => {
+    it('adds Vendors, and no Announcement, for a live event with the module', () => {
         mocks.activeEvent = vendorEvent();
         const keys = renderHook(() => useHostMenuItems()).result.current.map((item) => item.key);
-        expect(keys).toEqual(expect.arrayContaining(['vendors', 'announcement']));
+        expect(keys).toContain('vendors');
+        expect(keys).not.toContain('announcement');
     });
 
-    it('hides Announcement for a demo visitor', () => {
-        mocks.activeEvent = vendorEvent();
-        mocks.accessMode = 'demoVisitor';
-        expect(renderHook(() => useHostMenuItems()).result.current.map((item) => item.key)).not.toContain('announcement');
-    });
-
-    it('hides Announcement when the posts module is off', () => {
-        mocks.activeEvent = withoutModule('posts');
-        expect(renderHook(() => useHostMenuItems()).result.current.map((item) => item.key)).not.toContain('announcement');
-    });
-
-    it('has no Vendors entry without the module, and neither entry on a draft', () => {
+    it('has no Vendors entry without the module, nor on a draft', () => {
         mocks.activeEvent = event();
         expect(renderHook(() => useHostMenuItems()).result.current.map((item) => item.key)).not.toContain('vendors');
         mocks.activeEvent = { ...vendorEvent(), status: 'DRAFT' };
         const draftKeys = renderHook(() => useHostMenuItems()).result.current.map((item) => item.key);
         expect(draftKeys).not.toContain('vendors');
-        expect(draftKeys).not.toContain('announcement');
     });
 });

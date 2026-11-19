@@ -79,7 +79,7 @@ export function ThemePresetOption({
             onFocus={handleFocus}
             className={cn(
                 'bg-surface flex min-w-0 flex-col text-left transition aria-disabled:cursor-not-allowed',
-                size === 'large' ? 'gap-1 rounded-xl p-1 pb-1.5' : 'gap-2.5 rounded-2xl p-2.5 pb-3',
+                size === 'large' ? 'gap-1 rounded-xl p-1 pb-1.5' : 'gap-1.5 rounded-[18px] p-2 pb-2.5',
                 selected ? 'ring-2 ring-primary' : 'ring-1 ring-border hover:ring-primary/40',
                 disabled && !selected && 'opacity-60',
             )}
@@ -88,7 +88,7 @@ export function ThemePresetOption({
             <span
                 className={cn(
                     'relative block overflow-hidden bg-surface-muted',
-                    size === 'large' ? 'aspect-square rounded-lg' : 'aspect-4/3 rounded-xl',
+                    size === 'large' ? 'aspect-square rounded-lg' : 'h-25 rounded-md lg:h-30',
                 )}
                 style={backgroundColor && isHexColor(backgroundColor) ? { backgroundColor } : undefined}
             >
@@ -106,7 +106,7 @@ export function ThemePresetOption({
                 {/* Plain page: "No theme" previews the event title as the page shows it without a theme */}
                 {presetId === null && previewTitle !== undefined && (
                     <span aria-hidden="true" className="absolute inset-0 flex items-center justify-center p-3">
-                        <span className="line-clamp-3 text-center alegreya-light text-xl leading-tight break-words text-balance text-ink">
+                        <span className="line-clamp-3 text-center alegreya-light text-xl leading-tight text-balance break-words text-ink">
                             {previewTitle}
                         </span>
                     </span>

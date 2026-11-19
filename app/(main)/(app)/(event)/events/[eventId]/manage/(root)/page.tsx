@@ -1,6 +1,7 @@
 import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
 import { redirect } from 'next/navigation';
 
+import { billingKeys, extensionOptionsKeys, upgradeOptionsKeys } from '@/hooks/useBilling';
 import { eventInvitationKeys } from '@/hooks/useEventInvitations';
 import { eventMemberKeys } from '@/hooks/useEventMembers';
 import { eventThemeKeys } from '@/hooks/useEventTheme';
@@ -16,21 +17,26 @@ import { endpoints } from '@/lib/api/endpoints';
 import { normalizeList } from '@/lib/api/pagination';
 import { serverGet, serverGetOrNull } from '@/lib/api/serverFetch';
 import type {
+    EventBillingResponseDto,
     EventDetailResponseDto,
     EventGiftAccountResponseDto,
     EventInvitationResponseDto,
     EventMemberResponseDto,
     EventUsageResponseDto,
+    ExtensionOptionResponseDto,
     GiftHandoverResponseDto,
     MediaSummaryDto,
     QrLinkResponseDto,
     RsvpReportDto,
     RsvpResponseDto,
     ThemePresetDto,
+    UpgradeOptionResponseDto,
 } from '@/lib/api/types';
 import { resolveServerEventContext, resolveServerEventDetail } from '@/lib/auth/serverEventContext';
-import { isEventDeleted, isModuleAvailable, readableModuleKeys } from '@/lib/eventLifecycle';
+import { canExtendCoverage } from '@/lib/billing';
+import { isEventDeleted, isModuleAvailable, isPrimaryHost, readableModuleKeys } from '@/lib/eventLifecycle';
 import { canPickTheme } from '@/lib/eventTheme';
+import { parseManageSection } from '@/lib/manageSections';
 import { makeQueryClient } from '@/lib/queryClient';
 import { routes } from '@/lib/routes';
 
@@ -56,6 +62,22 @@ async function prefetchJourney(event: EventDetailResponseDto, eventId: string, a
         if (qrLinks) queryClient.setQueryData(qrLinkKeys.list(eventId), normalizeList(qrLinks).items);
         if (mediaSummary) queryClient.setQueryData(galleryArchiveKeys.summary(eventId), mediaSummary);
         if (wishbookCount !== null) queryClient.setQueryData(wishbookKeys.count(eventId), wishbookCount);
+    };
+}
+
+// Billing (BillingTab): the billing read for every host; the upgrade and extension options only
+// for the main host, as useEventBillingPanel and useCoverageExtensionSection ask for them.
+async function prefetchBilling(event: EventDetailResponseDto, eventId: string, accessToken: string, primaryHost: boolean) {
+    const canExtend = canExtendCoverage({ isPrimaryHost: primaryHost, eventStatus: event.status, coverageEndsAt: event.schedule.coverageEndsAt });
+    const [billing, upgradeOptions, extensionOptions] = await Promise.all([
+        serverGet<EventBillingResponseDto>(endpoints.events.billing(eventId), accessToken).catch(() => null),
+        primaryHost ? serverGet<UpgradeOptionResponseDto[]>(endpoints.events.upgradeOptions(eventId), accessToken).catch(() => null) : null,
+        canExtend ? serverGet<ExtensionOptionResponseDto[]>(endpoints.events.extensionOptions(eventId), accessToken).catch(() => null) : null,
+    ]);
+    return (queryClient: ReturnType<typeof makeQueryClient>) => {
+        if (billing) queryClient.setQueryData(billingKeys.event(eventId), billing);
+        if (upgradeOptions) queryClient.setQueryData(upgradeOptionsKeys.event(eventId), upgradeOptions);
+        if (extensionOptions) queryClient.setQueryData(extensionOptionsKeys.event(eventId), extensionOptions);
     };
 }
 
@@ -99,6 +121,10 @@ export default async function Page({ params, searchParams }: PageProps) {
             // It starts with the reads below, not after them, and seeds once they have.
             const opensOverview = !isDraft && (tab === undefined || tab === 'overview');
             const journey = opensOverview ? prefetchJourney(event, eventId, accessToken) : null;
+            // Billing, and its older ?tab= names (parseManageSection), on a live event only.
+            const opensBilling = !isDraft && parseManageSection(tab ?? null) === 'billing';
+            const membership = context.memberships.find((m) => m.eventId === eventId);
+            const billing = opensBilling ? prefetchBilling(event, eventId, accessToken, isPrimaryHost(event.hosts, membership?.id)) : null;
             const [usage, gift, lists, themePresets] = await Promise.all([
                 serverGet<EventUsageResponseDto>(endpoints.events.usage(eventId), accessToken).catch(() => null),
                 isDraft ? undefined : serverGetOrNull<GiftHandoverResponseDto>(endpoints.events.gift(eventId), accessToken).catch(() => undefined),
@@ -128,6 +154,7 @@ export default async function Page({ params, searchParams }: PageProps) {
                 if (rsvpReport) queryClient.setQueryData(rsvpKeys.report(eventId, 'STATISTICS', await getServerLocale()), rsvpReport);
             }
             if (journey) (await journey)(queryClient);
+            if (billing) (await billing)(queryClient);
         } catch {
             // Best-effort — ManageScreen's own hooks fetch normally if this fails.
         }
