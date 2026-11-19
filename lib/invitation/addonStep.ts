@@ -10,8 +10,9 @@ import type {
     WithdrawalResponseDto,
 } from '@/lib/api/types';
 import { isPrimaryHost } from '@/lib/eventLifecycle';
-import { type FeatureAddonMode, featureAddonMode, type FeatureAddonOffer, featureAddonOffers } from '@/lib/featureAddons';
+import { type FeatureAddonMode, featureAddonMode, type FeatureAddonOffer, featureAddonOffers, saveMyDateAddon } from '@/lib/featureAddons';
 import type { InvitationDocument } from '@/lib/invitation/document';
+import { publicAssignableModuleUnlocks } from '@/lib/planModules';
 import { scopedPlans } from '@/lib/planTiers';
 import { withdrawalPurchaseBlocks } from '@/lib/priceBreakdown';
 import { SAVE_MY_DATE_MODULE_KEY } from '@/lib/saveMyDateRelease';
@@ -110,4 +111,36 @@ export function draftAddonStepTotalMinor(step: InvitationAddonStep, rsvpTicked: 
     const offers = [step.saveMyDate, ...(step.rsvp ? [step.rsvp] : [])];
     const price = (code: string) => offers.find((offer) => offer.service.code === code)?.service.priceAmountMinor ?? 0;
     return activationTotalMinor + add.reduce((sum, code) => sum + price(code), 0) - remove.reduce((sum, code) => sum + price(code), 0);
+}
+
+// A new event's add-ons on one plan (KAN-82): Save my date when the plan lacks it, and RSVP when
+// the invitation shows an RSVP section and the plan sells it.
+export type InvitationPlanAddons = {
+    saveMyDate: PaidServiceResponseDto | null;
+    rsvp: PaidServiceResponseDto | null;
+};
+
+export function invitationPlanAddons(
+    plan: PlanTierResponseDto | null | undefined,
+    paidServices: PaidServiceResponseDto[],
+    platformModules: PlatformModuleResponseDto[],
+    showsRsvp: boolean,
+): InvitationPlanAddons {
+    return {
+        saveMyDate: saveMyDateAddon(paidServices, platformModules, plan),
+        rsvp: showsRsvp
+            ? (publicAssignableModuleUnlocks(paidServices, platformModules, plan).find((service) => service.grantsModuleKey === RSVP_MODULE_KEY) ??
+              null)
+            : null,
+    };
+}
+
+// The add-on codes a new event takes: Save my date when its plan lacks it, RSVP when ticked.
+export function invitationPlanAddonCodes(addons: InvitationPlanAddons, rsvpTicked: boolean): string[] {
+    return [...(addons.saveMyDate ? [addons.saveMyDate.code] : []), ...(addons.rsvp && rsvpTicked ? [addons.rsvp.code] : [])];
+}
+
+// What a retry changes on the made event: the opt-ins it still lacks, and those the host has since dropped.
+export function retryAddonChanges(chosen: string[], applied: string[]): { add: string[]; remove: string[] } {
+    return { add: chosen.filter((code) => !applied.includes(code)), remove: applied.filter((code) => !chosen.includes(code)) };
 }

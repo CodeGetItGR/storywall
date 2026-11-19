@@ -3,6 +3,7 @@ import { expect, fn, userEvent, within } from 'storybook/test';
 
 import { withAppContext } from '@/.storybook/appContext';
 import { copyFor } from '@/.storybook/copy';
+import { storyRsvpAddon, storySaveMyDateAddon } from '@/.storybook/featureAddons';
 import { PublishPlanStep } from '@/components/saveMyDate/editor/publish/PublishPlanStep';
 import type { InvitationEventCheckout } from '@/hooks/useInvitationEventCheckout';
 import { sampleInvitationPlan } from '@/lib/invitation/samplePlan';
@@ -14,6 +15,10 @@ const checkout = (state: Partial<InvitationEventCheckout> = {}): InvitationEvent
     isLoadingPlans: false,
     selectedCode: 'PREMIUM',
     durationPicks: {},
+    planAddons: {},
+    rsvpAddon: null,
+    rsvpTicked: false,
+    handleRsvpChange: fn(),
     selectPlan: fn(),
     selectDuration: fn(),
     needsTitle: false,
@@ -109,3 +114,21 @@ export const NoPlans: Story = {
 };
 
 export const LoadingPlans: Story = { args: { checkout: checkout({ plans: [], isLoadingPlans: true }) } };
+
+// A plan without the invitation sells it as an add-on; the invitation asks for replies, so RSVP is offered too.
+export const WithAddons: Story = {
+    args: {
+        checkout: checkout({
+            plans: [sampleInvitationPlan(), sampleInvitationPlan({ id: 'plan-basic', code: 'BASIC', name: 'Basic', moduleKeys: ['posts'] })],
+            selectedCode: 'BASIC',
+            planAddons: { BASIC: storySaveMyDateAddon },
+            rsvpAddon: storyRsvpAddon,
+        }),
+    },
+    play: async ({ args, canvasElement }) => {
+        const canvas = within(canvasElement);
+        await expect(canvas.getByText(new RegExp(`^\\+ ${storySaveMyDateAddon.name} · `))).toBeVisible();
+        await userEvent.click(canvas.getByRole('checkbox', { name: new RegExp(storyRsvpAddon.name) }));
+        await expect(args.checkout.handleRsvpChange).toHaveBeenCalledOnce();
+    },
+};

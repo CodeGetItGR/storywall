@@ -18,8 +18,11 @@ import {
     draftAddonStepTotalMinor,
     draftQuoteOtherItems,
     invitationAddonStep,
+    invitationPlanAddonCodes,
+    invitationPlanAddons,
     isPrimaryHostOf,
     opensInvitationAddonStep,
+    retryAddonChanges,
     showsRsvpSection,
 } from '@/lib/invitation/addonStep';
 import type { InvitationDocument } from '@/lib/invitation/document';
@@ -173,5 +176,35 @@ describe('isPrimaryHostOf', () => {
         expect(isPrimaryHostOf('evt-1', memberships, { hosts: [host('mem-1', 0)] })).toBe(true);
         expect(isPrimaryHostOf('evt-1', memberships, { hosts: [host('mem-0', 0), host('mem-1', 1)] })).toBe(false);
         expect(isPrimaryHostOf('evt-2', memberships, { hosts: [host('mem-1', 0)] })).toBe(false);
+    });
+});
+
+describe('invitationPlanAddons', () => {
+    it('sells Save my date on a plan without it, and RSVP when the invitation asks for replies', () => {
+        expect(invitationPlanAddons(lite, [saveMyDate, rsvp], platformModules, true)).toEqual({ saveMyDate, rsvp });
+        expect(invitationPlanAddons(lite, [saveMyDate, rsvp], platformModules, false)).toEqual({ saveMyDate, rsvp: null });
+    });
+
+    it('offers RSVP alone on a plan that has the invitation', () => {
+        expect(invitationPlanAddons(full, [saveMyDate, rsvp], platformModules, true)).toEqual({ saveMyDate: null, rsvp });
+    });
+
+    it('offers nothing when no plan is chosen', () => {
+        expect(invitationPlanAddons(null, [saveMyDate, rsvp], platformModules, true)).toEqual({ saveMyDate: null, rsvp: null });
+    });
+
+    it('lists the codes to opt into', () => {
+        const addons = invitationPlanAddons(lite, [saveMyDate, rsvp], platformModules, true);
+        expect(invitationPlanAddonCodes(addons, false)).toEqual(['SMD']);
+        expect(invitationPlanAddonCodes(addons, true)).toEqual(['SMD', 'RSVP']);
+        expect(invitationPlanAddonCodes({ saveMyDate: null, rsvp: null }, true)).toEqual([]);
+    });
+});
+
+describe('retryAddonChanges', () => {
+    it('adds only what is new and removes what was dropped', () => {
+        expect(retryAddonChanges(['SMD', 'RSVP'], [])).toEqual({ add: ['SMD', 'RSVP'], remove: [] });
+        expect(retryAddonChanges(['SMD'], ['SMD', 'RSVP'])).toEqual({ add: [], remove: ['RSVP'] });
+        expect(retryAddonChanges(['SMD', 'RSVP'], ['SMD'])).toEqual({ add: ['RSVP'], remove: [] });
     });
 });

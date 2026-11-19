@@ -6,6 +6,7 @@ import { useId } from 'react';
 
 import { WithdrawalConsentSection } from '@/components/checkout/WithdrawalConsentSection';
 import { EventPlanSelector } from '@/components/plan/EventPlanSelector';
+import { FeatureAddonCheckRow } from '@/components/plan/FeatureAddonCheckRow';
 import { DateTimeField } from '@/components/ui/DateTimeField';
 import type { InvitationEventCheckout } from '@/hooks/useInvitationEventCheckout';
 
@@ -40,9 +41,20 @@ export function PublishPlanStep({ checkout, onBack, onCancel }: PublishPlanStepP
                     onSelectAction={checkout.selectPlan}
                     onSelectDurationAction={checkout.selectDuration}
                     isLoading={checkout.isLoadingPlans}
+                    planAddons={checkout.planAddons}
                 />
             ) : (
                 <p className="text-ink-muted">{t('noInvitationPlans')}</p>
+            )}
+
+            {/* RSVP add-on, when the invitation asks for replies */}
+            {hasPlans && checkout.rsvpAddon && (
+                <FeatureAddonCheckRow
+                    service={checkout.rsvpAddon}
+                    checked={checkout.rsvpTicked}
+                    disabled={checkout.isPending}
+                    onChange={checkout.handleRsvpChange}
+                />
             )}
 
             {/* Event details the invitation doesn't give */}
