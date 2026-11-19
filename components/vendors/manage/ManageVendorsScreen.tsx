@@ -1,20 +1,22 @@
 'use client';
 
-import { UserPlus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { ManagePageFrame } from '@/components/manage/nav/ManagePageFrame';
 import { useEventRouteContext } from '@/components/routing/EventRouteGate';
-import { Button } from '@/components/ui/button';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
+import { VendorCapabilities } from '@/components/vendors/manage/VendorCapabilities';
 import { VendorInviteSheet } from '@/components/vendors/manage/VendorInviteSheet';
-import { VendorRow } from '@/components/vendors/manage/VendorRow';
 import { VendorSheet } from '@/components/vendors/manage/VendorSheet';
+import { VendorsJoined } from '@/components/vendors/manage/VendorsJoined';
 import { VendorRowsSkeleton } from '@/components/vendors/VendorsSkeletons';
 import { useManageVendors } from '@/hooks/useManageVendors';
 import { useModuleReadable } from '@/hooks/useModuleReadable';
+import { useVendorCapabilities } from '@/hooks/useVendorCapabilities';
 import { useVendorInvite } from '@/hooks/useVendorInvite';
+import { useVendorScene } from '@/hooks/useVendorScene';
 import { useVendorSeats } from '@/hooks/useVendorSeats';
+import { cn } from '@/lib/utils';
 
 export function ManageVendorsScreen() {
     const t = useTranslations('Vendors');
@@ -25,59 +27,42 @@ export function ManageVendorsScreen() {
     const seats = useVendorSeats(eventId, page.vendors.length);
     const removeName = page.removeTarget?.businessName ?? t('manage.noProfile');
     const resetType = invite.link ? t(`types.${invite.link.vendorType}`) : '';
+    const capabilities = useVendorCapabilities(eventId);
+    const scene = useVendorScene(eventId);
+    const isLoading = page.isLoading || invite.isLoading;
+    // While nobody has joined, the empty state shows what each type can do, so the side section steps aside.
+    const isEmpty = !isLoading && page.vendors.length === 0;
+    // Shown instead of the Invite button.
+    const inviteNotice = seats.fullNotice ?? (invite.links.length === 0 ? t('manage.linksEmpty') : null);
 
     return (
-        <ManagePageFrame active="vendors">
+        <ManagePageFrame active="vendors" wide>
             {!vendorsOn ? (
-                <p className="rounded-2xl bg-surface-muted px-4 py-3 text-sm text-ink-muted">{t('manage.unavailable')}</p>
-            ) : page.isLoading || invite.isLoading ? (
-                <VendorRowsSkeleton rows={4} />
+                <p className="rounded-[20px] bg-surface-muted px-4 py-3 text-sm text-ink-muted">{t('manage.unavailable')}</p>
             ) : (
-                <>
-                    {/* Invite */}
-                    {seats.fullNotice ? (
-                        <p className="rounded-2xl bg-surface-muted px-4 py-3 text-sm text-ink-muted">{seats.fullNotice}</p>
-                    ) : invite.links.length === 0 ? (
-                        <p className="rounded-2xl bg-surface-muted px-4 py-3 text-sm text-ink-muted">{t('manage.linksEmpty')}</p>
+                <div className={cn('flex flex-col gap-8', !isEmpty && 'lg:grid lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start lg:gap-12')}>
+                    {/* Joined */}
+                    {isLoading ? (
+                        <VendorRowsSkeleton rows={4} />
                     ) : (
-                        <Button type="button" size="lg" onClick={invite.openInvite} className="w-full sm:w-auto">
-                            <UserPlus aria-hidden="true" />
-                            {t('manage.invite')}
-                        </Button>
+                        <VendorsJoined
+                            vendors={page.vendors}
+                            listError={page.listError}
+                            patchingVendorId={page.patchingVendorId}
+                            seats={seats}
+                            notice={inviteNotice}
+                            scene={scene}
+                            capabilities={capabilities}
+                            onInviteAction={invite.openInvite}
+                            onOpenAction={page.openVendor}
+                            onToggleHiddenAction={page.toggleHidden}
+                            onRemoveAction={page.requestRemove}
+                        />
                     )}
 
-                    {/* Joined */}
-                    <section aria-labelledby="vendor-joined-title" className="mt-8">
-                        <div className="mb-1 flex items-baseline justify-between gap-3">
-                            <h2 id="vendor-joined-title" className="text-sm font-semibold text-ink">
-                                {t('manage.joinedTitle')}
-                            </h2>
-                            {/* Seats */}
-                            {seats.seatsLabel && <span className="text-sm text-ink-muted tabular-nums">{seats.seatsLabel}</span>}
-                        </div>
-                        {page.listError && (
-                            <p role="alert" className="mt-2 text-sm text-rose-600">
-                                {page.listError}
-                            </p>
-                        )}
-                        {page.vendors.length === 0 ? (
-                            <p className="mt-2 text-sm text-ink-muted">{t('manage.joinedEmpty')}</p>
-                        ) : (
-                            <ul className="flex flex-col divide-y divide-border">
-                                {page.vendors.map((vendor) => (
-                                    <VendorRow
-                                        key={vendor.id}
-                                        vendor={vendor}
-                                        isPatching={page.patchingVendorId === vendor.id}
-                                        onOpenAction={page.openVendor}
-                                        onToggleHiddenAction={page.toggleHidden}
-                                        onRemoveAction={page.requestRemove}
-                                    />
-                                ))}
-                            </ul>
-                        )}
-                    </section>
-                </>
+                    {/* What vendors can do */}
+                    {!isEmpty && !isLoading && <VendorCapabilities items={capabilities} />}
+                </div>
             )}
 
             {/* Invite sheet */}
