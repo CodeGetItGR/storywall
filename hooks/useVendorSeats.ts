@@ -38,6 +38,9 @@ export function useVendorSeats(eventId: string, used: number) {
         limit,
         isFull,
         seatsLabel: limit === null ? null : t('seats', { used, max: limit }),
+        seatsSpoken: limit === null ? null : t('seatsSpoken', { used, max: limit }),
+        // The bar's fill, 0–100; a zero limit reads as full.
+        percent: limit === null ? 0 : limit === 0 ? 100 : Math.min(100, Math.round((used / limit) * 100)),
         fullNotice,
     };
 }
