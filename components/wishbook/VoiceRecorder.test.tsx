@@ -78,6 +78,6 @@ describe('VoiceRecorder', () => {
 
     it('keeps its buttons thumb-sized', () => {
         render(<VoiceRecorder recorder={recorder()} />);
-        expect(screen.getByRole('button', { name: 'record' })).toHaveClass('min-h-11');
+        expect(screen.getByRole('button', { name: 'record' })).toHaveClass('min-h-14');
     });
 });

@@ -15,18 +15,11 @@ import { useWithdrawalConsent } from '@/hooks/useWithdrawalConsent';
 import { ERROR_CODES, getErrorCode } from '@/lib/api/errors';
 import type { EventAddonDto, EventStatus, PlanTierResponseDto } from '@/lib/api/types';
 import { navigateToCheckout } from '@/lib/billing';
-import { featureAddonMode, featureAddonOffers, featureAddonsTotalMinor, pickedFeatureAddons } from '@/lib/featureAddons';
+import { featureAddonMode, featureAddonOffers, featureAddonsTotalMinor, isStaleOfferRefusal, pickedFeatureAddons } from '@/lib/featureAddons';
 import { INCIDENT_MODE } from '@/lib/incident';
 import { ADDONS_PRESELECT_PARAM } from '@/lib/routes';
 
 const NO_CODES: ReadonlySet<string> = new Set();
-
-// Refusals that mean the offer list is out of date: the event already has the module, or the plan no longer sells it.
-const STALE_OFFER_CODES = new Set<number | string>([
-    ERROR_CODES.MODULE_ALREADY_GRANTED,
-    ERROR_CODES.PAID_SERVICE_NOT_PURCHASABLE,
-    ERROR_CODES.PAID_SERVICE_NOT_ON_PLAN,
-]);
 
 /**
  * The Add-ons page's "Add features" section (KAN-82): which feature add-ons the event's plan
@@ -127,8 +120,7 @@ export function useFeatureAddons({
         } catch (checkoutError) {
             if (consent.handleCheckoutError(checkoutError)) return;
             setError(toErrorMessage(checkoutError));
-            const code = getErrorCode(checkoutError);
-            if (code !== undefined && STALE_OFFER_CODES.has(code)) refreshOffers();
+            if (isStaleOfferRefusal(checkoutError)) refreshOffers();
         }
     }, [canPurchase, checkout, consent, eventId, paused, pickedCodes, refreshOffers, toErrorMessage]);
 

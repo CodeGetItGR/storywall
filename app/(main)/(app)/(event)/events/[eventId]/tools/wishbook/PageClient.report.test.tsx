@@ -12,6 +12,8 @@ let deletedAt: string | null = null;
 let isDemoBuilder = false;
 let isHost = true;
 let accessMode: 'standard' | 'demoBuilder' | 'demoVisitor' = 'standard';
+// The book the demo event itself has, as the snapshot carries it. null = it has none.
+let demoBook: { status: string } | null = { status: 'READY' };
 const createEntry = vi.fn();
 const setHighlighted = vi.fn();
 let entries: Array<{
@@ -68,7 +70,10 @@ vi.mock('@/hooks/useWishbook', () => ({
     useMyWishes: () => ({ data: undefined, isLoading: false, error: null, hasNextPage: false, isFetchingNextPage: false }),
     useEditWishbookEntry: () => ({ isPending: false, mutateAsync: vi.fn(), error: null, reset: vi.fn() }),
 }));
-vi.mock('@/hooks/useWishbookBook', () => ({ useSetWishHighlighted: () => ({ mutate: setHighlighted, isPending: false }) }));
+vi.mock('@/hooks/useWishbookBook', () => ({
+    useSetWishHighlighted: () => ({ mutate: setHighlighted, isPending: false }),
+    useWishbookBook: (_eventId: string, enabled: boolean) => ({ data: enabled ? demoBook : undefined }),
+}));
 vi.mock('@/components/wishbook/WishbookBookPanel', () => ({
     WISHBOOK_BOOK_ID: 'wishbook-book',
     WishbookBookPanel: ({ canEditTexts }: { canEditTexts: boolean }) => <div data-testid="book-panel" data-can-edit-texts={String(canEditTexts)} />,
@@ -97,6 +102,7 @@ beforeEach(() => {
     isDemoBuilder = false;
     isHost = true;
     accessMode = 'standard';
+    demoBook = { status: 'READY' };
     createEntry.mockReset();
     setHighlighted.mockReset();
     entries = [{ id: 'w1', authorMemberId: 'm2', canDelete: true }];
@@ -231,8 +237,15 @@ describe('Wishbook book', () => {
         expect(screen.queryByTestId('book-panel')).toBeNull();
     });
 
-    it('shows no book panel in the public demo, where nothing can be built', () => {
+    it('shows the book panel in the public demo, with its texts fixed', () => {
         accessMode = 'demoVisitor';
+        render(<WishbookPage />);
+        expect(screen.getByTestId('book-panel').dataset.canEditTexts).toBe('false');
+    });
+
+    it('shows no book panel in the demo when the event has no book', () => {
+        accessMode = 'demoVisitor';
+        demoBook = null;
         render(<WishbookPage />);
         expect(screen.queryByTestId('book-panel')).toBeNull();
     });

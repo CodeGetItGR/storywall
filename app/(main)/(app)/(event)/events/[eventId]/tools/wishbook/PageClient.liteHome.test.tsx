@@ -41,7 +41,10 @@ vi.mock('@/hooks/useWishbook', () => ({
     useMyWishes: () => ({ data: undefined, isLoading: false, error: null, hasNextPage: false, isFetchingNextPage: false }),
     useEditWishbookEntry: () => ({ isPending: false, mutateAsync: vi.fn(), error: null, reset: vi.fn() }),
 }));
-vi.mock('@/hooks/useWishbookBook', () => ({ useSetWishHighlighted: () => ({ mutate: vi.fn(), isPending: false }) }));
+vi.mock('@/hooks/useWishbookBook', () => ({
+    useSetWishHighlighted: () => ({ mutate: vi.fn(), isPending: false }),
+    useWishbookBook: () => ({ data: undefined }),
+}));
 vi.mock('@/components/wishbook/WishbookBookPanel', () => ({
     WISHBOOK_BOOK_ID: 'wishbook-book',
     WishbookBookPanel: () => <section id="wishbook-book" data-testid="book-panel" />,

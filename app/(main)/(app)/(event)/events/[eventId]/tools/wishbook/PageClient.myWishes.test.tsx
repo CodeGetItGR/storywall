@@ -57,7 +57,10 @@ vi.mock('@/hooks/useWishbook', () => ({
     useDeleteWishbookEntry: () => ({ isPending: false, mutateAsync: vi.fn() }),
     useEditWishbookEntry: () => ({ isPending: false, mutateAsync: vi.fn(), error: null, reset: vi.fn() }),
 }));
-vi.mock('@/hooks/useWishbookBook', () => ({ useSetWishHighlighted: () => ({ mutate: vi.fn(), isPending: false }) }));
+vi.mock('@/hooks/useWishbookBook', () => ({
+    useSetWishHighlighted: () => ({ mutate: vi.fn(), isPending: false }),
+    useWishbookBook: () => ({ data: undefined }),
+}));
 vi.mock('@/components/wishbook/WishbookBookPanel', () => ({ WISHBOOK_BOOK_ID: 'wishbook-book', WishbookBookPanel: () => null }));
 // A full event: the page is not a lite event's home.
 vi.mock('@/hooks/useLiteHome', () => ({ useLiteHome: () => ({ isHome: false }) }));

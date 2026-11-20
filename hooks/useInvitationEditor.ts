@@ -9,6 +9,7 @@ import { useDraftThemes } from '@/hooks/useDraftThemes';
 import { useEditorLeave } from '@/hooks/useEditorLeave';
 import { useEditorTour } from '@/hooks/useEditorTour';
 import { useEditorWorkspace } from '@/hooks/useEditorWorkspace';
+import { useInvitationAddonCheck } from '@/hooks/useInvitationAddonCheck';
 import { useInvitationEditorStore } from '@/hooks/useInvitationEditorStore';
 import { useInvitationEventSync } from '@/hooks/useInvitationEventSync';
 import { usePhotoUploads } from '@/hooks/usePhotoUploads';
@@ -47,7 +48,15 @@ export function useInvitationEditor(draft: EditableDraft, uploadedFonts?: Invita
     });
     const themeSwitch = useThemeSwitch({ store: editor.store, eventType: draft.eventType, current: themes.active, addTheme: themes.add });
     const claim = useDraftClaim(draft.id);
-    const publishing = usePublishInvitation({ draftId: draft.id, eventId: draft.eventId, flush, revision: savedRevision, claim });
+    const offersInvitationAddon = useInvitationAddonCheck();
+    const publishing = usePublishInvitation({
+        draftId: draft.id,
+        eventId: draft.eventId,
+        flush,
+        revision: savedRevision,
+        claim,
+        offersInvitationAddon,
+    });
     const tour = useEditorTour();
     const photos = usePhotoUploads({ draftId: draft.id, store: editor.store, addUploaded: workspace.sectionSettings.addUploaded, claim });
 
