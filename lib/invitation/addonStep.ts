@@ -1,4 +1,5 @@
 import type {
+    CoverageOptionResponseDto,
     EventBillingResponseDto,
     EventDetailResponseDto,
     EventMemberResponseDto,
@@ -13,7 +14,7 @@ import { isPrimaryHost } from '@/lib/eventLifecycle';
 import { type FeatureAddonMode, featureAddonMode, type FeatureAddonOffer, featureAddonOffers, saveMyDateAddon } from '@/lib/featureAddons';
 import type { InvitationDocument } from '@/lib/invitation/document';
 import { publicAssignableModuleUnlocks } from '@/lib/planModules';
-import { scopedPlans } from '@/lib/planTiers';
+import { getOptionPriceDetails, scopedPlans } from '@/lib/planTiers';
 import { withdrawalPurchaseBlocks } from '@/lib/priceBreakdown';
 import { SAVE_MY_DATE_MODULE_KEY } from '@/lib/saveMyDateRelease';
 
@@ -143,4 +144,19 @@ export function invitationPlanAddonCodes(addons: InvitationPlanAddons, rsvpTicke
 // What a retry changes on the made event: the opt-ins it still lacks, and those the host has since dropped.
 export function retryAddonChanges(chosen: string[], applied: string[]): { add: string[]; remove: string[] } {
     return { add: chosen.filter((code) => !applied.includes(code)), remove: applied.filter((code) => !chosen.includes(code)) };
+}
+
+// A new event's total before it is made, from the prices its cards show: the chosen length after the
+// plan's promotion, plus the add-ons the host takes. None when a price is missing or in another currency.
+export function invitationPlanTotal(
+    plan: PlanTierResponseDto | null | undefined,
+    option: CoverageOptionResponseDto | null | undefined,
+    addons: InvitationPlanAddons,
+    rsvpTicked: boolean,
+): { amountMinor: number; currency: string } | null {
+    const price = plan && option ? getOptionPriceDetails(plan, option) : null;
+    if (!price) return null;
+    const extras = [addons.saveMyDate, rsvpTicked ? addons.rsvp : null].filter((service) => service !== null);
+    if (extras.some((service) => service.priceCurrency !== price.currency)) return null;
+    return { amountMinor: extras.reduce((sum, service) => sum + service.priceAmountMinor, price.amountMinor), currency: price.currency };
 }

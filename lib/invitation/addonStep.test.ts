@@ -20,12 +20,14 @@ import {
     invitationAddonStep,
     invitationPlanAddonCodes,
     invitationPlanAddons,
+    invitationPlanTotal,
     isPrimaryHostOf,
     opensInvitationAddonStep,
     retryAddonChanges,
     showsRsvpSection,
 } from '@/lib/invitation/addonStep';
 import type { InvitationDocument } from '@/lib/invitation/document';
+import { sampleInvitationPlan } from '@/lib/invitation/samplePlan';
 
 function unlock(code: string, moduleKey: string, priceAmountMinor: number): PaidServiceResponseDto {
     return {
@@ -206,5 +208,21 @@ describe('retryAddonChanges', () => {
         expect(retryAddonChanges(['SMD', 'RSVP'], [])).toEqual({ add: ['SMD', 'RSVP'], remove: [] });
         expect(retryAddonChanges(['SMD'], ['SMD', 'RSVP'])).toEqual({ add: [], remove: ['RSVP'] });
         expect(retryAddonChanges(['SMD', 'RSVP'], ['SMD'])).toEqual({ add: ['RSVP'], remove: [] });
+    });
+});
+
+describe('invitationPlanTotal', () => {
+    const plan = sampleInvitationPlan({ moduleKeys: ['posts'] });
+    const option = plan.initialOptions[0];
+
+    it('adds the picked add-ons to the length the host chose', () => {
+        expect(invitationPlanTotal(plan, option, { saveMyDate, rsvp }, false)).toEqual({ amountMinor: 4900 + 2900, currency: 'EUR' });
+        expect(invitationPlanTotal(plan, option, { saveMyDate, rsvp }, true)).toEqual({ amountMinor: 4900 + 2900 + 900, currency: 'EUR' });
+        expect(invitationPlanTotal(plan, option, { saveMyDate: null, rsvp: null }, true)).toEqual({ amountMinor: 4900, currency: 'EUR' });
+    });
+
+    it('shows none without a length, or with an add-on in another currency', () => {
+        expect(invitationPlanTotal(plan, null, { saveMyDate, rsvp: null }, false)).toBeNull();
+        expect(invitationPlanTotal(plan, option, { saveMyDate: { ...saveMyDate, priceCurrency: 'USD' }, rsvp: null }, false)).toBeNull();
     });
 });

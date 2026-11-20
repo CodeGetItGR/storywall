@@ -69,7 +69,10 @@ vi.mock('@/lib/api/client', async (importOriginal) => ({
     ...(await importOriginal<typeof import('@/lib/api/client')>()),
     api: { post: mocks.post, put: mocks.put, patch: mocks.patch, del: mocks.del },
 }));
-vi.mock('@/lib/billing', () => ({ navigateToCheckout: mocks.navigate }));
+vi.mock('@/lib/billing', async (importOriginal) => ({
+    ...(await importOriginal<typeof import('@/lib/billing')>()),
+    navigateToCheckout: mocks.navigate,
+}));
 
 const withoutRsvp: InvitationDocument = {
     ...SAMPLE_DOCUMENT,
@@ -214,5 +217,83 @@ describe('useInvitationEventCheckout add-ons', () => {
 
         expect(hook.result.current.error).toBe('api-5036');
         expect(mocks.post.mock.calls.map(([path]) => path)).not.toContain('/api/events/evt-1/checkout');
+    });
+    it('puts the draft on the event before opting in, so a refused opt-in leaves it attached', async () => {
+        mocks.post.mockImplementation(async (path: string) => {
+            if (path === '/api/events') return { id: 'evt-1' };
+            if (path.endsWith('/addons')) throw new ApiError(409, { errorCode: 5036 });
+            return { url: 'https://pay' };
+        });
+        const hook = renderCheckout();
+        act(() => hook.result.current.selectPlan('SMALL'));
+        await submit(hook);
+
+        expect(mocks.put).toHaveBeenCalledWith('/api/invitation-drafts/draft-1/event', { eventId: 'evt-1' });
+        const [addonCall] = addonPosts();
+        const addonOrder = mocks.post.mock.invocationCallOrder[mocks.post.mock.calls.indexOf(addonCall)];
+        expect(mocks.put.mock.invocationCallOrder[0]).toBeLessThan(addonOrder);
+    });
+
+    it('on a retry after a refused opt-in, keeps the event and adds only what is still missing', async () => {
+        let rsvpRefused = true;
+        mocks.post.mockImplementation(async (path: string, body?: { paidServiceCode?: string }) => {
+            if (path === '/api/events') return { id: 'evt-1' };
+            if (path.endsWith('/addons') && body?.paidServiceCode === 'RSVP' && rsvpRefused) throw new ApiError(503, { errorCode: 1 });
+            return { url: 'https://pay' };
+        });
+        const hook = renderCheckout();
+        act(() => hook.result.current.selectPlan('SMALL'));
+        tickRsvp(hook, true);
+        await submit(hook);
+        expect(hook.result.current.error).toBe('api-1');
+        expect(hook.result.current.plans.map((plan) => plan.code)).toEqual(['SMALL']);
+
+        rsvpRefused = false;
+        mocks.post.mockClear();
+        await submit(hook);
+
+        expect(addonPosts().map(([, body]) => body)).toEqual([{ paidServiceCode: 'RSVP' }]);
+        expect(mocks.post.mock.calls.map(([path]) => path)).toEqual(['/api/events/evt-1/addons', '/api/events/evt-1/checkout']);
+        expect(mocks.navigate).toHaveBeenCalled();
+    });
+
+    it('makes one event when Continue is tapped twice', async () => {
+        const hook = renderCheckout();
+        await act(async () => {
+            await Promise.all([hook.result.current.submit(submitEvent()), hook.result.current.submit(submitEvent())]);
+        });
+
+        expect(mocks.post.mock.calls.filter(([path]) => path === '/api/events')).toHaveLength(1);
+        expect(mocks.navigate).toHaveBeenCalledOnce();
+    });
+
+    it('lets the host pay again after Back from the payment page restores the page', async () => {
+        const hook = renderCheckout();
+        await submit(hook);
+        expect(hook.result.current.isPending).toBe(true);
+
+        act(() => {
+            const restored = new Event('pageshow');
+            Object.defineProperty(restored, 'persisted', { value: true });
+            window.dispatchEvent(restored);
+        });
+        expect(hook.result.current.isPending).toBe(false);
+        expect(hook.result.current.canSubmit).toBe(true);
+
+        mocks.post.mockClear();
+        await submit(hook);
+        // The made event stays: only the checkout runs again.
+        expect(mocks.post.mock.calls.map(([path]) => path)).toEqual(['/api/events/evt-1/checkout']);
+    });
+
+    it('totals the chosen length and the add-ons picked', () => {
+        const hook = renderCheckout();
+        expect(hook.result.current.total).toEqual({ amountMinor: 4900, currency: 'EUR' });
+
+        act(() => hook.result.current.selectPlan('SMALL'));
+        expect(hook.result.current.total).toEqual({ amountMinor: 4900 + 2900, currency: 'EUR' });
+
+        tickRsvp(hook, true);
+        expect(hook.result.current.total).toEqual({ amountMinor: 4900 + 2900 + 900, currency: 'EUR' });
     });
 });

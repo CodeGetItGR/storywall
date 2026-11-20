@@ -9,6 +9,7 @@ import { useAppConfig } from '@/hooks/useAppConfig';
 import { useDurationPicks } from '@/hooks/useDurationPicks';
 import { myEventsKeys } from '@/hooks/useMyEvents';
 import { usePlanTiersForEventType } from '@/hooks/usePlanTiersForEventType';
+import { useResetOnBfcacheRestore } from '@/hooks/useResetOnBfcacheRestore';
 import { useWithdrawalConsent } from '@/hooks/useWithdrawalConsent';
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
@@ -18,7 +19,13 @@ import { navigateToCheckout } from '@/lib/billing';
 import { checkoutAttribution } from '@/lib/campaignAttribution';
 import { getInitialSessionTitleKey } from '@/lib/createEventCatalog';
 import { getCurrentDatetimeLocalValue } from '@/lib/datetime';
-import { invitationPlanAddonCodes, invitationPlanAddons, retryAddonChanges, showsRsvpSection } from '@/lib/invitation/addonStep';
+import {
+    invitationPlanAddonCodes,
+    invitationPlanAddons,
+    invitationPlanTotal,
+    retryAddonChanges,
+    showsRsvpSection,
+} from '@/lib/invitation/addonStep';
 import type { InvitationDocument } from '@/lib/invitation/document';
 import { type InvitationDraftDto, invitationDraftKeys } from '@/lib/invitation/drafts';
 import { invitationEventDetails, invitationEventRequest, plansWithInvitation } from '@/lib/invitation/invitationEvent';
@@ -96,6 +103,16 @@ export function useInvitationEventCheckout({ draftId, eventType, document, enabl
 
     const [error, setError] = useState<string | null>(null);
     const [isPending, setIsPending] = useState(false);
+    // Blocks a second tap before the first one's pending state renders.
+    const inFlight = useRef(false);
+    // Back from Stripe can restore this page as it was, still paying. The made event and its
+    // add-ons stay, so Continue pays for them again.
+    useResetOnBfcacheRestore(
+        useCallback(() => {
+            inFlight.current = false;
+            setIsPending(false);
+        }, []),
+    );
 
     const onTitleChange = useCallback((event: ChangeEvent<HTMLInputElement>) => setTitle(event.target.value), []);
     const handleRsvpChange = useCallback((event: ChangeEvent<HTMLInputElement>) => setRsvpTicked(event.currentTarget.checked), []);
@@ -159,17 +176,20 @@ export function useInvitationEventCheckout({ draftId, eventType, document, enabl
     const submit = useCallback(
         async (event: SubmitEvent<HTMLFormElement>) => {
             event.preventDefault();
-            if (!canSubmit || !selectedPlan) return;
+            if (!canSubmit || !selectedPlan || inFlight.current) return;
+            inFlight.current = true;
             setError(null);
             setIsPending(true);
             try {
                 const eventId = await createEvent();
-                await applyAddons(eventId);
-                // Putting it on the same event again changes nothing, so a retry is safe.
+                // The draft goes on the event first, so if the add-ons fail and the host reloads, the
+                // editor offers them on this event instead of making another. Putting it on the same
+                // event again changes nothing, so a retry is safe.
                 const attached = await api.put<InvitationDraftDto>(endpoints.invitationDrafts.event(draftId), { eventId });
                 queryClient.setQueryData<InvitationDraftDto>(invitationDraftKeys.detail(draftId), (old) =>
                     old ? { ...old, eventId: attached.eventId } : attached,
                 );
+                await applyAddons(eventId);
                 const checkout = await api.post<CheckoutResponseDto>(endpoints.events.checkout(eventId), {
                     ...checkoutAttribution(),
                     requestsImmediateStart: consent.requestsImmediateStart,
@@ -179,6 +199,7 @@ export function useInvitationEventCheckout({ draftId, eventType, document, enabl
                 // Paying brings the host back to the editor, which goes on to publish.
                 navigateToCheckout(eventId, checkout, selectedPlan.code, routes.saveMyDateEditorPublish(draftId));
             } catch (checkoutError) {
+                inFlight.current = false;
                 setIsPending(false);
                 if (consent.handleCheckoutError(checkoutError)) return;
                 setError(toErrorMessage(checkoutError));
@@ -188,6 +209,10 @@ export function useInvitationEventCheckout({ draftId, eventType, document, enabl
     );
 
     const selectPlan = useCallback((code: string) => setPlanCode(code), []);
+    const total = useMemo(
+        () => invitationPlanTotal(selectedPlan, selectedOption, selectedAddons, rsvpTicked),
+        [rsvpTicked, selectedAddons, selectedOption, selectedPlan],
+    );
 
     return {
         plans,
@@ -200,6 +225,7 @@ export function useInvitationEventCheckout({ draftId, eventType, document, enabl
         rsvpAddon: selectedAddons.rsvp,
         rsvpTicked,
         handleRsvpChange,
+        total,
         selectPlan,
         selectDuration: durationPicks.pickDuration,
         needsTitle,

@@ -19,6 +19,7 @@ const checkout = (state: Partial<InvitationEventCheckout> = {}): InvitationEvent
     rsvpAddon: null,
     rsvpTicked: false,
     handleRsvpChange: fn(),
+    total: { amountMinor: 4900, currency: 'EUR' },
     selectPlan: fn(),
     selectDuration: fn(),
     needsTitle: false,
@@ -123,11 +124,14 @@ export const WithAddons: Story = {
             selectedCode: 'BASIC',
             planAddons: { BASIC: storySaveMyDateAddon },
             rsvpAddon: storyRsvpAddon,
+            total: { amountMinor: 7800, currency: 'EUR' },
         }),
     },
-    play: async ({ args, canvasElement }) => {
+    play: async ({ args, canvasElement, globals }) => {
         const canvas = within(canvasElement);
         await expect(canvas.getByText(new RegExp(`^\\+ ${storySaveMyDateAddon.name} · `))).toBeVisible();
+        const totalPrefix = copyFor(globals).EventAddonsSettingsPage.features.total.split('{')[0];
+        await expect(canvas.getByText(new RegExp(`^${totalPrefix}`))).toBeVisible();
         await userEvent.click(canvas.getByRole('checkbox', { name: new RegExp(storyRsvpAddon.name) }));
         await expect(args.checkout.handleRsvpChange).toHaveBeenCalledOnce();
     },
