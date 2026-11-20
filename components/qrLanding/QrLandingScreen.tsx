@@ -2,6 +2,7 @@
 
 import { ArrowLeft } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import type { ReactNode } from 'react';
 
 import { AnonymousQrMediaUploadForm } from '@/components/invite/AnonymousQrMediaUploadForm';
 import { GuestWishForm } from '@/components/qrGuest/GuestWishForm';
@@ -13,8 +14,15 @@ import type { useQrLanding } from '@/hooks/useQrLanding';
 import { useQrViewScroll } from '@/hooks/useQrViewScroll';
 import { showsQrIntro } from '@/lib/qrLanding';
 
+interface QrLandingScreenProps {
+    landing: ReturnType<typeof useQrLanding>;
+    // The demo's: buttons in place of the join card's own, and a note above the choices or the form.
+    joinActions?: ReactNode;
+    notice?: ReactNode;
+}
+
 // The body of a scanned event code's page: the choices, or the form one of them opened.
-export function QrLandingScreen({ landing }: { landing: ReturnType<typeof useQrLanding> }) {
+export function QrLandingScreen({ landing, joinActions, notice }: QrLandingScreenProps) {
     const t = useTranslations('QrCodePage');
     const details = useQrEventDetails(landing.view === 'chooser' ? landing.plan.joinInviteToken : null);
     const { ref: scrollRef, choose } = useQrViewScroll(landing.view, landing.choose);
@@ -23,6 +31,9 @@ export function QrLandingScreen({ landing }: { landing: ReturnType<typeof useQrL
 
     return (
         <div ref={scrollRef}>
+            {/* Notice: on the choices it sits under the event's details */}
+            {landing.view !== 'chooser' && notice ? <div className="mb-5">{notice}</div> : null}
+
             {/* Header: back arrow at the left, the form's title centred. Hidden on the sent screen. */}
             {label && !landing.isSent ? (
                 <div className="relative mb-6 flex min-h-11 items-center justify-center px-12">
@@ -50,6 +61,8 @@ export function QrLandingScreen({ landing }: { landing: ReturnType<typeof useQrL
                     eventTitle={landing.resolution?.eventTitle ?? t('fallbackTitle')}
                     isSignedIn={landing.isSignedIn}
                     details={details}
+                    joinActions={joinActions}
+                    notice={notice}
                 />
             ) : null}
 

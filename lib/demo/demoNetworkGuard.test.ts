@@ -276,7 +276,9 @@ describe('demo network guard', () => {
         const blanked = (await (await send('PUT', `/api/wishbook/${wish.id}`, { message: '   ' })).json()) as WishbookEntryResponseDto;
         expect(blanked).toMatchObject({ message: null, audio: replaced.audio });
 
-        const written = (await (await send('PUT', `/api/wishbook/${wish.id}`, { message: ' Hi ', removeAudio: true })).json()) as WishbookEntryResponseDto;
+        const written = (await (
+            await send('PUT', `/api/wishbook/${wish.id}`, { message: ' Hi ', removeAudio: true })
+        ).json()) as WishbookEntryResponseDto;
         expect(written).toMatchObject({ message: 'Hi', audio: null });
 
         const kept = (await (await send('PUT', `/api/wishbook/${wish.id}`, { message: 'Hi again' })).json()) as WishbookEntryResponseDto;
@@ -298,6 +300,26 @@ describe('demo network guard', () => {
     it("lets the map preview's short-link lookup through to this app", async () => {
         await send('GET', `/api/maps/resolve?url=${encodeURIComponent('https://share.google/abc')}`, undefined, 'http://localhost');
         expect(left).toEqual([{ method: 'GET', url: 'http://localhost/api/maps/resolve?url=https%3A%2F%2Fshare.google%2Fabc' }]);
+    });
+
+    it("lets the QR promo's live discount through to this app", async () => {
+        await send('GET', '/api/discount-campaign', undefined, 'http://localhost');
+        expect(left).toEqual([{ method: 'GET', url: 'http://localhost/api/discount-campaign' }]);
+    });
+
+    it('answers the demo QR page locally: the join preview, and a wish sent without an account', async () => {
+        const preview = await send('GET', '/api/event-invitations/tok-join/preview');
+        expect(preview.status).toBe(200);
+        expect(((await preview.json()) as { eventId: string; inviteToken: string }).inviteToken).toBe('tok-join');
+
+        const sent = await send('POST', '/api/qr/tok-join/wishes', { guestName: 'Eleni', message: 'Congratulations' });
+        expect(sent.status).toBe(201);
+        const { id } = (await sent.json()) as { id: string };
+        const wishes = (await (await send('GET', '/api/events/evt-demo/wishbook/mine?page=0')).json()) as {
+            content: { id: string; guestName: string }[];
+        };
+        expect(wishes.content.find((wish) => wish.id === id)?.guestName).toBe('Eleni');
+        expect(left).toEqual([]);
     });
 
     it("prints the real event's QR card designs, from the snapshot", async () => {
