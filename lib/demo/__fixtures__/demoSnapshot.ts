@@ -59,6 +59,7 @@ export function buildFixtureSnapshot(): DemoSnapshotDto {
             title: 'Demo wedding',
             eventType: 'WEDDING',
             schedule: { startAt: '2026-01-24T15:00:00Z', endAt: null, timezone: 'UTC', rsvpDeadline: '2026-01-17T00:00:00Z' },
+            location: { name: 'Demo venue' },
             coverMedia: media('med-cover'),
             hosts: [],
             modules: [],
