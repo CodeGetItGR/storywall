@@ -6,6 +6,7 @@ import type {
     EventBillingResponseDto,
     EventDetailResponseDto,
     EventGiftAccountResponseDto,
+    EventInvitationPreviewDto,
     EventMemberResponseDto,
     GiftCardResponseDto,
     GiftHandoverResponseDto,
@@ -311,6 +312,48 @@ export function createDemoHandlers(session: DemoSession, appOrigin: string | nul
         return { ...link, publicUrl: `${appOrigin ?? ''}${demoGuestPagePath(demoEventTypeSlugFromKey(session.eventTypeKey), page)}` };
     }
 
+    // The join link's invite preview, which the demo QR page reads for the event's date and place.
+    // None for an event without a date: the preview always carries one.
+    function invitationPreview(inviteToken: string): EventInvitationPreviewDto | undefined {
+        const event = currentEvent();
+        if (!event?.schedule.startAt || !event.schedule.timezone) return undefined;
+        return {
+            inviteToken,
+            eventId,
+            eventTitle: event.title,
+            eventSubtitle: event.subtitle,
+            eventDescription: event.description,
+            eventStartAt: event.schedule.startAt,
+            eventEndAt: event.schedule.endAt,
+            eventTimezone: event.schedule.timezone,
+            eventLocationName: event.location.name,
+            coverMediaId: event.coverMedia?.id ?? null,
+            coverMedia: event.coverMedia,
+            theme: event.theme,
+            firstName: null,
+            lastName: null,
+            email: null,
+            expired: false,
+            alreadyUsed: false,
+            gift: null,
+        };
+    }
+
+    // A wish written in the demo, from the wishbook page or the QR page. It stays in this browser.
+    function createWish(wish: Record<string, unknown>, audio: WishAudioDto | null): WishbookEntryResponseDto {
+        return db.create('wishbook', {
+            id: newId('demo-wishbook'),
+            eventId,
+            authorMemberId: null,
+            guestName: String(wish.guestName ?? 'Guest'),
+            message: wishText(wish.message),
+            audio,
+            createdAt: nowIso(),
+            canDelete: true,
+            highlighted: null,
+        });
+    }
+
     // A QR upload has no account behind it: the media carries the name the scanner typed, if any.
     function createLocalMedia(file: File, anonymousUploaderName?: string | null): MediaResponseDto {
         const url = localMediaUrl(file);
@@ -376,7 +419,16 @@ export function createDemoHandlers(session: DemoSession, appOrigin: string | nul
         if (!ready || !rebuild) return ready;
         const requestedAt = new Date(rebuild.requestedAt).toISOString();
         if (Date.now() - rebuild.requestedAt < DEMO_BOOK_BUILD_MS) {
-            return { ...ready, status: 'RUNNING', requestedAt, finishedAt: null, pageCount: null, entryCount: null, byteSize: null, downloadUrl: null };
+            return {
+                ...ready,
+                status: 'RUNNING',
+                requestedAt,
+                finishedAt: null,
+                pageCount: null,
+                entryCount: null,
+                byteSize: null,
+                downloadUrl: null,
+            };
         }
         return { ...ready, requestedAt, finishedAt: new Date(rebuild.requestedAt + DEMO_BOOK_BUILD_MS).toISOString() };
     }
@@ -402,6 +454,8 @@ export function createDemoHandlers(session: DemoSession, appOrigin: string | nul
         // The QR cards' artwork is drawn by this app's own route, which asks for no account and
         // sends nothing about the visitor. Without it the card shows a broken picture.
         ...(appOrigin ? [http.get(`${appOrigin}/api/qr-card-artwork/:templateId/:version`, () => passthrough())] : []),
+        // The live discount on the QR page's promo: public, the same for every visitor.
+        ...(appOrigin ? [http.get(`${appOrigin}/api/discount-campaign`, () => passthrough())] : []),
 
         // --- Me ---
         http.get(`${API_BASE_URL}/api/me`, () => HttpResponse.json(me())),
@@ -537,6 +591,17 @@ export function createDemoHandlers(session: DemoSession, appOrigin: string | nul
             return HttpResponse.json({ created, failed: [] });
         }),
 
+        // --- The demo QR page: the join link's preview, and a wish sent without an account ---
+        http.get(`${API_BASE_URL}/api/event-invitations/:token/preview`, ({ params }) => {
+            const preview = invitationPreview(params.token as string);
+            return preview ? HttpResponse.json(preview) : new HttpResponse(null, { status: 404 });
+        }),
+        http.post(`${API_BASE_URL}/api/qr/:token/wishes`, async ({ request }) => {
+            const { wish, audio } = await readWish(request);
+            const record = createWish(wish, audio);
+            return HttpResponse.json({ id: record.id, createdAt: record.createdAt }, { status: 201 });
+        }),
+
         // --- Legal versions: the QR upload form sends back the versions the scanner accepted ---
         http.get(`${API_BASE_URL}/api/legal/documents/:document`, ({ params }) =>
             HttpResponse.json({ document: params.document, version: DEMO_LEGAL_VERSION, locale: 'en', markdown: '' }),
@@ -610,18 +675,7 @@ export function createDemoHandlers(session: DemoSession, appOrigin: string | nul
         }),
         http.post(`${API_BASE_URL}/api/events/:eventId/wishbook`, async ({ request }) => {
             const { wish, audio } = await readWish(request);
-            const record: WishbookEntryResponseDto = db.create('wishbook', {
-                id: newId('demo-wishbook'),
-                eventId,
-                authorMemberId: null,
-                guestName: String(wish.guestName ?? 'Guest'),
-                message: wishText(wish.message),
-                audio,
-                createdAt: nowIso(),
-                canDelete: true,
-                highlighted: null,
-            });
-            return HttpResponse.json(record, { status: 201 });
+            return HttpResponse.json(createWish(wish, audio), { status: 201 });
         }),
         ...buildDetailHandlers(db, 'wishbook', '/api/wishbook/:id', { del: true }),
 

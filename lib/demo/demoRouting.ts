@@ -19,6 +19,13 @@ export function demoGuestPagePath(eventTypeSlug: string, page: DemoGuestPage): s
     return `/demo/${eventTypeSlug}/${page}`;
 }
 
+// The guest pages stand alone, like the real ones: no demo bar and no tab bar around them.
+const DEMO_GUEST_PAGE_PATTERN = /^\/demo\/[^/]+\/(upload|invite)\/?$/;
+
+export function isDemoGuestPagePath(pathname: string | null): boolean {
+    return pathname !== null && DEMO_GUEST_PAGE_PATTERN.test(pathname);
+}
+
 // Null outside the demo, where the real link is the only way in.
 export function demoGuestPagePathForEvent(eventId: string, page: DemoGuestPage): string | null {
     const basePath = demoEventBasePath(eventId);
