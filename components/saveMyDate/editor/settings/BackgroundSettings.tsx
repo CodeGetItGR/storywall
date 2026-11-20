@@ -3,7 +3,7 @@
 import { useTranslations } from 'next-intl';
 import { type ChangeEvent, useCallback, useId } from 'react';
 
-import { SettingsGroup } from '@/components/saveMyDate/editor/settings/SettingsControls';
+import { SettingsGroup, SettingsToggle } from '@/components/saveMyDate/editor/settings/SettingsControls';
 import { type BackgroundChoice, useBackgroundSettings } from '@/hooks/useBackgroundSettings';
 import type { SettingsScope } from '@/hooks/useSectionSettingsPanel';
 import type { ThemeBackgroundChoice, ThemeBackgroundSlot } from '@/lib/invitation/sectionBackgrounds';
@@ -39,7 +39,7 @@ function HostBackgrounds({ host }: HostBackgroundsProps) {
 
     return (
         <>
-            <Toggle label={t('hostCanChange')} checked={host.enabled} onChange={host.setHostEnabled} />
+            <SettingsToggle label={t('hostCanChange')} checked={host.enabled} onChange={host.setHostEnabled} />
             {host.enabled && (
                 <fieldset className="flex flex-col gap-1">
                     <legend className="mb-1 text-[13px]">{t('hostBackgrounds')}</legend>
@@ -64,7 +64,7 @@ function BackgroundCard({ choice, isSelected, onPick }: BackgroundCardProps) {
             aria-checked={isSelected}
             aria-label={choice.src ? undefined : choice.label}
             onClick={pick}
-            className="grid aspect-[3/4] place-items-center overflow-hidden rounded-[10px] border-2 border-transparent bg-(--smd-editor-control) text-[12px] font-semibold text-(--smd-editor-muted) focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none aria-checked:border-white aria-checked:text-white"
+            className="grid aspect-[3/4] place-items-center overflow-hidden rounded-[10px] border-2 border-transparent bg-(--smd-editor-control) text-[12px] font-semibold text-(--smd-editor-muted) focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none aria-checked:border-(--smd-editor-strong) aria-checked:text-(--smd-editor-strong)"
         >
             {choice.src ? (
                 // eslint-disable-next-line @next/next/no-img-element
@@ -76,26 +76,6 @@ function BackgroundCard({ choice, isSelected, onPick }: BackgroundCardProps) {
     );
 }
 
-function Toggle({ label, checked, onChange }: { label: string; checked: boolean; onChange: (checked: boolean) => void }) {
-    const id = useId();
-    const change = useCallback((event: ChangeEvent<HTMLInputElement>) => onChange(event.target.checked), [onChange]);
-
-    return (
-        <div className="flex min-h-10 items-center justify-between gap-3">
-            <label htmlFor={id} className="text-[13px] leading-tight">
-                {label}
-            </label>
-            <input
-                id={id}
-                type="checkbox"
-                role="switch"
-                checked={checked}
-                onChange={change}
-                className="h-5 w-9 shrink-0 cursor-pointer accent-(--smd-editor-accent)"
-            />
-        </div>
-    );
-}
 
 type SlotCheckboxProps = {
     slot: ThemeBackgroundSlot;

@@ -1,5 +1,4 @@
 import { act, renderHook } from '@testing-library/react';
-import type { ChangeEvent } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { useEventDeletionFlow } from '@/hooks/useEventDeletionFlow';
@@ -53,7 +52,7 @@ function apiError(errorCode: number, status = 400, retryAfterSeconds?: number) {
 }
 
 function otpChange(value: string) {
-    return { target: { value } } as ChangeEvent<HTMLInputElement>;
+    return value;
 }
 
 describe('useEventDeletionFlow', () => {
@@ -152,5 +151,57 @@ describe('useEventDeletionFlow', () => {
 
         expect(result.current.confirmOpen).toBe(false);
         expect(mocks.invalidateQueries).toHaveBeenCalledWith({ queryKey: ['events', 'event-1'] });
+    });
+    describe('code first', () => {
+        it('sends the code and opens on the code step', async () => {
+            const { result } = renderHook(() => useEventDeletionFlow('event-1', { codeFirst: true }));
+
+            await act(() => result.current.startDeletion());
+
+            expect(mocks.otpMutate).toHaveBeenCalledOnce();
+            expect(result.current.confirmOpen).toBe(true);
+            expect(result.current.step).toBe('verify');
+        });
+
+        it('stays closed with the error when the code cannot be sent', async () => {
+            mocks.otpMutate.mockRejectedValueOnce(apiError(ERROR_CODES.RATE_LIMITED, 429, 17));
+            const { result } = renderHook(() => useEventDeletionFlow('event-1', { codeFirst: true }));
+
+            await act(() => result.current.startDeletion());
+
+            expect(result.current.confirmOpen).toBe(false);
+            expect(result.current.deleteError).toBe('genericError');
+            expect(result.current.resendSeconds).toBe(17);
+        });
+
+        it('reopens a code already sent without sending another', async () => {
+            const { result } = renderHook(() => useEventDeletionFlow('event-1', { codeFirst: true }));
+
+            await act(() => result.current.startDeletion());
+            act(() => result.current.closeConfirm());
+            await act(() => result.current.startDeletion());
+
+            expect(mocks.otpMutate).toHaveBeenCalledOnce();
+            expect(result.current.confirmOpen).toBe(true);
+            expect(result.current.step).toBe('verify');
+        });
+
+        it.each([
+            [ERROR_CODES.EVENT_DELETE_OTP_NOT_REQUESTED, 'errors.notRequested'],
+            [ERROR_CODES.EVENT_DELETE_OTP_EXPIRED, 'errors.expired'],
+            [ERROR_CODES.EVENT_DELETE_OTP_TOO_MANY_ATTEMPTS, 'errors.tooManyAttempts'],
+        ])('stays on the code step with a new code ready for code error %s', async (errorCode, message) => {
+            mocks.deleteMutate.mockRejectedValueOnce(apiError(errorCode));
+            const { result } = renderHook(() => useEventDeletionFlow('event-1', { codeFirst: true }));
+
+            await act(() => result.current.startDeletion());
+            act(() => result.current.handleOtpChange(otpChange('123456')));
+            await act(() => result.current.confirmDelete());
+
+            expect(result.current.step).toBe('verify');
+            expect(result.current.otpCode).toBe('');
+            expect(result.current.resendSeconds).toBe(0);
+            expect(result.current.deleteError).toBe(message);
+        });
     });
 });

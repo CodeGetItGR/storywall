@@ -14,7 +14,7 @@ function Notice({ tone, onAction }: NoticeArgs) {
     return tone === 'error' ? (
         <EditorNotice tone="error" message={t('notSaved')} actionLabel={t('retry')} onAction={onAction} />
     ) : (
-        <EditorNotice tone="info" message={t('publishUnavailable')} />
+        <EditorNotice tone="info" message={t('republished')} />
     );
 }
 

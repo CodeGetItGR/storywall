@@ -5,7 +5,8 @@
 //   npm run visual:ci -- build-base --base <sha>                            build that commit's Storybook into visual-output/base-storybook
 //   npm run visual:ci -- capture --share 0/6 --storybook <dir> --out <dir>  capture one share of a build's stories
 //   npm run visual:ci -- join --storybook <dir> --dir <dir> --sha <sha>     join the shares' records into captures.json
-//   npm run visual:ci -- compare --base <sha>                               compare visual-output/head with the base and write the report
+//   npm run visual:ci -- compare --base <sha>                               compare visual-output/head with the base and write the report,
+//                                                                           rechecking from the base build in visual-output/base/storybook
 
 import { mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -20,6 +21,7 @@ import {
     HEAD_DIR,
     print,
     readRecords,
+    SAVED_BASE_STORYBOOK_DIR,
     saveRecords,
     STORYBOOK_DIR,
     targetsFrom,
@@ -70,10 +72,12 @@ function joinRecords() {
     print(`Joined ${joined.length} captures`);
 }
 
+// The base and head shots come from other runners than this one. A capture that still differs after its
+// retakes has its base taken again here, from the base build saved with the base captures.
 async function compare() {
     const baseSha = required('base');
     const headRecords = readRecords(HEAD_DIR);
-    await withStorybook(STORYBOOK_DIR, (browser, origin) => writeReport(browser, origin, headRecords, baseSha));
+    await withStorybook(STORYBOOK_DIR, (browser, origin) => writeReport(browser, origin, headRecords, baseSha, SAVED_BASE_STORYBOOK_DIR));
 }
 
 const steps: Record<string, () => unknown> = {

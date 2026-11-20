@@ -15,7 +15,8 @@ export function useDeactivateOnOutsideTap(root: RefObject<HTMLElement | null>, i
 
         const onPointerDown = (event: PointerEvent) => {
             const target = event.target;
-            const outside = target instanceof Element && root.current?.contains(target) && !target.closest('[data-smd-text]');
+            // A text's spacing handles keep it open too.
+            const outside = target instanceof Element && root.current?.contains(target) && !target.closest('[data-smd-text], [data-smd-keep-text]');
             press = outside ? { id: event.pointerId, x: event.clientX, y: event.clientY } : null;
         };
         const onPointerUp = (event: PointerEvent) => {

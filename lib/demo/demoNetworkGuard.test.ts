@@ -2,7 +2,8 @@
 import type { SetupServer } from 'msw/node';
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import type { QrLinkResponseDto, QrTargetType } from '@/lib/api/types';
+import type { PlaylistSuggestionResponseDto, QrLinkResponseDto, QrTargetType, WishbookEntryResponseDto } from '@/lib/api/types';
+import { buildWishFormData } from '@/lib/wishbook/voice';
 
 // Proves a demo session never sends anything to the backend except the snapshot and /api/config:
 // every request below goes through the session's real MSW handlers, and any request MSW did not
@@ -62,6 +63,45 @@ beforeAll(async () => {
         updatedAt: snapshot.snapshotAt,
     });
     snapshot.qrLinks = [qrLink('qr-upload', 'tok-upload', 'MEDIA_UPLOAD'), qrLink('qr-join', 'tok-join', 'EVENT_JOIN')];
+    snapshot.qrCardTemplates = [
+        {
+            id: 'tpl-olive',
+            name: { en: 'Olive', el: 'Ελιά' },
+            artworkUrl: '/api/qr-card-artwork/tpl-olive/3',
+            textColor: '#2F3A2F',
+            headingFont: null,
+            codeColor: '#2F3A2F',
+            centerLogo: false,
+            layout: null,
+            sizes: ['A6'],
+        },
+    ];
+    snapshot.wishbookBook = {
+        status: 'READY',
+        requestedAt: snapshot.snapshotAt,
+        finishedAt: snapshot.snapshotAt,
+        pageCount: 12,
+        entryCount: 24,
+        byteSize: 1_200_000,
+        failureCode: null,
+        downloadUrl: 'https://r2.test/demo-book.pdf?sig=1',
+    };
+    const song = (id: string, title: string, upvoteCount: number): PlaylistSuggestionResponseDto => ({
+        id,
+        eventId: snapshot.event.id,
+        authorMemberId: null,
+        title,
+        artist: null,
+        youtubeUrl: null,
+        spotifyUrl: null,
+        comment: null,
+        upvoteCount,
+        downvoteCount: 0,
+        myVote: 'UPVOTE',
+        createdAt: snapshot.snapshotAt,
+        deletedAt: null,
+    });
+    snapshot.playlistSuggestions = [song('sug-low', 'One more', 1), song('sug-top', 'First dance', 5)];
     const session = createDemoSession('WEDDING', rebaseSnapshot(snapshot), 'v1', 'Free');
     server = setupServer(...createDemoHandlers(session, 'http://localhost'));
     // Every request starts here; the ones a handler answered locally are removed again.
@@ -97,7 +137,12 @@ describe('demo network guard', () => {
             '/api/events/evt-demo/rsvps',
             '/api/events/evt-demo/media?page=0',
             '/api/events/evt-demo/wishbook?page=0',
+            '/api/events/evt-demo/wishbook/mine?page=0',
             '/api/events/evt-demo/playlist-suggestions',
+            '/api/events/evt-demo/playlist-suggestions/leaderboard',
+            '/api/events/evt-demo/wishbook/book',
+            '/api/events/evt-demo/qr-card-templates',
+            '/api/events/evt-demo/gift',
             '/api/events/evt-demo/qr-links',
             '/api/events/evt-demo/qr-links/stats',
             '/api/events/evt-demo/usage',
@@ -129,6 +174,8 @@ describe('demo network guard', () => {
         await send('POST', '/api/rsvps', { eventMemberId: 'mem-host', attendanceStatus: 'ATTENDING' });
         await send('POST', '/api/playlist-suggestions', { title: 'Song' });
         await send('POST', '/api/events/evt-demo/wishbook', { guestName: 'A', message: 'B' });
+        const wishes = (await (await send('GET', '/api/events/evt-demo/wishbook/mine?page=0')).json()) as { content: { id: string }[] };
+        await send('PUT', `/api/wishbook/${wishes.content[0].id}`, { message: 'Edited' });
         await send('PATCH', '/api/events/evt-demo', { title: 'Renamed' });
         await send('PUT', '/api/events/evt-demo/gift-account', { iban: 'X', accountHolder: 'Y', bankName: 'Z' });
         await send('DELETE', `/api/posts/${post.id}`);
@@ -208,15 +255,113 @@ describe('demo network guard', () => {
         expect(left).toEqual([]);
     });
 
+    it('keeps a recorded wish local, and changes or removes its recording', async () => {
+        const recording = new Blob(['voice'], { type: 'audio/webm' });
+        const created = await send('POST', '/api/events/evt-demo/wishbook', buildWishFormData({ guestName: 'Maria' }, recording));
+        expect(created.status).toBe(201);
+        const wish = (await created.json()) as WishbookEntryResponseDto;
+        expect(wish.message).toBeNull();
+        expect(wish.audio?.url.startsWith('blob:')).toBe(true);
+
+        // A recording-only edit keeps the missing text missing, not the word "null".
+        const replaced = (await (
+            await send('PUT', `/api/wishbook/${wish.id}`, buildWishFormData({}, new Blob(['again'], { type: 'audio/webm' })))
+        ).json()) as WishbookEntryResponseDto;
+        expect(replaced.message).toBeNull();
+        expect(replaced.audio?.url).not.toBe(wish.audio?.url);
+
+        // Blank text on a voice wish is stored as no text, as the backend does.
+        const withText = (await (await send('PUT', `/api/wishbook/${wish.id}`, { message: 'Hey' })).json()) as WishbookEntryResponseDto;
+        expect(withText).toMatchObject({ message: 'Hey', audio: replaced.audio });
+        const blanked = (await (await send('PUT', `/api/wishbook/${wish.id}`, { message: '   ' })).json()) as WishbookEntryResponseDto;
+        expect(blanked).toMatchObject({ message: null, audio: replaced.audio });
+
+        const written = (await (await send('PUT', `/api/wishbook/${wish.id}`, { message: ' Hi ', removeAudio: true })).json()) as WishbookEntryResponseDto;
+        expect(written).toMatchObject({ message: 'Hi', audio: null });
+
+        const kept = (await (await send('PUT', `/api/wishbook/${wish.id}`, { message: 'Hi again' })).json()) as WishbookEntryResponseDto;
+        expect(kept).toMatchObject({ message: 'Hi again', audio: null });
+        expect(left).toEqual([]);
+    });
+
     it('stops the live feed stream without contacting the backend', async () => {
         const res = await send('POST', '/api/events/evt-demo/stream-token');
         expect(res.status).toBe(404);
         expect(left).toEqual([]);
     });
 
+    it("lets the QR card's artwork through to this app's own route", async () => {
+        await send('GET', '/api/qr-card-artwork/tpl-olive/3', undefined, 'http://localhost');
+        expect(left).toEqual([{ method: 'GET', url: 'http://localhost/api/qr-card-artwork/tpl-olive/3' }]);
+    });
+
     it("lets the map preview's short-link lookup through to this app", async () => {
         await send('GET', `/api/maps/resolve?url=${encodeURIComponent('https://share.google/abc')}`, undefined, 'http://localhost');
         expect(left).toEqual([{ method: 'GET', url: 'http://localhost/api/maps/resolve?url=https%3A%2F%2Fshare.google%2Fabc' }]);
+    });
+
+    it("prints the real event's QR card designs, from the snapshot", async () => {
+        const list = (await (await send('GET', '/api/events/evt-demo/qr-card-templates')).json()) as {
+            available: boolean;
+            templates: { id: string; artworkUrl: string }[];
+        };
+        expect(list.available).toBe(true);
+        expect(list.templates.map((template) => [template.id, template.artworkUrl])).toEqual([['tpl-olive', '/api/qr-card-artwork/tpl-olive/3']]);
+        expect(left).toEqual([]);
+    });
+
+    it("hands out the event's own book, and builds it again locally", async () => {
+        const ready = (await (await send('GET', '/api/events/evt-demo/wishbook/book')).json()) as { status: string; downloadUrl: string | null };
+        expect(ready).toMatchObject({ status: 'READY', downloadUrl: 'https://r2.test/demo-book.pdf?sig=1' });
+
+        const started = (await (await send('POST', '/api/events/evt-demo/wishbook/book')).json()) as {
+            status: string;
+            downloadUrl: string | null;
+            pageCount: number | null;
+        };
+        expect(started).toMatchObject({ status: 'RUNNING', downloadUrl: null, pageCount: null });
+
+        // The build finishes on its own, and ends in the same book the event has.
+        const later = Date.now() + 10_000;
+        vi.spyOn(Date, 'now').mockReturnValue(later);
+        const finished = (await (await send('GET', '/api/events/evt-demo/wishbook/book')).json()) as { status: string; downloadUrl: string | null };
+        vi.restoreAllMocks();
+        expect(finished).toMatchObject({ status: 'READY', downloadUrl: 'https://r2.test/demo-book.pdf?sig=1' });
+        expect(left).toEqual([]);
+    });
+
+    it('ranks the live playlist by votes and marks a song played', async () => {
+        type Row = { id: string; rank: number; playedAt?: string | null; myVote?: unknown };
+        const read = async () => (await (await send('GET', '/api/events/evt-demo/playlist-suggestions/leaderboard')).json()) as Row[];
+
+        const rows = await read();
+        expect(rows.slice(0, 2).map((row) => [row.id, row.rank])).toEqual([
+            ['sug-top', 1],
+            ['sug-low', 2],
+        ]);
+        // The leaderboard is everyone's list, so it carries no "my vote".
+        expect('myVote' in rows[0]).toBe(false);
+
+        const played = (await (await send('PATCH', '/api/events/evt-demo/playlist-suggestions/sug-low/played', { played: true })).json()) as Row;
+        expect(played.playedAt).toBeTruthy();
+        const after = await read();
+        expect(after.find((row) => row.id === 'sug-low')).toMatchObject({ rank: 2, playedAt: played.playedAt });
+        expect(left).toEqual([]);
+    });
+
+    it('issues and cancels the gift card locally', async () => {
+        const handover = (await (await send('GET', '/api/events/evt-demo/gift')).json()) as { status: string; token: string };
+        expect(handover.status).toBe('ISSUED');
+
+        const card = (await (await send('POST', '/api/events/evt-demo/gift/card')).json()) as { token: string; pin: string };
+        expect(card.token).not.toBe(handover.token);
+        expect(card.pin).toMatch(/^\d{6}$/);
+        const reissued = (await (await send('GET', '/api/events/evt-demo/gift')).json()) as { token: string };
+        expect(reissued.token).toBe(card.token);
+
+        expect((await send('DELETE', '/api/events/evt-demo/gift')).status).toBe(204);
+        expect((await send('GET', '/api/events/evt-demo/gift')).status).toBe(404);
+        expect(left).toEqual([]);
     });
 
     it('lets only the snapshot and /api/config reach the backend', async () => {

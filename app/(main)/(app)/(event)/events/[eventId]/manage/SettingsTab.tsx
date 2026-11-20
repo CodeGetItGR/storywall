@@ -1,473 +1,55 @@
 'use client';
 
-import { Check, ImagePlus, Loader2, X } from 'lucide-react';
-import { useLocale, useTranslations } from 'next-intl';
-import React, { useEffect, useRef, useState } from 'react';
+import { useTranslations } from 'next-intl';
 
-import { ProtectedImage } from '@/components/common/ProtectedImage';
-import { TargetedSection } from '@/components/manage/TargetedSection';
-import { DateTimeField } from '@/components/ui/DateTimeField';
-import { FormFieldLabel } from '@/components/ui/FormFieldLabel';
-import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
-import { useAppConfig } from '@/hooks/useAppConfig';
-import { useContentLimits } from '@/hooks/useContentLimits';
-import { useCreateEventFieldLabels } from '@/hooks/useCreateEventFieldLabels';
-import { useUpdateEvent } from '@/hooks/useEvent';
-import { useUploadMedia } from '@/hooks/useMedia';
-import { useUploadAccept } from '@/hooks/useUploadAccept';
-import { getFieldErrors } from '@/lib/api/errors';
-import type { EventDetailResponseDto, EventPatchDto } from '@/lib/api/types';
-import {
-    formatDate,
-    getCurrentDatetimeLocalValue,
-    getScheduleDatetimeLocalBounds,
-    isDatetimeLocalAfter,
-    isDatetimeLocalBefore,
-    toDatetimeLocalValue,
-} from '@/lib/datetime';
-import { getLatestStartAt } from '@/lib/eventCoverage';
-import { getEventEndPresets } from '@/lib/eventEndPresets';
-import { INCIDENT_MODE } from '@/lib/incident';
-import { COVER_PHOTO_SECTION_ID } from '@/lib/manageSectionTargets';
-import { cn } from '@/lib/utils';
+import { SettingsPartEditor } from '@/components/manage/settings/SettingsPartEditor';
+import { SettingsPreview } from '@/components/manage/settings/SettingsPreview';
+import { useSettingsPreview } from '@/hooks/useSettingsPreview';
+import type { EventDetailResponseDto } from '@/lib/api/types';
 
-const inputClass =
-    'w-full bg-surface-muted rounded-xl px-4 py-3 text-sm text-ink placeholder:text-ink-faint outline-none focus:ring-2 focus:ring-primary/30 transition disabled:cursor-not-allowed disabled:opacity-60';
-const labelClass = 'text-xs font-semibold text-ink-muted uppercase tracking-wide';
-const settingsFormId = 'event-settings-form';
-
+// Settings (KAN-228, S2): the event details as guests see them, each part edited on its own.
 export default function SettingsTab({
     event,
     canWrite,
-    canUploadCover: canUploadCoverProp = canWrite,
+    canUploadCover = canWrite,
 }: {
     event: EventDetailResponseDto;
     canWrite: boolean;
     canUploadCover?: boolean;
 }) {
     const t = useTranslations('ManagePage');
-    const canUploadCover = canUploadCoverProp && !INCIDENT_MODE;
-    const tCreateEvent = useTranslations('CreateEventPage');
-    const tAlt = useTranslations('ImageAlt');
-    const locale = useLocale();
-    const toErrorMessage = useApiErrorMessage();
-    const { data: appConfig } = useAppConfig();
-    const limits = useContentLimits();
-    const fieldLabels = useCreateEventFieldLabels(event.eventType);
-    const uploadAccept = useUploadAccept();
-
-    const initial = {
-        title: event.title,
-        description: event.description ?? '',
-        locationName: event.location.name ?? '',
-        locationAddress: event.location.address ?? '',
-        mapsUrl: event.location.mapsUrl ?? '',
-        startAt: toDatetimeLocalValue(event.schedule.startAt),
-        endAt: toDatetimeLocalValue(event.schedule.endAt),
-    };
-
-    const [title, setTitle] = useState(initial.title);
-    const [description, setDescription] = useState(initial.description);
-    const [locationName, setLocationName] = useState(initial.locationName);
-    const [locationAddress, setLocationAddress] = useState(initial.locationAddress);
-    const [mapsUrl, setMapsUrl] = useState(initial.mapsUrl);
-    const [startAt, setStartAt] = useState(initial.startAt);
-    const [endAt, setEndAt] = useState(initial.endAt);
-
-    const [coverPreview, setCoverPreview] = useState<string | null>(event.coverMedia?.mediaUrl ?? null);
-    const [pendingCoverMediaId, setPendingCoverMediaId] = useState<string | null>(null);
-    const [isCoverBusy, setIsCoverBusy] = useState(false);
-    const [savedValues, setSavedValues] = useState(initial);
-    const [saved, setSaved] = useState(false);
-    const fileRef = useRef<HTMLInputElement>(null);
-    const coverObjectUrlRef = useRef<string | null>(null);
-
-    const updateEvent = useUpdateEvent(event.id);
-    const uploadMedia = useUploadMedia();
-    const fieldErrors = getFieldErrors(updateEvent.error);
-    const nowAt = getCurrentDatetimeLocalValue();
-    const eventHasStarted = Boolean(event.schedule.startAt && isDatetimeLocalBefore(toDatetimeLocalValue(event.schedule.startAt), nowAt));
-    // Coverage runs from payment, so the start must leave some of it after the event: the pinned end
-    // once live, the server's projection while DRAFT.
-    const latestStartAt = getLatestStartAt(
-        event.schedule.coverageEndsAt ?? event.schedule.projectedCoverage?.coverageEndsAt,
-        appConfig?.coverage.minDaysAfterStart,
-    );
-    const { startAtMin, startAtMax, endAtMin } = getScheduleDatetimeLocalBounds({ startAt, endAt, latestStartAt });
-    const endAtPresets = React.useMemo(() => getEventEndPresets(event.eventType, startAt), [event.eventType, startAt]);
-    // Order matters: startAtMax is the earlier of the end date and the coverage cap,
-    // so a start past the end must be reported as that, not as "too far ahead".
-    const scheduleError =
-        !eventHasStarted && startAt && isDatetimeLocalBefore(startAt, startAtMin)
-            ? t('settings.validation.startInPast')
-            : startAt && endAt && !isDatetimeLocalAfter(endAt, startAt)
-              ? t('settings.validation.endBeforeStart')
-              : !eventHasStarted && startAt && latestStartAt && isDatetimeLocalAfter(startAt, startAtMax)
-                ? t('settings.validation.startTooFarAhead', { date: formatDate(locale, latestStartAt, { dateStyle: 'medium' }) })
-                : null;
-    // The coverage window is pinned at activation, so moving a live event's start
-    // does not move it. Say so inline the moment the host changes the date.
-    const startMovedOnLiveEvent = Boolean(event.schedule.coverageEndsAt && startAt && startAt !== savedValues.startAt);
-    const coverageKeptUntil = event.schedule.coverageEndsAt ? formatDate(locale, event.schedule.coverageEndsAt, { dateStyle: 'long' }) : null;
-    // While DRAFT the server projects the window on every read; the PATCH reply carries the updated one.
-    const projection = event.schedule.projectedCoverage;
-    const coverageProjection = projection
-        ? tCreateEvent('coverageProjection', { endsAt: formatDate(locale, projection.coverageEndsAt, { dateStyle: 'medium' }) })
-        : null;
-    const maxDescriptionLength = appConfig?.contentLimits.eventDescriptionMaxLength ?? 2000;
-    const hasChanges =
-        title.trim() !== savedValues.title ||
-        description.trim() !== savedValues.description ||
-        locationName.trim() !== savedValues.locationName ||
-        locationAddress.trim() !== savedValues.locationAddress ||
-        mapsUrl.trim() !== savedValues.mapsUrl ||
-        Boolean(!eventHasStarted && startAt && startAt !== savedValues.startAt) ||
-        Boolean(endAt && endAt !== savedValues.endAt) ||
-        Boolean(pendingCoverMediaId);
-
-    useEffect(() => {
-        return () => {
-            if (coverObjectUrlRef.current) {
-                URL.revokeObjectURL(coverObjectUrlRef.current);
-            }
-        };
-    }, []);
-
-    function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
-        if (!canUploadCover) return;
-        const file = e.target.files?.[0];
-        if (!file) return;
-        if (coverObjectUrlRef.current) {
-            URL.revokeObjectURL(coverObjectUrlRef.current);
-        }
-        const nextPreviewUrl = URL.createObjectURL(file);
-        coverObjectUrlRef.current = nextPreviewUrl;
-        setCoverPreview(nextPreviewUrl);
-        setSaved(false);
-        uploadMedia.mutate(
-            { eventId: event.id, file, context: 'COVER', onBusy: setIsCoverBusy },
-            {
-                onSuccess: (media) => setPendingCoverMediaId(media.id),
-                // A refused photo (too large, not an image) must not stay on screen
-                // looking like the cover that saving would set.
-                onError: handleRemovePendingCover,
-            },
-        );
-    }
-
-    function handleRemovePendingCover() {
-        if (!canUploadCover) return;
-        if (coverObjectUrlRef.current) {
-            URL.revokeObjectURL(coverObjectUrlRef.current);
-            coverObjectUrlRef.current = null;
-        }
-        setPendingCoverMediaId(null);
-        setCoverPreview(event.coverMedia?.mediaUrl ?? null);
-    }
-
-    function handleChangeCoverClick() {
-        if (!canUploadCover) return;
-        fileRef.current?.click();
-    }
-
-    function handleTitleChange(e: React.ChangeEvent<HTMLInputElement>) {
-        setTitle(e.target.value);
-    }
-
-    function handleDescriptionChange(e: React.ChangeEvent<HTMLTextAreaElement>) {
-        setDescription(e.target.value.slice(0, maxDescriptionLength));
-    }
-
-    function handleLocationNameChange(e: React.ChangeEvent<HTMLInputElement>) {
-        setLocationName(e.target.value);
-    }
-
-    function handleLocationAddressChange(e: React.ChangeEvent<HTMLInputElement>) {
-        setLocationAddress(e.target.value);
-    }
-
-    function handleMapsUrlChange(e: React.ChangeEvent<HTMLInputElement>) {
-        setMapsUrl(e.target.value);
-    }
-
-    function handleStartAtChange(value: string) {
-        setStartAt(value);
-    }
-
-    function handleEndAtChange(value: string) {
-        setEndAt(value);
-    }
-
-    function handleEndAtPresetClick(e: React.MouseEvent<HTMLButtonElement>) {
-        const value = e.currentTarget.dataset.value;
-        if (value) setEndAt(value);
-    }
-
-    async function handleSubmit(e: React.SubmitEvent<HTMLFormElement>) {
-        e.preventDefault();
-        if (!canWrite) return;
-        if (scheduleError) return;
-        setSaved(false);
-
-        const patch: EventPatchDto = {};
-        if (title.trim() !== savedValues.title) patch.title = title.trim();
-        if (description.trim() !== savedValues.description) patch.description = description.trim();
-        if (locationName.trim() !== savedValues.locationName) patch.locationName = locationName.trim();
-        if (locationAddress.trim() !== savedValues.locationAddress) patch.locationAddress = locationAddress.trim();
-        if (mapsUrl.trim() !== savedValues.mapsUrl) patch.mapsUrl = mapsUrl.trim();
-        if (!eventHasStarted && startAt && startAt !== savedValues.startAt) patch.startAt = new Date(startAt).toISOString();
-        if (endAt && endAt !== savedValues.endAt) patch.endAt = new Date(endAt).toISOString();
-        if (pendingCoverMediaId) patch.coverMediaId = pendingCoverMediaId;
-
-        if (Object.keys(patch).length === 0) return;
-
-        try {
-            await updateEvent.mutateAsync(patch);
-            setPendingCoverMediaId(null);
-            setSavedValues({
-                title: title.trim(),
-                description: description.trim(),
-                locationName: locationName.trim(),
-                locationAddress: locationAddress.trim(),
-                mapsUrl: mapsUrl.trim(),
-                startAt,
-                endAt,
-            });
-            setSaved(true);
-        } catch {
-            // error surfaced inline below
-        }
-    }
-
-    const isUploading = uploadMedia.isPending;
-    const isSaving = updateEvent.isPending;
-    const disabled = !canWrite;
+    const view = useSettingsPreview(event, canWrite, canUploadCover);
 
     return (
-        <div>
-            {/* Event details */}
-            <p className="mb-5 text-sm text-ink-muted">{t('settings.subtitle')}</p>
-            {!canWrite && (
-                <p className="mb-5 rounded-2xl bg-surface-muted px-4 py-3 text-sm leading-relaxed text-ink-muted">{t('settings.readOnly')}</p>
-            )}
+        <div className="flex flex-col gap-4">
+            {/* Intro */}
+            <p className="text-sm text-ink-muted">{t('settings.subtitle')}</p>
+            {!canWrite && <p className="rounded-[1rem] bg-surface-muted px-4 py-3 text-sm leading-relaxed text-ink-muted">{t('settings.readOnly')}</p>}
 
-            <form id={settingsFormId} onSubmit={handleSubmit} className="flex flex-col gap-4 pb-20 lg:pb-0">
-                {/* Cover photo */}
-                <div>
-                    <span className={labelClass}>{t('settings.coverPhoto.label')}</span>
-                    <TargetedSection id={COVER_PHOTO_SECTION_ID} className="mt-1.5">
-                        {coverPreview ? (
-                            <div className="relative aspect-21/9 overflow-hidden rounded-2xl bg-surface-muted">
-                                <ProtectedImage src={coverPreview} alt={tAlt('eventCover')} fill className="object-cover" sizes="700px" loading="lazy" />
-                                {isUploading && (
-                                    <div className="absolute inset-0 flex items-center justify-center bg-ink/40">
-                                        <Loader2 className="h-6 w-6 animate-spin text-white" />
-                                    </div>
-                                )}
-                                <div className="absolute right-3 bottom-3 flex items-center gap-2">
-                                    <button
-                                        type="button"
-                                        onClick={handleChangeCoverClick}
-                                        disabled={disabled || !canUploadCover}
-                                        className="rounded-full bg-ink/60 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-ink/80"
-                                    >
-                                        {t('settings.coverPhoto.change')}
-                                    </button>
-                                    {pendingCoverMediaId && (
-                                        <button
-                                            type="button"
-                                            onClick={handleRemovePendingCover}
-                                            disabled={disabled}
-                                            aria-label={t('settings.coverPhoto.remove')}
-                                            className="flex h-8 w-8 items-center justify-center rounded-full bg-ink/60 text-white transition-colors hover:bg-ink/80"
-                                        >
-                                            <X className="h-4 w-4" />
-                                        </button>
-                                    )}
-                                </div>
-                            </div>
-                        ) : (
-                            <button
-                                type="button"
-                                onClick={handleChangeCoverClick}
-                                disabled={disabled || !canUploadCover}
-                                className="flex w-full flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-border py-10 text-ink-faint transition-colors hover:border-primary/40 hover:bg-primary-light/30 hover:text-primary/60"
-                            >
-                                <ImagePlus className="h-7 w-7" />
-                                <span className="text-sm font-medium">{t('settings.coverPhoto.upload')}</span>
-                                <span className="text-xs">{t('settings.coverPhoto.formats')}</span>
-                            </button>
-                        )}
-                        <input
-                            ref={fileRef}
-                            type="file"
-                            accept={uploadAccept.images}
-                            className="sr-only"
-                            onChange={handleFile}
-                            disabled={disabled || !canUploadCover}
-                            aria-label={t('settings.coverPhoto.upload')}
-                        />
-                        {isCoverBusy && <p className="mt-1.5 text-xs text-ink-muted">{t('settings.coverPhoto.uploadBusy')}</p>}
-                        {uploadMedia.isError && <p className="mt-1.5 text-xs text-rose-500">{toErrorMessage(uploadMedia.error)}</p>}
-                    </TargetedSection>
-                </div>
+            <div className="flex flex-col gap-8 pb-20 lg:grid lg:grid-cols-[minmax(0,420px)_minmax(0,1fr)] lg:items-start lg:pb-0">
+                {/* Invite preview */}
+                <SettingsPreview
+                    event={event}
+                    parts={view.parts}
+                    labels={view.labels}
+                    openPart={view.openPart}
+                    canEdit={view.canEdit}
+                    canWrite={canWrite}
+                    startText={view.startText}
+                    endText={view.endText}
+                    onEditAction={view.openEditor}
+                />
 
-                {/* Basics */}
-                <FormFieldLabel label={fieldLabels.title} required labelClassName={labelClass}>
-                    <input
-                        type="text"
-                        required
-                        maxLength={limits.eventTitleMaxLength}
-                        value={title}
-                        onChange={handleTitleChange}
-                        disabled={disabled}
-                        className={inputClass}
-                    />
-                    {fieldErrors?.title && <span className="text-xs text-rose-500">{fieldErrors.title}</span>}
-                </FormFieldLabel>
-
-                <FormFieldLabel label={t('settings.fields.description')} optional labelClassName={labelClass}>
-                    <textarea
-                        value={description}
-                        onChange={handleDescriptionChange}
-                        disabled={disabled}
-                        placeholder={t('settings.placeholders.description')}
-                        rows={4}
-                        maxLength={maxDescriptionLength}
-                        className={`${inputClass} resize-none leading-relaxed`}
-                    />
-                    <span className="text-right text-xs text-ink-faint">
-                        {description.length}/{maxDescriptionLength}
-                    </span>
-                </FormFieldLabel>
-
-                {/* Location */}
-                <div className="grid gap-3 sm:grid-cols-2">
-                    <FormFieldLabel label={fieldLabels.locationName} required labelClassName={labelClass}>
-                        <input
-                            type="text"
-                            required
-                            maxLength={limits.locationNameMaxLength}
-                            value={locationName}
-                            onChange={handleLocationNameChange}
-                            disabled={disabled}
-                            className={inputClass}
-                        />
-                    </FormFieldLabel>
-                    <FormFieldLabel label={t('settings.fields.locationAddress')} required labelClassName={labelClass}>
-                        <input
-                            type="text"
-                            required
-                            maxLength={limits.locationAddressMaxLength}
-                            value={locationAddress}
-                            onChange={handleLocationAddressChange}
-                            disabled={disabled}
-                            placeholder={t('settings.placeholders.locationAddress')}
-                            className={inputClass}
-                        />
-                    </FormFieldLabel>
-                </div>
-
-                <FormFieldLabel label={t('settings.fields.mapsUrl')} optional labelClassName={labelClass}>
-                    <input
-                        type="url"
-                        maxLength={limits.urlMaxLength}
-                        value={mapsUrl}
-                        onChange={handleMapsUrlChange}
-                        disabled={disabled}
-                        placeholder={t('settings.placeholders.mapsUrl')}
-                        className={inputClass}
-                    />
-                </FormFieldLabel>
-
-                {/* Schedule */}
-                <div className="grid gap-3 sm:grid-cols-2">
-                    <FormFieldLabel label={fieldLabels.startAt} required labelClassName={labelClass}>
-                        <DateTimeField
-                            required
-                            value={startAt}
-                            onChange={handleStartAtChange}
-                            disabled={disabled || eventHasStarted}
-                            min={startAtMin}
-                            max={startAtMax}
-                            inputClassName={inputClass}
-                        />
-                        {eventHasStarted ? (
-                            <p className="mt-1 text-xs leading-relaxed text-ink-muted">{t('settings.startLocked')}</p>
-                        ) : startMovedOnLiveEvent && coverageKeptUntil ? (
-                            <p className="mt-1 text-xs leading-relaxed text-ink-muted">{t('settings.coverageFixed', { date: coverageKeptUntil })}</p>
-                        ) : coverageProjection ? (
-                            <p className="mt-1 text-xs leading-relaxed text-ink-muted">{coverageProjection}</p>
-                        ) : (
-                            <p className="mt-1 text-xs leading-relaxed text-ink-muted">{tCreateEvent('startAtHint')}</p>
-                        )}
-                    </FormFieldLabel>
-                    <FormFieldLabel label={t('settings.fields.endAt')} required labelClassName={labelClass}>
-                        <DateTimeField
-                            required
-                            value={endAt}
-                            onChange={handleEndAtChange}
-                            disabled={disabled}
-                            min={endAtMin}
-                            inputClassName={inputClass}
-                        />
-                        {/* End Presets */}
-                        <div className="flex flex-wrap gap-1.5">
-                            {endAtPresets.map((preset) => (
-                                <button
-                                    key={preset.key}
-                                    type="button"
-                                    data-value={preset.value ?? undefined}
-                                    disabled={disabled || !preset.value}
-                                    onClick={handleEndAtPresetClick}
-                                    className="rounded-full bg-surface-muted/70 px-2.5 py-1 text-[11px] font-medium text-ink-muted transition hover:bg-surface-muted hover:text-ink disabled:cursor-not-allowed disabled:opacity-45"
-                                >
-                                    {tCreateEvent(`endAtPresets.${preset.labelKey}`)}
-                                </button>
-                            ))}
-                        </div>
-                    </FormFieldLabel>
-                </div>
-                {scheduleError && <p className="text-xs text-rose-500">{scheduleError}</p>}
-
-                {updateEvent.isError && !fieldErrors && <p className="text-xs text-rose-500">{toErrorMessage(updateEvent.error)}</p>}
-
-                {/* Actions */}
-                <div
-                    className={cn(
-                        'fixed right-4 bottom-20 z-30 flex items-center justify-end gap-3 md:bottom-4 lg:static lg:z-auto lg:mt-2 lg:flex',
-                        !hasChanges && !saved && 'hidden',
-                    )}
-                >
-                    {saved && !isSaving && (
-                        <span className="flex items-center gap-1 rounded-full bg-background/90 px-2.5 py-1.5 text-xs font-semibold text-emerald-600 shadow-sm lg:bg-transparent lg:px-0 lg:py-0 lg:shadow-none">
-                            <Check className="h-3.5 w-3.5" />
-                            {t('settings.saved')}
-                        </span>
-                    )}
-                    <button
-                        type="submit"
-                        disabled={
-                            disabled ||
-                            isSaving ||
-                            isUploading ||
-                            !hasChanges ||
-                            !title.trim() ||
-                            !locationName.trim() ||
-                            !locationAddress.trim() ||
-                            !startAt ||
-                            !endAt ||
-                            Boolean(scheduleError)
-                        }
-                        className={cn(
-                            'min-h-11 items-center justify-center gap-2 rounded-full px-5 text-sm font-semibold text-white shadow-lg transition-opacity bg-gradient-brand hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40 lg:flex lg:shadow-none',
-                            hasChanges ? 'flex' : 'hidden',
-                        )}
-                    >
-                        {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : t('settings.save')}
-                    </button>
-                </div>
-            </form>
+                {/* Editor */}
+                <SettingsPartEditor
+                    event={event}
+                    part={view.openPart}
+                    label={view.openPart ? view.labels[view.openPart] : ''}
+                    isDesktop={view.isDesktop}
+                    canUploadCover={view.canUploadCover}
+                    onCloseAction={view.closeEditor}
+                />
+            </div>
         </div>
     );
 }

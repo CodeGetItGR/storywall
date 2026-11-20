@@ -17,7 +17,7 @@ export function SettingsItemView({ title, onDone, children }: SettingsItemViewPr
         <div role="group" aria-label={title} className="flex flex-col gap-3 rounded-[12px] bg-white/[0.03] p-2.5">
             {/* Header */}
             <div className="flex items-center justify-between gap-2">
-                <h4 className="text-[13px] font-bold text-white">{title}</h4>
+                <h4 className="text-[13px] font-bold text-(--smd-editor-strong)">{title}</h4>
                 <button
                     type="button"
                     onClick={onDone}

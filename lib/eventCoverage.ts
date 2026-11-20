@@ -1,34 +1,4 @@
-import type { EventScheduleDto, ProjectedCoverageDto } from '@/lib/api/types';
-import { getDaysUntil } from '@/lib/datetime';
-
-// Last stretch of the coverage window where the host is nudged to download the gallery.
-export const COVERAGE_CLOSING_DAYS = 30;
-
-export type CoveragePhase = 'open' | 'closing' | 'ended';
-
-export interface CoverageStatus {
-    phase: CoveragePhase;
-    coverageEndsAt: string;
-    daysUntilEnd: number;
-}
-
-/**
- * Where an activated event sits in its coverage window. The gallery is open
- * from activation, so only the end matters. Null while the window is not
- * pinned yet (DRAFT) — there is nothing to describe.
- */
-export function getCoverageStatus(schedule: Pick<EventScheduleDto, 'coverageEndsAt'>, referenceDate = new Date()): CoverageStatus | null {
-    const { coverageEndsAt } = schedule;
-    if (!coverageEndsAt) return null;
-
-    const daysUntilEnd = getDaysUntil(coverageEndsAt, referenceDate);
-    if (daysUntilEnd === null) return null;
-
-    const ended = new Date(coverageEndsAt).getTime() <= referenceDate.getTime();
-    const phase: CoveragePhase = ended ? 'ended' : daysUntilEnd <= COVERAGE_CLOSING_DAYS ? 'closing' : 'open';
-
-    return { phase, coverageEndsAt, daysUntilEnd };
-}
+import type { ProjectedCoverageDto } from '@/lib/api/types';
 
 /**
  * The window an event would get if it were activated right now: the picked
@@ -50,6 +20,14 @@ export function projectCoverage({
     ends.setUTCMonth(ends.getUTCMonth() + hostingMonths);
 
     return { coverageEndsAt: ends.toISOString(), hostingMonths };
+}
+
+// Where an upgrade moves a live event's coverage end to.
+export function upgradedCoverageEndsAt(coverageEndsAt: string | null | undefined, monthsAdded: number): string | null {
+    if (!coverageEndsAt) return null;
+    const ends = new Date(coverageEndsAt);
+    ends.setUTCMonth(ends.getUTCMonth() + monthsAdded);
+    return ends.toISOString();
 }
 
 /**

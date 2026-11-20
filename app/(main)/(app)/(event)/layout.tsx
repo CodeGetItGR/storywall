@@ -1,6 +1,7 @@
 import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
 import { type ReactNode, Suspense } from 'react';
 
+import { AnnouncementComposerTrigger } from '@/components/composer/AnnouncementComposerTrigger';
 import { DeletedEventRouteGuard } from '@/components/event/DeletedEventRouteGuard';
 import { DraftEventRouteGuard } from '@/components/event/DraftEventRouteGuard';
 import { EventLifecycleBanner } from '@/components/event/EventLifecycleBanner';
@@ -34,6 +35,10 @@ export default async function EventLayout({ children }: { children: ReactNode })
                                 {/* Role sheet */}
                                 <Suspense fallback={null}>
                                     <MyRoleSheetHost />
+                                </Suspense>
+                                {/* Announcement composer links */}
+                                <Suspense fallback={null}>
+                                    <AnnouncementComposerTrigger />
                                 </Suspense>
                             </LiteEventRouteGuard>
                         </DeletedEventRouteGuard>

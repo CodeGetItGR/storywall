@@ -18,7 +18,6 @@ import { DemoEventsSection } from '@/components/admin/demoEvents/DemoEventsSecti
 import { EventsSection } from '@/components/admin/events/EventsSection';
 import { FunnelPanel } from '@/components/admin/funnel/FunnelPanel';
 import { InviartCollectionsPanel } from '@/components/admin/inviart/InviartCollectionsPanel';
-import { InvitationThemesPanel } from '@/components/admin/invitationThemes/InvitationThemesPanel';
 import { ModerationPanel } from '@/components/admin/moderation/ModerationPanel';
 import { ModuleUsagePanel } from '@/components/admin/moduleUsage/ModuleUsagePanel';
 import { OrdersSection } from '@/components/admin/orders/OrdersSection';
@@ -63,7 +62,6 @@ export function AdminConsole() {
     if (tab === 'themePresets') return <ThemePresetsPanel />;
     if (tab === 'themeFonts') return <ThemeFontsPanel />;
     if (tab === 'qrCards') return <QrCardTemplatesPanel />;
-    if (tab === 'invitationThemes') return <InvitationThemesPanel />;
     if (tab === 'demoEvents') return <DemoEventsSection />;
     if (tab === 'withdrawals') return <WithdrawalsSection />;
     if (tab === 'orders') return <OrdersSection />;

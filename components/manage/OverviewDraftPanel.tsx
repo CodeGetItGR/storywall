@@ -12,6 +12,7 @@ import { PriceBreakdownSummary } from '@/components/checkout/PriceBreakdownSumma
 import { WithdrawalConsentSection } from '@/components/checkout/WithdrawalConsentSection';
 import { EventOverviewPriceRow } from '@/components/event/create/EventOverviewPriceRow';
 import { DraftDeleteSection } from '@/components/manage/DraftDeleteSection';
+import { DraftEventDetailsModal } from '@/components/manage/DraftEventDetailsModal';
 import { DraftPayBar } from '@/components/manage/DraftPayBar';
 import { DraftStartDateModal } from '@/components/manage/DraftStartDateModal';
 import { GiftAccountSetup } from '@/components/manage/GiftAccountSetup';
@@ -19,7 +20,9 @@ import { TargetedSection } from '@/components/manage/TargetedSection';
 import { DurationPicker } from '@/components/plan/DurationPicker';
 import { useDraftActivationCheckout } from '@/hooks/useDraftActivationCheckout';
 import { useDraftDuration } from '@/hooks/useDraftDuration';
+import { useDraftEventDetails } from '@/hooks/useDraftEventDetails';
 import { useDraftStartDate } from '@/hooks/useDraftStartDate';
+import { useFlowEvent } from '@/hooks/useFlowEvent';
 import { useLocalizedAppEventTypeCopy } from '@/hooks/useLocalizedAppEventTypeCopy';
 import type {
     CoverageOptionResponseDto,
@@ -30,6 +33,7 @@ import type {
 } from '@/lib/api/types';
 import { formatMoney, formatOptionalMoney } from '@/lib/billing';
 import { focusFirstUncheckedBox } from '@/lib/createEventSteps';
+import { trackFlow } from '@/lib/flowTracking';
 import { GIFT_ACCOUNT_SECTION_ID } from '@/lib/manageSectionTargets';
 import { getOptionPriceDetails } from '@/lib/planTiers';
 
@@ -44,6 +48,7 @@ export function OverviewDraftPanel({
     eventType,
     startAt,
     endAt,
+    asksStartDate,
     projectedCoverage,
     currentPlan,
     currentOption,
@@ -63,6 +68,8 @@ export function OverviewDraftPanel({
     eventType: EventTypeConvention;
     startAt: string | null;
     endAt: string | null;
+    // A lite draft is paid for without a date, and has none to move.
+    asksStartDate: boolean;
     projectedCoverage: ProjectedCoverageDto | null;
     currentPlan: PlanTierResponseDto | undefined;
     // The draft's duration while it is on sale; null once it was retired.
@@ -86,18 +93,28 @@ export function OverviewDraftPanel({
     const tBilling = useTranslations('EventPlanSettingsPage');
     const locale = useLocale();
     const eventTypeCopy = useLocalizedAppEventTypeCopy();
-    const canPay = Boolean(startAt);
+    const canPay = !asksStartDate || Boolean(startAt);
     const planActivation = currentPlan && currentOption ? getOptionPriceDetails(currentPlan, currentOption) : null;
 
-    const duration = useDraftDuration({ eventId, options: durationOptions, currentOptionId: savedOptionId, startAt });
+    const duration = useDraftDuration({
+        eventId,
+        options: durationOptions,
+        currentOptionId: savedOptionId,
+        startAt: asksStartDate ? startAt : null,
+    });
     // Checkout needs the main host, a duration on sale that covers the start, and no duration save in flight.
     const canCheckout = canPurchase && Boolean(currentOption) && !duration.isSaving && !duration.selectedTooShort;
     // Only quoted once there is a start date too.
     const { consent, partnerBranding, collaborationPreview, breakdown, handleCollaborationPreviewChange, submit, error, startPassed, isPending } =
         useDraftActivationCheckout(eventId, { quoteEnabled: canPay && canCheckout, startAt });
     const startDate = useDraftStartDate(eventId, { startAt, endAt, coverageEndsAt: projectedCoverage?.coverageEndsAt ?? null });
+    const eventDetails = useDraftEventDetails(eventId, { hostingMonths: currentOption?.months });
     const consentReady = consent.consentSatisfied && partnerBranding.satisfied;
-    const showConsent = useCallback(() => focusFirstUncheckedBox(DRAFT_CONSENT_ID), []);
+    const showConsent = useCallback(() => {
+        trackFlow({ name: 'Consent Hint', from: 'draft' });
+        focusFirstUncheckedBox(DRAFT_CONSENT_ID);
+    }, []);
+    useFlowEvent(cancelledCheckout ? { name: 'Checkout Result', result: 'cancelled' } : null);
 
     // activationTotal already bundles the plan's own (non-collaboration-code) price with
     // whichever add-ons count toward activation (see useEventOverviewPlan). A collaboration
@@ -240,7 +257,7 @@ export function OverviewDraftPanel({
                 )}
 
                 {/* Activation disclosures */}
-                {canPay && <ActivationDisclosures projectedCoverage={projectedCoverage} />}
+                {canPay && <ActivationDisclosures projectedCoverage={projectedCoverage} hasEventDate={asksStartDate} />}
 
                 {/* Gift account: like buying, only the main host may set it (4019 otherwise) */}
                 {wishlistAvailable && canPurchase && (
@@ -291,11 +308,15 @@ export function OverviewDraftPanel({
                     onShowConsentAction={showConsent}
                     onPayAction={submit}
                     onChangeDateAction={startDate.open}
+                    onAddDetailsAction={eventDetails.open}
                 />
             </div>
 
             {/* Move the date */}
-            <DraftStartDateModal date={startDate} eventType={eventType} />
+            {asksStartDate && startAt && <DraftStartDateModal date={startDate} eventType={eventType} />}
+
+            {/* Add the date and place */}
+            {!canPay && <DraftEventDetailsModal details={eventDetails} eventType={eventType} />}
         </div>
     );
 }

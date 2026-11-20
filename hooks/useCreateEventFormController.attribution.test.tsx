@@ -1,4 +1,5 @@
 import { act, cleanup, renderHook, waitFor } from '@testing-library/react';
+import { track } from '@vercel/analytics';
 import type { ChangeEvent } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -7,6 +8,8 @@ import { writeCampaignAttributionCookie } from '@/lib/campaignAttribution';
 import { CAMPAIGN_ATTRIBUTION_COOKIE, CONSENT_COOKIE, writeConsent } from '@/lib/consent';
 
 const mocks = vi.hoisted(() => ({ post: vi.fn(), navigateToCheckout: vi.fn() }));
+
+vi.mock('@vercel/analytics', () => ({ track: vi.fn() }));
 
 vi.mock('@/lib/api/client', async (importOriginal) => ({
     ...(await importOriginal<typeof import('@/lib/api/client')>()),
@@ -30,7 +33,14 @@ const stable = {
     appConfig: { data: { eventTypes: [{ eventTypeKey: 'WEDDING', isEnabled: true }], modules: [], media: null, coverage: { minDaysAfterStart: 7 } }, refetch: vi.fn() },
     planTiers: { data: [plan], isLoading: false, refetch: vi.fn() },
     durationPicks: { picks: {}, resetPicks: vi.fn(), pickDuration: vi.fn() },
-    gift: { isValid: true, isSaving: false, reset: vi.fn(), saveToDraft: vi.fn().mockResolvedValue(undefined) },
+    gift: {
+        isGift: false,
+        details: { value: { recipientLabel: '', giverDisplayName: '', recipientEmail: '' } },
+        isValid: true,
+        isSaving: false,
+        reset: vi.fn(),
+        saveToDraft: vi.fn().mockResolvedValue(undefined),
+    },
     createEvent: { mutateAsync: vi.fn().mockResolvedValue({ id: 'event-1' }), reset: vi.fn(), isPending: false, error: null },
     updateDraft: { mutateAsync: vi.fn(), isPending: false },
     previewCode: { mutateAsync: vi.fn(), reset: vi.fn(), isPending: false },
@@ -105,5 +115,49 @@ describe('create event checkout attribution', () => {
         const body = await submitCheckout();
 
         expect(body).not.toHaveProperty('attribution');
+    });
+});
+
+describe('create event flow events', () => {
+    beforeEach(() => {
+        vi.mocked(track).mockClear();
+        mocks.post.mockReset();
+        Object.assign(window, { va: vi.fn() });
+    });
+    afterEach(() => {
+        cleanup();
+        Reflect.deleteProperty(window, 'va');
+    });
+
+    it('reports the step shown, with the event type', async () => {
+        renderHook(() => useCreateEventFormController());
+
+        await waitFor(() => expect(track).toHaveBeenCalledWith('Create Step', { step: 'overview', type: 'WEDDING' }));
+    });
+
+    it('reports a start date that blocks the form, once', async () => {
+        const { result } = renderHook(() => useCreateEventFormController());
+        act(() => result.current.onStartAtChange(startAtInDays(-2)));
+        act(() => result.current.onStartAtChange(startAtInDays(-3)));
+
+        await waitFor(() => expect(track).toHaveBeenCalledWith('Create Blocked', { reason: 'start_past' }));
+        expect(vi.mocked(track).mock.calls.filter(([name]) => name === 'Create Blocked')).toHaveLength(1);
+    });
+
+    it('reports the plan when checkout opens', async () => {
+        mocks.post.mockResolvedValue({});
+
+        await submitCheckout();
+
+        await waitFor(() => expect(track).toHaveBeenCalledWith('Checkout Open', { from: 'wizard', plan: 'PLUS' }));
+    });
+
+    it('reports a failed checkout, with no typed value', async () => {
+        mocks.post.mockRejectedValue(new Error('network'));
+
+        await submitCheckout();
+
+        await waitFor(() => expect(track).toHaveBeenCalledWith('Checkout Error', { from: 'wizard', code: 'unknown' }));
+        expect(JSON.stringify(vi.mocked(track).mock.calls)).not.toContain('Anna and Nick');
     });
 });

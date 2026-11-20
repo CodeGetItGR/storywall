@@ -20,8 +20,6 @@ export function PublishNotice({ notice, onOpen }: PublishNoticeProps) {
             return <EditorNotice tone="info" message={t('published')} actionLabel={t('open')} onAction={onOpen} />;
         case 'republished':
             return <EditorNotice tone="info" message={t('republished')} />;
-        case 'unavailable':
-            return <EditorNotice tone="info" message={t('publishUnavailable')} />;
         case 'failed':
             return <EditorNotice tone="error" message={t('publishFailed')} />;
         default:

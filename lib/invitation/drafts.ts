@@ -2,6 +2,7 @@ import { hashKey } from '@tanstack/react-query';
 
 import { ApiError } from '@/lib/api/client';
 import { type InvitationDocument, upgradeInvitationDocument } from '@/lib/invitation/document';
+import { withUniqueListItemIds } from '@/lib/invitation/listIds';
 import type { MediaResolver } from '@/lib/invitation/render';
 import { type ThemeDesign, themeDesignSchema } from '@/lib/invitation/theme';
 
@@ -20,9 +21,22 @@ export type InvitationDraftDto = {
     design: unknown;
     // Image id to URL, for the images the design and document point at.
     imageUrls: Record<string, string>;
+    // The ids in imageUrls that are the theme's own, not the draft's uploads.
+    themeImageIds?: string[];
     expiresAt: string | null;
     updatedAt: string;
     token: string | null;
+};
+
+// A draft in GET /api/invitation-drafts: the caller's own drafts and those of events they host.
+export type InvitationDraftSummaryDto = {
+    id: string;
+    themeSlug: string;
+    themeName: string;
+    eventType: string;
+    eventId: string | null;
+    revision: number;
+    updatedAt: string;
 };
 
 // What an autosave answers: the revision the next save must name.
@@ -34,12 +48,16 @@ export const DRAFT_REVISION_STALE_ERROR_CODE = 5208;
 export const invitationDraftKeys = {
     all: ['invitationDrafts'] as const,
     detail: (draftId: string) => [...invitationDraftKeys.all, draftId] as const,
+    list: () => [...invitationDraftKeys.all, 'list'] as const,
 };
 
 // A draft ready for the editor: the document and theme checked against the format.
 export type EditableDraft = {
     id: string;
     revision: number;
+    // The theme the draft was loaded with. A theme switch in the editor changes it on the next save.
+    themeSlug: string;
+    themeName: string;
     // The event type the theme is for: it decides which sections the host may add.
     eventType: string;
     // The event that pays for publishing; null until the draft is put on one.
@@ -47,6 +65,8 @@ export type EditableDraft = {
     document: InvitationDocument;
     theme: ThemeDesign;
     media: MediaResolver;
+    // The theme's own images among the draft's: those a switch to another theme leaves behind.
+    themeImageIds: ReadonlySet<string>;
 };
 
 // Throws when the stored document or theme isn't in the format the renderer draws.
@@ -55,11 +75,14 @@ export function readEditableDraft(dto: InvitationDraftDto): EditableDraft {
     return {
         id: dto.id,
         revision: dto.revision,
+        themeSlug: dto.themeSlug,
+        themeName: dto.themeName,
         eventType: dto.eventType,
         eventId: dto.eventId ?? null,
-        document: upgradeInvitationDocument(dto.document),
+        document: withUniqueListItemIds(upgradeInvitationDocument(dto.document)),
         theme: themeDesignSchema.parse(dto.design),
         media: (mediaId) => imageUrls[mediaId],
+        themeImageIds: new Set(dto.themeImageIds ?? []),
     };
 }
 

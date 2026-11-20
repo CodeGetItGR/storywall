@@ -23,7 +23,7 @@ export function CoupleProfilesSection({ section, contrast, ctx }: CoupleProfiles
                     const partner = path === 'partnerA' ? partnerA : partnerB;
                     return (
                         <div key={path} className="couple-profile-block">
-                            <FamilyPhoto photo={partner.photo} name={partner.name} ctx={ctx} />
+                            <FamilyPhoto photo={partner.photo} name={partner.name} sectionId={section.id} path={`${path}.photo`} ctx={ctx} />
                             <SectionText section={section} path={`${path}.name`} value={partner.name} tag="h2" contrast={contrast} ctx={ctx} />
                             <CoupleProfileText section={section} path={path} partner={partner} contrast={contrast} ctx={ctx} />
                         </div>

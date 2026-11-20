@@ -2,7 +2,7 @@
 
 import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
-import { createContext, type ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { createContext, type ReactNode, useCallback, useContext, useEffect, useMemo, useState, useTransition } from 'react';
 
 import { resetContentViews } from '@/hooks/useContentViews';
 import { useSentryUser } from '@/hooks/useSentryUser';
@@ -19,6 +19,7 @@ import type {
 } from '@/lib/api/types';
 import type { SessionHandoff } from '@/lib/auth/sessionHandoff';
 import { clearSession, getAuthState, getSessionGeneration, setSession, subscribeAuthState, updateSessionProfile } from '@/lib/auth/tokenStore';
+import { clearCreateEventWizardDraft } from '@/lib/createEventWizardDraft';
 
 const BOOTSTRAP_TIMEOUT_MS = 8000;
 const RETRY_BASE_MS = 1000;
@@ -53,7 +54,11 @@ export interface AuthContextValue {
     // True while bootstrapping because the server couldn't be reached, not
     // because the answer is still on its way. The session is being retried.
     isSessionUnavailable: boolean;
-    register: (input: RegisterRequestDto) => Promise<AuthSessionDto>;
+    // True from a sign-in or sign-out until the router has re-rendered the page for it. Don't
+    // change the URL on the client (replacePageUrl, pushPageEntry) meanwhile: it cuts the
+    // re-render short and Next's router keeps the old URL for good (Next 16.4).
+    isRefreshingSession: boolean;
+    register:(input: RegisterRequestDto) => Promise<AuthSessionDto>;
     login: (input: { email: string; password: string; inviteToken?: string }) => Promise<AuthSessionDto>;
     oauth: (provider: 'GOOGLE' | 'APPLE', input: OAuthLoginRequestDto) => Promise<AuthSessionDto>;
     logout: () => Promise<void>;
@@ -68,6 +73,7 @@ export function AuthProvider({ children, handoff = null }: { children: ReactNode
     const [authState, setAuthState] = useState(getAuthState());
     const [isBootstrapping, setIsBootstrapping] = useState(true);
     const [isSessionUnavailable, setIsSessionUnavailable] = useState(false);
+    const [isRefreshingSession, startSessionRefresh] = useTransition();
     // Only the first render's handoff counts. A later server render of the
     // layout (router.refresh()) never carries one.
     const [initialHandoff] = useState(handoff);
@@ -167,7 +173,7 @@ export function AuthProvider({ children, handoff = null }: { children: ReactNode
     const resetSessionCaches = useCallback(() => {
         queryClient.clear();
         resetContentViews();
-        router.refresh();
+        startSessionRefresh(() => router.refresh());
     }, [queryClient, router]);
 
     const register = useCallback(
@@ -216,6 +222,8 @@ export function AuthProvider({ children, handoff = null }: { children: ReactNode
         // session) would render straight from this cache until each query's
         // staleTime happened to elapse.
         resetSessionCaches();
+        // The next person on this device must not find this account's half-made event.
+        clearCreateEventWizardDraft();
     }, [resetSessionCaches]);
 
     const updateProfile = useCallback((profile: Pick<UserResponseDto, 'firstName' | 'lastName' | 'profilePictureUrl' | 'emailVerified'>) => {
@@ -270,8 +278,8 @@ export function AuthProvider({ children, handoff = null }: { children: ReactNode
     useSentryUser(user?.userId ?? null);
 
     const value: AuthContextValue = useMemo(
-        () => ({ user, isAuthenticated, isBootstrapping, isSessionUnavailable, register, login, oauth, logout, updateProfile }),
-        [user, isAuthenticated, isBootstrapping, isSessionUnavailable, register, login, oauth, logout, updateProfile],
+        () => ({ user, isAuthenticated, isBootstrapping, isSessionUnavailable, isRefreshingSession, register, login, oauth, logout, updateProfile }),
+        [user, isAuthenticated, isBootstrapping, isSessionUnavailable, isRefreshingSession, register, login, oauth, logout, updateProfile],
     );
 
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

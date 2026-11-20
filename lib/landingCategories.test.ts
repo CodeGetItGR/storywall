@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
+import { planRequirementsOf } from '@/lib/__fixtures__/planRequirements';
 import type { CoverageOptionResponseDto, MemberRoleCatalogDto, PlanTierResponseDto } from '@/lib/api/types';
 import { resolveLandingCategoryPlans } from '@/lib/landingCategories';
 
@@ -35,6 +36,7 @@ function plan(overrides: Partial<PlanTierResponseDto>): PlanTierResponseDto {
         sharedGroupKey: null,
         initialOptions: [option()],
         extensionOptions: [],
+        requirements: planRequirementsOf(overrides.moduleKeys ?? ['gallery']),
         ...overrides,
     };
 }

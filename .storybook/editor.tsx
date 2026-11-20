@@ -3,10 +3,15 @@ import '@/components/saveMyDate/editor/editor.css';
 import type { Decorator } from '@storybook/nextjs-vite';
 import { http, HttpResponse } from 'msw';
 
+import type { AdminInvitationThemeDto } from '@/lib/adminInvitationThemes';
 import { DRAFT_REVISION_STALE_ERROR_CODE, readEditableDraft } from '@/lib/invitation/drafts';
 import { EDITOR_TOUR_SEEN_KEY } from '@/lib/invitation/editorTour';
 import type { InvitationPublicationDto } from '@/lib/invitation/publication';
 import { type SampleDraftDto, sampleDraftDto } from '@/lib/invitation/sampleDraft';
+import { sampleInvitationPlan } from '@/lib/invitation/samplePlan';
+import { readEditableTheme, type TypographyPresetOption } from '@/lib/invitation/themeEditing';
+
+import { STORY_HOST_MEMBER_ID,storyEvent, storyMember } from './fixtures';
 
 // The invitation editor's stories. The editor's parts read its dark colours from .smd-editor.
 
@@ -47,6 +52,22 @@ export const storyDraft = () => readEditableDraft(sampleDraftDto());
 
 // A draft on an event, so Publish publishes.
 export const storyDraftOnEvent = () => readEditableDraft({ ...sampleDraftDto(), eventId: 'event-1' });
+
+// Publishing a draft on no event: the host's events (a wedding they host when withEvent) and a plan
+// with the invitation. Checkout answers with the success page, so nothing leaves the story.
+export function eventStepHandlers({ withEvent = false }: { withEvent?: boolean } = {}) {
+    const event = storyEvent({ id: 'evt-wedding', eventType: 'WEDDING' });
+    const memberships = withEvent ? [storyMember({ id: STORY_HOST_MEMBER_ID, eventId: event.id, role: 'HOST' })] : [];
+    return [
+        http.get('*/api/me/events', () => HttpResponse.json(memberships)),
+        http.get('*/api/events/:eventId', () => HttpResponse.json(event)),
+        http.get('*/api/invitation-drafts', () => HttpResponse.json([])),
+        http.get('*/api/plan-tiers', () => HttpResponse.json([sampleInvitationPlan()])),
+        http.put('*/api/invitation-drafts/:id/event', ({ params }) =>
+            HttpResponse.json({ ...sampleDraftDto(), id: String(params.id), eventId: event.id }),
+        ),
+    ];
+}
 
 type PublishOptions = {
     // The link it was published at before. Without it, the first publish asks for one.
@@ -123,5 +144,76 @@ export function failingSaveHandlers(draft: SampleDraftDto = sampleDraftDto()) {
     return [
         http.get('*/api/invitation-drafts/:id', () => HttpResponse.json(draft)),
         http.put('*/api/invitation-drafts/:id', () => HttpResponse.json({ status: 400, errorCode: 'BAD_REQUEST' }, { status: 400 })),
+    ];
+}
+
+// ---- The admin's theme editor (KAN-68) ----
+
+// A theme with the sample draft's design and invitation, its images stored as theme assets.
+export function storyThemeDto(overrides: Partial<AdminInvitationThemeDto> = {}): AdminInvitationThemeDto {
+    const draft = sampleDraftDto();
+    return {
+        id: 'theme-1',
+        eventType: 'WEDDING',
+        status: 'DRAFT',
+        name: 'Olive',
+        slug: 'olive',
+        code: 'W001',
+        description: null,
+        cardColor: null,
+        seoTitle: null,
+        seoDescription: null,
+        ogImageAssetId: null,
+        cardThumbAssetId: null,
+        productPhotos: [],
+        sortOrder: 0,
+        design: draft.design as unknown as Record<string, unknown>,
+        document: draft.document as unknown as Record<string, unknown>,
+        revision: 3,
+        assets: Object.entries(draft.imageUrls).map(([assetId, url]) => ({
+            assetId,
+            url,
+            contentType: 'image/png',
+            width: 800,
+            height: 600,
+            byteSize: 1000,
+        })),
+        updatedAt: '2026-06-15T12:00:00Z',
+        ...overrides,
+    };
+}
+
+export const storyTheme = (overrides: Partial<AdminInvitationThemeDto> = {}) => readEditableTheme(storyThemeDto(overrides));
+
+export const STORY_TYPOGRAPHY_PRESETS: TypographyPresetOption[] = [
+    { id: 'classic', name: 'Classic', titleFont: "'Playfair Display',serif", bodyFont: "'Lora',serif", buttonFont: null },
+    { id: 'modern', name: 'Modern', titleFont: 'Arial', bodyFont: 'Arial', buttonFont: null },
+];
+
+// A themes backend that saves, and the font pairings.
+export function themeHandlers(theme: AdminInvitationThemeDto = storyThemeDto()) {
+    let revision = theme.revision;
+    return [
+        http.get('*/api/invitation-typography-presets', () => HttpResponse.json(STORY_TYPOGRAPHY_PRESETS)),
+        http.get('*/api/admin/invitation-themes/:id', () => HttpResponse.json({ ...theme, revision })),
+        http.put('*/api/admin/invitation-themes/:id', async ({ request }) => {
+            const body = (await request.json()) as Partial<AdminInvitationThemeDto>;
+            revision += 1;
+            return HttpResponse.json({ ...theme, design: body.design, document: body.document, revision });
+        }),
+    ];
+}
+
+// Another admin saved the theme first: every save is stale.
+export function themeConflictHandlers(theme: AdminInvitationThemeDto = storyThemeDto()) {
+    return [
+        http.get('*/api/invitation-typography-presets', () => HttpResponse.json(STORY_TYPOGRAPHY_PRESETS)),
+        http.get('*/api/admin/invitation-themes/:id', () => HttpResponse.json({ ...theme, revision: theme.revision + 1 })),
+        http.put('*/api/admin/invitation-themes/:id', () =>
+            HttpResponse.json(
+                { status: 409, errorCode: 5201, title: 'Conflict' },
+                { status: 409, headers: { 'Content-Type': 'application/problem+json' } },
+            ),
+        ),
     ];
 }

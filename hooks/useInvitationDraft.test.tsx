@@ -5,6 +5,7 @@ import type { ReactNode } from 'react';
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import { createDraftServer, TEST_API } from '@/hooks/invitationDraftTestServer';
+import { WithAuth } from '@/hooks/testAuthContext';
 import { useInvitationDraft } from '@/hooks/useInvitationDraft';
 import { invitationDraftKeys } from '@/lib/invitation/drafts';
 
@@ -19,7 +20,11 @@ const backend = createDraftServer();
 function renderDraft({ cached, prefetched = false }: { cached?: unknown; prefetched?: boolean } = {}) {
     const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false, staleTime: 10 * 60 * 1000 } } });
     if (cached) queryClient.setQueryData(invitationDraftKeys.detail('draft-1'), cached);
-    const wrapper = ({ children }: { children: ReactNode }) => <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
+    const wrapper = ({ children }: { children: ReactNode }) => (
+        <QueryClientProvider client={queryClient}>
+            <WithAuth>{children}</WithAuth>
+        </QueryClientProvider>
+    );
     return renderHook(() => useInvitationDraft('draft-1', { prefetched }), { wrapper });
 }
 

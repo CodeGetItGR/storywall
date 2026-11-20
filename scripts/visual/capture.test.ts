@@ -1,7 +1,9 @@
 // @vitest-environment node
+import { cpus } from 'node:os';
+
 import { describe, expect, it } from 'vitest';
 
-import { allFailedSoFar } from './capture';
+import { allFailedSoFar, MACHINE } from './capture';
 
 describe('allFailedSoFar', () => {
     it('is true when the first 20 captures all failed', () => {
@@ -18,5 +20,12 @@ describe('allFailedSoFar', () => {
 
     it('is false after the 20th capture, so it only decides once', () => {
         expect(allFailedSoFar(21, 21)).toBe(false);
+    });
+});
+
+describe('MACHINE', () => {
+    it('names this machine by its CPU model', () => {
+        expect(MACHINE).toBe(cpus()[0]?.model.trim() || 'unknown');
+        expect(MACHINE.length).toBeGreaterThan(0);
     });
 });

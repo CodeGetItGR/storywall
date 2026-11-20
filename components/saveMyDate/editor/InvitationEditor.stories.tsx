@@ -1,10 +1,12 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 import { expect, fireEvent, fn, userEvent, waitFor, within } from 'storybook/test';
 
+import { withAppContext } from '@/.storybook/appContext';
 import { copyFor } from '@/.storybook/copy';
 import {
     conflictHandlers,
     draftHandlers,
+    eventStepHandlers,
     failingSaveHandlers,
     publishHandlers,
     storyDraft,
@@ -12,13 +14,14 @@ import {
     withEditorScreen,
     withFirstEditorVisit,
 } from '@/.storybook/editor';
+import { storyUser } from '@/.storybook/fixtures';
 import { waitForOpen } from '@/.storybook/waitForOpen';
 import { InvitationEditor } from '@/components/saveMyDate/editor/InvitationEditor';
 
 const meta = {
     title: 'SaveMyDate/Editor/InvitationEditor',
     component: InvitationEditor,
-    decorators: [withEditorScreen],
+    decorators: [withEditorScreen, withAppContext],
     parameters: { layout: 'fullscreen' },
     args: { draft: storyDraft(), onReload: fn() },
     beforeEach({ msw }) {
@@ -83,13 +86,48 @@ export const Preview: Story = {
     },
 };
 
-// Publishing saves, then says it isn't available yet.
-export const Publish: Story = {
+// Signed out, publishing saves, then asks the visitor to sign in.
+export const PublishSignedOut: Story = {
+    parameters: { app: { user: null } },
     play: async ({ canvasElement, globals }) => {
         const copy = copyFor(globals).InvitationEditor;
-        const canvas = within(canvasElement);
-        await userEvent.click(canvas.getByRole('button', { name: copy.publish }));
-        await expect(await canvas.findByText(copy.publishUnavailable, {}, SLOW)).toBeVisible();
+        await userEvent.click(within(canvasElement).getByRole('button', { name: copy.publish }));
+        const dialog = within(await waitForOpen('dialog'));
+        // The dialog fades in.
+        await waitFor(() => expect(dialog.getByText(copy.signInTitle)).toBeVisible(), SLOW);
+        await expect(dialog.getByRole('link', { name: copy.signIn })).toHaveAttribute(
+            'href',
+            '/login?next=%2Fsave-my-date%2Feditor%2Fdraft-1%3Fpublish%3D1',
+        );
+    },
+};
+
+// A draft on no event, and the host has a wedding: they choose it or make a new one.
+export const PublishChooseEvent: Story = {
+    beforeEach({ msw }) {
+        msw.use(...eventStepHandlers({ withEvent: true }));
+    },
+    play: async ({ canvasElement, globals }) => {
+        const copy = copyFor(globals).InvitationEditor;
+        await userEvent.click(within(canvasElement).getByRole('button', { name: copy.publish }));
+        const sheet = within(await waitForOpen('dialog'));
+        await expect(await sheet.findByRole('button', { name: /Eleni & Nikos/ }, SLOW)).toBeVisible();
+        await expect(sheet.getByRole('button', { name: copy.newEvent })).toBeVisible();
+    },
+};
+
+// No event to choose: the new event's plan step opens, asking only for what the invitation doesn't say.
+export const PublishNewEvent: Story = {
+    beforeEach({ msw }) {
+        msw.use(...eventStepHandlers());
+    },
+    play: async ({ canvasElement, globals }) => {
+        const copy = copyFor(globals).InvitationEditor;
+        await userEvent.click(within(canvasElement).getByRole('button', { name: copy.publish }));
+        const sheet = within(await waitForOpen('dialog'));
+        await expect(await sheet.findByText(copy.choosePlan, {}, SLOW)).toBeVisible();
+        await expect(await sheet.findByText('Premium', {}, SLOW)).toBeVisible();
+        await expect(sheet.getByRole('button', { name: copy.continueToPayment })).toBeDisabled();
     },
 };
 
@@ -232,5 +270,32 @@ export const DeleteSection: Story = {
         await userEvent.click(within(section).getByRole('button', { name: copy.sections.options }));
         await userEvent.click(within(await waitForOpen('menu')).getByRole('menuitem', { name: copy.sections.delete }));
         await waitForOpen('dialog');
+    },
+};
+
+// A section's height bar drags it taller, in one undo step.
+export const SectionHeight: Story = {
+    tags: ['visual-desktop-only'],
+    play: async ({ canvasElement, globals }) => {
+        const copy = copyFor(globals).InvitationEditor;
+        const section = await tapSection(canvasElement, copy.sectionNames.dressCode);
+        const bar = within(section).getByRole('slider', { name: copy.handles.sectionHeight });
+        const rect = bar.getBoundingClientRect();
+        const x = rect.left + rect.width / 2;
+        const y = rect.top + rect.height / 2;
+        fireEvent.pointerDown(bar, { pointerId: 1, clientX: x, clientY: y });
+        fireEvent.pointerMove(bar, { pointerId: 1, clientX: x, clientY: y + 80 });
+        fireEvent.pointerUp(bar, { pointerId: 1, clientX: x, clientY: y + 80 });
+        await waitFor(() => expect(within(canvasElement).getByRole('button', { name: copy.undo })).toBeEnabled());
+    },
+};
+
+// An admin also gets the footer's height, image and decoration sizes and the custom section arrows.
+export const Admin: Story = {
+    decorators: [withAppContext],
+    parameters: { app: { user: { ...storyUser, role: 'ADMIN' } } },
+    play: async ({ canvasElement, globals }) => {
+        const copy = copyFor(globals).InvitationEditor.handles;
+        await expect(within(canvasElement).getByText(copy.twoColumns)).toBeInTheDocument();
     },
 };

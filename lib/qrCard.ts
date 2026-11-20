@@ -1,9 +1,9 @@
-import type { EventModuleResponseDto, EventThemeFontDto, QrCardSize, QrCardTemplateDto, QrCardTextAlign, QrTargetType } from '@/lib/api/types';
-import { guestCodeActions } from '@/lib/liteEvents';
+import type { EventThemeFontDto, QrCardSize, QrCardTemplateDto, QrCardTextAlign, QrGuestAction, QrTargetType } from '@/lib/api/types';
 import { resolveLocalizedText } from '@/lib/localizedText';
 import {
     DEFAULT_QR_CARD_LAYOUT,
     DEFAULT_QR_CARD_TITLE,
+    FEATURES_QR_CARD_LAYOUT,
     type QrCardLayout,
     qrCardLayoutOf,
     type QrCardTextField,
@@ -139,7 +139,11 @@ export const PLAIN_QR_CARD_STYLE: QrCardStyle = {
     sizes: ['A6', 'A5'],
 };
 
-export function qrCardStyleOf(template: QrCardTemplateDto): QrCardStyle {
+// Plain on the event's QR page: the layout with picture tiles.
+export const PLAIN_FEATURES_QR_CARD_STYLE: QrCardStyle = { ...PLAIN_QR_CARD_STYLE, layout: FEATURES_QR_CARD_LAYOUT };
+
+// `fallback` is the layout for a template without a saved one.
+export function qrCardStyleOf(template: QrCardTemplateDto, fallback: QrCardLayout = DEFAULT_QR_CARD_LAYOUT): QrCardStyle {
     return {
         id: template.id,
         artworkUrl: template.artworkUrl,
@@ -147,20 +151,18 @@ export function qrCardStyleOf(template: QrCardTemplateDto): QrCardStyle {
         headingFont: template.headingFont,
         codeColor: template.codeColor,
         centerLogo: template.centerLogo,
-        layout: qrCardLayoutOf(template.layout),
+        layout: qrCardLayoutOf(template.layout, fallback),
         sizes: template.sizes,
     };
 }
 
 // The default line under the code (a QrCardPage.lines key), by what the QR opens. A guest code's line follows
-// what it offers: photos, wishes or both.
-export type QrCardLineKey = 'join' | 'invitation' | 'gallery' | 'guestWish' | 'guestBoth';
+// what it offers (the event's capabilities.guestCodeActions): photos, wishes or both.
+export type QrCardLineKey = 'join' | 'gallery' | 'guestWish' | 'guestBoth';
 
-export function qrCardLineKey(targetType: QrTargetType, modules: EventModuleResponseDto[]): QrCardLineKey {
+export function qrCardLineKey(targetType: QrTargetType, actions: QrGuestAction[]): QrCardLineKey {
     if (targetType === 'EVENT_JOIN') return 'join';
-    if (targetType === 'INVITATION') return 'invitation';
     if (targetType === 'MEDIA_UPLOAD') return 'gallery';
-    const actions = guestCodeActions(modules);
     if (actions.includes('UPLOAD') && actions.includes('WISH')) return 'guestBoth';
     return actions.includes('WISH') ? 'guestWish' : 'gallery';
 }

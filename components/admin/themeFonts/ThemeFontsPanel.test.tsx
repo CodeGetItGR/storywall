@@ -25,6 +25,8 @@ const READY: AdminThemeFontDto = {
     archived: false,
     url: '/api/theme-fonts/gfs-didot/1.woff2',
     presetCount: 2,
+    library: 'WALL',
+    invitationEventTypes: [],
 };
 const NO_FILE: AdminThemeFontDto = {
     ...READY,
@@ -34,6 +36,8 @@ const NO_FILE: AdminThemeFontDto = {
     fallback: 'sans-serif',
     url: null,
     presetCount: 0,
+    library: 'WALL',
+    invitationEventTypes: [],
 };
 
 function state(overrides: Record<string, unknown> = {}) {
@@ -96,5 +100,33 @@ describe('ThemeFontsPanel drawer identity', () => {
 
         act(() => closes[closes.length - 1]());
         expect(screen.queryByTestId('drawer')).toBeNull();
+    });
+});
+
+describe("ThemeFontsPanel on Save my date's list", () => {
+    const eventTypes = {
+        options: [
+            { key: 'WEDDING', label: 'Wedding' },
+            { key: 'BAPTISM', label: 'Baptism' },
+        ],
+        labelOf: (key: string) => ({ WEDDING: 'Wedding', BAPTISM: 'Baptism' })[key] ?? key,
+    };
+
+    it('shows event types where the wall shows presets, and drops the subtitle', () => {
+        state({ data: [{ ...READY, library: 'INVITATION', invitationEventTypes: ['WEDDING'] }, { ...NO_FILE, library: 'INVITATION' }] });
+        render(<ThemeFontsPanel library="INVITATION" eventTypes={eventTypes} />);
+        expect(screen.getByRole('heading', { name: 'fonts.title' })).toBeInTheDocument();
+        expect(screen.queryByText('subtitle')).toBeNull();
+        expect(screen.getByText('eventTypes')).toBeInTheDocument();
+        expect(screen.queryByText('columns.presets')).toBeNull();
+        expect(screen.getByText('Wedding')).toBeInTheDocument();
+        // No event type means every one.
+        expect(screen.getByText('eventTypesAll')).toBeInTheDocument();
+    });
+
+    it('has its own empty message', () => {
+        state({ data: [] });
+        render(<ThemeFontsPanel library="INVITATION" eventTypes={eventTypes} />);
+        expect(screen.getByText('fonts.empty')).toBeInTheDocument();
     });
 });

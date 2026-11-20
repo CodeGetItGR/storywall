@@ -1,40 +1,25 @@
 'use client';
 
-import { ChevronDown, LayoutDashboard } from 'lucide-react';
-import { useSearchParams } from 'next/navigation';
-import { useTranslations } from 'next-intl';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useMemo } from 'react';
 
 import { DeletedEventManageScreen } from '@/components/manage/DeletedEventManageScreen';
-import { ManageSectionNav, sectionIcons } from '@/components/manage/ManageSectionNav';
 import { ManageMembersSkeleton, ManageOverviewSkeleton, ManageRsvpSkeleton } from '@/components/manage/ManageSkeletons';
+import { ManageShell } from '@/components/manage/nav/ManageShell';
 import { ThemePicker } from '@/components/manage/ThemePicker';
 import { useEventRouteContext } from '@/components/routing/EventRouteGate';
-import { BackButton } from '@/components/ui/BackButton';
-import { Modal } from '@/components/ui/modal';
 import { useAppConfig } from '@/hooks/useAppConfig';
 import { useEventInvitations } from '@/hooks/useEventInvitations';
 import { useEventMembers } from '@/hooks/useEventMembers';
-import { useGiftSection } from '@/hooks/useGiftSection';
-import { useManageSectionLabel } from '@/hooks/useManageSectionLabel';
+import { useManageNav } from '@/hooks/useManageNav';
+import { useManageSectionRoute } from '@/hooks/useManageSectionRoute';
 import { useEventRsvps } from '@/hooks/useRsvps';
 import { useEventUsage } from '@/hooks/useUsage';
-import { countPendingCoHostInvitations } from '@/lib/eventInvitations';
-import { isEventDeleted, isEventWritable, isModuleAvailable, isPrimaryHost } from '@/lib/eventLifecycle';
-import { canPickTheme } from '@/lib/eventTheme';
-import { isLiteEvent } from '@/lib/liteEvents';
-import { type ManageSection, parseManageSection, resolveManageSection, visibleManageSections } from '@/lib/manageSections';
-import { replacePageUrl } from '@/lib/overlayHistory';
-import { routes } from '@/lib/routes';
+import { isEventWritable } from '@/lib/eventLifecycle';
 import { attendingGuestPeople } from '@/lib/rsvpGuests';
-import { eventStatusBadgeTone } from '@/lib/statusTones';
-import { cn } from '@/lib/utils';
-import { useActiveMember } from '@/providers/EventProvider';
 
 import BillingTab from '../../app/(main)/(app)/(event)/events/[eventId]/manage/BillingTab';
 import DangerZoneTab from '../../app/(main)/(app)/(event)/events/[eventId]/manage/DangerZoneTab';
 import GiftTab from '../../app/(main)/(app)/(event)/events/[eventId]/manage/GiftTab';
-import HelpTab from '../../app/(main)/(app)/(event)/events/[eventId]/manage/HelpTab';
 import MembersTab from '../../app/(main)/(app)/(event)/events/[eventId]/manage/MembersTab';
 import OverviewTab from '../../app/(main)/(app)/(event)/events/[eventId]/manage/OverviewTab';
 import RsvpTab from '../../app/(main)/(app)/(event)/events/[eventId]/manage/RsvpTab';
@@ -42,36 +27,16 @@ import SettingsTab from '../../app/(main)/(app)/(event)/events/[eventId]/manage/
 
 export function ManageScreen() {
     const { activeEvent, eventId, isHost } = useEventRouteContext();
-    const t = useTranslations('ManagePage');
-    const sectionLabel = useManageSectionLabel();
-    const searchParams = useSearchParams();
-    const requestedSection = parseManageSection(searchParams.get('tab'));
-    const cancelledCheckout = searchParams.get('cancelled') === 'true';
-    const isDraft = activeEvent.status === 'DRAFT';
-    const activeMember = useActiveMember();
-    const isDeleted = isEventDeleted(activeEvent);
-    const canDelete = isPrimaryHost(activeEvent.hosts, activeMember?.id);
-    const rsvpAvailable = isModuleAvailable(activeEvent.modules, 'rsvp');
-    const { data: appConfig } = useAppConfig();
-    const giftSection = useGiftSection(isHost && !isDraft && !isDeleted ? eventId : null, {
-        isPrimaryHost: canDelete,
-        eventModules: activeEvent.modules,
-        planTiers: appConfig?.planTiers ?? [],
-    });
-    const visibleSections = visibleManageSections({
-        canDelete,
-        rsvpAvailable,
-        giftAvailable: giftSection.available,
-        themeAvailable: canPickTheme(activeEvent),
-        // A lite event takes no guests, so its Members tab is only for co-hosts, when its plan has them.
-        membersAvailable: !isLiteEvent(activeEvent) || isModuleAvailable(activeEvent.modules, 'co_hosts'),
-    });
-    const section = resolveManageSection(requestedSection, {
+    const nav = useManageNav();
+    const { isDraft, isDeleted, canDelete, rsvpAvailable, giftSection } = nav;
+    const { section, navigateToSection, cancelledCheckout } = useManageSectionRoute({
+        eventId,
         isDraft,
-        visibleSections,
+        isDeleted,
+        visibleSections: nav.visibleSections,
         pendingSections: giftSection.isLoading ? ['gift'] : [],
     });
-    const [switcherOpen, setSwitcherOpen] = useState(false);
+    const { data: appConfig } = useAppConfig();
 
     const canWrite = isEventWritable(activeEvent?.status);
     const canEditDetails = canWrite;
@@ -82,49 +47,15 @@ export function ManageScreen() {
     const { data: invitations = [], isLoading: invitationsLoading } = useEventInvitations(activeHostEventId);
     const { data: eventUsage = null, isLoading: usageLoading } = useEventUsage(isHost && !isDeleted ? eventId : null);
 
-    const overviewLoading = membersLoading || invitationsLoading || rsvpsLoading || usageLoading;
+    const overviewLoading = membersLoading || rsvpsLoading || usageLoading;
     const rsvpTabLoading = membersLoading || rsvpsLoading;
     const membersTabLoading = membersLoading || invitationsLoading || usageLoading;
-
-    const [daysToGo, setDaysToGo] = useState(() =>
-        Math.max(0, activeEvent ? Math.ceil((new Date(activeEvent.schedule.startAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24)) : 0),
-    );
-
-    const navigateToSection = useCallback(
-        (next: ManageSection) => {
-            setSwitcherOpen(false);
-            const nextParams = new URLSearchParams(searchParams.toString());
-            if (next === 'overview') nextParams.delete('tab');
-            else nextParams.set('tab', next);
-            const query = nextParams.toString();
-            const manageRoot = routes.events.manage(eventId);
-            // Client-only, so a tab switch doesn't wait on a server render.
-            replacePageUrl(query ? `${manageRoot}?${query}` : manageRoot);
-        },
-        [eventId, searchParams],
-    );
-
-    const openSwitcher = useCallback(() => setSwitcherOpen(true), []);
-    const closeSwitcher = useCallback(() => setSwitcherOpen(false), []);
-
-    useEffect(() => {
-        if (activeEvent) {
-            // eslint-disable-next-line react-hooks/set-state-in-effect
-            setDaysToGo(Math.max(0, Math.ceil((new Date(activeEvent.schedule.startAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24))));
-        }
-    }, [activeEvent]);
-
-    useEffect(() => {
-        if (!isDeleted && requestedSection !== section) replacePageUrl(routes.events.manage(eventId));
-    }, [eventId, isDeleted, requestedSection, section]);
 
     // The overview's seats: people coming, counted like the RSVP report (guests
     // only, attending only), so the two never disagree.
     const seatsClaimed = useMemo(() => attendingGuestPeople(members, rsvps), [members, rsvps]);
 
     if (isDeleted) return <DeletedEventManageScreen event={activeEvent} />;
-
-    const ActiveIcon = sectionIcons[section];
 
     const renderedSection = (
         <>
@@ -135,8 +66,6 @@ export function ManageScreen() {
                     <OverviewTab
                         event={activeEvent}
                         memberCount={members.length}
-                        daysToGo={daysToGo}
-                        pendingCoHostInvitationCount={countPendingCoHostInvitations(invitations)}
                         seatsClaimed={rsvpAvailable ? seatsClaimed : null}
                         eventUsage={eventUsage}
                         planTiers={appConfig?.planTiers ?? []}
@@ -164,7 +93,6 @@ export function ManageScreen() {
                         startAt={activeEvent.schedule.startAt}
                         rsvpDeadline={activeEvent.schedule.rsvpDeadline}
                         canWrite={canWrite}
-                        origin="manage"
                     />
                 ))}
 
@@ -190,18 +118,6 @@ export function ManageScreen() {
 
             {section === 'theme' && <ThemePicker event={activeEvent} canWrite={canEditDetails} showHeading={false} />}
 
-            {section === 'help' && (
-                <HelpTab
-                    eventId={eventId}
-                    eventTitle={activeEvent.title}
-                    eventType={activeEvent.eventType}
-                    schedule={activeEvent.schedule}
-                    location={activeEvent.location}
-                    sessions={activeEvent.sessions ?? []}
-                    eventModules={activeEvent.modules}
-                />
-            )}
-
             {section === 'gift' &&
                 (giftSection.isLoading ? (
                     <ManageOverviewSkeleton />
@@ -221,81 +137,8 @@ export function ManageScreen() {
     );
 
     return (
-        // A draft ends in its sticky pay bar on mobile, which has to reach the tab bar.
-        <div className={cn('mx-auto w-full max-w-6xl', isDraft ? 'lg:pb-10' : 'pb-10')}>
-            {/* Header */}
-            <div className="sticky top-0 z-20 border-b border-border/60 bg-event/95 backdrop-blur lg:static lg:bg-transparent lg:backdrop-blur-none">
-                <div className="flex items-start justify-between gap-3 px-4 pt-4 pb-3 lg:px-6 lg:pt-6 lg:pb-5">
-                    {/* Back (draft): it has no feed or sections to move to */}
-                    {isDraft && <BackButton variant="icon" href={routes.home} label={t('draft.backToEvents')} className="-ml-2 self-center" />}
-
-                    <div className="min-w-0 flex-1">
-                        <p className="flex items-center gap-1.5 text-[11px] font-semibold tracking-wide text-ink-faint uppercase">
-                            <LayoutDashboard className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
-                            {t('title')}
-                        </p>
-                        <h1 className="mt-0.5 truncate text-lg leading-tight font-bold text-ink sm:text-xl lg:text-2xl">{activeEvent.title}</h1>
-                    </div>
-                    <span
-                        className={cn(
-                            'shrink-0 rounded-full px-2.5 py-1 text-[11px] font-bold whitespace-nowrap',
-                            eventStatusBadgeTone[activeEvent.status],
-                        )}
-                    >
-                        {t(`status.${activeEvent.status}`)}
-                    </span>
-                </div>
-
-                {/* Section switcher (small screens) */}
-                {!isDraft && (
-                    <div className="px-4 pb-3 lg:hidden">
-                        <button
-                            type="button"
-                            onClick={openSwitcher}
-                            aria-haspopup="dialog"
-                            aria-expanded={switcherOpen}
-                            className="flex min-h-12 w-full items-center gap-2.5 rounded-2xl border border-border bg-surface-muted px-3.5 text-left"
-                        >
-                            <ActiveIcon className="h-4 w-4 shrink-0 text-primary" strokeWidth={2.2} aria-hidden="true" />
-                            <span className="min-w-0 flex-1 truncate text-sm font-bold text-ink">{sectionLabel(section)}</span>
-                            <ChevronDown className="h-4 w-4 shrink-0 text-ink-muted" aria-hidden="true" />
-                        </button>
-                    </div>
-                )}
-            </div>
-
-            {/* Body */}
-            <div className="px-4 pt-4 lg:grid lg:grid-cols-[13.5rem_minmax(0,1fr)] lg:gap-8 lg:px-6 lg:pt-5">
-                {/* Sections (desktop) */}
-                {!isDraft && (
-                    <ManageSectionNav
-                        active={section}
-                        onSelectAction={navigateToSection}
-                        visibleSections={visibleSections}
-                        className="sticky top-6 hidden self-start lg:flex"
-                    />
-                )}
-
-                <div
-                    className={cn(
-                        'min-w-0',
-                        isDraft && 'flex min-h-[60svh] flex-col justify-center lg:col-span-2 lg:min-h-0 lg:max-w-4xl lg:justify-start',
-                    )}
-                >
-                    {/* Section heading (desktop) */}
-                    {!isDraft && (
-                        <h2 className="mb-4 hidden text-sm font-bold tracking-wide text-ink-muted uppercase lg:block">{sectionLabel(section)}</h2>
-                    )}
-                    {renderedSection}
-                </div>
-            </div>
-
-            {/* Section sheet (small screens) */}
-            <Modal open={switcherOpen} onClose={closeSwitcher} variant="sheet" ariaLabel={t('sectionSwitcher')} closeLabel={t('sectionSwitcher')}>
-                <Modal.Body className="px-3 pt-5 pb-6">
-                    <ManageSectionNav active={section} onSelectAction={navigateToSection} visibleSections={visibleSections} />
-                </Modal.Body>
-            </Modal>
-        </div>
+        <ManageShell nav={nav} active={section} onSelectSection={navigateToSection}>
+            {renderedSection}
+        </ManageShell>
     );
 }

@@ -4,6 +4,7 @@ import { NextIntlClientProvider } from 'next-intl';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { createDraftServer } from '@/hooks/invitationDraftTestServer';
+import { testAuth, WithAuth } from '@/hooks/testAuthContext';
 import { EDITOR_TOUR_SEEN_KEY } from '@/lib/invitation/editorTour';
 import { sampleDraftDto } from '@/lib/invitation/sampleDraft';
 import en from '@/messages/en.json';
@@ -16,7 +17,7 @@ vi.hoisted(() => {
 });
 
 const router = vi.hoisted(() => ({ back: vi.fn(), push: vi.fn(), replace: vi.fn() }));
-vi.mock('next/navigation', () => ({ useRouter: () => router }));
+vi.mock('next/navigation', () => ({ useRouter: () => router, usePathname: () => '/save-my-date/editor/draft-1' }));
 vi.mock('@/lib/inAppHistory', () => ({ hasInAppPrevious: () => true }));
 // next/font only works when Next compiles the file.
 vi.mock('@/components/saveMyDate/invitation/invitationFonts', () => ({ INVITATION_FONT_CLASSES: '' }));
@@ -41,13 +42,17 @@ const backend = createDraftServer();
 // An added text and a section's own text in the sample draft.
 const WAITING = 'element:b3-text';
 const BABY_MESSAGE = 'field:s-baby:babyMessage';
+// Signed out, Publish saves and then asks to sign in, so it stands in for saving.
+const SIGNED_OUT = testAuth({ user: null });
 
 async function openEditor() {
     const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
     render(
         <NextIntlClientProvider locale="en" messages={en}>
             <QueryClientProvider client={queryClient}>
-                <InvitationEditorPage draftId="draft-1" />
+                <WithAuth value={SIGNED_OUT}>
+                    <InvitationEditorPage draftId="draft-1" />
+                </WithAuth>
             </QueryClientProvider>
         </NextIntlClientProvider>,
     );
@@ -136,7 +141,7 @@ describe('Invitation editor: texts', () => {
         await waitFor(() => expect(activeText()).toHaveTextContent('Σας περιμένουμε! Ελάτε'));
 
         fireEvent.click(screen.getByRole('button', { name: 'Publish' }));
-        await screen.findByText("Publishing isn't available yet.");
+        await screen.findByText('Sign in to publish');
         expect(storedElement('b3-text')).toMatchObject({ text: 'Σας περιμένουμε! Ελάτε' });
     });
 
@@ -150,7 +155,7 @@ describe('Invitation editor: texts', () => {
         fireEvent.click(within(toolbar).getByRole('button', { name: 'Align left' }));
 
         fireEvent.click(screen.getByRole('button', { name: 'Publish' }));
-        await screen.findByText("Publishing isn't available yet.");
+        await screen.findByText('Sign in to publish');
         expect(storedElement('b3-text')).toMatchObject({ style: { size: 40, bold: true, italic: true, align: 'left' } });
     });
 
@@ -205,7 +210,7 @@ describe('Invitation editor: texts', () => {
         expect(activeText()).toHaveTextContent(/^15$/);
 
         fireEvent.click(screen.getByRole('button', { name: 'Publish' }));
-        await screen.findByText("Publishing isn't available yet.");
+        await screen.findByText('Sign in to publish');
         const date = backend.stored().document.sections.find((section) => section.type === 'date');
         expect(date?.data).toMatchObject({ number: '15' });
     });
@@ -226,7 +231,7 @@ describe('Invitation editor: texts', () => {
         openText(WAITING);
         paste(' Ελάτε');
         fireEvent.click(screen.getByRole('button', { name: 'Publish' }));
-        await screen.findByText("Publishing isn't available yet.");
+        await screen.findByText('Sign in to publish');
         expect(storedElement('b3-text')).toMatchObject({ text: 'Σας περιμένουμε! Ελάτε' });
         const before = sampleOrder().indexOf(sectionId);
         expect(order()).toBe(before - 1);
@@ -253,7 +258,7 @@ describe('Invitation editor: texts', () => {
         paste(' Ελάτε');
 
         fireEvent.click(screen.getByRole('button', { name: 'Publish' }));
-        await screen.findByText("Publishing isn't available yet.");
+        await screen.findByText('Sign in to publish');
         const section = backend.stored().document.sections.find((item) => item.type === 'invitation');
         expect(section?.data).toMatchObject({ text: expect.stringMatching(/ Ελάτε$/) });
     });

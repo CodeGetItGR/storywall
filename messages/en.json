@@ -19,6 +19,7 @@
         "campaignEndsIn": "Ends in {countdown}.",
         "campaignEndsOn": "Ends on {date}",
         "seePlans": "See plans",
+        "getStarted": "Get started",
         "countdownDays": "{days}d {hours}h {minutes}m",
         "countdownHours": "{hours}h {minutes}m",
         "countdownMinutes": "{minutes}m {seconds}s"
@@ -145,15 +146,18 @@
         "locationMissing": "Location not set"
     },
     "GuestOffer": {
-        "title": "Planning your own event?",
-        "line": "Storywall works for weddings, baptisms, birthdays and more.",
-        "discover": "Discover Storywall",
-        "claim": "Get <pct>{percent}%</pct> off",
+        "title": "Make your own Storywall",
+        "line": "For weddings, baptisms, birthdays and more.",
+        "percentOff": "−{percent}%",
+        "onAllPlans": "on all plans",
+        "discover": "See how",
+        "claim": "Get your code",
         "codeLabel": "Your discount code",
+        "validUntil": "Valid until {date}",
         "copy": "Copy",
         "copied": "Copied",
-        "expires": "Use it when you activate an event. Valid until {date}.",
         "close": "Close",
+        "showLess": "Show less",
         "claimFailed": "Your code could not be created. Try again."
     },
     "PostCard": {
@@ -266,25 +270,14 @@
                 "label": "Vendors",
                 "description": "Invite links and who joined."
             },
-            "announcement": {
-                "label": "Announcement",
-                "description": "Post a message for everyone."
-            },
             "manage": {
                 "label": "Dashboard",
                 "description": "Overview of your event"
             },
-            "galleryQr": {
-                "label": "Upload QR code",
-                "description": "Download or share the photo upload code"
-            },
             "invitationsQr": {
-                "label": "Share links",
-                "description": "QR codes and links guests can use to join"
-            },
-            "help": {
-                "label": "Help",
-                "description": "Setup guide and tips"
+                "label": "Invitations & QR codes",
+                "description": "QR codes and links guests can use to join",
+                "descriptionWithUpload": "QR codes and links guests can use to join or upload photos"
             }
         },
         "items": {
@@ -514,7 +507,7 @@
         "metaDescription": "Sign in to your StoryWall account.",
         "noAccount": "Don't have an account?",
         "createAccountLink": "Create one",
-        "orContinueWith": "Or continue with",
+        "orWithEmail": "Or sign in with email",
         "forgotPassword": "Forgot password?"
     },
     "RegisterPage": {
@@ -551,8 +544,8 @@
         "all": "I accept the <terms>Terms of Use</terms> and <guidelines>Community Guidelines</guidelines> and have read the <privacy>Privacy Policy</privacy>",
         "termsOnly": "I accept the <terms>Terms of Use</terms> and have read the <privacy>Privacy Policy</privacy>",
         "signup": "I accept the <terms>Terms of Use</terms> and <guidelines>Community Guidelines</guidelines>, have read the <privacy>Privacy Policy</privacy>, and am 18 or older",
+        "qrGuest": "I accept the <terms>Terms of Use</terms> and <guidelines>Community Guidelines</guidelines>, have read the <privacy>Privacy Policy</privacy>, and am 16 or older",
         "adult": "I am 18 or older",
-        "age16": "I am 16 or older",
         "opensInNewTab": "(opens in a new tab)"
     },
     "WelcomePage": {
@@ -644,11 +637,43 @@
         "fallbackTitle": "You're invited",
         "defaultHeroImageAlt": "Event cover photo",
         "mediaUploadEyebrow": "Share your photos",
+        "choices": {
+            "join": "Join the event",
+            "open": "Open the event",
+            "invitation": "See the invitation",
+            "eventHint": "See what guests share",
+            "joinLine": "See everyone's photos, share yours and join in on the day.",
+            "freeAccount": "Free account, in a few seconds",
+            "noAccount": "Without an account",
+            "uploadLine": "The hosts get them in their photo album",
+            "wishLine": "A message for the wishbook"
+        },
+        "intro": {
+            "title": "Join, share photos, leave a wish",
+            "line": "Everything is on this page"
+        },
+        "preview": {
+            "feed": "The event feed",
+            "photo": "A guest's photo",
+            "wish": "A wish from a guest",
+            "song": "A song request",
+            "days": "D",
+            "hours": "H",
+            "minutes": "M",
+            "seconds": "S",
+            "story1": "Eleni",
+            "story2": "Nikos",
+            "story3": "Sofia",
+            "story4": "Giorgos",
+            "postAuthor": "Maria K.",
+            "postText": "What a night! 🎉",
+            "wishAuthor": "Eleni",
+            "wishText": "So happy to celebrate with you! ❤️",
+            "songTitle": "September",
+            "songArtist": "Earth, Wind & Fire"
+        },
         "guestCode": {
-            "uploadLine": "Add your photos and videos.",
             "uploadButton": "Upload photos",
-            "or": "or",
-            "wishLine": "Write a message for their wishbook.",
             "wishButton": "Leave a wish",
             "back": "Back",
             "wishEyebrow": "Leave a wish",
@@ -670,6 +695,7 @@
             "chooseFiles": "Choose files",
             "submit": "Upload",
             "success": "Thanks! Your photos are on their way.",
+            "uploadMore": "Upload more",
             "rateLimited": "This event has had a lot of uploads in the last hour. The files below weren't sent; try them again later.",
             "someFailed": "{count, plural, one {One file wasn't sent} other {# files weren't sent}}. Check the files below and try again.",
             "addMore": "Add more",
@@ -678,7 +704,9 @@
             "acceptanceChanged": "The Terms of Use or Community Guidelines were just updated. Please review them and tick the box again.",
             "acceptanceUnavailable": "The Terms of Use or Community Guidelines couldn't be loaded. Refresh the page and try again.",
             "filesTooLarge": "Photos can be up to {imageSize} and videos up to {videoSize}. Larger files were left out.",
-            "uploadBusy": "The server is busy. Your upload will retry shortly…"
+            "uploadBusy": "The server is busy. Your upload will retry shortly…",
+            "uploadSlow": "Slow connection. This may take a little longer, keep this page open.",
+            "galleryOnlyNote": "Photos and videos you upload here go to the gallery, not the feed."
         },
         "unknown": {
             "title": "Code not found",
@@ -1018,6 +1046,93 @@
     },
     "CreateEventPage": {
         "goBack": "Go back",
+        "wizard": {
+            "stepCounter": "Step {current} of {total}",
+            "close": "Close",
+            "type": {
+                "heading": "What are we celebrating?",
+                "continue": {
+                    "wedding": "Let's plan your wedding",
+                    "baptism": "Let's plan the baptism",
+                    "reveal": "Let's plan your reveal",
+                    "reunion": "Let's plan your reunion",
+                    "other": "Let's plan your event"
+                }
+            },
+            "features": {
+                "heading": "What's included",
+                "planNote": "Some features depend on the plan you pick.",
+                "lines": {
+                    "posts": "Photos and wishes from guests.",
+                    "qr_cards": "Scan at the table, no app.",
+                    "playlist": "Guests request the songs.",
+                    "schedule": "The day, hour by hour.",
+                    "stories": "Short moments from the day.",
+                    "wishbook": "Guests' wishes in one book."
+                }
+            },
+            "plan": {
+                "heading": "How many guests are you inviting?",
+                "upTo": "Up to {count}",
+                "moreThan": "More than {count}",
+                "bestFit": "Best fit for you",
+                "everythingInPlus": "Everything in {plan}, plus",
+                "compare": "Compare all plans",
+                "continue": "Continue"
+            },
+            "plans": {
+                "title": "All plans",
+                "andMore": "{features} and more",
+                "everythingInPlus": "Everything in {plan}, plus {features}",
+                "choose": "Choose {plan}"
+            },
+            "details": {
+                "heading": "Tell us about the big day",
+                "preview": "Preview",
+                "timeZone": "Time zone: {zone}",
+                "addressPlaceholder": "e.g. 123 Kifisias Ave, Athens",
+                "receptionLater": "You can add the reception venue later.",
+                "liteArt": {
+                    "gallery": "A QR card your guests scan to upload their photos",
+                    "wishbook": "Your guests' wishes, saved in your wishbook",
+                    "both": "Your guests' photos in your gallery and their wishes in your wishbook",
+                    "wishSofia": "Wishing you health and joy, always!",
+                    "wishGiorgos": "Thanks for everything! We had a wonderful time.",
+                    "cardDate": "Saturday, 20 June 2026",
+                    "cardPlace": "Santorini",
+                    "cardDescription": "Share your photos from our day"
+                }
+            },
+            "theme": {
+                "heading": "Choose a look",
+                "line": "You can change it later."
+            },
+            "review": {
+                "heading": "One last look",
+                "edit": "Edit",
+                "pay": "Pay {amount}",
+                "consentHint": "Tick the boxes to continue."
+            },
+            "account": {
+                "heading": "Almost there. Save your event",
+                "line": "Sign in so you can manage it from any device."
+            },
+            "code": {
+                "heading": "Check your email",
+                "line": "For your security, enter the 6-digit code we sent to {email}",
+                "label": "6-digit code",
+                "resendIn": "Resend code in {time}",
+                "resend": "Resend code",
+                "resent": "We sent a new code.",
+                "changeEmail": "Change email",
+                "confirm": "Confirm",
+                "errors": {
+                    "wrong": "That code isn't right. Try again.",
+                    "expired": "This code has expired. Send a new one.",
+                    "tooMany": "Too many tries. Send a new code."
+                }
+            }
+        },
         "title": "Create an event",
         "subtitle": "Add the event details.",
         "detailsHint": "You can add or edit more details after creation.",
@@ -1035,6 +1150,7 @@
         "validation": {
             "startInPast": "The start time must be now or later.",
             "startTooFarAhead": "For this plan, the event must start by {date}.",
+            "startBeforePayment": "The date can't be before {date}, the day you paid.",
             "endBeforeStart": "The end time must be after the start time.",
             "invalidTimezone": "Choose a timezone from the list."
         },
@@ -1118,6 +1234,7 @@
         "continueToPlan": "Continue to plan",
         "continueToDetails": "Continue to details",
         "continueToOverview": "Continue to overview",
+        "whenAndWhere": "When and where is the event?",
         "continueToTheme": "Continue to theme",
         "backToPlans": "Back to plans",
         "selectedPlan": "Selected plan: {plan}",
@@ -1184,10 +1301,36 @@
         }
     },
     "ManagePage": {
+        "journey": {
+            "phases": {
+                "label": "Event phase",
+                "before": "Before",
+                "day": "On the day",
+                "after": "After",
+                "daysToGo": "{count, plural, one {# day to go} other {# days to go}}",
+                "done": "Done",
+                "today": "Today",
+                "from": "From {date}"
+            },
+            "getReady": "Get ready",
+            "afterEvent": "After the event",
+            "scheduleCard": "Add the parts of your day so guests know when to come.",
+            "sessions": "{count, plural, one {# session} other {# sessions}}",
+            "members": "{count} of {limit} members",
+            "seats": "{count, plural, one {# seat} other {# seats}}",
+            "allSet": {
+                "title": "All set",
+                "body": "Your guests have everything they need.",
+                "print": "Print QR codes"
+            },
+            "now": "Now",
+            "media": "{photos, plural, one {# image} other {# images}} · {videos, plural, one {# video} other {# videos}}",
+            "thankGuests": "Thank your guests",
+            "coverageEnds": "Coverage ends {date}",
+            "extend": "Extend",
+            "storage": "{used} of {limit}"
+        },
         "coverage": {
-            "openUntil": "Event open · closes {date}",
-            "closingIn": "Closing in {days, plural, one {# day} other {# days}}. Download your photos and videos",
-            "ended": "Event closed on {date}",
             "download": "Download all"
         },
         "title": "Host Dashboard",
@@ -1197,37 +1340,39 @@
             "ACTIVE": "Live"
         },
         "openDashboard": "Open dashboard",
-        "rsvpOverview": "RSVP overview",
         "newEvent": "New event",
         "sections": {
             "overview": "Overview",
             "settings": "Settings",
-            "help": "Help",
             "danger": "Danger zone",
             "rsvp": "RSVP",
             "members": "Members",
             "billing": "Billing",
             "gift": "Given as a gift",
-            "theme": "Theme"
+            "theme": "Theme",
+            "invitationsQr": "Invitations & QR codes"
         },
-        "sectionSwitcher": "Change section",
-        "stats": {
-            "totalGuests": {
-                "label": "Members",
-                "sub": "Joined the event"
-            },
-            "daysToGo": {
-                "label": "Days to go",
-                "sub": "Until the event starts"
-            },
-            "invitations": {
-                "label": "Invitations",
-                "sub": "Sent so far"
-            },
-            "seats": {
-                "label": "Seats claimed",
-                "sub": "Across all RSVPs"
-            }
+        "navGroups": {
+            "event": "Event",
+            "people": "People"
+        },
+        "invitationsQr": {
+            "guestsSee": "What guests see"
+        },
+        "invitation": {
+            "notPublished": "Not published",
+            "live": "Live",
+            "offline": "Offline",
+            "liveUntil": "Live until {date}",
+            "edit": "Edit",
+            "extend": "Extend",
+            "empty": "No invitation yet.",
+            "chooseTheme": "Choose a theme",
+            "artAlt": "Drawing of an online invitation",
+            "upgradeBody": "Upgrade your plan to make an online invitation for this event.",
+            "upgradePlan": "Upgrade plan",
+            "addOn": "Add the invitation · {price}",
+            "addOnBody": "Add it to your plan or upgrade to make an online invitation for this event."
         },
         "rsvpBreakdown": {
             "attending": "Attending",
@@ -1300,8 +1445,7 @@
         },
         "invitations": {
             "capacity": {
-                "title": "Guest capacity",
-                "coHostsTitle": "Guests and co-hosts"
+                "title": "Guest capacity"
             },
             "full": {
                 "notice": "This event has reached its guest limit, so new invitations can't be created.",
@@ -1312,12 +1456,9 @@
                 "shareTitle": "Share with a group",
                 "shareBody": "Create a link or QR code for group chats, printed cards, posters, or photo uploads."
             },
-            "claimed": "Claimed",
-            "unclaimed": "Unclaimed",
             "copyLink": "Copy link",
             "shareLanguageNote": "Links you share open in English.",
             "copied": "Copied!",
-            "save": "Save",
             "revoke": "Revoke",
             "confirmRevoke": "Confirm revoke",
             "revokeConfirmTitle": "Revoke this invitation?",
@@ -1330,23 +1471,17 @@
                 "cta": "Invite co-host",
                 "title": "Invite a co-host",
                 "subtitle": "They become a host only after signing in with this verified email and accepting.",
-                "summary": "{count, plural, one {# co-host invitation} other {# co-host invitations}}",
                 "empty": "No pending co-host invitations.",
-                "emptyTitle": "No co-host invites yet",
-                "emptyBody": "Invite someone by email when they should help manage the event.",
-                "singleRecipient": "One verified recipient",
                 "email": "Email",
                 "firstName": "First name",
                 "lastName": "Last name",
                 "expiresAt": "Expires",
+                "expiresOn": "Expires {date}",
                 "emailNotice": "We send the invitation automatically. Another account cannot accept this link.",
                 "alreadyMember": "{name} is already a member of this event.",
                 "submit": "Send invitation",
                 "cancel": "Cancel",
-                "guideTitle": "Invite someone to help",
-                "guideBody": "Co-host invitations are sent by email and are tied to that email address.",
                 "currentTitle": "Current hosts",
-                "currentSummary": "{count, plural, one {# host} other {# hosts}}",
                 "primary": "Primary host",
                 "coHost": "Co-host",
                 "transfer": "Transfer ownership",
@@ -1361,6 +1496,7 @@
             }
         },
         "qr": {
+            "codeAlt": "QR code for {event}",
             "empty": "No share links yet.",
             "emptyTitle": "No share links yet",
             "emptyBody": "Create one for group chats, printed cards, posters, or photo uploads.",
@@ -1374,11 +1510,9 @@
             "print": "Print",
             "printCard": "Print card",
             "autoGenerated": "Set up for you",
-            "editLimit": "Edit limit",
-            "saving": "Saving...",
             "stats": {
-                "cta": "Stats",
                 "title": "QR performance",
+                "seeMore": "See more",
                 "joined": "Joined",
                 "remainingSlots": "Slots left",
                 "maxGuests": "Guest limit",
@@ -1387,17 +1521,11 @@
                 "lastJoined": "Last joined",
                 "lastJoinedAt": "Last joined {date, date, medium}",
                 "noJoinsYet": "No guests have joined through this code yet.",
-                "lowSlots": "{count} slots left",
-                "raiseLimit": "Raise the limit"
-            },
-            "cappedToPlan": "Capped to {count, plural, one {# guest} other {# guests}} - that's all your current plan has room for.",
-            "fields": {
-                "maxGuests": "Guest limit"
+                "lowSlots": "{count} slots left"
             },
             "targetTypes": {
                 "EVENT_JOIN": "Join event",
-                "MEDIA_UPLOAD": "Photo upload",
-                "INVITATION": "Specific invitation"
+                "MEDIA_UPLOAD": "Photo upload"
             },
             "status": {
                 "ACTIVE": "Active",
@@ -1408,7 +1536,6 @@
             "share": "Share",
             "sections": {
                 "link": "Link",
-                "qr": "QR code",
                 "linkNote": "Share this link to invite guests to your Storywall."
             }
         },
@@ -1475,10 +1602,14 @@
             "saved": "Saved",
             "readOnly": "This event is read-only. Event details and cover photo changes are paused until the event is active again.",
             "dangerZone": {
-                "body": "Deleting this event hides it from guests right away. This can't be undone.",
+                "illustrationAlt": "Event being deleted",
+                "consequences": {
+                    "guestsLoseAccess": "Guests lose access right away.",
+                    "stillAvailable": "Until it is permanently deleted, you can still view and download photos, videos and wishes.",
+                    "cannotUndo": "This can't be undone."
+                },
                 "delete": "Delete event",
                 "confirmTitle": "Delete this event?",
-                "confirmBody": "Guests lose access right away and the event is permanently deleted later. This can't be undone. Until then you can still view and download photos, videos and messages.",
                 "confirmAction": "Delete event",
                 "cancelAction": "Cancel",
                 "otp": {
@@ -1513,6 +1644,9 @@
             "all": "All",
             "empty": "No guests match this filter."
         },
+        "rsvpGuests": {
+            "title": "Guests"
+        },
         "rsvpDuplicate": {
             "label": "Possible duplicate",
             "hint": "Same phone as another reply",
@@ -1530,11 +1664,6 @@
         "rsvpParty": "{count} seats",
         "rsvpPartyAdults": "{count, plural, one {# adult} other {# adults}}",
         "rsvpPartyChildren": "{count, plural, one {# child} other {# children}}",
-        "rsvpTabs": {
-            "stats": "Stats",
-            "list": "List",
-            "reports": "Reports"
-        },
         "rsvpStats": {
             "daysToGo": "{count, plural, one {# day left} other {# days left}}",
             "deadlineLabel": "RSVP deadline",
@@ -1544,7 +1673,8 @@
             "adults": "Adults",
             "kids": "Children",
             "byCategory": "Attendance by category",
-            "deadlineField": "RSVP deadline"
+            "deadlineField": "RSVP deadline",
+            "editDeadline": "Edit RSVP deadline"
         },
         "rsvpReport": {
             "people": "{count, plural, one {# person} other {# people}}",
@@ -1569,7 +1699,6 @@
         },
         "rsvpReports": {
             "title": "RSVP reports",
-            "description": "Open a report to print it or download it as a PDF.",
             "types": {
                 "STATISTICS": {
                     "label": "Statistics report",
@@ -1595,7 +1724,6 @@
             "emptyTitle": "No members yet",
             "emptyBody": "Members appear here after they join.",
             "joined": "Joined {date}",
-            "roleHost": "Host",
             "report": "Report",
             "remove": "Remove",
             "cancel": "Cancel",
@@ -1604,7 +1732,8 @@
             "promote": "Make co-host",
             "promoteConfirmTitle": "Make {name} a co-host?",
             "promoteConfirmBody": "They'll be able to manage this event.",
-            "removeFailed": "Couldn't remove this member. Please try again."
+            "removeFailed": "Couldn't remove this member. Please try again.",
+            "moreFor": "More options for {name}"
         }
     },
     "EventPlanSettingsPage": {
@@ -1701,7 +1830,6 @@
             "members": "Members",
             "limits": "Limits",
             "flags": "Flags",
-            "moduleChanges": "New modules",
             "removedModules": "No longer included",
             "moduleCount": "{count} modules",
             "noModuleChanges": "No new modules on this tier. The upgrade mainly increases limits.",
@@ -1743,18 +1871,12 @@
             "coverageRange": "{from} to {until}",
             "coverageThrough": "Covers through {date}",
             "empty": "No orders yet. Activation will appear here after checkout starts.",
-            "columns": {
-                "kind": "Type",
-                "status": "Status",
-                "coverage": "Coverage",
-                "date": "Date",
-                "amount": "Amount"
-            },
             "kind": {
                 "ACTIVATION": "Activation",
                 "RENEWAL": "Renewal",
                 "UPGRADE": "Upgrade",
                 "STORAGE_PACK": "Storage pack",
+                "MODULE_UNLOCK": "Add-ons",
                 "EXTENSION": "Coverage extension"
             },
             "upgradeCoverage": "Plan upgrade. Coverage unchanged.",
@@ -1830,7 +1952,17 @@
         "title": "Paid add-ons",
         "subtitle": "Add optional paid services for this event.",
         "empty": "No paid add-ons are available for this plan right now.",
-        "inactive": "Paid add-ons can be changed after the event is active."
+        "inactive": "Extra storage can be added after the event is active.",
+        "features": {
+            "title": "Add features",
+            "price": "{price} once",
+            "total": "Total: {amount}",
+            "pay": "Pay {amount}",
+            "add": "Add",
+            "remove": "Remove",
+            "draftNote": "Paid with the plan.",
+            "paused": "Add-ons are paused while your withdrawal is under review."
+        }
     },
     "CheckoutReviewPage": {
         "back": "Go back",
@@ -1906,6 +2038,7 @@
             "title": "Right of withdrawal",
             "body": "Under EU consumer law, you normally have 14 days to change your mind about a paid service. To publish and start using this plan right away, you need to ask for immediate start and acknowledge that doing so affects your withdrawal rights.",
             "storageBody": "Under EU consumer law, you normally have 14 days to change your mind about a paid service. To get the extra storage right away, you need to ask for immediate start and acknowledge that doing so affects your withdrawal rights.",
+            "addonsBody": "Under EU consumer law, you normally have 14 days to change your mind about a paid service. To use the added features right away, you need to ask for immediate start and acknowledge that doing so affects your withdrawal rights.",
             "requestsImmediateStartLabel": "Start providing this service immediately",
             "requestsImmediateStartCaption": "Rather than waiting out the 14-day period first.",
             "acknowledgesWithdrawalTermsLabel": "I understand this affects my right to a full refund",
@@ -2101,7 +2234,17 @@
         "orderId": "Order {orderId}",
         "backToEvent": "Back to event",
         "backToSetup": "Back to event setup",
-        "redirectCountdown": "Opening the feed in {seconds, plural, one {# second} other {# seconds}}."
+        "redirectCountdown": "Opening the feed in {seconds, plural, one {# second} other {# seconds}}.",
+        "backToInvitation": "Back to the invitation",
+        "invitationCountdown": "Opening the invitation in {seconds, plural, one {# second} other {# seconds}}.",
+        "celebration": {
+            "heading": "Your event is live",
+            "line": "Share it with your guests so they can start posting."
+        }
+    },
+    "EventCelebration": {
+        "openEvent": "Open event",
+        "inviteGuests": "Invite guests"
     },
     "PartnerPortalPage": {
         "totals": {
@@ -2214,15 +2357,7 @@
         "moduleUnavailable": "This isn't available on this event's current plan."
     },
     "HostOnboarding": {
-        "welcome": {
-            "greeting": "Welcome!",
-            "subtitle": "Let's get your event ready"
-        },
         "steps": {
-            "section": {
-                "title": "Manage your event",
-                "body": "A few steps and everything's ready for your guests"
-            },
             "details": {
                 "title": "Event details",
                 "edit": "Edit event details",
@@ -2230,20 +2365,16 @@
                 "venueEdit": "Edit venue details"
             },
             "rsvp": {
-                "title": "RSVP",
                 "edit": "Set RSVP deadline"
             },
             "giftAccount": {
-                "title": "Gift account",
                 "edit": "Add gift account"
             },
             "schedule": {
-                "title": "Schedule",
                 "edit": "Add sessions"
             },
             "invitations": {
                 "title": "Invitations & QR codes",
-                "body": "Share your QR links with guests.",
                 "qr": "Go to QR links"
             }
         }
@@ -2327,8 +2458,22 @@
         "deleteTitle": "Delete this message?",
         "deleteBody": "The message will be removed.",
         "cancel": "Cancel",
+        "myWishesTitle": "Your messages",
+        "edit": "Edit",
+        "editTitle": "Edit message",
+        "save": "Save",
         "wishSentTitle": "Your message is on its way",
         "wishSentBody": "Thank you for taking the time to write something so kind. It's saved now, waiting to be read."
+    },
+    "VoiceWish": {
+        "record": "Record a message",
+        "stop": "Stop",
+        "recordAgain": "Record again",
+        "removeRecording": "Remove recording",
+        "micBlocked": "Microphone access is blocked.",
+        "play": "Play",
+        "pause": "Pause",
+        "cantPlay": "This recording can't be played."
     },
     "PlaylistPage": {
         "backToFeed": "Back to feed",
@@ -2610,10 +2755,6 @@
         },
         "qrLinks": {
             "title": "Links",
-            "gallery": {
-                "body": "Scan to upload photos and videos",
-                "missing": "No upload code yet"
-            },
             "invitations": {
                 "body": "{count, plural, one {# share link} other {# share links}}",
                 "missing": "No active share link"
@@ -2821,7 +2962,8 @@
                 "ACTIVATION": "Activation",
                 "UPGRADE": "Upgrade",
                 "EXTENSION": "Extension",
-                "STORAGE_PACK": "Storage pack"
+                "STORAGE_PACK": "Storage pack",
+                "MODULE_UNLOCK": "Add-ons"
             },
             "buyerType": {
                 "CONSUMER": "Consumer",
@@ -2998,7 +3140,6 @@
             "groupCatalog": "Catalog",
             "groupMarketing": "Marketing",
             "groupOperations": "Operations",
-            "groupSaveMyDate": "Save my date",
             "eventPlans": "Event plans",
             "paidServices": "Paid services",
             "discountCodes": "Discount codes",
@@ -3012,6 +3153,47 @@
             "lifecycle": "Lifecycle",
             "signOutConfirmTitle": "Sign out of admin?",
             "signOutConfirmBody": "Please confirm before leaving the admin area."
+        },
+        "saveMyDate": {
+            "title": "Save my date",
+            "backToAdmin": "Back to admin",
+            "eventTypes": "Event types",
+            "eventTypesAll": "All",
+            "eventTypesHint": "None picked means every event type.",
+            "checks": {
+                "upTo100": "Enter 1 to 100 characters.",
+                "upTo2000": "Enter 1 to 2,000 characters."
+            },
+            "fonts": {
+                "title": "Fonts",
+                "empty": "No fonts yet.",
+                "availableHint": "Offered in the invitation editor.",
+                "archivedHint": "Invitations that use it keep it. The editor no longer offers it."
+            },
+            "fontPairings": {
+                "title": "Font pairings",
+                "create": "New pairing",
+                "empty": "No font pairings yet.",
+                "fonts": {
+                    "title": "Title",
+                    "body": "Text",
+                    "button": "Buttons"
+                },
+                "sameAsText": "Same as text",
+                "shown": "Shown"
+            },
+            "texts": {
+                "title": "Texts",
+                "create": "New text",
+                "empty": "No texts yet.",
+                "label": "Label",
+                "labelHint": "Only admins see it.",
+                "body": "Text",
+                "delete": "Delete",
+                "deleteTitle": "Delete this text?",
+                "deleteBody": "Invitations that used it keep their wording.",
+                "deleteConfirm": "Delete text"
+            }
         },
         "tabs": {
             "appReviews": "Reviews",
@@ -3761,6 +3943,9 @@
                 "INVITATION_THEME_IMAGE_DELETED": "Invitation theme image deleted",
                 "INVITATION_FONT_PAIRING_CREATED": "Font pairing created",
                 "INVITATION_FONT_PAIRING_UPDATED": "Font pairing changed",
+                "INVITATION_TEXT_CREATED": "Invitation text created",
+                "INVITATION_TEXT_UPDATED": "Invitation text changed",
+                "INVITATION_TEXT_DELETED": "Invitation text deleted",
                 "QR_CARD_TEMPLATE_DUPLICATED": "QR card template copied",
                 "INVIART_COLLECTION_CHANGED": "INVIART collection changed",
                 "SHOP_STORE_CREATED": "Shopify store connected",
@@ -4020,6 +4205,65 @@
                 "illegalHint": "Name the law or legal provision.",
                 "note": "Internal note",
                 "noteHint": "Only admins see this."
+            },
+            "activity": {
+                "tabs": {
+                    "settings": "Settings",
+                    "activity": "Activity",
+                    "label": "Event sections"
+                },
+                "updatedAt": "Updated {time}",
+                "refresh": "Refresh",
+                "loading": "Loading activity",
+                "members": "{contributed} of {total} members contributed · {share}",
+                "tiles": {
+                    "posts": "Posts",
+                    "postMedia": "{count, plural, one {# photo or video} other {# photos and videos}}",
+                    "stories": "Stories",
+                    "storyViews": "{count, plural, one {# view} other {# views}}",
+                    "gallery": "Gallery",
+                    "viaQr": "{count} via QR",
+                    "pro": "Professional uploads",
+                    "reactions": "Reactions",
+                    "comments": "Comments",
+                    "wishes": "Wishes",
+                    "playlist": "Songs suggested",
+                    "votes": "{count, plural, one {# vote} other {# votes}}",
+                    "quiz": "Quiz answers",
+                    "rsvp": "Attending",
+                    "declined": "{count} not attending",
+                    "removed": "Removed"
+                },
+                "removed": {
+                    "posts": "{count, plural, one {# post} other {# posts}}",
+                    "stories": "{count, plural, one {# story} other {# stories}}",
+                    "galleryUploads": "{count, plural, one {# gallery upload} other {# gallery uploads}}",
+                    "comments": "{count, plural, one {# comment} other {# comments}}",
+                    "wishes": "{count, plural, one {# wish} other {# wishes}}"
+                },
+                "series": {
+                    "posts": "Posts",
+                    "stories": "Stories",
+                    "gallery": "Gallery",
+                    "wishes": "Wishes"
+                },
+                "hourly": {
+                    "title": "Per hour",
+                    "previous": "Previous day",
+                    "next": "Next day"
+                },
+                "heatmap": {
+                    "title": "Busiest hours of the day",
+                    "cell": "{kind} at {hour}: {count}"
+                },
+                "peaks": {
+                    "title": "Peak moments"
+                },
+                "daily": {
+                    "title": "Per day",
+                    "earlier": "Earlier"
+                },
+                "empty": "No activity yet."
             }
         },
         "accounts": {
@@ -4228,7 +4472,15 @@
                 "vendorSettings": "Vendor settings",
                 "vendorSettingsChanged": "{count} changed",
                 "vendorSettingsLoading": "Loading the plan's settings…",
-                "vendorSettingsTurnOn": "This turns vendors on for this event only. The plan doesn't change."
+                "vendorSettingsTurnOn": "This turns vendors on for this event only. The plan doesn't change.",
+                "scheduleSection": "Schedule",
+                "addSession": "Add session",
+                "editSession": "Edit session",
+                "sessionSave": "Save",
+                "sessionRemove": "Remove",
+                "sessionCancel": "Cancel",
+                "receptionVenue": "Reception venue",
+                "giftSection": "Gift account"
             },
             "email": {
                 "title": "Email",
@@ -4498,7 +4750,9 @@
                 "fields": "Plan fields",
                 "to": "to",
                 "added": "Added:",
-                "removed": "Removed:"
+                "removed": "Removed:",
+                "promoPricesNoEnd": "Promo prices on this plan's durations stay on and will have no end date. Remove them in Durations.",
+                "goesLiveOnSave": "This promotion goes live as soon as you save."
             },
             "create": {
                 "title": "Create plan",
@@ -4835,6 +5089,7 @@
                     "ACTIVATION": "Activation",
                     "UPGRADE": "Upgrade",
                     "STORAGE_PACK": "Storage pack",
+                    "MODULE_UNLOCK": "Add-ons",
                     "EXTENSION": "Extension"
                 },
                 "refunds": "Refunds",
@@ -5303,6 +5558,7 @@
             }
         },
         "invitationThemes": {
+            "editDesign": "Edit design of {name}",
             "title": "Themes",
             "create": "New theme",
             "search": "Search by name or slug",
@@ -5330,13 +5586,13 @@
                 "HIDDEN": "Out of the catalogue. Invitations made from it keep working."
             },
             "drawer": {
+                "editDesign": "Edit design",
                 "name": "Name",
                 "eventType": "Event type",
                 "status": "Status",
                 "slug": "Slug",
                 "seoTitle": "SEO title",
                 "seoDescription": "Meta description",
-                "sortOrder": "Sort order",
                 "counter": "{count}/{max}",
                 "nameInvalid": "Enter 1 to 120 characters.",
                 "slugInvalid": "Use lower-case letters, digits and hyphens.",
@@ -5445,15 +5701,22 @@
                     "title": "Title",
                     "code": "Code",
                     "lines": "Lines",
+                    "features": "Pictures",
+                    "logo": "Logo",
                     "fixed": "Text {number}",
                     "host": "Host field {number}"
                 },
                 "addFixed": "Add text",
                 "addHost": "Add host field",
+                "addLogo": "Add logo",
                 "addLimit": "Up to 5 text fields.",
                 "restoreTitle": "Add title back",
+                "restoreFeatures": "Add pictures back",
                 "removeTitle": "Remove title",
+                "removeFeatures": "Remove pictures",
                 "removeField": "Remove field",
+                "removeLogo": "Remove logo",
+                "logoColorOptions": { "original": "Original", "one": "One colour" },
                 "fieldText": { "en": "English text", "el": "Greek text" },
                 "fieldLabel": { "en": "English label", "el": "Greek label" },
                 "fieldPlaceholder": { "en": "English placeholder", "el": "Greek placeholder" },
@@ -6301,6 +6564,8 @@
             "share": {
                 "copy": "Copy link",
                 "copied": "Copied",
+                "shortLink": "Short link",
+                "fullLink": "Full link",
                 "downloadQr": "Download QR",
                 "qr": "QR code for this link"
             }
@@ -6398,6 +6663,14 @@
             }
         }
     },
+    "FeedQuickActions": {
+        "invitation": "Invitation",
+        "photos": "Photos",
+        "rsvpReport": "RSVP",
+        "share": "Share",
+        "shareCopied": "Copied",
+        "vendors": "Vendors"
+    },
     "FeedQuickAccessBar": {
         "ariaLabel": "Quick access",
         "eyebrow": "Quick access",
@@ -6473,6 +6746,10 @@
             "name": "QR cards",
             "description": "Designed cards for printing your QR codes."
         },
+        "save_my_date": {
+            "name": "Online invitation",
+            "description": "An online invitation with its own link."
+        },
         "posts": {
             "name": "Posts",
             "description": "Guests can share messages, photos, reactions, and comments on the event wall."
@@ -6504,10 +6781,6 @@
         "co_hosts": {
             "name": "Co-hosts",
             "description": "Invite co-hosts to help manage the event."
-        },
-        "named_invites": {
-            "name": "Personal invitations",
-            "description": "Invitations sent to a guest by name and email."
         },
         "schedule": {
             "name": "Schedule",
@@ -6628,6 +6901,7 @@
         "selectionLimited": "Only supported photos and videos are accepted, with at most {count} per upload.",
         "filesTooLarge": "Photos can be up to {imageSize} and videos up to {videoSize}. Larger files were left out.",
         "uploadBusy": "The server is busy. Your upload will retry shortly…",
+        "uploadSlow": "Slow connection. This may take a little longer, keep this page open.",
         "viewerLabel": "Media viewer",
         "closeViewer": "Close media viewer",
         "previousMedia": "Previous",
@@ -6667,17 +6941,6 @@
         "videoProcessing": "Processing video…",
         "videoFailed": "This video couldn't be processed."
     },
-    "GalleryQrPage": {
-        "title": "Upload QR code",
-        "back": "Back to feed",
-        "subtitle": "Anyone who scans this code can upload photos and videos straight to the event, no sign-in required.",
-        "permanentNote": "This code is set up for you and can't be deleted or replaced.",
-        "temporarilyOff": "Uploads through this code are temporarily turned off. Existing photos and videos aren't affected.",
-        "linkUnavailable": "This code isn't accepting uploads right now.",
-        "missing": {
-            "body": "This event doesn't have a photo upload code yet."
-        }
-    },
     "QrCardPage": {
         "title": "Print card",
         "back": "Back",
@@ -6710,16 +6973,31 @@
         },
         "lines": {
             "join": "Scan to join",
-            "invitation": "Scan to open your invitation",
             "gallery": "Scan to add your photos",
             "guestWish": "Scan to leave a wish",
             "guestBoth": "Scan to add your photos or leave a wish"
+        },
+        "tiles": {
+            "posts": "Posts",
+            "stories": "Stories",
+            "wishes": "Wishes",
+            "reactions": "Reactions",
+            "music": "Music",
+            "songTwo": "Dancing Queen",
+            "songThree": "Perfect",
+            "games": "Games",
+            "gifts": "Gifts",
+            "schedule": "Schedule",
+            "gameQuestion": "Who said 'I love you' first?",
+            "gameHim": "Him",
+            "gameHer": "Her",
+            "giftTitle": "For our honeymoon",
+            "giftCopy": "Copy"
         }
     },
     "InvitationsQrPage": {
         "title": "Share links",
-        "back": "Back to feed",
-        "subtitle": "QR codes and links guests can use to join right away."
+        "back": "Back to feed"
     },
     "MediaThumbnail": {
         "processing": "Processing video",
@@ -6772,6 +7050,15 @@
         "accountDeleteOtpInvalid": "The confirmation code is incorrect.",
         "accountDeleteOtpNotRequested": "Request a new confirmation code.",
         "accountDeleteOtpTooManyAttempts": "Too many incorrect confirmation code attempts.",
+        "emailCodeInvalid": "That code isn't right. Try again.",
+        "emailCodeExpired": "This code has expired. Send a new one.",
+        "emailCodeTooManyAttempts": "Too many tries. Send a new code.",
+        "emailAlreadyVerified": "This email is already confirmed.",
+        "wishAudioTooLarge": "This recording is too large.",
+        "wishAudioNotAudio": "This recording can't be used. Record it again.",
+        "wishAudioTooLong": "Recordings can be up to 1 minute.",
+        "wishAudioConversionFailed": "This recording couldn't be saved. Try again.",
+        "wishEmpty": "Write a message or record one.",
         "errorRef": "Ref: {ref}",
         "betaFeedbackDisabled": "Reporting problems is turned off.",
         "generic": "Something went wrong. Please try again.",
@@ -6907,7 +7194,6 @@
         "eventHostAlreadyCoHost": "This person is already a co-host.",
         "eventHostLastHost": "An event needs at least one host.",
         "eventHostAlreadyPrimary": "This person is already the main host.",
-        "inviteCodeTaken": "This invite code is already in use. Choose a different one.",
         "coHostAlreadyMember": "This person is already a member. Make them a co-host from the members list.",
         "memberIsHost": "This member is a host. Remove their host role first.",
         "reactionTypeCodeTaken": "A reaction with this code already exists for this event type.",
@@ -6935,7 +7221,6 @@
         "coHostNeedsAccount": "Only someone with an account can be a co-host.",
         "memberHostRoleNotAllowed": "Members can't be added as hosts here. Invite a co-host instead.",
         "qrLinkMaxGuestsNotAllowed": "A guest limit can only be set on a join link.",
-        "qrLinkTargetInvalid": "This link's target isn't valid. Refresh and try again.",
         "bugReportTooShort": "Describe the problem in a few more words.",
         "feedbackPageUrlInvalid": "We couldn't read this page's address. Refresh and try again.",
         "uploadFilesRequired": "Choose at least one file.",
@@ -7839,7 +8124,12 @@
         "songFailed": "Couldn't add the song. Try again.",
         "retry": "Retry",
         "dismiss": "Dismiss",
-        "uploadBusy": "The server is busy. Retrying shortly…"
+        "uploadBusy": "The server is busy. Retrying shortly…",
+        "uploadSlow": "Slow connection. This may take a little longer, keep this page open.",
+        "share": "Share",
+        "shareSheetTitle": "Share the moment",
+        "shareSheetBody": "Share it on Instagram, Facebook or your favorite social media.",
+        "notNow": "Not now"
     },
     "EmailVerificationBanner": {
         "message": "Confirm your email address to create an event.",
@@ -7978,7 +8268,6 @@
         "claim": {
             "coverAlt": "Event cover",
             "heading": "A gift from {giver} for {recipient}.",
-            "emailBound": "Sign in with the email it was sent to, or use the card's PIN.",
             "signIn": "Sign in to claim",
             "register": "Create account",
             "guest": "Guest accounts can't claim gifts. Sign in with a full account.",
@@ -8008,10 +8297,9 @@
             },
             "outcome": {
                 "title": "Gift claimed",
-                "completed": "{title} is yours now.",
+                "completed": "The event is yours now.",
                 "claimed": "You are a host now. The event becomes yours on {date}.",
-                "claimedSoon": "You are a host now. The event becomes yours soon.",
-                "open": "Go to my events"
+                "claimedSoon": "You are a host now. The event becomes yours soon."
             }
         }
     },
@@ -9240,7 +9528,6 @@
         "musicTab": "DJ",
         "manage": {
             "title": "Vendors",
-            "back": "Back",
             "unavailable": "Vendors aren't part of this event's plan.",
             "invite": "Invite a vendor",
             "inviteTitle": "Invite a vendor",
@@ -9275,7 +9562,21 @@
             "removeNamed": "Remove {name}",
             "seats": "{used} / {max}",
             "full": "This event has reached its vendor limit.",
-            "fullWithUpgrade": "This event has reached its vendor limit. Upgrade to {plan} for {count, plural, one {# vendor} other {# vendors}}."
+            "fullWithUpgrade": "This event has reached its vendor limit. Upgrade to {plan} for {count, plural, one {# vendor} other {# vendors}}.",
+            "seatsSpoken": "{used} of {max} vendor seats used",
+            "sceneAlt": "Vendors at an event: {types}",
+            "can": {
+                "title": "What vendors can do",
+                "PLANNER": "Edits the schedule, posts announcements, sees the RSVP list and shares links.",
+                "PHOTOGRAPHER": "Adds pro photos, shares a sneak peek and gets your print picks.",
+                "VIDEOGRAPHER": "Adds pro videos and shares a sneak peek.",
+                "VENUE": "The place you celebrate.",
+                "DECORATION": "Flowers, tables and lighting.",
+                "CATERING": "Food, cake and drinks.",
+                "MUSIC": "Sees song requests live.",
+                "listed": "Shown in the vendor list.",
+                "others": "other vendors"
+            }
         },
         "bannerAlt": "Cover: {name}",
         "serviceTags": {
@@ -9494,13 +9795,6 @@
             "allPlayed": "All requests have been played.",
             "open": "Live list"
         },
-        "announcement": {
-            "title": "Announcement",
-            "back": "Back",
-            "label": "Message",
-            "send": "Post",
-            "empty": "Write a message first."
-        },
         "admin": {
             "title": "Vendors",
             "empty": "No vendors.",
@@ -9509,7 +9803,6 @@
     },
     "ImageAlt": {
         "gift": "Gift",
-        "photoUpload": "Photo upload",
         "wishbook": "Wishbook",
         "eventCover": "Event cover photo",
         "eventCoverOf": "Cover photo of {name}",
@@ -9531,7 +9824,9 @@
         "appIcon": "StoryWall app icon",
         "location": "Location",
         "guestPhoto": "Guest photo",
-        "photoBy": "Photo by {name}"
+        "photoBy": "Photo by {name}",
+        "qrUploadSent": "Photos sent",
+        "qrWishSent": "Wish sent"
     },
     "VendorPages": {
         "breadcrumb": "For business",
@@ -9598,10 +9893,7 @@
                 ]
             },
             "portal": {
-                "events": [
-                    "Anna & Nikos",
-                    "Lydia's baptism"
-                ]
+                "events": ["Anna & Nikos", "Lydia's baptism"]
             },
             "schedule": {
                 "ceremonyPlace": "Saint Nicholas Church",
@@ -9613,11 +9905,7 @@
             },
             "rsvp": {
                 "couple": "Nefeli & Orestis",
-                "guests": [
-                    "Nantia Efthymiou",
-                    "Stelios Raptis",
-                    "Alexandros Markou"
-                ]
+                "guests": ["Nantia Efthymiou", "Stelios Raptis", "Alexandros Markou"]
             }
         },
         "heroCta": "Apply to partner",
@@ -10054,6 +10342,88 @@
         "linkFallback": "See more"
     },
     "InvitationEditor": {
+        "save": "Save",
+        "themeMetaTitle": "Edit theme",
+        "themeLoadFailed": "We couldn't load this theme.",
+        "themeConflictTitle": "This theme has newer changes.",
+        "themeConflictBody": "It was saved in another tab or by another admin. Changes not saved here will be lost.",
+        "assets": {
+            "tabs": {
+                "illustrations": "Illustrations",
+                "elements": "Elements",
+                "frames": "Frames",
+                "transitions": "Transitions",
+                "share": "Share image"
+            },
+            "art": {
+                "main": "Main illustration",
+                "ceremonyIcon": "Ceremony icon",
+                "welcomeIcon": "Welcome icon",
+                "receptionIcon": "Reception icon"
+            },
+            "frameArt": "Art",
+            "mask": "Mask",
+            "upload": "Upload",
+            "replace": "Replace",
+            "addElement": "Add element",
+            "addFrame": "Add frame",
+            "addTransition": "Add transition",
+            "name": "Name",
+            "uploadFailed": "The image didn't upload. Try again.",
+            "pickElement": "Pick an element",
+            "noElement": "No element"
+        },
+        "themeStyle": {
+            "mainColor": "Main color",
+            "secondColor": "Second color",
+            "backgrounds": "Backgrounds",
+            "modes": {
+                "cover": "Cover",
+                "repeat": "Repeat",
+                "texture": "Texture"
+            },
+            "stableRepeat": "Stable scale, repeat down",
+            "fonts": "Fonts",
+            "fontStyle": "Font style",
+            "customFonts": "Custom",
+            "bodyFont": "Body font",
+            "photoShape": "Photo shape",
+            "shapes": {
+                "rounded": "Rounded corners",
+                "square": "Square",
+                "portrait": "Portrait",
+                "landscape": "Landscape",
+                "circle": "Circle",
+                "oval": "Oval",
+                "arch": "Arch",
+                "extraRounded": "Extra rounded",
+                "hexagon": "Hexagon",
+                "diamond": "Diamond",
+                "octagon": "Octagon",
+                "teardrop": "Teardrop",
+                "blob": "Organic"
+            },
+            "autoContrast": "Automatic contrast on dark backgrounds",
+            "buttons": "Buttons",
+            "buttonFill": "Button fill",
+            "buttonText": "Button text color",
+            "buttonFont": "Button font",
+            "sameAsBody": "Same as body font",
+            "reset": "Reset"
+        },
+        "themeSwitch": {
+            "change": "Change design",
+            "current": "Design: {name}",
+            "currentBadge": "Current",
+            "thumbAlt": "{name} design",
+            "listFailed": "We couldn't load the designs.",
+            "confirmTitle": "Switch to {name}?",
+            "confirmBody": "Your texts, photos and dates stay. Only the design changes. You can undo this.",
+            "hiddenTitle": "This design doesn't have these sections. They'll be hidden, not deleted:",
+            "restoredTitle": "These hidden sections will show again:",
+            "textLookReset": "Your text color and fonts go back to the design's.",
+            "themeFailed": "We couldn't load this design. Try again."
+        },
         "metaTitle": "Edit invitation",
         "back": "Back",
         "undo": "Undo",
@@ -10077,7 +10447,6 @@
         "leaveBody": "If you leave now, they will be lost.",
         "leave": "Leave",
         "stay": "Stay",
-        "publishUnavailable": "Publishing isn't available yet.",
         "previewWidth": "Screen size",
         "previewMobile": "Mobile",
         "previewDesktop": "Desktop",
@@ -10095,8 +10464,20 @@
         "open": "Open",
         "planMissingTitle": "Your plan doesn't include the invitation.",
         "planEndedTitle": "Your event's plan has ended.",
+        "addOnTitle": "Add the invitation to your plan",
         "seePlan": "See plan",
         "notNow": "Not now",
+        "signInTitle": "Sign in to publish",
+        "signInBody": "Your changes stay saved.",
+        "signIn": "Sign in",
+        "createAccount": "Create account",
+        "chooseEvent": "Choose the event",
+        "newEvent": "New event from this invitation",
+        "choosePlan": "Choose a plan",
+        "eventName": "Event name",
+        "eventStart": "Date and time",
+        "continueToPayment": "Continue to payment",
+        "noInvitationPlans": "No plan includes the invitation yet.",
         "tour": {
             "help": "Editor tour",
             "skip": "Skip",
@@ -10143,6 +10524,20 @@
         "delete": "Delete",
         "emptyText": "Empty text",
         "textBox": "Text",
+        "handles": {
+            "sectionHeight": "Drag to change the height. Double-tap to reset.",
+            "spacerHeight": "Drag to change the space",
+            "resize": "Drag to resize",
+            "spaceAbove": "Drag to change the space above the text",
+            "spaceBelow": "Drag to change the space below the text",
+            "itemBack": "One place back",
+            "itemForward": "One place forward",
+            "twoColumns": "2 columns",
+            "toRightColumn": "Move one item to the right column",
+            "toLeftColumn": "Move one item to the left column",
+            "pixels": "{value} px",
+            "percent": "{value}%"
+        },
         "sections": {
             "add": "Add section",
             "nothingToAdd": "There are no more sections to add.",
@@ -10195,6 +10590,82 @@
             "weddingSponsorsSimple": "Wedding sponsors (no photos)",
             "photoFrame": "Framed photo",
             "footer": "Footer"
+        },
+        "eventPhotos": {
+            "title": "Event photos",
+            "empty": "The event has no photos yet.",
+            "photoAlt": "Event photo {n}"
+        },
+        "eventLock": {
+            "note": "This comes from your event. Change it in the event's settings.",
+            "settings": "Event settings",
+            "rsvp": "RSVP",
+            "schedule": "Event schedule"
+        },
+        "photos": {
+            "upload": "Upload photo",
+            "change": "Change photo",
+            "empty": "Photo",
+            "uploading": "Uploading…",
+            "signInTitle": "Sign in to add photos",
+            "errors": {
+                "type": "Only JPG, PNG and WebP are allowed.",
+                "size": "The file is over 10 MB.",
+                "failed": "The photo didn't upload. Try again.",
+                "full": "You've reached the photo limit.",
+                "galleryFull": "The gallery already has 10 photos."
+            },
+            "move": "Move photo",
+            "zoomOut": "Zoom out",
+            "zoomIn": "Zoom in",
+            "frame": "Frame",
+            "chooseFrame": "Choose a frame",
+            "noFrames": "Add frames to the theme.",
+            "frameEffect": "Frame effect",
+            "frameEffects": {
+                "none": "No effect",
+                "fade-in": "Fade In",
+                "fade-up": "Fade Up",
+                "fade-down": "Fade Down",
+                "zoom-in-soft": "Zoom In Soft",
+                "zoom-out-soft": "Zoom Out Soft",
+                "slide-left": "Slide Left",
+                "slide-right": "Slide Right",
+                "float": "Float",
+                "gentle-pulse": "Gentle Pulse",
+                "soft-rotate-in": "Soft Rotate In",
+                "swing-soft": "Swing Soft",
+                "blur-reveal": "Blur Reveal",
+                "mask-reveal": "Mask Reveal",
+                "parallax-soft": "Parallax Soft",
+                "pop-elegant": "Pop Elegant"
+            },
+            "gallery": {
+                "title": "Photos",
+                "add": "Add photos",
+                "count": "{count}/10 photos",
+                "delete": "Delete photo",
+                "photoAlt": "Photo {n}",
+                "layout": "Layout",
+                "shape": "Shape",
+                "dragInstructions": "Press space to pick up a photo. Use the arrow keys to move it, space to drop it, or escape to cancel.",
+                "picked": "Picked up photo {n}.",
+                "over": "Photo {n} is at place {position} of {count}.",
+                "dropped": "Dropped photo {n} at place {position} of {count}.",
+                "cancelled": "Photo {n} is back where it was.",
+                "layouts": {
+                    "grid": "Grid",
+                    "masonry": "Mosaic",
+                    "carousel": "Slideshow",
+                    "featured": "One large"
+                },
+                "shapes": {
+                    "round": "Circle",
+                    "square": "Square",
+                    "rectangle": "Rectangle",
+                    "roundedSquare": "Rounded"
+                }
+            }
         },
         "sectionSettings": {
             "open": "Section settings",
@@ -10283,6 +10754,7 @@
             "website": "Website",
             "mapLink": "Google Maps link",
             "mapHint": "Left empty, the map searches by name and address.",
+            "showWelcome": "Show the welcome place",
             "contactLinks": {
                 "phone": "Phone",
                 "sms": "Text message (SMS)",
@@ -10303,12 +10775,30 @@
             "colors": "Colors",
             "addColor": "Add color",
             "removeColor": "Remove color {color}",
+            "questions": "Questions",
+            "addQuestion": "Add question",
+            "addStay": "Add place to stay",
+            "name": "Name",
+            "address": "Address",
+            "addGodparent": "Add godparent",
+            "addSponsor": "Add sponsor",
+            "untitled": "Untitled",
+            "reorder": "Drag to reorder",
+            "listDrag": {
+                "instructions": "Press space to pick up an item. Use the arrow keys to move it, space to drop it, or escape to cancel.",
+                "picked": "Picked up {name}.",
+                "over": "{name} is at place {position} of {count}.",
+                "dropped": "Dropped {name} at place {position} of {count}.",
+                "cancelled": "{name} is back where it was."
+            },
             "buttons": "Buttons",
             "buttonText": "Button text",
             "link": "Link",
             "backgroundAuto": "Automatic",
             "backgroundNumber": "Background {n}",
             "hostCanChange": "The host can change it",
+            "followEvent": "Follow the event",
+            "followEventHint": "Comes from your event. If you edit it here, it stops following the event. Your event doesn't change.",
             "hostBackgrounds": "Backgrounds the host can pick",
             "effect": "Background effect",
             "effects": {
@@ -10426,7 +10916,7 @@
     },
     "SaveMyDatePreview": {
         "metaTitle": "Invitation preview"
-    },
+    },
     "PublishedInvitation": {
         "metaTitle": "Invitation",
         "notFound": "We couldn't find this invitation.",

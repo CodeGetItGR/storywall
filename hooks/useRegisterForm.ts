@@ -15,6 +15,7 @@ import { termsVersionQueryKey, useTermsVersion } from '@/hooks/useTermsVersion';
 import { isGuidelinesVersionMismatchError, isTermsVersionMismatchError } from '@/lib/api/errors';
 import type { AuthSessionDto, OAuthProviderName } from '@/lib/api/types';
 import { getPostRegisterRedirectPath } from '@/lib/auth/returnPath';
+import { type AuthEntry, authEntry, flowErrorCode, trackFlow } from '@/lib/flowTracking';
 
 export type RegisterFields = { firstName: string; lastName: string; email: string; password: string };
 
@@ -24,10 +25,18 @@ export function useRegisterForm({
     inviteToken,
     returnPath,
     initialFields,
+    onSignedIn,
+    emailVerification,
+    entry: entryOverride,
 }: {
     inviteToken: string | null;
     returnPath: string | null;
     initialFields: Omit<RegisterFields, 'password'>;
+    // The create wizard: stay put after sign-up, and ask for a 6-digit code instead of a link.
+    onSignedIn?: (session: AuthSessionDto) => void;
+    emailVerification?: 'LINK' | 'CODE';
+    // For the sign-up step count when the page's own params don't say (the create wizard).
+    entry?: AuthEntry;
 }) {
     const t = useTranslations('RegisterPage');
     const { register } = useAuth();
@@ -37,6 +46,7 @@ export function useRegisterForm({
     const guidelinesVersion = useCommunityGuidelinesVersion();
     const termsVersion = useTermsVersion();
     const queryClient = useQueryClient();
+    const entry = entryOverride ?? authEntry(inviteToken, returnPath);
 
     const [fields, setFields] = useState<RegisterFields>({ ...initialFields, password: '' });
     const [showPassword, setShowPassword] = useState(false);
@@ -64,9 +74,10 @@ export function useRegisterForm({
 
     const handleSignedIn = useCallback(
         (session: AuthSessionDto) => {
-            navigateAfterSignIn(getPostRegisterRedirectPath(session.role, Boolean(inviteToken), returnPath));
+            if (onSignedIn) onSignedIn(session);
+            else navigateAfterSignIn(getPostRegisterRedirectPath(session.role, Boolean(inviteToken), returnPath));
         },
-        [inviteToken, navigateAfterSignIn, returnPath],
+        [inviteToken, navigateAfterSignIn, onSignedIn, returnPath],
     );
 
     // A newer version went live while the page was open: fetch both and make the box tick again.
@@ -84,6 +95,7 @@ export function useRegisterForm({
             e.preventDefault();
             setError(null);
             if (!accepted) {
+                trackFlow({ name: 'Sign Up Error', method: 'email', code: 'not_accepted' });
                 setError(t('acceptance.required'));
                 return;
             }
@@ -101,9 +113,12 @@ export function useRegisterForm({
                     acceptedGuidelinesVersion: guidelinesVersion.data,
                     acceptedTermsVersion: termsVersion.data,
                     adultConfirmed: true,
+                    emailVerification,
                 });
+                trackFlow({ name: 'Sign Up', method: 'email', from: entry });
                 handleSignedIn(session);
             } catch (err) {
+                trackFlow({ name: 'Sign Up Error', method: 'email', code: flowErrorCode(err) });
                 if (isGuidelinesVersionMismatchError(err) || isTermsVersionMismatchError(err)) await resetAfterVersionChange();
                 else setError(toErrorMessage(err));
             } finally {
@@ -112,6 +127,8 @@ export function useRegisterForm({
         },
         [
             accepted,
+            emailVerification,
+            entry,
             fields,
             guidelinesVersion.data,
             guidelinesVersion.isError,
@@ -135,7 +152,7 @@ export function useRegisterForm({
         [toErrorMessage],
     );
 
-    const oauthSignIn = useOAuthSignIn({ inviteToken, onSignedInAction: handleSignedIn, onErrorAction: handleOAuthError });
+    const oauthSignIn = useOAuthSignIn({ inviteToken, entry, onSignedInAction: handleSignedIn, onErrorAction: handleOAuthError });
     const { handleSignIn } = oauthSignIn;
 
     const handleOAuthSignIn = useCallback(

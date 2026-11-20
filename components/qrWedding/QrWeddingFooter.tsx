@@ -38,7 +38,7 @@ export async function QrWeddingFooter({ locale }: { locale: Locale }) {
         { label: landing('reportContent'), href: routes.reportContent },
         { label: landing('legalLinks.cookies'), href: legal(routes.legal.cookies()) },
         { label: landing('legalLinks.withdrawal'), href: legal(routes.legal.withdrawalTerms()) },
-        { label: landing('legalLinks.contact'), href: routes.contact },
+        { label: landing('legalLinks.contact'), href: legal(routes.contact) },
     ];
 
     return (

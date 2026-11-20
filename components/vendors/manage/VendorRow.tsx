@@ -1,13 +1,15 @@
 'use client';
 
-import { Eye, EyeOff, Trash2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useCallback } from 'react';
 
-import { Button } from '@/components/ui/button';
+import { RowActionsMenu } from '@/components/ui/RowActionsMenu';
 import { VendorLogo } from '@/components/vendors/VendorLogo';
+import { useVendorRowActions } from '@/hooks/useVendorRowActions';
 import type { VendorRowDto } from '@/lib/api/types';
+import { cn } from '@/lib/utils';
 
+// V1: a soft row (round logo, name, type, a grey "Hidden"). Tapping it opens the vendor's sheet;
+// the ⋯ menu holds Show/Hide in list and Remove.
 export function VendorRow({
     vendor,
     isPatching,
@@ -22,55 +24,26 @@ export function VendorRow({
     onRemoveAction: (vendorId: string) => void;
 }) {
     const t = useTranslations('Vendors');
-    const name = vendor.businessName ?? t('manage.noProfile');
-    const handleOpen = useCallback(() => onOpenAction(vendor.id), [onOpenAction, vendor.id]);
-    const handleToggleHidden = useCallback(() => onToggleHiddenAction(vendor.id), [onToggleHiddenAction, vendor.id]);
-    const handleRemove = useCallback(() => onRemoveAction(vendor.id), [onRemoveAction, vendor.id]);
-    // An opted-out vendor is out of the list too, so both read as hidden.
-    const isHidden = Boolean(vendor.hiddenByHost || vendor.optedOut);
+    const row = useVendorRowActions({ vendor, isPatching, onOpenAction, onToggleHiddenAction, onRemoveAction });
 
     return (
-        <li className="flex items-center gap-1">
-            <button type="button" onClick={handleOpen} className="flex min-w-0 flex-1 items-center gap-3 py-3 text-left focus-ring">
+        <li className="flex min-h-[68px] items-center gap-1">
+            <button type="button" onClick={row.open} className="flex min-w-0 flex-1 items-center gap-3.5 rounded-xl py-1.5 text-left focus-ring">
                 {/* Logo */}
-                <VendorLogo logoUrl={vendor.logoUrl} name={name} />
+                <VendorLogo logoUrl={vendor.logoUrl} name={row.name} className={cn('size-12 rounded-full', row.isHidden && 'opacity-55')} />
 
                 {/* Name and type */}
-                <span className="min-w-0 flex-1">
-                    <span className="block truncate text-sm font-semibold text-ink">{name}</span>
-                    <span className="block text-xs text-ink-muted">{t(`types.${vendor.vendorType}`)}</span>
+                <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+                    <span className={cn('truncate text-[15px] font-semibold', row.isHidden ? 'text-ink-muted' : 'text-ink')}>{row.name}</span>
+                    <span className="truncate text-[13px] text-ink-faint">{t(`types.${vendor.vendorType}`)}</span>
                 </span>
 
                 {/* Hidden */}
-                {isHidden && (
-                    <span className="shrink-0 rounded-full bg-surface-muted px-2 py-0.5 text-xs font-semibold text-ink-muted">
-                        {t('manage.hidden')}
-                    </span>
-                )}
+                {row.isHidden && <span className="shrink-0 text-xs font-semibold text-ink-faint">{t('manage.hidden')}</span>}
             </button>
 
             {/* Actions */}
-            <Button
-                type="button"
-                variant="ghost"
-                size="icon-lg"
-                className="size-10 text-ink-muted"
-                onClick={handleToggleHidden}
-                disabled={isPatching || Boolean(vendor.optedOut)}
-                aria-label={vendor.hiddenByHost ? t('manage.showNamed', { name }) : t('manage.hideNamed', { name })}
-            >
-                {vendor.hiddenByHost ? <Eye aria-hidden="true" /> : <EyeOff aria-hidden="true" />}
-            </Button>
-            <Button
-                type="button"
-                variant="ghost"
-                size="icon-lg"
-                className="size-10 text-destructive hover:text-destructive"
-                onClick={handleRemove}
-                aria-label={t('manage.removeNamed', { name })}
-            >
-                <Trash2 aria-hidden="true" />
-            </Button>
+            <RowActionsMenu label={row.moreLabel} items={row.actions} />
         </li>
     );
 }

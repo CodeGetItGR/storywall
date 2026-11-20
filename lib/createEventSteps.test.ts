@@ -1,12 +1,17 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
 
 import type { ThemePresetDto } from '@/lib/api/types';
 import {
+    adjacentCreateEventStep,
+    createEventDetailsRequest,
     effectiveThemePresetId,
+    focusFirstInvalidField,
     isThemeStepAvailable,
     parseCreateEventStep,
     resolveCreateEventStep,
     resolveCreateEventType,
+    stepAfter,
+    stepBefore,
     visibleCreateEventSteps,
 } from '@/lib/createEventSteps';
 import { eventTypeSlug } from '@/lib/eventTypeSlug';
@@ -37,8 +42,48 @@ describe('createEventSteps', () => {
     });
 
     it('shows the theme step between details and overview only when available', () => {
-        expect(visibleCreateEventSteps(true)).toEqual(['type', 'plan', 'details', 'theme', 'overview']);
-        expect(visibleCreateEventSteps(false)).toEqual(['type', 'plan', 'details', 'overview']);
+        expect(visibleCreateEventSteps(true, false, true)).toEqual(['type', 'plan', 'details', 'theme', 'overview']);
+        expect(visibleCreateEventSteps(false, false, true)).toEqual(['type', 'plan', 'details', 'overview']);
+    });
+
+    it('drops the details step for a plan that does not ask for them', () => {
+        expect(visibleCreateEventSteps(false, false, false)).toEqual(['type', 'plan', 'overview']);
+        expect(visibleCreateEventSteps(true, false, false)).toEqual(['type', 'plan', 'theme', 'overview']);
+    });
+
+    it('moves between the steps shown, staying put at either end', () => {
+        const lite = visibleCreateEventSteps(false, false, false);
+        expect(adjacentCreateEventStep(lite, 'plan', 1)).toBe('overview');
+        expect(adjacentCreateEventStep(lite, 'overview', -1)).toBe('plan');
+        expect(adjacentCreateEventStep(visibleCreateEventSteps(false, false, true), 'plan', 1)).toBe('details');
+        expect(adjacentCreateEventStep(lite, 'type', -1)).toBe('type');
+        expect(adjacentCreateEventStep(lite, 'overview', 1)).toBe('overview');
+    });
+
+    describe('createEventDetailsRequest', () => {
+        const details = {
+            startAt: '2027-06-12T18:00',
+            timezone: 'Europe/Athens',
+            locationName: ' Church ',
+            locationAddress: ' Main St 1 ',
+            mapsUrl: ' ',
+            initialSessionTitle: 'Ceremony',
+        };
+
+        it('sends the date, place and first session for a plan that asks for them', () => {
+            expect(createEventDetailsRequest(true, details)).toEqual({
+                startAt: new Date('2027-06-12T18:00').toISOString(),
+                timezone: 'Europe/Athens',
+                locationName: 'Church',
+                locationAddress: 'Main St 1',
+                mapsUrl: undefined,
+                initialSessionTitle: 'Ceremony',
+            });
+        });
+
+        it('sends none of them for a plan that does not, even when they were typed', () => {
+            expect(createEventDetailsRequest(false, details)).toEqual({});
+        });
     });
 
     it('offers the theme step when the plan has the module and the type has presets', () => {
@@ -63,5 +108,56 @@ describe('createEventSteps', () => {
         expect(resolveCreateEventType(['BABY_SHOWER', 'WEDDING'], 'REUNION', null)).toBe('WEDDING');
         expect(resolveCreateEventType(['BABY_SHOWER', 'REUNION'], null, null)).toBe('BABY_SHOWER');
         expect(resolveCreateEventType([], null, 'reunion')).toBe('WEDDING');
+    });
+});
+
+describe('visibleCreateEventSteps with the account step', () => {
+    it('puts account between theme and review', () => {
+        expect(visibleCreateEventSteps(true, true)).toEqual(['type', 'plan', 'details', 'theme', 'account', 'overview']);
+        expect(visibleCreateEventSteps(false, true)).toEqual(['type', 'plan', 'details', 'account', 'overview']);
+        expect(visibleCreateEventSteps(false, false)).toEqual(['type', 'plan', 'details', 'overview']);
+    });
+});
+
+describe('stepAfter and stepBefore', () => {
+    const steps = ['type', 'plan', 'details', 'account', 'overview'] as const;
+
+    it('moves along the shown steps', () => {
+        expect(stepAfter('details', steps)).toBe('account');
+        expect(stepAfter('overview', steps)).toBeNull();
+        expect(stepBefore('overview', steps, false)).toBe('account');
+    });
+
+    it('steps back over the account step once it is done', () => {
+        expect(stepBefore('overview', steps, true)).toBe('details');
+    });
+});
+
+describe('focusFirstInvalidField', () => {
+    afterEach(() => {
+        document.body.innerHTML = '';
+    });
+
+    function renderForm(html: string) {
+        document.body.innerHTML = `<form id="f">${html}</form>`;
+        Element.prototype.scrollIntoView = () => {};
+    }
+
+    it('focuses the first required field holding only spaces', () => {
+        renderForm('<input id="a" required value="Title" /><input id="b" required value="   " /><input id="c" required />');
+        focusFirstInvalidField('f');
+        expect(document.activeElement?.id).toBe('b');
+    });
+
+    it('focuses a field marked invalid', () => {
+        renderForm('<input id="a" required value="Title" /><input id="b" aria-invalid="true" value="2020-01-01" />');
+        focusFirstInvalidField('f');
+        expect(document.activeElement?.id).toBe('b');
+    });
+
+    it('leaves focus alone when nothing is missing', () => {
+        renderForm('<input id="a" required value="Title" />');
+        focusFirstInvalidField('f');
+        expect(document.activeElement).toBe(document.body);
     });
 });

@@ -1,3 +1,4 @@
+import { planRequirementsOf } from '@/lib/__fixtures__/planRequirements';
 import type {
     AppConfigResponseDto,
     AuthorDto,
@@ -8,6 +9,8 @@ import type {
     EventSessionResponseDto,
     MediaResponseDto,
     ModuleKeyConvention,
+    PartnerRole,
+    PlanTierResponseDto,
     PostResponseDto,
     QrLinkResponseDto,
     ReactionTypeResponseDto,
@@ -183,6 +186,12 @@ export function storyModules(keys: ModuleKeyConvention[] = ALL_MODULES): EventMo
     }));
 }
 
+// The story event with a vendors module whose plan allows only these vendor types.
+export function storyEventAllowingVendors(allowedTypes: PartnerRole[]): EventDetailResponseDto {
+    const [vendors] = storyModules(['vendors']);
+    return storyEvent({ modules: [...storyModules(), { ...vendors, configuration: { maxVendors: 5, allowedTypes } }] });
+}
+
 export function storySession(overrides: Partial<EventSessionResponseDto> = {}): EventSessionResponseDto {
     return {
         id: 'ses-main',
@@ -193,6 +202,7 @@ export function storySession(overrides: Partial<EventSessionResponseDto> = {}): 
         endAt: null,
         locationName: 'Agios Nikolaos church',
         mapsUrl: null,
+        locationAddress: null,
         displayOrder: 0,
         isMain: true,
         isSecondary: false,
@@ -244,12 +254,17 @@ function reactionType(code: string, name: string, emoji: string, sortOrder: numb
     return { id: `rt-${code}`, eventTypeKey: 'WEDDING', code, name, emoji, sortOrder, isAssignable: true };
 }
 
-export const storyReactionTypes = [reactionType('LOVE', 'Love', '❤️', 0), reactionType('LAUGH', 'Laugh', '😂', 1), reactionType('WOW', 'Wow', '😮', 2)];
+export const storyReactionTypes = [
+    reactionType('LOVE', 'Love', '❤️', 0),
+    reactionType('LAUGH', 'Laugh', '😂', 1),
+    reactionType('WOW', 'Wow', '😮', 2),
+];
 
 // Only the parts of GET /api/config the components in stories read. Add a
 // field here when a story needs it, rather than filling the whole shape.
 export const storyAppConfig = {
     featureFlags: [],
+    withdrawal: { termsVersion: '2026-09-18', windowDays: 14, holdDays: 7 },
     media: { presignedUrlTtlMinutes: 60 },
     pagination: { defaultPageSize: 20, maxPageSize: 100 },
     planTiers: [
@@ -277,6 +292,167 @@ export const storyAppConfig = {
     rateLimits: [],
     reportTargetTypes: ['POST', 'COMMENT', 'MEMBER'],
     reportReasons: [],
+    rsvp: { minAdults: 1, maxAdults: 10, minChildren: 0, maxChildren: 10 },
+    coverage: { minDaysAfterStart: 1, defaultEventDurationHours: 24 },
+    landingReviews: [],
+    newsletter: { enabled: false, discountPercent: 10, rewardValidityMonths: 12 },
+    eventDeletion: { codeDigits: 6, codeValidMinutes: 15, maxCodeAttempts: 5 },
+    betaFeedback: { enabled: false, screenshotMaxBytes: 5_000_000, screenshotMimeTypes: ['image/png'] },
+    errorTracking: { enabled: false },
+} as unknown as AppConfigResponseDto;
+
+function storyEventTypeCopy(en: string, el: string, taglineEn: string, taglineEl: string) {
+    return { name: { en, el }, tagline: { en: taglineEn, el: taglineEl }, voice: {}, modules: {} };
+}
+
+const WIZARD_MODULE_KEYS = ['posts', 'gallery', 'qr_cards', 'playlist', 'schedule', 'stories', 'rsvp', 'wishbook', 'co_hosts', 'theme', 'he_or_she'];
+
+function storyWizardPlan(
+    code: string,
+    sortOrder: number,
+    maxMembers: number,
+    storageGb: number,
+    moduleKeys: string[],
+    prices: [number, number][],
+    eventTypeKey = 'WEDDING',
+) {
+    return {
+        id: `plan-${code}`,
+        code,
+        scope: 'EVENT',
+        name: code,
+        description: null,
+        sortOrder,
+        isDefault: false,
+        isAssignable: true,
+        isPublic: true,
+        isGiftable: false,
+        storageBytes: storageGb * 1024 ** 3,
+        maxMembers,
+        priceAmountMinor: null,
+        priceCurrency: 'EUR',
+        billingPeriod: null,
+        discountPercent: null,
+        discountLabel: null,
+        discountStartsAt: null,
+        discountEndsAt: null,
+        moduleKeys,
+        paidModules: [],
+        moduleConfigs: {},
+        eventTypeKey,
+        sharedGroupKey: null,
+        initialOptions: prices.map(([months, amount], index) => ({
+            id: `${code}-${months}`,
+            kind: 'INITIAL',
+            months,
+            priceAmountMinor: amount,
+            promoPriceAmountMinor: null,
+            sortOrder: index,
+            active: true,
+        })),
+        extensionOptions: [],
+        requirements: planRequirementsOf(moduleKeys),
+    } as unknown as PlanTierResponseDto;
+}
+
+// Wedding plans shaped like staging's: three full plans and one lite plan, plus one baptism plan.
+export const storyWizardPlans: PlanTierResponseDto[] = [
+    storyWizardPlan(
+        'START',
+        1,
+        150,
+        15,
+        ['posts', 'gallery', 'qr_cards', 'playlist', 'schedule'],
+        [
+            [6, 7900],
+            [12, 9900],
+        ],
+    ),
+    storyWizardPlan(
+        'STORY',
+        2,
+        300,
+        25,
+        ['posts', 'gallery', 'qr_cards', 'playlist', 'schedule', 'stories', 'rsvp', 'wishbook'],
+        [
+            [6, 9900],
+            [9, 10900],
+            [12, 11900],
+        ],
+    ),
+    storyWizardPlan(
+        'SIGNATURE',
+        3,
+        2500,
+        50,
+        ['posts', 'gallery', 'qr_cards', 'playlist', 'schedule', 'stories', 'rsvp', 'wishbook', 'co_hosts'],
+        [
+            [6, 17900],
+            [12, 19900],
+        ],
+    ),
+    storyWizardPlan('QR', 4, 300, 10, ['gallery'], [[3, 4900]]),
+    storyWizardPlan(
+        'BAPTISM',
+        1,
+        120,
+        15,
+        ['posts', 'gallery', 'qr_cards', 'playlist', 'schedule', 'rsvp', 'wishbook'],
+        [
+            [6, 5900],
+            [12, 7900],
+        ],
+        'BAPTISM',
+    ),
+];
+
+// Two types, so the type step shows its cards instead of the empty state.
+export const storyWizardAppConfig = {
+    ...storyAppConfig,
+    media: {
+        presignedUrlTtlMinutes: 60,
+        estimateAvgImageBytes: 3_000_000,
+        estimateAvgVideoBytes: 40_000_000,
+        estimateImageRatio: 0.7,
+    },
+    modules: WIZARD_MODULE_KEYS.map((moduleKey, sortOrder) => ({
+        id: `module-${moduleKey}`,
+        moduleKey,
+        name: moduleKey,
+        description: null,
+        isEnabled: true,
+        sortOrder,
+    })),
+    planTiers: storyWizardPlans,
+    eventTypes: [
+        {
+            id: 'type-wedding',
+            eventTypeKey: 'WEDDING',
+            icon: 'heart',
+            accentToken: 'rose',
+            isEnabled: true,
+            sortOrder: 1,
+            imageUrl: null,
+            hasDemo: true,
+        },
+        {
+            id: 'type-baptism',
+            eventTypeKey: 'BAPTISM',
+            icon: 'baby',
+            accentToken: 'sky',
+            isEnabled: true,
+            sortOrder: 2,
+            imageUrl: null,
+            hasDemo: true,
+        },
+    ],
+    eventTypeKeys: ['WEDDING', 'BAPTISM'],
+    translations: {
+        eventTypes: {
+            WEDDING: storyEventTypeCopy('Wedding', 'Γάμος', 'Every moment of your big day', 'Κάθε στιγμή της μεγάλης μέρας'),
+            BAPTISM: storyEventTypeCopy('Baptism', 'Βάπτιση', 'A day to remember', 'Μια μέρα να θυμάστε'),
+        },
+    },
 } as unknown as AppConfigResponseDto;
 
 export function storyQrLink(overrides: Partial<QrLinkResponseDto> = {}): QrLinkResponseDto {
@@ -306,3 +482,30 @@ export function storyQrLink(overrides: Partial<QrLinkResponseDto> = {}): QrLinkR
 export function storyPage<T>(content: T[], totalElements = content.length) {
     return { content, page: { number: 0, size: 20, totalElements, totalPages: 1 } };
 }
+
+// A tenth of a second of silence as a WAV data URL: a recording that loads in stories without a network fixture.
+function silentWavDataUrl(): string {
+    const sampleRate = 8000;
+    const samples = sampleRate / 10;
+    const bytes: number[] = [];
+    const text = (value: string) => bytes.push(...Array.from(value, (c) => c.charCodeAt(0)));
+    const uint = (value: number, size: number) => {
+        for (let i = 0; i < size; i++) bytes.push((value >> (8 * i)) & 0xff);
+    };
+    text('RIFF');
+    uint(36 + samples, 4);
+    text('WAVEfmt ');
+    uint(16, 4);
+    uint(1, 2); // PCM
+    uint(1, 2); // mono
+    uint(sampleRate, 4);
+    uint(sampleRate, 4); // bytes per second
+    uint(1, 2); // block align
+    uint(8, 2); // bits per sample
+    text('data');
+    uint(samples, 4);
+    for (let i = 0; i < samples; i++) bytes.push(0x80);
+    return `data:audio/wav;base64,${btoa(String.fromCharCode(...bytes))}`;
+}
+
+export const STORY_VOICE_WISH_URL = silentWavDataUrl();

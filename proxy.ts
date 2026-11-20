@@ -22,6 +22,7 @@ import { showsSaveMyDate } from '@/lib/saveMyDateRelease';
 import { SITE_URL } from '@/lib/seo';
 import { isSharedLinkPath, readShareLocale, SHARE_LOCALE_PARAM } from '@/lib/shareLinks';
 import { takeVisitSourceParam, VISIT_SOURCE_PARAM } from '@/lib/signupSource';
+import { showsCreateWizard } from '@/lib/unreleasedPages';
 
 // Explicit allowlist, not a denylist: every prefix listed here requires a
 // valid session, and everything else passes through untouched. A new
@@ -30,13 +31,21 @@ import { takeVisitSourceParam, VISIT_SOURCE_PARAM } from '@/lib/signupSource';
 // or, worse, gate one that was meant to stay public.
 const PROTECTED_PREFIXES = ['/admin', '/feed', '/home', '/notifications', '/profile', '/business', '/partner', '/event-not-found', '/post/'];
 
-// The Save my date editor needs a session, but only where it exists: on the production site
-// before launch it 404s like the rest of Save my date, instead of sending visitors to log in.
+// The Save my date editor opens signed out too: a visitor edits first and signs in to publish. A
+// session, when there is one, is still handed to the page for its prefetch. On the production site
+// before launch it 404s like the rest of Save my date.
 const SAVE_MY_DATE_EDITOR_PREFIX = '/save-my-date/editor';
+
+// Pages that open for everyone and still pass a session, if there is one, on for the page's
+// prefetch: the create wizard (KAN-197) and the Save my date editor.
+function isOpenToVisitors(pathname: string): boolean {
+    if (pathname === routes.events.new() && showsCreateWizard()) return true;
+    return pathname.startsWith(SAVE_MY_DATE_EDITOR_PREFIX) && showsSaveMyDate();
+}
 
 function isProtectedPath(pathname: string): boolean {
     if (PROTECTED_PREFIXES.some((prefix) => pathname === prefix || pathname.startsWith(prefix))) return true;
-    if (pathname.startsWith(SAVE_MY_DATE_EDITOR_PREFIX) && showsSaveMyDate()) return true;
+    if (isOpenToVisitors(pathname)) return false;
     // Every /events/... route (new, checkout, settings) needs a session. The
     // client gate on /events/new only adds role and email-verification checks.
     return pathname.startsWith('/events/');
@@ -211,11 +220,19 @@ export async function proxy(request: NextRequest) {
         response.cookies.set(localeCookieName, shareLocale, { path: '/', maxAge: localeCookieMaxAge });
         return response;
     }
-    if (!isProtectedPath(pathname)) return NextResponse.next();
+    const openToVisitors = isOpenToVisitors(pathname);
+    if (!openToVisitors && !isProtectedPath(pathname)) return NextResponse.next();
 
     const session = await resolveSession(request);
 
     if (session.kind === 'signed-out') {
+        if (openToVisitors) {
+            const response = NextResponse.next();
+            // A refresh token Spring refused is dead: drop it, as the login redirect below does.
+            response.cookies.delete(AUTH_COOKIES.accessToken);
+            response.cookies.delete(AUTH_COOKIES.refreshToken);
+            return response;
+        }
         const loginUrl = new URL(routes.login, request.url);
         // A source carried from a landing page goes on the login page, so it is known before the
         // account is created, not only once the visitor comes back to the return path.

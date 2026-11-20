@@ -53,4 +53,14 @@ describe('DurationPicker', () => {
         expect(onChange).not.toHaveBeenCalled();
         expect(screen.getByRole('radio', { name: '9 months' })).toBeEnabled();
     });
+
+    it('spells the months out and fills the width in the segmented variant', () => {
+        render(
+            <NextIntlClientProvider locale="en" messages={messages}>
+                <DurationPicker variant="segmented" options={options} value="d6" onChangeAction={vi.fn()} />
+            </NextIntlClientProvider>,
+        );
+        expect(screen.getByRole('radiogroup').className).toContain('w-full');
+        expect(screen.getAllByRole('radio').map((radio) => radio.textContent)).toEqual(['6 months', '9 months']);
+    });
 });

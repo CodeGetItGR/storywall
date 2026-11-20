@@ -10,6 +10,11 @@ export const eventModuleKeys = {
     list: (eventId: string) => ['events', eventId, 'modules'] as const,
 };
 
+export async function fetchEventModules(eventId: string): Promise<EventModuleResponseDto[]> {
+    const res = await api.get<EventModuleResponseDto[]>(endpoints.events.modules(eventId));
+    return normalizeList(res).items;
+}
+
 // GET /api/events/{eventId}/modules — which modules the event has. Any
 // member of the event. Read-only: modules follow the plan and unlocks, so
 // there is no host toggle (plan-owned-modules-fe-integration.md).
@@ -18,10 +23,7 @@ export function useEventModules(eventId: string | null) {
 
     return useQuery({
         queryKey: eventModuleKeys.list(eventId ?? ''),
-        queryFn: async () => {
-            const res = await api.get<EventModuleResponseDto[]>(endpoints.events.modules(eventId!));
-            return normalizeList(res).items;
-        },
+        queryFn: () => fetchEventModules(eventId!),
         enabled: Boolean(eventId) && isAuthenticated,
     });
 }

@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 import { delay, http, HttpResponse } from 'msw';
 import { expect, within } from 'storybook/test';
 
+import { withAppContext } from '@/.storybook/appContext';
 import { copyFor } from '@/.storybook/copy';
 import { draftHandlers, withEditorScreen } from '@/.storybook/editor';
 
@@ -12,7 +13,7 @@ import InvitationEditorPage from './PageClient';
 const meta = {
     title: 'SaveMyDate/Pages/Editor',
     component: InvitationEditorPage,
-    decorators: [withEditorScreen],
+    decorators: [withEditorScreen, withAppContext],
     parameters: { layout: 'fullscreen', nextjs: { navigation: { pathname: '/save-my-date/editor/draft-1' } } },
     args: { draftId: 'draft-1' },
 } satisfies Meta<typeof InvitationEditorPage>;

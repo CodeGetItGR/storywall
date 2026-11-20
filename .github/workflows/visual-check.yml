@@ -80,7 +80,7 @@ jobs:
               uses: actions/cache/restore@v6
               with:
                   path: visual-output/base
-                  key: visual-base-${{ steps.base.outputs.sha }}-${{ hashFiles('scripts/visual/capture.ts', 'scripts/visual/stories.ts', 'scripts/visual/config.ts') }}-pw1.55.0
+                  key: visual-base-${{ steps.base.outputs.sha }}-${{ hashFiles('scripts/visual/capture.ts', 'scripts/visual/stories.ts', 'scripts/visual/config.ts') }}-pw1.55.0-sb
                   lookup-only: true
 
             - run: npm run visual:ci -- build
@@ -212,11 +212,12 @@ jobs:
                   path: visual-output/base
                   key: ${{ needs.build.outputs.base-key }}
 
+            # Kept inside the base folder, so the cache saves it for the base recheck.
             - if: needs.build.outputs.base-saved != 'true'
               uses: actions/download-artifact@v8
               with:
                   name: visual-base-storybook
-                  path: visual-output/base-storybook
+                  path: visual-output/base/storybook
 
             - if: needs.build.outputs.base-saved != 'true'
               uses: actions/download-artifact@v8
@@ -226,7 +227,7 @@ jobs:
                   path: visual-output/base
 
             - if: needs.build.outputs.base-saved != 'true'
-              run: npm run visual:ci -- join --storybook visual-output/base-storybook --dir visual-output/base --sha "$BASE_SHA"
+              run: npm run visual:ci -- join --storybook visual-output/base/storybook --dir visual-output/base --sha "$BASE_SHA"
 
             # Builds the base itself if the saved captures were dropped since build looked them up.
             - run: npm run visual:ci -- compare --base "$BASE_SHA"

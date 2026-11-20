@@ -9,17 +9,20 @@ type EditorConflictDialogProps = {
     open: boolean;
     isReloading?: boolean;
     onReload: () => void;
+    // What was saved elsewhere: a host's invitation or an admin's theme.
+    subject?: 'invitation' | 'theme';
 };
 
-// Someone saved this draft elsewhere. Saving stops here, and the only way on is the newer copy.
-export function EditorConflictDialog({ open, isReloading = false, onReload }: EditorConflictDialogProps) {
+// Someone saved this draft or theme elsewhere. Saving stops here, and the only way on is the newer copy.
+export function EditorConflictDialog({ open, isReloading = false, onReload, subject = 'invitation' }: EditorConflictDialogProps) {
     const t = useTranslations('InvitationEditor');
+    const isTheme = subject === 'theme';
 
     return (
         <ConfirmActionModal
             open={open}
-            title={t('conflictTitle')}
-            body={t('conflictBody')}
+            title={isTheme ? t('themeConflictTitle') : t('conflictTitle')}
+            body={isTheme ? t('themeConflictBody') : t('conflictBody')}
             confirmLabel={t('conflictReload')}
             cancelLabel={t('conflictReload')}
             onCloseAction={noop}

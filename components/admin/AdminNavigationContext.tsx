@@ -13,7 +13,6 @@ import {
     History,
     Inbox,
     LayoutGrid,
-    LayoutTemplate,
     Link2,
     ListChecks,
     type LucideIcon,
@@ -41,7 +40,7 @@ import {
 import { useTranslations } from 'next-intl';
 import { createContext, type ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
-import { adminHomeTab, canOpenAdminTab, resolveAdminTab } from '@/lib/adminAccess';
+import { adminHomeTab, canOpenAdminTab, movedSaveMyDateHashTarget, resolveAdminTab } from '@/lib/adminAccess';
 import { COLLABORATIONS_HASH_ROOT, isCollaborationsHash } from '@/lib/adminCollaborationsRouting';
 import { DEMO_EVENTS_HASH_ROOT, isDemoEventsHash } from '@/lib/adminDemoEventsRouting';
 import { EVENTS_HASH_ROOT, isEventsHash } from '@/lib/adminEvents';
@@ -74,7 +73,6 @@ export type AdminTab =
     | 'themePresets'
     | 'themeFonts'
     | 'qrCards'
-    | 'invitationThemes'
     | 'demoEvents'
     | 'billingOps'
     | 'events'
@@ -130,7 +128,6 @@ const HASH_TO_TAB: Record<string, AdminTab> = {
     '#theme-presets': 'themePresets',
     '#theme-fonts': 'themeFonts',
     '#qr-cards': 'qrCards',
-    '#save-my-date-themes': 'invitationThemes',
     '#billing-ops': 'billingOps',
     '#accounts': 'accounts',
     '#reports': 'reports',
@@ -164,7 +161,6 @@ const TAB_TO_HASH: Record<AdminTab, string> = {
     themePresets: '#theme-presets',
     themeFonts: '#theme-fonts',
     qrCards: '#qr-cards',
-    invitationThemes: '#save-my-date-themes',
     demoEvents: DEMO_EVENTS_HASH_ROOT,
     billingOps: '#billing-ops',
     events: EVENTS_HASH_ROOT,
@@ -240,6 +236,12 @@ export function AdminNavigationProvider({ children, role = 'ADMIN' }: { children
 
     useEffect(() => {
         function syncFromHash() {
+            // Save my date's themes moved to their own page; an old link opens it there.
+            const moved = movedSaveMyDateHashTarget(role, window.location.hash);
+            if (moved) {
+                window.location.replace(moved);
+                return;
+            }
             const shown = hashTab();
             const next = currentHashTab(role);
             // A hidden section's link, or an old campaign page's, is rewritten, so Back doesn't return to it.
@@ -298,7 +300,6 @@ export function AdminNavigationProvider({ children, role = 'ADMIN' }: { children
             { key: 'themePresets', label: t('themePresets'), icon: Palette },
             { key: 'themeFonts', label: t('themeFonts'), icon: Type },
             { key: 'qrCards', label: t('qrCards'), icon: QrCode },
-            { key: 'invitationThemes', label: t('invitationThemes'), icon: LayoutTemplate },
             { key: 'demoEvents', label: t('demoEvents'), icon: MonitorPlay },
             { key: 'accounts', label: t('accounts'), icon: Users },
             { key: 'events', label: t('events'), icon: PartyPopper },

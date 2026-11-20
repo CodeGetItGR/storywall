@@ -64,7 +64,6 @@ export type ApiErrorMessageKey =
     | 'coHostNeedsAccount'
     | 'memberHostRoleNotAllowed'
     | 'qrLinkMaxGuestsNotAllowed'
-    | 'qrLinkTargetInvalid'
     | 'bugReportTooShort'
     | 'feedbackPageUrlInvalid'
     | 'uploadFilesRequired'
@@ -134,7 +133,6 @@ export type ApiErrorMessageKey =
     | 'eventHostAlreadyCoHost'
     | 'eventHostLastHost'
     | 'eventHostAlreadyPrimary'
-    | 'inviteCodeTaken'
     | 'coHostAlreadyMember'
     | 'memberIsHost'
     | 'reactionTypeCodeTaken'
@@ -153,6 +151,10 @@ export type ApiErrorMessageKey =
     | 'duplicateMembership'
     | 'duplicateReaction'
     | 'emailAlreadyExists'
+    | 'emailAlreadyVerified'
+    | 'emailCodeExpired'
+    | 'emailCodeInvalid'
+    | 'emailCodeTooManyAttempts'
     | 'emailEventNotHosted'
     | 'emailMessageRequired'
     | 'emailTemplateUnavailable'
@@ -328,7 +330,12 @@ export type ApiErrorMessageKey =
     | 'moduleCopyTooLong'
     | 'moduleCopyModuleUnsupported'
     | 'withdrawalNotPrimaryHost'
-    | 'oauthEmailUnverified';
+    | 'oauthEmailUnverified'
+    | 'wishAudioTooLarge'
+    | 'wishAudioNotAudio'
+    | 'wishAudioTooLong'
+    | 'wishAudioConversionFailed'
+    | 'wishEmpty';
 
 export const API_ERROR_MESSAGE_KEYS = {
     [AUTH_ERROR_CODES.ACCESS_DENIED]: 'accessDenied',
@@ -360,6 +367,7 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.DISCOUNT_CAMPAIGN_LINK_NAME_TAKEN]: 'discountCampaignLinkNameTaken',
     [ERROR_CODES.CAMPAIGN_INVALID]: 'discountCampaignInvalid',
     [ERROR_CODES.CAMPAIGN_DISCOUNT_ADMIN_ONLY]: 'campaignDiscountAdminOnly',
+    [ERROR_CODES.WISHBOOK_EDIT_NOT_AUTHOR]: 'accessDenied',
     [ERROR_CODES.CAMPAIGN_LINK_MOVE_DISCOUNT]: 'campaignLinkMoveDiscount',
     [ERROR_CODES.CAMPAIGN_CLOSED_FOR_LINKS]: 'campaignClosedForLinks',
     [ERROR_CODES.CAMPAIGN_LINK_NAME_TAKEN]: 'discountCampaignLinkNameTaken',
@@ -380,6 +388,8 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.EMAIL_TEMPLATE_UNAVAILABLE]: 'emailTemplateUnavailable',
     [ERROR_CODES.EVENT_DATES_INCOMPLETE]: 'eventDatesIncomplete',
     [ERROR_CODES.EVENT_START_PASSED]: 'eventStartPassed',
+    [ERROR_CODES.EVENT_SCHEDULE_REQUIRED]: 'eventDatesIncomplete',
+    [ERROR_CODES.EVENT_START_BEFORE_PURCHASE]: 'eventStartPassed',
     [ERROR_CODES.EVENT_START_TOO_FAR_AHEAD]: 'eventStartTooFarAhead',
     [ERROR_CODES.EVENT_CREATION_LOCKED]: 'eventCreationLocked',
     [ERROR_CODES.EVENT_DRAFT_LIMIT_REACHED]: 'eventDraftLimitReached',
@@ -412,6 +422,16 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.ACCOUNT_DELETE_OTP_EXPIRED]: 'accountDeleteOtpExpired',
     [ERROR_CODES.ACCOUNT_DELETE_OTP_TOO_MANY_ATTEMPTS]: 'accountDeleteOtpTooManyAttempts',
     [ERROR_CODES.ACCOUNT_DELETE_OTP_INVALID]: 'accountDeleteOtpInvalid',
+    [ERROR_CODES.EMAIL_CODE_INVALID]: 'emailCodeInvalid',
+    [ERROR_CODES.EMAIL_CODE_EXPIRED]: 'emailCodeExpired',
+    [ERROR_CODES.EMAIL_CODE_NOT_REQUESTED]: 'emailCodeExpired',
+    [ERROR_CODES.EMAIL_CODE_TOO_MANY_ATTEMPTS]: 'emailCodeTooManyAttempts',
+    [ERROR_CODES.EMAIL_ALREADY_VERIFIED]: 'emailAlreadyVerified',
+    [ERROR_CODES.WISH_AUDIO_TOO_LARGE]: 'wishAudioTooLarge',
+    [ERROR_CODES.WISH_AUDIO_NOT_AUDIO]: 'wishAudioNotAudio',
+    [ERROR_CODES.WISH_AUDIO_TOO_LONG]: 'wishAudioTooLong',
+    [ERROR_CODES.WISH_AUDIO_CONVERSION_FAILED]: 'wishAudioConversionFailed',
+    [ERROR_CODES.WISH_EMPTY]: 'wishEmpty',
     [ERROR_CODES.ACCOUNT_DELETE_ADMIN]: 'accountDeleteAdmin',
     [ERROR_CODES.ACCOUNT_DELETE_HAS_HOSTED_EVENTS]: 'accountDeleteHasHostedEvents',
     [ERROR_CODES.QR_UPLOAD_ACCEPTANCE_REQUIRED]: 'qrUploadAcceptanceRequired',
@@ -560,7 +580,6 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.EVENT_HOST_ALREADY_CO_HOST]: 'eventHostAlreadyCoHost',
     [ERROR_CODES.EVENT_HOST_LAST_HOST]: 'eventHostLastHost',
     [ERROR_CODES.EVENT_HOST_ALREADY_PRIMARY]: 'eventHostAlreadyPrimary',
-    [ERROR_CODES.INVITE_CODE_TAKEN]: 'inviteCodeTaken',
     [ERROR_CODES.CO_HOST_ALREADY_MEMBER]: 'coHostAlreadyMember',
     [ERROR_CODES.MEMBER_IS_HOST]: 'memberIsHost',
     [ERROR_CODES.REACTION_TYPE_CODE_TAKEN]: 'reactionTypeCodeTaken',
@@ -588,7 +607,6 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.CO_HOST_NEEDS_ACCOUNT]: 'coHostNeedsAccount',
     [ERROR_CODES.MEMBER_HOST_ROLE_NOT_ALLOWED]: 'memberHostRoleNotAllowed',
     [ERROR_CODES.QR_LINK_MAX_GUESTS_NOT_ALLOWED]: 'qrLinkMaxGuestsNotAllowed',
-    [ERROR_CODES.QR_LINK_TARGET_INVALID]: 'qrLinkTargetInvalid',
     [ERROR_CODES.BUG_REPORT_TOO_SHORT]: 'bugReportTooShort',
     [ERROR_CODES.FEEDBACK_PAGE_URL_INVALID]: 'feedbackPageUrlInvalid',
     [ERROR_CODES.UPLOAD_FILES_REQUIRED]: 'uploadFilesRequired',

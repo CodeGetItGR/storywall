@@ -11,10 +11,10 @@ import { useEventQrLinks } from '@/hooks/useQrLinks';
 import { type ToolMenuItem, useHostMenuItems, useToolsMenuItems } from '@/hooks/useToolsMenuItems';
 import { useEventUsage } from '@/hooks/useUsage';
 import { useWishbook } from '@/hooks/useWishbook';
+import { eventCapabilities } from '@/lib/eventCapabilities';
 import { isEventDeleted } from '@/lib/eventLifecycle';
-import { isLiteEvent } from '@/lib/liteEvents';
 import { findPlanByCode } from '@/lib/planTiers';
-import { findGalleryQrLink, isGalleryQrFeatureEnabled, isInvitationQrLink } from '@/lib/qrLinks';
+import { isInvitationQrLink } from '@/lib/qrLinks';
 import { routes } from '@/lib/routes';
 import { useActiveEvent, useEventContextLoading, useIsHost } from '@/providers/EventProvider';
 
@@ -24,7 +24,9 @@ import { useActiveEvent, useEventContextLoading, useIsHost } from '@/providers/E
 // non-host members the panel only ever shows their plain tool links (same
 // set MobileTabBar's member context menu shows), so every host-only
 // summary/fetch below is also gated on `isHost`.
-export function useRightContextPanel({ includeManageLinks = true }: { includeManageLinks?: boolean } = {}) {
+// `liteHome` is the panel beside a lite event's home: the page itself already shows its gallery and wishbook,
+// their counts and the guest code, so the panel keeps to manage and the plan.
+export function useRightContextPanel({ liteHome = false }: { liteHome?: boolean } = {}) {
     const activeEvent = useActiveEvent();
     const moduleCopy = useModuleCopy(activeEvent?.eventType);
     const isHost = useIsHost();
@@ -43,33 +45,27 @@ export function useRightContextPanel({ includeManageLinks = true }: { includeMan
 
     const isLiveHost = isHost && !isDraft && !isDeleted;
     const showRsvpSummary = isLiveHost && availableModuleKeys.has('rsvp');
-    const showMediaSummary = isLiveHost && availableModuleKeys.has('gallery');
-    const showWishbookSummary = isLiveHost && availableModuleKeys.has('wishbook');
+    const showMediaSummary = isLiveHost && !liteHome && availableModuleKeys.has('gallery');
+    const showWishbookSummary = isLiveHost && !liteHome && availableModuleKeys.has('wishbook');
     // A lite event has no upload or share links: its one guest code sits in the home's quick actions.
-    const showsLinks = isLiveHost && !isLiteEvent(activeEvent);
-    const showGalleryQr = showsLinks && isGalleryQrFeatureEnabled(activeEvent?.modules);
+    const showsLinks = isLiveHost && Boolean(eventCapabilities(activeEvent)?.showsShareLinks);
     const showInvitationsQr = showsLinks;
 
     const gallerySummary = useGallerySummary(activeEvent?.id ?? null, showMediaSummary);
     const wishbook = useWishbook(showWishbookSummary ? (activeEvent?.id ?? null) : null);
-    const qrLinks = useEventQrLinks(showGalleryQr || showInvitationsQr ? (activeEvent?.id ?? null) : null);
+    const qrLinks = useEventQrLinks(showInvitationsQr ? (activeEvent?.id ?? null) : null);
 
-    // Same set the MobileTabBar's host context menu shows: dashboard + help,
+    // Same set the MobileTabBar's host context menu shows: dashboard,
     // plus every available tool except the guest self-RSVP flow (hosts answer
     // RSVPs from the dashboard's RSVP section, already linked in that menu).
-    // The gallery QR and invitations QR links are excluded here — they get
-    // their own combined section below, between plan usage and the RSVP
-    // summary, instead of sitting in this flat list.
-    // `includeManageLinks: false` (used when this content is reused inside the
-    // manage page itself, e.g. its Overview tab) drops "Manage" (would self-link
-    // to the dashboard) and "Help" (already one click away in the manage nav).
-    let hostItemsForActions = useHostMenuItems().filter((item) => item.key !== 'galleryQr' && item.key !== 'invitationsQr');
-    if (!includeManageLinks) hostItemsForActions = hostItemsForActions.filter((item) => item.key !== 'manage' && item.key !== 'help');
+    // The share links are excluded here — they get their own section below
+    // instead of sitting in this flat list.
+    const hostItemsForActions = useHostMenuItems().filter((item) => item.key !== 'invitationsQr');
     const toolItems = useToolsMenuItems();
     // The shared tools menu leaves the playlist out because MobileTabBar gives
     // it its own tab; the desktop host actions have no such tab, so add it here.
     const playlistItems: ToolMenuItem[] =
-        isLiveHost && activeEvent && availableModuleKeys.has('playlist')
+        isLiveHost && !liteHome && activeEvent && availableModuleKeys.has('playlist')
             ? [
                   {
                       key: 'playlist',
@@ -83,8 +79,10 @@ export function useRightContextPanel({ includeManageLinks = true }: { includeMan
     const actionItems = !isHost
         ? toolItems
         : isDraft
-          ? hostItemsForActions.filter((item) => item.key !== 'help')
-          : [...hostItemsForActions, ...toolItems.filter((item) => item.key !== 'rsvp'), ...playlistItems];
+          ? hostItemsForActions
+          : liteHome
+            ? hostItemsForActions
+            : [...hostItemsForActions, ...toolItems.filter((item) => item.key !== 'rsvp'), ...playlistItems];
 
     const currentPlan = eventUsage ? findPlanByCode(appConfig?.planTiers ?? [], 'EVENT', eventUsage.planTier) : undefined;
     const nextUpgradeOption = upgradeOptions[0];
@@ -108,8 +106,6 @@ export function useRightContextPanel({ includeManageLinks = true }: { includeMan
         rsvpSummary: activeEvent?.rsvpSummary ?? null,
         showMediaSummary,
         mediaSummary: gallerySummary.data ?? null,
-        showGalleryQr,
-        galleryQrLink: findGalleryQrLink(qrLinks.data ?? []),
         showInvitationsQr,
         invitationsQrCount: (qrLinks.data ?? []).filter((link) => isInvitationQrLink(link) && link.status !== 'REVOKED').length,
         showWishbookSummary,

@@ -8,7 +8,6 @@ import {
     CalendarDays,
     ClipboardList,
     Gift,
-    HelpCircle,
     Images,
     LayoutDashboard,
     ListMusic,
@@ -25,8 +24,9 @@ import { useTranslations } from 'next-intl';
 import { useGiftAccount } from '@/hooks/useGiftAccount';
 import { useModuleCopy } from '@/hooks/useModuleCopy';
 import { useEventVendors, useMyVendorRole } from '@/hooks/useVendors';
+import { announcementComposerHref } from '@/lib/announcementComposer';
+import { eventCapabilities } from '@/lib/eventCapabilities';
 import { isEventDeleted, readableModuleKeys } from '@/lib/eventLifecycle';
-import { isLiteEvent } from '@/lib/liteEvents';
 import { canEditOwnRole, ROLE_SHEET_VALUE } from '@/lib/memberRoles';
 import { isGalleryOpenToGuests, isGalleryQrFeatureEnabled } from '@/lib/qrLinks';
 import { routes } from '@/lib/routes';
@@ -67,7 +67,7 @@ export function useToolsMenuItems(): ToolMenuItem[] {
     // A deleted event is download-only: the gallery archive and the wishbook
     // PDF are the only tools that still do anything.
     const isDeleted = isEventDeleted(activeEvent);
-    const isLite = isLiteEvent(activeEvent);
+    const isLite = eventCapabilities(activeEvent)?.kind === 'LITE';
 
     const vendorsOn = availableModules.has('vendors');
     // The vendor page stays while the module is off: it says the tools are closed.
@@ -91,7 +91,8 @@ export function useToolsMenuItems(): ToolMenuItem[] {
         // Vendors in the event (vendors spec 2026-10-19). Copy comes from ToolsMenu.items.
         { key: 'vendors', href: routes.events.tools.vendors(activeEvent.id), icon: Store },
         { key: 'vendorMe', href: routes.events.tools.vendorMe(activeEvent.id), icon: BriefcaseBusiness },
-        { key: 'announcement', href: routes.events.tools.announcement(activeEvent.id), icon: Megaphone },
+        // Opens the feed composer in Announcement mode.
+        { key: 'announcement', href: announcementComposerHref(activeEvent.id), icon: Megaphone },
         { key: 'rsvpReport', href: routes.events.rsvpReport(activeEvent.id, 'FULL_LIST', 'vendor'), icon: ClipboardList },
         { key: 'vendorQr', href: routes.events.invitationsQr(activeEvent.id), icon: QrCode },
         { key: 'liveRequests', href: routes.events.tools.playlistLive(activeEvent.id), icon: ListMusic },
@@ -109,13 +110,15 @@ export function useToolsMenuItems(): ToolMenuItem[] {
             .filter((tool) => tool.key !== 'rsvp' || me === null)
             .filter((tool) => tool.key !== 'vendors' || hasVendorsListed)
             .filter((tool) => tool.key !== 'vendorMe' || me !== null)
-            .filter((tool) => tool.key !== 'announcement' || hasVendorCapability(me, 'ANNOUNCE'))
+            .filter((tool) => tool.key !== 'announcement' || (availableModules.has('posts') && hasVendorCapability(me, 'ANNOUNCE')))
             .filter((tool) => tool.key !== 'rsvpReport' || (availableModules.has('rsvp') && hasVendorCapability(me, 'RSVP_REPORT')))
             .filter((tool) => tool.key !== 'vendorQr' || hasVendorCapability(me, 'QR_READ'))
             .filter((tool) => tool.key !== 'liveRequests' || (availableModules.has('playlist') && hasVendorCapability(me, 'SONG_REQUESTS')))
             .filter((tool) => !isDeleted || tool.key === 'gallery' || tool.key === 'wishbook')
             // A lite event (no feed in its plan) has only its gallery and wishbook; every other tool sends its host home.
             .filter((tool) => !isLite || tool.key === 'gallery' || tool.key === 'wishbook')
+            // The feed's quick actions hold the wishbook and vendors; a lite or deleted event has no feed, so keeps them here.
+            .filter((tool) => isLite || isDeleted || !FEED_QUICK_ACTION_TOOLS.has(tool.key))
             .map((tool) => {
                 const copyKey = tool.copyKey ?? tool.moduleKey;
                 const copy = copyKey && copyKey !== 'member_roles' ? moduleCopy(copyKey) : null;
@@ -132,6 +135,9 @@ export function useToolsMenuItems(): ToolMenuItem[] {
             })
     );
 }
+
+// Tools the feed's quick actions show instead of the menu.
+const FEED_QUICK_ACTION_TOOLS = new Set(['wishbook', 'vendors']);
 
 // Menu entries that are vendor tools, by menu key.
 const VENDOR_TOOL_KEYS: Partial<Record<string, VendorActionKey>> = {
@@ -155,20 +161,16 @@ export function useHostMenuItems(): ToolMenuItem[] {
     const galleryQrEnabled = isGalleryQrFeatureEnabled(activeEvent.modules);
     const readableModules = readableModuleKeys(activeEvent);
     const vendorsOn = readableModules.has('vendors');
-    const postsOn = readableModules.has('posts');
     const isDraft = activeEvent.status === 'DRAFT';
     // Deleted events keep the manage page (deletion notice + billing) and nothing else.
     const isDeleted = isEventDeleted(activeEvent);
     // A lite event has no upload or invitation codes: its guest code lives in its home's quick actions.
-    const isLite = isLiteEvent(activeEvent);
+    const showsShareLinks = Boolean(eventCapabilities(activeEvent)?.showsShareLinks);
 
     const hostAdminDefinitions: { key: string; href: string; icon: LucideIcon; hidden?: boolean }[] = [
         { key: 'manage', href: routes.events.manage(activeEvent.id), icon: LayoutDashboard },
-        { key: 'galleryQr', href: routes.events.tools.galleryQr(activeEvent.id), icon: QrCode, hidden: isDeleted || isLite || !galleryQrEnabled },
-        { key: 'invitationsQr', href: routes.events.invitationsQr(activeEvent.id), icon: Ticket, hidden: isDeleted || isDraft || isLite },
+        { key: 'invitationsQr', href: routes.events.invitationsQr(activeEvent.id), icon: Ticket, hidden: isDeleted || isDraft || !showsShareLinks },
         { key: 'vendors', href: routes.events.manageVendors(activeEvent.id), icon: Store, hidden: isDeleted || isDraft || !vendorsOn },
-        { key: 'announcement', href: routes.events.tools.announcement(activeEvent.id), icon: Megaphone, hidden: isDeleted || isDraft || !postsOn },
-        { key: 'help', href: routes.events.manage(activeEvent.id, { tab: 'help' }), icon: HelpCircle, hidden: isDeleted },
     ];
 
     return hostAdminDefinitions
@@ -178,6 +180,7 @@ export function useHostMenuItems(): ToolMenuItem[] {
             href: item.href,
             icon: item.icon,
             label: t(`${item.key}.label`),
-            description: t(`${item.key}.description`),
+            // Share links' one code also uploads when the plan has photo uploads (KAN-208).
+            description: item.key === 'invitationsQr' && galleryQrEnabled ? t('invitationsQr.descriptionWithUpload') : t(`${item.key}.description`),
         }));
 }
