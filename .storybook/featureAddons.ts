@@ -1,5 +1,6 @@
 import type { FeatureAddons } from '@/hooks/useFeatureAddons';
-import type { PaidServiceResponseDto } from '@/lib/api/types';
+import type { InvitationAddonCheckout } from '@/hooks/useInvitationAddonStep';
+import type { PaidServiceResponseDto, PriceBreakdown, PriceBreakdownItem } from '@/lib/api/types';
 
 // Feature add-ons (KAN-82) as the Add-ons page's section sees them, for stories and component tests.
 
@@ -88,4 +89,79 @@ export function storyFeatureAddonsReady(overrides: Partial<FeatureAddons> = {}):
         canPay: true,
         ...overrides,
     });
+}
+
+// Publish's add-on step (KAN-82) on a live event: Save my date included, RSVP not yet ticked.
+export function storyAddonStepCheckout(overrides: Partial<InvitationAddonCheckout> = {}): InvitationAddonCheckout {
+    return {
+        step: {
+            mode: 'checkout',
+            saveMyDate: { service: storySaveMyDateAddon, added: false },
+            rsvp: { service: storyRsvpAddon, added: false },
+        },
+        rsvpTicked: false,
+        handleRsvpChange: noop,
+        draftItems: null,
+        totalMinor: storySaveMyDateAddon.priceAmountMinor,
+        currency: 'EUR',
+        consent: storyFeatureAddons().consent,
+        canSubmit: false,
+        isPending: false,
+        error: null,
+        submit: (event) => event.preventDefault(),
+        ...overrides,
+    };
+}
+
+// A draft's activation quote without the step's add-ons: the plan and a theme it already opted into.
+export function storyDraftActivationItems(): PriceBreakdown {
+    const item = (overrides: Partial<PriceBreakdownItem>): PriceBreakdownItem => ({
+        code: 'ACTIVATION',
+        labelKey: 'billing.item.activation',
+        name: 'Lite',
+        listMinor: 10_000,
+        discountMinor: 0,
+        priceMinor: 10_000,
+        withdrawal: 'RETAINED_ONCE_STARTED',
+        performedAt: null,
+        months: null,
+        monthsAdded: null,
+        paidServiceCode: null,
+        planTierCode: 'LITE',
+        storageBytes: null,
+        ...overrides,
+    });
+    return {
+        kind: 'ACTIVATION',
+        currency: 'EUR',
+        buyerType: 'CONSUMER',
+        coverage: { optionId: 'cov-12', months: 12, monthsAdded: null, endsAt: null, endsAtProjected: true },
+        items: [
+            item({}),
+            item({
+                code: 'ADDON',
+                labelKey: 'billing.item.addon',
+                name: 'Guest book',
+                listMinor: 1500,
+                priceMinor: 1500,
+                paidServiceCode: 'GUESTBOOK',
+                planTierCode: null,
+            }),
+        ],
+        discounts: [],
+        combinedDiscountPercent: 0,
+        discountCapPercent: 50,
+        capApplied: false,
+        listTotalMinor: 11_500,
+        discountTotalMinor: 0,
+        totalMinor: 11_500,
+        vat: { included: true, note: 'billing.vat.included' },
+        termsVersion: '2026-09-18',
+        withdrawal: { available: true, windowDays: 14, windowClosesAt: null },
+    };
+}
+
+// The same step with both boxes checked.
+export function storyAddonStepReady(overrides: Partial<InvitationAddonCheckout> = {}): InvitationAddonCheckout {
+    return storyAddonStepCheckout({ consent: storyFeatureAddonsReady().consent, canSubmit: true, ...overrides });
 }

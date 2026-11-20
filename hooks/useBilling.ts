@@ -41,12 +41,16 @@ const PENDING_ORDER_POLL_TIMEOUT_MS = 3 * 60 * 1000;
 
 export const billingKeys = { all: ['billing'] as const, event: (id: string) => ['events', id, 'billing'] as const };
 
+export function fetchEventBilling(eventId: string): Promise<EventBillingResponseDto> {
+    return api.get<EventBillingResponseDto>(endpoints.events.billing(eventId));
+}
+
 export function useEventBilling(eventId: string | null, enabled = true) {
     const { isAuthenticated } = useAuth();
 
     return useQuery({
         queryKey: billingKeys.event(eventId ?? ''),
-        queryFn: () => api.get<EventBillingResponseDto>(endpoints.events.billing(eventId!)),
+        queryFn: () => fetchEventBilling(eventId!),
         enabled: Boolean(eventId) && enabled && isAuthenticated,
         refetchInterval: (query) => {
             const data = query.state.data;
@@ -216,14 +220,18 @@ export function useAddonCheckout(eventId: string) {
     });
 }
 
+export function fetchEventWithdrawals(eventId: string): Promise<WithdrawalResponseDto[]> {
+    return api.get<WithdrawalResponseDto[]>(endpoints.events.withdrawals(eventId));
+}
+
 // GET /api/events/{id}/withdrawals — the host's own history, newest first, so the
 // most recent outcome (and its lines/refusals) survives a reload.
 export function useEventWithdrawals(eventId: string | null, enabled = true) {
     const { isAuthenticated } = useAuth();
 
     return useQuery({
-        queryKey: ['events', eventId, 'withdrawals'],
-        queryFn: () => api.get<WithdrawalResponseDto[]>(endpoints.events.withdrawals(eventId!)),
+        queryKey: withdrawalKeys.history(eventId ?? ''),
+        queryFn: () => fetchEventWithdrawals(eventId!),
         enabled: Boolean(eventId) && enabled && isAuthenticated,
         select: (withdrawals) => [...withdrawals].sort((left, right) => right.createdAt.localeCompare(left.createdAt)),
     });

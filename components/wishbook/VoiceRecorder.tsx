@@ -16,11 +16,11 @@ const SECONDARY = `${PILL} border border-border bg-background text-ink hover:bg-
 const ICON = 'flex h-11 w-11 shrink-0 items-center justify-center rounded-full transition-colors disabled:opacity-40';
 const RECORD_AGAIN = `${ICON} border border-border bg-background text-ink hover:bg-primary-light/40`;
 const REMOVE = `${ICON} text-rose-600 hover:bg-rose-50`;
-// Record: a small gradient mic beside a plain label, no pill around it; the whole row is the 44 px tap target.
+// Record: a large gradient mic beside a plain label, no pill around it, so it is easy to spot.
 const RECORD =
-    'group inline-flex min-h-11 items-center gap-3 rounded-full pr-2 text-sm font-semibold text-ink transition-opacity disabled:opacity-40';
+    'group inline-flex min-h-14 items-center gap-3 rounded-full pr-2 text-[15px] font-semibold text-ink transition-opacity disabled:opacity-40';
 const RECORD_MIC =
-    'flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-white shadow-xs transition-transform bg-gradient-brand group-hover:scale-105 group-disabled:scale-100';
+    'flex h-14 w-14 shrink-0 items-center justify-center rounded-full text-white shadow-md transition-transform bg-gradient-brand group-hover:scale-105 group-disabled:scale-100';
 
 type Props = {
     recorder: VoiceRecorderState;
@@ -99,7 +99,7 @@ export function VoiceRecorder({ recorder, disabled = false, existing = null, onR
             {/* Record */}
             <button type="button" onClick={start} disabled={disabled} className={RECORD}>
                 <span className={RECORD_MIC}>
-                    <Mic className="h-4 w-4" aria-hidden="true" />
+                    <Mic className="h-6 w-6" aria-hidden="true" />
                 </span>
                 {t('record')}
             </button>

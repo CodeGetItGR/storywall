@@ -4602,6 +4602,12 @@ export interface DemoSnapshotDto {
     giftAccount: EventGiftAccountResponseDto | null;
     // token is a "demo-qr-…" placeholder.
     qrLinks: QrLinkResponseDto[];
+    // The event's QR card designs, as /api/events/{id}/qr-card-templates returns them; empty when
+    // the event has none. Absent from a snapshot served by a backend that predates the field.
+    qrCardTemplates?: QrCardTemplateDto[];
+    // The event's own keepsake book, carried only while it is READY; its downloadUrl expires with
+    // the media URLs. Null when it has none, absent from a snapshot that predates the field.
+    wishbookBook?: WishbookBookDto | null;
     usage: EventUsageResponseDto;
 }
 

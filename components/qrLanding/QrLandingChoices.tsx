@@ -3,13 +3,11 @@
 import { ChevronRight } from 'lucide-react';
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
-import { useCallback, useRef } from 'react';
+import { useCallback } from 'react';
 
 import { QrEventDetailsLine } from '@/components/qrLanding/QrEventDetailsLine';
 import { QrJoinCard } from '@/components/qrLanding/QrJoinCard';
-import { QrMoreOptionsHint } from '@/components/qrLanding/QrMoreOptionsHint';
 import { AppLink } from '@/components/ui/AppLink';
-import { useMoreBelowHint } from '@/hooks/useMoreBelowHint';
 import {
     type QrEventDetails,
     qrJoinAccountHrefs,
@@ -52,9 +50,6 @@ export function QrLandingChoices({ plan, eventId, onChoose, coverSrc, eventTitle
     const rows = showCard ? rest : plan.choices;
     const accountHrefs = event === 'join' && !isSignedIn ? qrJoinAccountHrefs(plan, eventId) : null;
 
-    const restRef = useRef<HTMLDivElement>(null);
-    const hint = useMoreBelowHint(restRef, showCard && rows.length > 0);
-
     const label = (choice: QrLandingChoice) => {
         if (choice === 'join') return t('choices.join');
         if (choice === 'open') return t('choices.open');
@@ -86,14 +81,9 @@ export function QrLandingChoices({ plan, eventId, onChoose, coverSrc, eventTitle
                 </div>
             ) : null}
 
-            {/* Event card */}
-            {showCard && event && eventHref ? (
-                <QrJoinCard choice={event} href={eventHref} coverSrc={coverSrc} title={eventTitle} accountHrefs={accountHrefs} />
-            ) : null}
-
-            {/* Other choices */}
+            {/* Other choices: first, so they are on the first screen of any phone. */}
             {rows.length > 0 ? (
-                <div ref={restRef} className="flex scroll-mt-6 flex-col gap-1">
+                <div className="flex flex-col gap-1">
                     {showCard && event === 'join' && !isSignedIn ? (
                         <h2 className="px-2 text-[11px] font-semibold tracking-wide text-ink-muted uppercase">{t('choices.noAccount')}</h2>
                     ) : null}
@@ -129,8 +119,10 @@ export function QrLandingChoices({ plan, eventId, onChoose, coverSrc, eventTitle
                 </div>
             ) : null}
 
-            {/* More below */}
-            {hint.isVisible ? <QrMoreOptionsHint onReveal={hint.reveal} /> : null}
+            {/* Event card */}
+            {showCard && event && eventHref ? (
+                <QrJoinCard choice={event} href={eventHref} coverSrc={coverSrc} title={eventTitle} accountHrefs={accountHrefs} />
+            ) : null}
         </div>
     );
 }
