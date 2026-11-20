@@ -105,7 +105,7 @@ export const Failed: Story = { args: { checkout: checkout({ error: 'Payment coul
 
 // No plan sells the invitation yet: the host can only go back.
 export const NoPlans: Story = {
-    args: { checkout: checkout({ plans: [] }), onBack: null },
+    args: { checkout: checkout({ plans: [], total: null }), onBack: null },
     play: async ({ canvasElement, globals }) => {
         const copy = copyFor(globals).InvitationEditor;
         const canvas = within(canvasElement);
@@ -114,7 +114,7 @@ export const NoPlans: Story = {
     },
 };
 
-export const LoadingPlans: Story = { args: { checkout: checkout({ plans: [], isLoadingPlans: true }) } };
+export const LoadingPlans: Story = { args: { checkout: checkout({ plans: [], isLoadingPlans: true, total: null }) } };
 
 // A plan without the invitation sells it as an add-on; the invitation asks for replies, so RSVP is offered too.
 export const WithAddons: Story = {

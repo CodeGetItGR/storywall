@@ -45,6 +45,7 @@ const mocks = vi.hoisted(() => ({
     navigate: vi.fn(),
     paidServices: [] as unknown[],
     plans: [] as unknown[],
+    plansLoading: false,
 }));
 
 const consent = {
@@ -64,7 +65,7 @@ vi.mock('@/hooks/useWithdrawalConsent', () => ({ useWithdrawalConsent: () => con
 vi.mock('@/hooks/useAppConfig', () => ({
     useAppConfig: () => ({ data: { paidServices: mocks.paidServices, modules: platformModules, media: null }, isLoading: false }),
 }));
-vi.mock('@/hooks/usePlanTiersForEventType', () => ({ usePlanTiersForEventType: () => ({ data: mocks.plans, isLoading: false }) }));
+vi.mock('@/hooks/usePlanTiersForEventType', () => ({ usePlanTiersForEventType: () => ({ data: mocks.plans, isLoading: mocks.plansLoading }) }));
 vi.mock('@/lib/api/client', async (importOriginal) => ({
     ...(await importOriginal<typeof import('@/lib/api/client')>()),
     api: { post: mocks.post, put: mocks.put, patch: mocks.patch, del: mocks.del },
@@ -107,6 +108,7 @@ describe('useInvitationEventCheckout add-ons', () => {
         vi.clearAllMocks();
         mocks.paidServices = [saveMyDate, rsvp];
         mocks.plans = [full, small];
+        mocks.plansLoading = false;
         mocks.post.mockImplementation(async (path: string) => (path === '/api/events' ? { id: 'evt-1' } : { url: 'https://pay' }));
         mocks.put.mockResolvedValue({ eventId: 'evt-1' });
         mocks.del.mockResolvedValue(undefined);
@@ -295,5 +297,12 @@ describe('useInvitationEventCheckout add-ons', () => {
 
         tickRsvp(hook, true);
         expect(hook.result.current.total).toEqual({ amountMinor: 4900 + 2900 + 900, currency: 'EUR' });
+    });
+    it('shows no total while the plans load', () => {
+        mocks.plansLoading = true;
+        const { result } = renderCheckout();
+
+        expect(result.current.isLoadingPlans).toBe(true);
+        expect(result.current.total).toBeNull();
     });
 });

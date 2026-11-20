@@ -209,16 +209,18 @@ export function useInvitationEventCheckout({ draftId, eventType, document, enabl
     );
 
     const selectPlan = useCallback((code: string) => setPlanCode(code), []);
+    const isLoadingPlans = enabled && (plansQuery.isLoading || appConfig.isLoading);
+    // None until the plans and add-ons have loaded and a plan is chosen.
     const total = useMemo(
-        () => invitationPlanTotal(selectedPlan, selectedOption, selectedAddons, rsvpTicked),
-        [rsvpTicked, selectedAddons, selectedOption, selectedPlan],
+        () => (isLoadingPlans ? null : invitationPlanTotal(selectedPlan, selectedOption, selectedAddons, rsvpTicked)),
+        [isLoadingPlans, rsvpTicked, selectedAddons, selectedOption, selectedPlan],
     );
 
     return {
         plans,
         modules: appConfig.data?.modules ?? [],
         media: appConfig.data?.media ?? null,
-        isLoadingPlans: enabled && (plansQuery.isLoading || appConfig.isLoading),
+        isLoadingPlans,
         selectedCode: selectedPlan?.code ?? '',
         durationPicks: durationPicks.picks,
         planAddons,
