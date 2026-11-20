@@ -28,7 +28,7 @@ import { useMyWishesList } from '@/hooks/useMyWishesList';
 import { usePlanUpgradeHref } from '@/hooks/usePlanUpgradeHref';
 import { useScrollToElement } from '@/hooks/useScrollToElement';
 import { useDeleteWishbookEntry, useWishbook } from '@/hooks/useWishbook';
-import { useSetWishHighlighted } from '@/hooks/useWishbookBook';
+import { useSetWishHighlighted, useWishbookBook } from '@/hooks/useWishbookBook';
 import { useWishComposer } from '@/hooks/useWishComposer';
 import { useWishEditor } from '@/hooks/useWishEditor';
 import type { WishbookEntryResponseDto } from '@/lib/api/types';
@@ -83,7 +83,10 @@ export default function WishbookPage() {
     });
     const showEmptyState = isHost && !wishbook.isLoading && !wishbook.error && entries.length === 0;
     const showHeaderArt = canWrite || !showEmptyState;
-    const showBookPanel = isHost && total > 0;
+    // The demo hands out the real event's own book, so the panel only belongs there while that event
+    // has one: a visitor has nothing to build.
+    const demoBook = useWishbookBook(eventId, isDemoVisitor && isHost);
+    const showBookPanel = isHost && total > 0 && (!isDemoVisitor || Boolean(demoBook.data));
     const scrollToBook = useScrollToElement(WISHBOOK_BOOK_ID);
     // On a lite event this page is the home; its Download all scrolls to the book once there is one.
     const liteHome = useLiteHome('wishbook', { onDownload: showBookPanel ? scrollToBook : undefined });
