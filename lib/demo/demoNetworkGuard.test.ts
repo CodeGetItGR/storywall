@@ -290,6 +290,11 @@ describe('demo network guard', () => {
         expect(left).toEqual([]);
     });
 
+    it("lets the QR card's artwork through to this app's own route", async () => {
+        await send('GET', '/api/qr-card-artwork/tpl-olive/3', undefined, 'http://localhost');
+        expect(left).toEqual([{ method: 'GET', url: 'http://localhost/api/qr-card-artwork/tpl-olive/3' }]);
+    });
+
     it("lets the map preview's short-link lookup through to this app", async () => {
         await send('GET', `/api/maps/resolve?url=${encodeURIComponent('https://share.google/abc')}`, undefined, 'http://localhost');
         expect(left).toEqual([{ method: 'GET', url: 'http://localhost/api/maps/resolve?url=https%3A%2F%2Fshare.google%2Fabc' }]);

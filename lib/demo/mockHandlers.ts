@@ -399,6 +399,9 @@ export function createDemoHandlers(session: DemoSession, appOrigin: string | nul
         http.get(`${API_BASE_URL}/api/demo/:eventTypeKey`, () => passthrough()),
         // The map preview's short-link lookup only asks Google, never the backend.
         ...(appOrigin ? [http.get(`${appOrigin}/api/maps/resolve`, () => passthrough())] : []),
+        // The QR cards' artwork is drawn by this app's own route, which asks for no account and
+        // sends nothing about the visitor. Without it the card shows a broken picture.
+        ...(appOrigin ? [http.get(`${appOrigin}/api/qr-card-artwork/:templateId/:version`, () => passthrough())] : []),
 
         // --- Me ---
         http.get(`${API_BASE_URL}/api/me`, () => HttpResponse.json(me())),
