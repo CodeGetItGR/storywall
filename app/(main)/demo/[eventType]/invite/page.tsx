@@ -1,7 +1,7 @@
 'use client';
 
-import { DemoInviteScreen } from '@/components/demo/DemoInviteScreen';
+import { DemoQrScreen } from '@/components/demo/DemoQrScreen';
 
 export default function DemoInvitePage() {
-    return <DemoInviteScreen />;
+    return <DemoQrScreen page="invite" />;
 }
