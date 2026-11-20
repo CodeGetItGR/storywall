@@ -83,7 +83,7 @@ export default function WishbookPage() {
     });
     const showEmptyState = isHost && !wishbook.isLoading && !wishbook.error && entries.length === 0;
     const showHeaderArt = canWrite || !showEmptyState;
-    const showBookPanel = isHost && !isDemoVisitor && total > 0;
+    const showBookPanel = isHost && total > 0;
     const scrollToBook = useScrollToElement(WISHBOOK_BOOK_ID);
     // On a lite event this page is the home; its Download all scrolls to the book once there is one.
     const liteHome = useLiteHome('wishbook', { onDownload: showBookPanel ? scrollToBook : undefined });
@@ -164,7 +164,8 @@ export default function WishbookPage() {
             {!isHost && <MyWishesSection {...myWishes} canEdit={canEditOwn} onSelect={wishEditor.open} />}
 
             {/* Keepsake book */}
-            {showBookPanel && <WishbookBookPanel eventId={eventId} canEditTexts={!isDeleted} />}
+            {/* The demo builds and downloads a sample book; its texts are the backend's, so they stay fixed there. */}
+            {showBookPanel && <WishbookBookPanel eventId={eventId} canEditTexts={!isDeleted && !isDemoVisitor} />}
 
             {/* Entries */}
             {isHost && (

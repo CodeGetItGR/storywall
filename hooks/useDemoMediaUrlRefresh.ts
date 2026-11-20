@@ -4,7 +4,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 
 import { swapMediaUrls } from '@/lib/demo/demoDb';
-import type { DemoSession } from '@/lib/demo/demoSession';
+import { type DemoSession, swapSnapshotLinks } from '@/lib/demo/demoSession';
 import { fetchDemoSnapshot } from '@/lib/demo/snapshotClient';
 
 // Refresh this long before the presigned URLs stop working.
@@ -36,6 +36,7 @@ export function useDemoMediaUrlRefresh(session: DemoSession, initialEtag: string
 
                 if (result.kind === 'ok') {
                     swapMediaUrls(session.db, result.snapshot);
+                    swapSnapshotLinks(session, result.snapshot);
                     void queryClient.invalidateQueries();
                     setUrls({ etag: result.etag, validUntil: result.snapshot.presignedUrlsValidUntil, attempt: 0 });
                 } else if (result.kind === 'not-modified') {

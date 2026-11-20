@@ -231,10 +231,10 @@ describe('Wishbook book', () => {
         expect(screen.queryByTestId('book-panel')).toBeNull();
     });
 
-    it('shows no book panel in the public demo, where nothing can be built', () => {
+    it('shows the book panel in the public demo, with its texts fixed', () => {
         accessMode = 'demoVisitor';
         render(<WishbookPage />);
-        expect(screen.queryByTestId('book-panel')).toBeNull();
+        expect(screen.getByTestId('book-panel').dataset.canEditTexts).toBe('false');
     });
 
     it('keeps the book panel for an admin building a demo event', () => {
