@@ -6,11 +6,14 @@ import { storyKeys } from '@/hooks/useStories';
 import { endpoints } from '@/lib/api/endpoints';
 import { normalizeList, type Page } from '@/lib/api/pagination';
 import { serverGet, serverGetOrNull, serverModuleReadable } from '@/lib/api/serverFetch';
-import type { GuestOfferDto, HeOrSheViewDto, PostResponseDto, StoryResponseDto } from '@/lib/api/types';
+import type { FeedLayoutDto, GuestOfferDto, HeOrSheViewDto, PostResponseDto, StoryResponseDto } from '@/lib/api/types';
 import { prefetchAccessToken, resolveServerEventContext, resolveServerEventDetail } from '@/lib/auth/serverEventContext';
 import { preloadBannerImage } from '@/lib/feed/bannerImage';
+import { showsFeedEditor } from '@/lib/feedEditorRelease';
+import { feedLayoutKeys } from '@/lib/feedLayout';
 import { postKeys, POSTS_PAGE_SIZE } from '@/lib/postQueries';
 import { makeQueryClient } from '@/lib/queryClient';
+import { FeedEditorFlagProvider } from '@/providers/FeedEditorFlagProvider';
 
 import FeedPage from './PageClient';
 
@@ -53,6 +56,16 @@ async function prefetchGuestOffer(queryClient: QueryClient, eventId: string, acc
     }
 }
 
+// The feed's saved layout (KAN-244), read by every member. 404 caches as null: the default layout.
+async function prefetchFeedLayout(queryClient: QueryClient, eventId: string, accessToken: string): Promise<void> {
+    try {
+        const layout = await serverGetOrNull<FeedLayoutDto>(endpoints.events.feedLayout(eventId), accessToken);
+        queryClient.setQueryData(feedLayoutKeys.detail(eventId), layout);
+    } catch {
+        // Best-effort — useFeedLayout fetches normally on the client if this fails.
+    }
+}
+
 // Starts the banner image, the feed's largest paint, with the page. The event detail is deduped with
 // events/[eventId]/layout.tsx.
 async function preloadBanner(eventId: string): Promise<void> {
@@ -71,12 +84,13 @@ async function prefetchStories(queryClient: QueryClient, eventId: string, access
 }
 
 // Prefetches what the top of the feed shows: the first page of posts, the Boy or Girl? view for its
-// prompt card, the guest offer card, and the stories row, all at once. FeedPageBoundary then finds them cached and skips
+// prompt card, the guest offer card, the stories row and the saved feed layout, all at once. FeedPageBoundary then finds them cached and skips
 // its skeletons. The event itself is already prefetched one level up by the (event) layout.
 export default async function Page({ params }: PageProps) {
     const { eventId } = await params;
     const accessToken = await prefetchAccessToken();
     const queryClient = makeQueryClient();
+    const feedEditor = showsFeedEditor();
 
     if (accessToken) {
         await Promise.all([
@@ -85,12 +99,15 @@ export default async function Page({ params }: PageProps) {
             prefetchHeOrShe(queryClient, eventId, accessToken),
             prefetchStories(queryClient, eventId, accessToken),
             prefetchGuestOffer(queryClient, eventId, accessToken),
+            feedEditor ? prefetchFeedLayout(queryClient, eventId, accessToken) : Promise.resolve(),
         ]);
     }
 
     return (
         <HydrationBoundary state={dehydrate(queryClient)}>
-            <FeedPage params={params} />
+            <FeedEditorFlagProvider enabled={feedEditor}>
+                <FeedPage params={params} />
+            </FeedEditorFlagProvider>
         </HydrationBoundary>
     );
 }
