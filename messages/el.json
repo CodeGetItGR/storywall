@@ -6794,6 +6794,9 @@
             }
         }
     },
+    "FeedLayout": {
+        "invitation": "Πρόσκληση"
+    },
     "FeedQuickActions": {
         "invitation": "Πρόσκληση",
         "photos": "Φωτογραφίες",
