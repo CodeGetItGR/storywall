@@ -16,11 +16,11 @@ import { OccasionCampaignBanner } from '@/components/occasions/OccasionCampaignB
 import { OccasionLinks } from '@/components/occasions/OccasionLinks';
 import { OccasionPageShell } from '@/components/occasions/OccasionPageShell';
 import { FaqAnswer } from '@/components/occasions/sections/FaqAnswer';
+import { FeaturesSection } from '@/components/occasions/sections/FeaturesSection';
 import { HeroSection } from '@/components/occasions/sections/HeroSection';
 import { PrivateSection } from '@/components/occasions/sections/PrivateSection';
 import { RsvpSection } from '@/components/occasions/sections/RsvpSection';
 import { WhySection } from '@/components/occasions/sections/WhySection';
-import { WeddingFeatures } from '@/components/occasions/wedding/WeddingFeatures';
 import type { Locale } from '@/i18n/config';
 import { getPublicLandingPath } from '@/i18n/publicLocale';
 import { LANDING_TOKENS_CLASS } from '@/lib/landingTokens';
@@ -128,7 +128,7 @@ export async function WeddingContent({ campaign, demoHref, featureKeys, length, 
                 ) : null}
 
                 {/* Features */}
-                <WeddingFeatures featureKeys={featureKeys} locale={locale} />
+                <FeaturesSection featureKeys={featureKeys} locale={locale} occasion={occasion} />
 
                 {/* Reviews from weddings */}
                 <LandingReviews eventType={occasion.eventType} />
