@@ -1,15 +1,16 @@
 'use client';
 
 import { useLocale } from 'next-intl';
-import { useCallback, useMemo, useState } from 'react';
+import { useMemo } from 'react';
 
 import type { useQrLanding } from '@/hooks/useQrLanding';
+import { useQrLandingForm } from '@/hooks/useQrLandingForm';
 import { useEventQrLinks } from '@/hooks/useQrLinks';
 import type { Locale } from '@/i18n/config';
 import { getPublicLandingPath } from '@/i18n/publicLocale';
 import { demoQrNoticeKey, demoQrResolution } from '@/lib/demo/demoQrLanding';
 import type { DemoGuestPage } from '@/lib/demo/demoRouting';
-import { type QrLandingChoice, qrLandingPlan, qrLandingStart, resolveQrLandingToken } from '@/lib/qrLanding';
+import { qrLandingPlan, qrLandingStart, resolveQrLandingToken } from '@/lib/qrLanding';
 import { routes } from '@/lib/routes';
 import { useActiveEvent } from '@/providers/EventProvider';
 
@@ -28,17 +29,8 @@ export function useDemoQrLanding(page: DemoGuestPage) {
     const start = qrLandingStart(plan);
     const startView: QrLandingView | null = start === 'upload' || start === 'wish' || start === 'chooser' ? start : null;
 
-    const [chosen, setChosen] = useState<QrLandingView | null>(null);
-    const [isSent, setIsSent] = useState(false);
+    const { chosen, choose, closeForm: back, isSent, setIsSent } = useQrLandingForm(startView);
     const view = chosen ?? startView;
-
-    const choose = useCallback((choice: QrLandingChoice) => {
-        if (choice === 'upload' || choice === 'wish') setChosen(choice);
-    }, []);
-    const back = useCallback(() => {
-        setChosen('chooser');
-        setIsSent(false);
-    }, []);
 
     const scannedToken = scanned?.token ?? '';
     const landing: ReturnType<typeof useQrLanding> = {
