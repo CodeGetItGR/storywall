@@ -189,6 +189,7 @@ export const endpoints = {
         guestOfferDismiss: (eventId: string) => `/api/events/${eventId}/guest-offer/dismiss`,
         guestOfferActivity: (eventId: string) => `/api/events/${eventId}/guest-offer/activity`,
         heOrShe: (eventId: string) => `/api/events/${eventId}/he-or-she`,
+        feedLayout: (eventId: string) => `/api/events/${eventId}/feed-layout`,
         heOrSheAnswers: (eventId: string) => `/api/events/${eventId}/he-or-she/answers`,
         heOrSheSettings: (eventId: string) => `/api/events/${eventId}/he-or-she/settings`,
         heOrSheQuestions: (eventId: string) => `/api/events/${eventId}/he-or-she/questions`,
