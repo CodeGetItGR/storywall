@@ -60,6 +60,8 @@ export type PublishedInvitation = {
     document: InvitationDocument;
     theme: ThemeDesign;
     media: MediaResolver;
+    // The latest publish, so a republished invitation gets a new share picture link.
+    publishedAt?: string;
     // The event's guest link, for the "Join the event" button.
     joinUrl?: string;
 };
@@ -114,6 +116,7 @@ export function readPublishedInvitation(dto: PublicInvitationDto): PublishedInvi
         document: resolveLinkedSections(upgradeInvitationDocument(dto.document), event),
         theme: themeDesignSchema.parse(dto.design),
         media: (mediaId) => imageUrls[mediaId],
+        publishedAt: dto.updatedAt,
         joinUrl: event?.joinUrl ?? undefined,
     };
 }
