@@ -1,75 +1,39 @@
 'use client';
 
-import { useQueryClient } from '@tanstack/react-query';
-import Image from 'next/image';
-import { useTranslations } from 'next-intl';
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 
-import { Banner } from '@/components/feed/Banner';
 import { ComposerCard } from '@/components/feed/ComposerCard';
 import { EventDescription } from '@/components/feed/EventDescription';
-import { EventInfoSection } from '@/components/feed/EventInfoSection';
-import { EventSessionActionButtons } from '@/components/feed/EventSessionActionButtons';
 import { FeedEmptyState } from '@/components/feed/FeedEmptyState';
 import { FeedPostRenderer } from '@/components/feed/FeedPostRenderer';
 import { GuestOfferCard } from '@/components/feed/guestOffer/GuestOfferCard';
 import { Header } from '@/components/feed/Header';
 import { HeOrShePromptCard } from '@/components/feed/HeOrShePromptCard';
+import { FeedCoverBlock } from '@/components/feed/layout/FeedCoverBlock';
+import { FeedDetailsBlock } from '@/components/feed/layout/FeedDetailsBlock';
+import { FeedRsvpBlock } from '@/components/feed/layout/FeedRsvpBlock';
 import { PartnerBrandingPromptModal } from '@/components/feed/partner/PartnerBrandingPromptModal';
 import { PartnerFeedCard } from '@/components/feed/partner/PartnerFeedCard';
 import { PostModal } from '@/components/feed/PostModal';
 import { PublishQueueCards } from '@/components/feed/PublishQueueCards';
 import { FeedQuickActions } from '@/components/feed/quickActions/FeedQuickActions';
-import { RsvpPrompt } from '@/components/feed/RsvpPrompt';
 import { StoriesRow } from '@/components/feed/StoriesRow';
 import { InstallAppBanner } from '@/components/pwa/InstallAppBanner';
 import { StoryModal } from '@/components/story/StoryModal';
-import { AppLink } from '@/components/ui/AppLink';
 import { VendorProfilePrompt } from '@/components/vendors/VendorProfilePrompt';
-import { eventKeys } from '@/hooks/useEvent';
 import { useFeedItems } from '@/hooks/useFeedItems';
-import { useGiftAccount } from '@/hooks/useGiftAccount';
 import { useHideMobileTabBarOnScroll } from '@/hooks/useHideMobileTabBarOnScroll';
-import { useModuleCopy } from '@/hooks/useModuleCopy';
 import { useRsvpPromptVisible } from '@/hooks/useRsvpPromptVisible';
-import { coverPhotoSettingsHref } from '@/lib/manageSectionTargets';
-import { routes } from '@/lib/routes';
 import { cn } from '@/lib/utils';
 
 import { useFeedPage } from './FeedPageContext';
 
 export function FeedPageContent() {
-    const t = useTranslations('FeedPage');
     useHideMobileTabBarOnScroll();
     const { currentMemberRsvpId, event, eventId, isFetchingNextPage, isHost, loadMoreRef, loadingMoreLabel, moduleFlags, posts } = useFeedPage();
-    const gifts = useGiftAccount(eventId);
     const feedItems = useFeedItems(posts, event.partnerBranding);
-    const giftName = useModuleCopy(event.eventType)('wishlist').name;
-    const queryClient = useQueryClient();
-    // An admin replacing a preset's art can leave the event's illustration URL dead; refetch once per URL.
-    const refetchedIllustration = useRef<string | null>(null);
     const [storyId, setStoryId] = useState<string | null>(null);
-    const [pageLoaded, setPageLoaded] = useState(false);
     const shouldShowRSVP = useRsvpPromptVisible({ eventId, isHost, rsvpAvailable: moduleFlags.rsvp, rsvpId: currentMemberRsvpId });
-
-    useEffect(() => {
-        const markLoaded = () => setPageLoaded(true);
-
-        if (document.readyState === 'complete') {
-            markLoaded();
-            return;
-        }
-
-        window.addEventListener('load', markLoaded, { once: true });
-        return () => window.removeEventListener('load', markLoaded);
-    }, []);
-
-    function handleIllustrationError() {
-        const url = event.theme?.illustrationUrl ?? null;
-        if (!url || refetchedIllustration.current === url) return;
-        refetchedIllustration.current = url;
-        void queryClient.invalidateQueries({ queryKey: eventKeys.detail(eventId) });
-    }
 
     function openStoryModal(nextStoryId: string) {
         setStoryId(nextStoryId);
@@ -86,35 +50,10 @@ export function FeedPageContent() {
             {/* Install */}
             <InstallAppBanner />
             {/* Hero */}
-            <section className={'mt-3'}>
-                <Banner
-                    image={event.coverMedia?.mediaUrl ?? null}
-                    illustrationUrl={event.theme?.illustrationUrl ?? null}
-                    onIllustrationError={handleIllustrationError}
-                    title={event.title}
-                    glowVisible={pageLoaded}
-                    fallbackActionHref={isHost ? coverPhotoSettingsHref(eventId) : undefined}
-                    fallbackActionLabel={isHost ? t('addCoverPhoto') : undefined}
-                    actions={
-                        <>
-                            <EventSessionActionButtons event={event} />
-                            {moduleFlags.wishlist && !gifts.isLoading && gifts.data && (
-                                <AppLink
-                                    href={routes.events.tools.gifts(eventId)}
-                                    className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-background/92 text-ink shadow-[0_8px_22px_rgba(36,31,26,0.18)] transition-transform hover:-translate-y-0.5"
-                                >
-                                    <Image src="/icons/present.svg" alt={giftName} width={22} height={22} className="h-5 w-5" unoptimized />
-                                </AppLink>
-                            )}
-                        </>
-                    }
-                />
-            </section>
+            <FeedCoverBlock event={event} isHost={isHost} wishlist={moduleFlags.wishlist} />
 
             {/* Event details */}
-            <section className="mt-3">
-                <EventInfoSection event={event} />
-            </section>
+            <FeedDetailsBlock event={event} />
 
             {/* Stories */}
             {moduleFlags.stories && (
@@ -126,11 +65,7 @@ export function FeedPageContent() {
             {event.description && <EventDescription eventId={event.id} description={event.description} />}
 
             {/* RSVP */}
-            {shouldShowRSVP && (
-                <section className={'mt-5 px-4 pb-5'}>
-                    <RsvpPrompt eventId={eventId} deadline={event.schedule.rsvpDeadline ?? null} />
-                </section>
-            )}
+            {shouldShowRSVP && <FeedRsvpBlock eventId={eventId} deadline={event.schedule.rsvpDeadline ?? null} />}
 
             {/* Posts */}
             <section id="posts">
