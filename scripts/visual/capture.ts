@@ -174,12 +174,15 @@ async function shoot(browser: Browser, origin: string, target: CaptureTarget): P
 }
 
 // A thrown error is the story's fault, so it isn't retried. Anything else can be a busy runner or a network blip.
+// `ms` covers both attempts, because that is the time the capture costs a share.
 export async function captureTarget(browser: Browser, origin: string, target: CaptureTarget, outDir: string): Promise<CaptureRecord> {
+    const started = performance.now();
     let result = await shoot(browser, origin, target);
     if ('error' in result && result.retry) result = await shoot(browser, origin, target);
-    if ('error' in result) return { ...target, status: 'failed', hash: null, error: result.error, machine: MACHINE };
+    const ms = Math.round(performance.now() - started);
+    if ('error' in result) return { ...target, status: 'failed', hash: null, error: result.error, machine: MACHINE, ms };
     writeFileSync(join(outDir, `${target.id}.png`), result.png);
-    return { ...target, status: 'ok', hash: hashRaw(await decodePng(result.png)), error: null, machine: MACHINE };
+    return { ...target, status: 'ok', hash: hashRaw(await decodePng(result.png)), error: null, machine: MACHINE, ms };
 }
 
 export const allFailedSoFar = (done: number, failed: number) => done === EARLY_STOP_AFTER && failed === done;
