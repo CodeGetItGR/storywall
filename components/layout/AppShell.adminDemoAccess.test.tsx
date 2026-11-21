@@ -16,6 +16,7 @@ vi.mock('next/navigation', () => ({
     usePathname: () => mocks.pathname,
     useSearchParams: () => new URLSearchParams(),
 }));
+vi.mock('@/hooks/useOverviewFabRoom', () => ({ useOverviewFabRoom: () => false }));
 vi.mock('@/hooks/useAuth', () => ({
     useAuth: () => ({ user: { userId: 'admin-1', role: 'ADMIN' }, isBootstrapping: false, isSessionUnavailable: false }),
 }));
