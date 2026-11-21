@@ -17,10 +17,10 @@ import { OccasionLinks } from '@/components/occasions/OccasionLinks';
 import { OccasionPageShell } from '@/components/occasions/OccasionPageShell';
 import { FaqAnswer } from '@/components/occasions/sections/FaqAnswer';
 import { HeroSection } from '@/components/occasions/sections/HeroSection';
+import { RsvpSection } from '@/components/occasions/sections/RsvpSection';
 import { WhySection } from '@/components/occasions/sections/WhySection';
 import { WeddingFeatures } from '@/components/occasions/wedding/WeddingFeatures';
 import { WeddingPrivate } from '@/components/occasions/wedding/WeddingPrivate';
-import { WeddingRsvp } from '@/components/occasions/wedding/WeddingRsvp';
 import type { Locale } from '@/i18n/config';
 import { getPublicLandingPath } from '@/i18n/publicLocale';
 import { LANDING_TOKENS_CLASS } from '@/lib/landingTokens';
@@ -110,7 +110,7 @@ export async function WeddingContent({ campaign, demoHref, featureKeys, length, 
                 <WhySection guestPhotos="marquee" locale={locale} media={WEDDING_PAGE_MEDIA} occasion={occasion} qrHref={qrHref} />
 
                 {/* RSVP */}
-                <WeddingRsvp locale={locale} />
+                <RsvpSection locale={locale} media={WEDDING_PAGE_MEDIA} occasion={occasion} />
 
                 {/* Private social */}
                 <WeddingPrivate locale={locale} />

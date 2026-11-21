@@ -1,12 +1,11 @@
 import { ProtectedImage } from '@/components/common/ProtectedImage';
-import type { Locale } from '@/i18n/config';
-import { WEDDING_PAGE_MEDIA } from '@/lib/occasions/pageMedia';
+import type { OccasionRsvpPictures } from '@/lib/occasions/pageMedia';
 
-type RsvpPicturesProps = { alts: { both: string; with: string; without: string }; locale: Locale };
+type RsvpPicturesProps = { alts: { both: string; with: string; without: string }; pictures: OccasionRsvpPictures };
 
 // Replies without and with StoryWall: one wide picture from 761 px, the two halves stacked below.
-export function RsvpPictures({ alts, locale }: RsvpPicturesProps) {
-    const { both, with: after, without } = WEDDING_PAGE_MEDIA.rsvpPictures[locale];
+export function RsvpPictures({ alts, pictures }: RsvpPicturesProps) {
+    const { both, with: after, without } = pictures;
 
     return (
         <div className="self-start">
