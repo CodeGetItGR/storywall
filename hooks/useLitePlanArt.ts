@@ -108,6 +108,7 @@ export function useLitePlanArt(kind: LitePlanArtKind, title: string, eventType: 
     const sofia = tQr('story3');
     const giorgos = tQr('story4');
     const nikos = tQr('story2');
+    const maria = tQr('postAuthor');
     const sofiaMessage = tArt('wishSofia');
     const giorgosMessage = tArt('wishGiorgos');
     const cardDate = tArt('cardDate');
@@ -125,6 +126,8 @@ export function useLitePlanArt(kind: LitePlanArtKind, title: string, eventType: 
                 { author: giorgos, message: giorgosMessage },
                 { author: sofia, message: sofiaMessage },
                 { author: nikos, voiceMs: 58_000 },
+                // Only on a wide banner (the full page on desktop).
+                { author: maria, voiceMs: 42_000 },
             ] satisfies LiteWish[],
             wishDate: WISH_DATE,
             ...eventPhotos(eventType ?? 'WEDDING'),
@@ -143,5 +146,5 @@ export function useLitePlanArt(kind: LitePlanArtKind, title: string, eventType: 
                 featureTexts,
             },
         };
-    }, [kind, title, eventType, t, featureTexts, firstAuthor, firstMessage, sofia, giorgos, nikos, sofiaMessage, giorgosMessage, cardDate, cardPlace, cardDescription, galleryName, wishbookName]);
+    }, [kind, title, eventType, t, featureTexts, firstAuthor, firstMessage, sofia, giorgos, nikos, maria, sofiaMessage, giorgosMessage, cardDate, cardPlace, cardDescription, galleryName, wishbookName]);
 }
