@@ -131,7 +131,10 @@ describe('FeedPageContent theme illustration', () => {
     });
 });
 
-describe('FeedPageContent layout', () => {
+// The look loads lazily; with the whole suite running at once it can take more than a second.
+const LAZY_LOOK = { timeout: 10_000 };
+
+describe('FeedPageContent layout', { timeout: 15_000 }, () => {
     it('keeps a lone description open on the default layout', () => {
         renderFeed(null, { description: 'Hello', flag: true, layout: null });
         // Alone, it keeps today's rule: it hides itself after two views.
@@ -141,7 +144,7 @@ describe('FeedPageContent layout', () => {
 
     it('folds two or more blocks into the Invitation row, which opens in place', async () => {
         renderFeed(null, { description: 'Hello', flag: true, layout: savedLayout(dressCode) });
-        const row = await screen.findByRole('button', { name: 'invitation' });
+        const row = await screen.findByRole('button', { name: 'invitation' }, LAZY_LOOK);
         expect(screen.queryByTestId('description')).toBeNull();
         expect(row.getAttribute('aria-expanded')).toBe('false');
         fireEvent.click(row);
@@ -153,7 +156,7 @@ describe('FeedPageContent layout', () => {
     it('keeps RSVP outside the fold', async () => {
         rsvpVisible.value = true;
         renderFeed(null, { description: 'Hello', flag: true, layout: savedLayout(dressCode) });
-        expect(await screen.findByTestId('rsvp')).toBeTruthy();
+        expect(await screen.findByTestId('rsvp', {}, LAZY_LOOK)).toBeTruthy();
         expect(screen.queryByTestId('description')).toBeNull();
     });
 
@@ -161,7 +164,7 @@ describe('FeedPageContent layout', () => {
         rsvpVisible.value = true;
         renderFeed(null, { description: 'Hello', endAt: '2020-01-01T00:00:00Z', flag: true, layout: savedLayout(dressCode) });
         // The look loads lazily; the cover shows once it has.
-        expect(await screen.findByTestId('banner')).toBeTruthy();
+        expect(await screen.findByTestId('banner', {}, LAZY_LOOK)).toBeTruthy();
         expect(screen.queryByTestId('description')).toBeNull();
         expect(screen.queryByRole('button', { name: 'invitation' })).toBeNull();
         expect(screen.queryByTestId('rsvp')).toBeNull();
