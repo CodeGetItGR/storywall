@@ -27,3 +27,4 @@ storybook-static/
 
 # Visual check
 visual-output/
+/visual-runtime/

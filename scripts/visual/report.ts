@@ -29,12 +29,19 @@ type BuildReportInput = {
     baseRecheck?: BaseRecheck;
 };
 
+// What one compare found, before changes are grouped. A share writes this; the report job joins every share's.
+export type Comparison = { entries: ReportEntry[]; signatures: SignedCapture[] };
+
+type CompareInput = Omit<BuildReportInput, 'baseSha' | 'headSha' | 'missingStories'>;
+
+type FinishInput = Comparison & { reportDir: string; baseSha: string; headSha: string; totalCaptures: number; missingStories: string[] };
+
 const pngPath = (dir: string, id: string) => join(dir, `${id}.png`);
 
 const targetOf = ({ id, storyId, title, name, locale, width }: CaptureTarget): CaptureTarget => ({ id, storyId, title, name, locale, width });
 
-export async function buildReport(input: BuildReportInput): Promise<Manifest> {
-    const { baseDir, headDir, reportDir, baseRecords, headRecords, baseSha, headSha, missingStories, retake, baseRecheck } = input;
+export async function compareCaptures(input: CompareInput): Promise<Comparison> {
+    const { baseDir, headDir, reportDir, baseRecords, headRecords, retake, baseRecheck } = input;
     mkdirSync(join(reportDir, 'img'), { recursive: true });
     let retakesLeft = MAX_RETAKEN_CAPTURES;
     const signatures: SignedCapture[] = [];
@@ -167,23 +174,37 @@ export async function buildReport(input: BuildReportInput): Promise<Manifest> {
         return 'diff' in result ? changedEntry(base, result.record, result.diff) : failedEntry(result, base);
     }
 
-    const found = (await runPool(ids, CONCURRENCY, entryFor)).filter((entry) => entry !== null);
+    const entries = (await runPool(ids, CONCURRENCY, entryFor)).filter((entry) => entry !== null);
+    return { entries, signatures };
+}
+
+const byId = (a: { id: string }, b: { id: string }) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0);
+
+// Groups changes that look the same, counts, fingerprints and writes manifest.json. The same for one job or many shares.
+export function finishReport({ reportDir, entries, signatures, baseSha, headSha, totalCaptures, missingStories }: FinishInput): Manifest {
     const { groups, keys } = groupChanges(signatures);
-    const entries = found.map((entry) => ({ ...entry, changeKey: keys.get(entry.id) ?? null }));
+    const keyed = [...entries].sort(byId).map((entry) => ({ ...entry, changeKey: keys.get(entry.id) ?? null }));
 
     const counts: Record<CaptureState, number> = { changed: 0, new: 0, removed: 0, failed: 0 };
-    for (const entry of entries) counts[entry.state] += 1;
+    for (const entry of keyed) counts[entry.state] += 1;
 
     const manifest: Manifest = {
         headSha,
         baseSha,
-        totalCaptures: headRecords.length,
+        totalCaptures,
         counts,
-        fingerprint: fingerprint(entries),
-        entries,
+        fingerprint: fingerprint(keyed),
+        entries: keyed,
         groups,
         missingStories,
     };
+    mkdirSync(reportDir, { recursive: true });
     writeFileSync(join(reportDir, 'manifest.json'), JSON.stringify(manifest, null, 2));
     return manifest;
+}
+
+export async function buildReport(input: BuildReportInput): Promise<Manifest> {
+    const { baseSha, headSha, missingStories, ...compareInput } = input;
+    const comparison = await compareCaptures(compareInput);
+    return finishReport({ ...comparison, reportDir: input.reportDir, baseSha, headSha, totalCaptures: input.headRecords.length, missingStories });
 }

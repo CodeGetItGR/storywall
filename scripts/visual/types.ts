@@ -3,7 +3,8 @@ import type { CaptureLocale, WidthName } from './config';
 export type CaptureTarget = { id: string; storyId: string; title: string; name: string; locale: CaptureLocale; width: WidthName };
 
 // `machine` is the CPU that took the capture, for the run log. Records saved before it existed have none.
-export type CaptureRecord = CaptureTarget & { status: 'ok' | 'failed'; hash: string | null; error: string | null; machine?: string };
+// `ms` is how long the capture took, for planning the next run's shares. Records saved before it existed have none.
+export type CaptureRecord = CaptureTarget & { status: 'ok' | 'failed'; hash: string | null; error: string | null; machine?: string; ms?: number };
 
 export type CaptureState = 'changed' | 'new' | 'removed' | 'failed';
 
