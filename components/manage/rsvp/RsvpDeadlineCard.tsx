@@ -12,16 +12,18 @@ type RsvpDeadlineCardProps = {
     eventId: string;
     rsvpDeadline: string | null;
     startAt: string | null;
+    // The event's time zone: the countdown counts its calendar days.
+    timeZone: string;
     // The pencil shows only while the event can still be changed.
     canWrite: boolean;
 };
 
 // R1a: the countdown to the RSVP deadline (or the event), with a pencil to change the deadline.
-export function RsvpDeadlineCard({ eventId, rsvpDeadline, startAt, canWrite }: RsvpDeadlineCardProps) {
+export function RsvpDeadlineCard({ eventId, rsvpDeadline, startAt, timeZone, canWrite }: RsvpDeadlineCardProps) {
     const t = useTranslations('ManagePage.rsvpStats');
     const locale = useLocale();
     const [editing, setEditing] = useState(false);
-    const countdown = rsvpCountdown(rsvpDeadline, startAt);
+    const countdown = rsvpCountdown(rsvpDeadline, startAt, timeZone);
     const date = countdown.target ? formatDate(locale, countdown.target, { day: 'numeric', month: 'long', year: 'numeric' }) : null;
 
     function openSheet() {

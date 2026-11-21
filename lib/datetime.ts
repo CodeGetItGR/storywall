@@ -129,13 +129,17 @@ export function isDatetimeLocalAfter(left: string | null | undefined, right: str
     return leftDate.getTime() > rightDate.getTime();
 }
 
-export function getDaysUntil(value: string | number | Date | null | undefined, referenceDate = new Date()): number | null {
+/**
+ * Calendar days from `referenceDate` to `value`, both read in `timeZone` (never below zero).
+ * The host Overview and the RSVP page both count this way, so they always agree.
+ */
+export function calendarDaysUntil(value: string | number | Date | null | undefined, timeZone: string, referenceDate = new Date()): number | null {
     if (value === null || value === undefined) return null;
 
     const date = parseDate(value);
     if (!date) return null;
 
-    return Math.max(0, Math.ceil((date.getTime() - referenceDate.getTime()) / (1000 * 60 * 60 * 24)));
+    return Math.max(0, daysBetween(localDay(referenceDate, timeZone), localDay(date, timeZone)));
 }
 
 /** The calendar day (yyyy-mm-dd) an instant falls on in a time zone. */
