@@ -1,7 +1,9 @@
 import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { WeddingWhy } from '@/components/occasions/wedding/WeddingWhy';
+import { WhySection } from '@/components/occasions/sections/WhySection';
+import { findOccasion } from '@/lib/occasions/occasions';
+import { WEDDING_PAGE_MEDIA } from '@/lib/occasions/pageMedia';
 import { LandingMotionProvider } from '@/providers/LandingMotionProvider';
 
 vi.mock('next-intl/server', () => import('@/components/occasions/sections/__fixtures__/intlServerMock'));
@@ -12,12 +14,16 @@ vi.mock('next-intl', async (importOriginal) =>
 
 // The marquee reads the landing's motion toggle.
 async function renderWhy(qrHref: string | null = '/el/qr-code-gamou') {
-    return render(<LandingMotionProvider>{await WeddingWhy({ locale: 'el', qrHref })}</LandingMotionProvider>);
+    return render(
+        <LandingMotionProvider>
+            {await WhySection({ guestPhotos: 'marquee', locale: 'el', media: WEDDING_PAGE_MEDIA, occasion: findOccasion('WEDDING')!, qrHref })}
+        </LandingMotionProvider>,
+    );
 }
 
 afterEach(cleanup);
 
-describe('WeddingWhy', () => {
+describe('WhySection (wedding)', () => {
     it('heads the section and lists what goes wrong without StoryWall', async () => {
         await renderWhy();
         expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent('Οι φωτογραφίες του γάμου σου δεν πρέπει να χαθούν σε 100 κινητά.');
