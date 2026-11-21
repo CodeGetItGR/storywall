@@ -9,6 +9,7 @@ vi.mock('next/navigation', () => ({
     usePathname: () => '/notifications',
     useSearchParams: () => new URLSearchParams(),
 }));
+vi.mock('@/hooks/useOverviewFabRoom', () => ({ useOverviewFabRoom: () => false }));
 vi.mock('@/hooks/useAuth', () => ({ useAuth: () => ({ user: { id: 'u1', role: 'USER' }, isBootstrapping: false }) }));
 vi.mock('@/hooks/useAdminDemoEventAccess', () => ({ useAdminDemoEventAccess: () => ({ isChecking: false, isAdminAllowed: false }) }));
 vi.mock('@/components/account/AccountPanelShell', () => ({ AccountPanelShell: ({ children }: { children: React.ReactNode }) => <>{children}</> }));

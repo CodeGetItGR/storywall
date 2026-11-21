@@ -1,13 +1,13 @@
 'use client';
 
 import { Mic, Pencil } from 'lucide-react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import type { MouseEvent } from 'react';
 
 import { VoiceWishPlayer } from '@/components/wishbook/VoiceWishPlayer';
 import { WishbookEntriesSkeleton } from '@/components/wishbook/WishbookSkeletons';
 import type { WishbookEntryResponseDto } from '@/lib/api/types';
-import { dateTimeFormat } from '@/lib/format';
+import { formatDate } from '@/lib/datetime';
 import { formatClipDuration } from '@/lib/wishbook/voice';
 
 type Props = {
@@ -85,6 +85,7 @@ export function MyWishesSection({ entries, isLoading, hasNextPage, isFetchingNex
 // An editable row is one button, so it can't hold a player: it shows the recording's length and the
 // edit sheet plays it. A read-only row plays it in place.
 function MyWishRowText({ entry, playable }: { entry: WishbookEntryResponseDto; playable: boolean }) {
+    const locale = useLocale();
     // Inside a button only phrasing content is allowed; the player is a block.
     const Box = playable ? 'div' : 'span';
     return (
@@ -109,7 +110,7 @@ function MyWishRowText({ entry, playable }: { entry: WishbookEntryResponseDto; p
 
             {/* Date */}
             <time dateTime={entry.createdAt} className="mt-1 block text-xs text-ink-faint">
-                {dateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(entry.createdAt))}
+                {formatDate(locale, entry.createdAt, { dateStyle: 'medium', timeStyle: 'short' })}
             </time>
         </Box>
     );

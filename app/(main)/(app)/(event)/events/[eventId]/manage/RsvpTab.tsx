@@ -14,13 +14,14 @@ type RsvpTabProps = {
     rsvps: RosterRsvp[];
     startAt: string | null;
     rsvpDeadline: string | null;
+    timeZone: string;
     canWrite: boolean;
 };
 
 // R1a: RSVP on one page (KAN-227). Phones: deadline, numbers, reports, attendance, guests.
 // Desktop: numbers, reports and guests in the main column; deadline and attendance beside them.
 // The two columns are `contents` on phones, so `order` interleaves their blocks.
-export default function RsvpTab({ eventId, members, rsvps, startAt, rsvpDeadline, canWrite }: RsvpTabProps) {
+export default function RsvpTab({ eventId, members, rsvps, startAt, rsvpDeadline, timeZone, canWrite }: RsvpTabProps) {
     const stats = useRsvpStatsReport(eventId);
 
     return (
@@ -49,7 +50,7 @@ export default function RsvpTab({ eventId, members, rsvps, startAt, rsvpDeadline
             <div className="contents lg:sticky lg:top-6 lg:flex lg:flex-col lg:gap-6">
                 {/* Deadline */}
                 <div className="order-1 lg:order-none">
-                    <RsvpDeadlineCard eventId={eventId} rsvpDeadline={rsvpDeadline} startAt={startAt} canWrite={canWrite} />
+                    <RsvpDeadlineCard eventId={eventId} rsvpDeadline={rsvpDeadline} startAt={startAt} timeZone={timeZone} canWrite={canWrite} />
                 </div>
 
                 {/* Attendance */}

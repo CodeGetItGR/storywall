@@ -1,6 +1,7 @@
 import type { MetadataRoute } from 'next';
 
 import { CAMPAIGN_SHORT_LINK_PREFIX } from '@/lib/campaignLinks';
+import { PUBLISHED_INVITATION_PATH_PREFIX } from '@/lib/invitation/inviteHost';
 import { absoluteUrl, isStagingSite } from '@/lib/seo';
 import { SHARED_LINK_PREFIXES } from '@/lib/shareLinks';
 
@@ -20,12 +21,13 @@ const PRIVATE_PATHS = [
     '/partner',
     '/q/',
     '/save-my-date/editor',
-    '/save-my-date/i/',
+    `${PUBLISHED_INVITATION_PATH_PREFIX}/`,
     CAMPAIGN_SHORT_LINK_PREFIX,
 ];
 
-// Link previews may follow these to the page that builds the card.
-const LINK_PREVIEW_PATHS: readonly string[] = [...SHARED_LINK_PREFIXES, CAMPAIGN_SHORT_LINK_PREFIX];
+// Link previews may follow these to the page that builds the card. A published invitation's
+// preview picture lives under its page.
+const LINK_PREVIEW_PATHS: readonly string[] = [...SHARED_LINK_PREFIXES, CAMPAIGN_SHORT_LINK_PREFIX, `${PUBLISHED_INVITATION_PATH_PREFIX}/`];
 
 // Only fetchers that build link previews, never search crawlers. They may read
 // shared links to build the card; the pages carry noindex as well. A crawler

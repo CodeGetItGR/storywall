@@ -95,7 +95,11 @@ function closeTab() {
     return event.defaultPrevented;
 }
 
-describe('Invitation editor page', () => {
+// Each case renders the whole editor and waits on its saves, which can pass 5 seconds when the
+// whole suite runs at once.
+const EDITOR_FLOW_TIMEOUT_MS = 15_000;
+
+describe('Invitation editor page', { timeout: EDITOR_FLOW_TIMEOUT_MS }, () => {
     beforeAll(() => backend.server.listen({ onUnhandledRequest: 'error' }));
     beforeEach(() => {
         // The tour has been seen: these tests are about the editor itself.

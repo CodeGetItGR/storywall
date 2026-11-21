@@ -14,6 +14,7 @@ import { useManageNav } from '@/hooks/useManageNav';
 import { useManageSectionRoute } from '@/hooks/useManageSectionRoute';
 import { useEventRsvps } from '@/hooks/useRsvps';
 import { useEventUsage } from '@/hooks/useUsage';
+import { journeyTimeZone } from '@/lib/eventJourney';
 import { isEventWritable } from '@/lib/eventLifecycle';
 import { attendingGuestPeople } from '@/lib/rsvpGuests';
 
@@ -93,6 +94,7 @@ export function ManageScreen() {
                         rsvps={rsvps}
                         startAt={activeEvent.schedule.startAt}
                         rsvpDeadline={activeEvent.schedule.rsvpDeadline}
+                        timeZone={journeyTimeZone(activeEvent)}
                         canWrite={canWrite}
                     />
                 ))}

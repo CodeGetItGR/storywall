@@ -28,7 +28,7 @@ jobs:
               env:
                   GH_TOKEN: ${{ github.token }}
 
-    # build, capture and compare run the PR's dependencies and build, so they have no write access and no secrets.
+    # build, capture and report run the PR's dependencies and build, so they have no write access and no secrets.
     build:
         needs: start
         runs-on: ubuntu-latest
@@ -36,10 +36,12 @@ jobs:
         container: mcr.microsoft.com/playwright:v1.55.0-noble
         permissions:
             contents: read
+            actions: read
         outputs:
             base-sha: ${{ steps.base.outputs.sha }}
             base-key: ${{ steps.lookup.outputs.cache-primary-key }}
-            base-saved: ${{ steps.lookup.outputs.cache-hit }}
+            base-state: ${{ steps.state.outputs.state }}
+            baseline-run: ${{ steps.state.outputs.run-id }}
         steps:
             - uses: actions/checkout@v7
               with:
@@ -83,6 +85,14 @@ jobs:
                   key: visual-base-${{ steps.base.outputs.sha }}-${{ hashFiles('scripts/visual/capture.ts', 'scripts/visual/stories.ts', 'scripts/visual/config.ts') }}-pw1.55.0-sb
                   lookup-only: true
 
+            # A staging push's baseline run may still be capturing this base. The shares wait for it instead of capturing it again.
+            - id: state
+              run: npm run visual:ci -- base-state --sha "$BASE_SHA" --cache-hit "$CACHE_HIT"
+              env:
+                  BASE_SHA: ${{ steps.base.outputs.sha }}
+                  CACHE_HIT: ${{ steps.lookup.outputs.cache-hit }}
+                  GITHUB_TOKEN: ${{ github.token }}
+
             - run: npm run visual:ci -- build
 
             - uses: actions/upload-artifact@v7
@@ -92,7 +102,27 @@ jobs:
                   retention-days: 1
                   if-no-files-found: error
 
-            # No saved captures for the base, so the capture jobs take them too.
+            - run: node scripts/visual/pack.mjs
+
+            - run: node visual-runtime/ci.mjs selfcheck
+
+            # The newest timings from any earlier run. None means the plan deals round-robin.
+            - uses: actions/cache/restore@v6
+              with:
+                  path: visual-output/timings
+                  key: visual-timings-${{ github.run_id }}-${{ github.run_attempt }}
+                  restore-keys: visual-timings-
+
+            - run: npm run visual:ci -- plan --storybook storybook-static --timings visual-output/timings/timings.json --out visual-runtime/share-plan.json
+
+            - uses: actions/upload-artifact@v7
+              with:
+                  name: visual-runtime
+                  path: visual-runtime
+                  retention-days: 1
+                  if-no-files-found: error
+
+            # No saved captures for the base yet, so a share may have to capture its part of it.
             - if: steps.lookup.outputs.cache-hit != 'true'
               run: npm run visual:ci -- build-base --base "$BASE_SHA"
               env:
@@ -106,58 +136,68 @@ jobs:
                   retention-days: 1
                   if-no-files-found: error
 
+    # Each share captures its planned stories, gets the base and compares its own captures on its own runner.
     capture:
         needs: build
         runs-on: ubuntu-latest
-        timeout-minutes: 20
+        timeout-minutes: 55
         container: mcr.microsoft.com/playwright:v1.55.0-noble
         permissions:
             contents: read
+            actions: read
         strategy:
             matrix:
                 share: [1, 2, 3, 4, 5, 6]
         env:
             SHARE: ${{ strategy.job-index }}/${{ strategy.job-total }}
+            BASE_SHA: ${{ needs.build.outputs.base-sha }}
         steps:
-            - uses: actions/checkout@v7
-              with:
-                  ref: ${{ github.event.pull_request.head.sha }}
-                  persist-credentials: false
-
             - uses: actions/setup-node@v7
               with:
                   node-version: 22
-                  cache: npm
 
-            - run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
-
-            - run: npm ci
+            - uses: actions/download-artifact@v8
+              with:
+                  name: visual-runtime
+                  path: visual-runtime
 
             - uses: actions/download-artifact@v8
               with:
                   name: visual-storybook
                   path: storybook-static
 
-            - run: npm run visual:ci -- capture --share "$SHARE" --storybook storybook-static --out visual-output/head
+            - run: node visual-runtime/ci.mjs capture --share "$SHARE" --plan visual-runtime/share-plan.json --storybook storybook-static --out visual-output/head
 
-            - uses: actions/upload-artifact@v7
+            - if: needs.build.outputs.base-state == 'pending'
+              run: node visual-runtime/ci.mjs wait-baseline --run "$BASELINE_RUN" --minutes 15
+              env:
+                  BASELINE_RUN: ${{ needs.build.outputs.baseline-run }}
+                  GITHUB_TOKEN: ${{ github.token }}
+
+            - id: restore
+              if: needs.build.outputs.base-state != 'missing'
+              uses: actions/cache/restore@v6
               with:
-                  name: visual-head-share-${{ strategy.job-index }}
-                  path: visual-output/head
-                  retention-days: 1
-                  compression-level: 0
-                  if-no-files-found: error
+                  path: visual-output/base
+                  key: ${{ needs.build.outputs.base-key }}
 
-            - if: needs.build.outputs.base-saved != 'true'
+            # The build job found the saved base, so it built no base for the shares. If it is gone now
+            # (evicted, or the download failed), this share can't capture it. Re-running all jobs looks it up again.
+            - if: needs.build.outputs.base-state == 'saved' && steps.restore.outputs.cache-hit != 'true'
+              run: |
+                  echo "::error::The saved base disappeared after the build job found it. Use Re-run all jobs."
+                  exit 1
+
+            - if: needs.build.outputs.base-state != 'saved' && steps.restore.outputs.cache-hit != 'true'
               uses: actions/download-artifact@v8
               with:
                   name: visual-base-storybook
                   path: visual-output/base-storybook
 
-            - if: needs.build.outputs.base-saved != 'true'
-              run: npm run visual:ci -- capture --share "$SHARE" --storybook visual-output/base-storybook --out visual-output/base
+            - if: needs.build.outputs.base-state != 'saved' && steps.restore.outputs.cache-hit != 'true'
+              run: node visual-runtime/ci.mjs capture-base --share "$SHARE" --plan visual-runtime/share-plan.json --storybook visual-output/base-storybook --out visual-output/base
 
-            - if: needs.build.outputs.base-saved != 'true'
+            - if: needs.build.outputs.base-state != 'saved' && steps.restore.outputs.cache-hit != 'true'
               uses: actions/upload-artifact@v7
               with:
                   name: visual-base-share-${{ strategy.job-index }}
@@ -166,11 +206,28 @@ jobs:
                   compression-level: 0
                   if-no-files-found: error
 
-    compare:
+            # The saved base holds all captures and its build. A base this share took itself holds only its part,
+            # and its build sits outside the base folder.
+            - run: |
+                  if [ "$CACHE_HIT" = "true" ]; then
+                      node visual-runtime/ci.mjs compare-share --share "$SHARE" --plan visual-runtime/share-plan.json --base "$BASE_SHA" --base-records visual-output/base/captures.json --base-storybook visual-output/base/storybook
+                  else
+                      node visual-runtime/ci.mjs compare-share --share "$SHARE" --plan visual-runtime/share-plan.json --base "$BASE_SHA" --base-records "visual-output/base/records-${{ strategy.job-index }}.json" --base-storybook visual-output/base-storybook
+                  fi
+              env:
+                  CACHE_HIT: ${{ steps.restore.outputs.cache-hit }}
+
+            - uses: actions/upload-artifact@v7
+              with:
+                  name: visual-report-share-${{ strategy.job-index }}
+                  path: visual-output/report
+                  retention-days: 1
+                  if-no-files-found: error
+
+    report:
         needs: [build, capture]
         runs-on: ubuntu-latest
-        # Captures the whole base in this one job if its saved captures were dropped since build looked them up.
-        timeout-minutes: 60
+        timeout-minutes: 15
         container: mcr.microsoft.com/playwright:v1.55.0-noble
         permissions:
             contents: read
@@ -186,11 +243,13 @@ jobs:
             - uses: actions/setup-node@v7
               with:
                   node-version: 22
-                  cache: npm
 
             - run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
 
-            - run: npm ci
+            - uses: actions/download-artifact@v8
+              with:
+                  name: visual-runtime
+                  path: visual-runtime
 
             - uses: actions/download-artifact@v8
               with:
@@ -199,44 +258,11 @@ jobs:
 
             - uses: actions/download-artifact@v8
               with:
-                  pattern: visual-head-share-*
+                  pattern: visual-report-share-*
                   merge-multiple: true
-                  path: visual-output/head
+                  path: visual-output/report
 
-            - run: npm run visual:ci -- join --storybook storybook-static --dir visual-output/head --sha "$HEAD_SHA"
-
-            - id: restore
-              if: needs.build.outputs.base-saved == 'true'
-              uses: actions/cache/restore@v6
-              with:
-                  path: visual-output/base
-                  key: ${{ needs.build.outputs.base-key }}
-
-            # Kept inside the base folder, so the cache saves it for the base recheck.
-            - if: needs.build.outputs.base-saved != 'true'
-              uses: actions/download-artifact@v8
-              with:
-                  name: visual-base-storybook
-                  path: visual-output/base/storybook
-
-            - if: needs.build.outputs.base-saved != 'true'
-              uses: actions/download-artifact@v8
-              with:
-                  pattern: visual-base-share-*
-                  merge-multiple: true
-                  path: visual-output/base
-
-            - if: needs.build.outputs.base-saved != 'true'
-              run: npm run visual:ci -- join --storybook visual-output/base/storybook --dir visual-output/base --sha "$BASE_SHA"
-
-            # Builds the base itself if the saved captures were dropped since build looked them up.
-            - run: npm run visual:ci -- compare --base "$BASE_SHA"
-
-            - if: steps.restore.outputs.cache-hit != 'true'
-              uses: actions/cache/save@v6
-              with:
-                  path: visual-output/base
-                  key: ${{ needs.build.outputs.base-key }}
+            - run: node visual-runtime/ci.mjs join-report --plan visual-runtime/share-plan.json --storybook storybook-static --base "$BASE_SHA" --timings visual-output/timings/timings.json
 
             - uses: actions/upload-artifact@v7
               with:
@@ -244,10 +270,53 @@ jobs:
                   path: visual-output/report
                   retention-days: 1
 
+            - uses: actions/cache/save@v6
+              with:
+                  path: visual-output/timings
+                  key: visual-timings-${{ github.run_id }}-${{ github.run_attempt }}
+
+            # Saves the base the shares captured. A cache saved from a PR run is scoped to that PR, so only its
+            # later runs find it. It never changes this run's result, so a share that found the cache
+            # after all (and uploaded no base) only skips the save.
+            - id: saved
+              if: needs.build.outputs.base-state != 'saved'
+              uses: actions/cache/restore@v6
+              with:
+                  path: visual-output/base
+                  key: ${{ needs.build.outputs.base-key }}
+                  lookup-only: true
+
+            - if: needs.build.outputs.base-state != 'saved' && steps.saved.outputs.cache-hit != 'true'
+              id: base-shares
+              continue-on-error: true
+              uses: actions/download-artifact@v8
+              with:
+                  pattern: visual-base-share-*
+                  merge-multiple: true
+                  path: visual-output/base
+
+            # Kept inside the base folder, so the cache saves it for the base recheck.
+            - if: steps.base-shares.outcome == 'success'
+              uses: actions/download-artifact@v8
+              with:
+                  name: visual-base-storybook
+                  path: visual-output/base/storybook
+
+            - id: base-join
+              if: steps.base-shares.outcome == 'success'
+              continue-on-error: true
+              run: node visual-runtime/ci.mjs join --storybook visual-output/base/storybook --dir visual-output/base --sha "$BASE_SHA"
+
+            - if: steps.base-join.outcome == 'success'
+              uses: actions/cache/save@v6
+              with:
+                  path: visual-output/base
+                  key: ${{ needs.build.outputs.base-key }}
+
     # Installs nothing and builds nothing. Only this job holds the deploy key, so it runs the
     # scripts from the base commit: a PR's own changes to them never see the key.
     publish:
-        needs: compare
+        needs: report
         runs-on: ubuntu-latest
         timeout-minutes: 15
         permissions:
@@ -280,7 +349,7 @@ jobs:
                   VISUAL_APPROVERS: ${{ vars.VISUAL_APPROVERS }}
 
     finish:
-        needs: [start, build, capture, compare, publish]
+        needs: [start, build, capture, report, publish]
         if: failure() || cancelled()
         runs-on: ubuntu-latest
         timeout-minutes: 5

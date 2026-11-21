@@ -83,7 +83,11 @@ function storedSection(id: string) {
     return backend.stored().document.sections.find((item) => item.id === id)!;
 }
 
-describe('Invitation editor: section settings', () => {
+// Each case renders the whole editor and waits on its saves, which can pass 5 seconds when the
+// whole suite runs at once.
+const EDITOR_FLOW_TIMEOUT_MS = 15_000;
+
+describe('Invitation editor: section settings', { timeout: EDITOR_FLOW_TIMEOUT_MS }, () => {
     beforeAll(() => backend.server.listen({ onUnhandledRequest: 'error' }));
     // The tour would cover the editor; the tour has its own tests.
     beforeEach(() => localStorage.setItem(EDITOR_TOUR_SEEN_KEY, '1'));
