@@ -149,3 +149,15 @@ The page follows `docs/seo-guidelines.md`: one h1 (the keyword title), Greek/Eng
 - Stories (title `Occasions/…`): `HeroView` (wedding, baptism), `WhyView` (marquee, row), `WhyPhotoRow`, `RsvpView`, `PrivateView`, `ThemesView` (six tiles, no tiles), `ThemeTile`, `FeaturesView`.
 - Checks: `tsc --noEmit`, `eslint .`, `vitest run`, `next build`.
 - Visual: `/vaptisi` and `/gamos` (and English) on the local dev server at 375px and desktop, compared with the draft and with today's wedding page. The PR's visual-regression check must show no wedding change.
+
+## As built
+
+Where the build differs from or adds to the text above:
+
+- `ThemeTile` is its own component (not `LandingThemeTile`) because long theme names must wrap under the tile.
+- The hero's floating posts are `OccasionPostCard`s with an avatar each; `OccasionPageMedia` also has `themesPhone` (the Themes section's phone picture, the feed screenshot for baptism, null for wedding).
+- The band's CTA is written in capitals in the copy itself.
+- The band's screen-reader label is "Θέματα του StoryWall" (approved).
+- FAQ 8's sentence about extending the page follows the config (ICU `select` on `extendable`).
+- Greek is the draft's text word for word. English was drafted for search (baptism website, digital christening invitation) and each line was approved by the owner.
+- The old generic layout stays in the code, reachable by no occasion page that has a config, until KAN-254 removes it.
