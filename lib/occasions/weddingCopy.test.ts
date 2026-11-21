@@ -4,8 +4,8 @@ import { describe, expect, it } from 'vitest';
 import type { OccasionFaqEntry } from '@/lib/occasions/occasionFaq';
 import type { OccasionLengthValues } from '@/lib/occasions/occasionLength';
 import type { OccasionPriceValues } from '@/lib/occasions/occasionPrice';
-import type { WeddingMarqueeCopy } from '@/lib/occasions/weddingCopy';
-import { WEDDING_FEATURE_ORDER } from '@/lib/occasions/weddingFeatures';
+import type { OccasionGuestPhotoCopy } from '@/lib/occasions/pageCopy';
+import { OCCASION_PAGE_FEATURE_ORDER } from '@/lib/occasions/pageFeatures';
 import { WEDDING_MARQUEE } from '@/lib/occasions/weddingMedia';
 import el from '@/messages/el.json';
 import en from '@/messages/en.json';
@@ -89,10 +89,10 @@ describe.each([
     });
 
     it('matches the photo map one to one', () => {
-        expect((t.raw('why.with.marquee') as WeddingMarqueeCopy[]).length).toBe(WEDDING_MARQUEE.length);
+        expect((t.raw('why.with.marquee') as OccasionGuestPhotoCopy[]).length).toBe(WEDDING_MARQUEE.length);
     });
 
     it('has copy for every feature in the design', () => {
-        expect(Object.keys(t.raw('features') as Record<string, unknown>).sort()).toEqual([...WEDDING_FEATURE_ORDER].sort());
+        expect(Object.keys(t.raw('features') as Record<string, unknown>).sort()).toEqual([...OCCASION_PAGE_FEATURE_ORDER].sort());
     });
 });

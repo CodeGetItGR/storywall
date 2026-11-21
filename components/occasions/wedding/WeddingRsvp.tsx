@@ -1,9 +1,9 @@
 import { getTranslations } from 'next-intl/server';
 
-import { RsvpChecklist } from '@/components/occasions/wedding/rsvp/RsvpChecklist';
-import { RsvpPictures } from '@/components/occasions/wedding/rsvp/RsvpPictures';
+import { RsvpChecklist } from '@/components/occasions/sections/rsvp/RsvpChecklist';
+import { RsvpPictures } from '@/components/occasions/sections/rsvp/RsvpPictures';
 import type { Locale } from '@/i18n/config';
-import type { WeddingCardCopy } from '@/lib/occasions/weddingCopy';
+import type { OccasionCardCopy } from '@/lib/occasions/pageCopy';
 
 // RSVP: replies scattered across apps against StoryWall's form, list and stats, on a pink panel.
 export async function WeddingRsvp({ locale }: { locale: Locale }) {
@@ -30,7 +30,7 @@ export async function WeddingRsvp({ locale }: { locale: Locale }) {
                 {/* Pictures and points */}
                 <div className="grid grid-cols-1 items-stretch gap-[clamp(14px,1.8vw,26px)] min-[901px]:grid-cols-[minmax(0,1022fr)_minmax(0,370fr)]">
                     <RsvpPictures alts={{ both: t('alts.both'), with: t('alts.with'), without: t('alts.without') }} locale={locale} />
-                    <RsvpChecklist items={t.raw('checklist.items') as WeddingCardCopy[]} pill={t('checklist.pill')} />
+                    <RsvpChecklist items={t.raw('checklist.items') as OccasionCardCopy[]} pill={t('checklist.pill')} />
                 </div>
             </div>
         </section>

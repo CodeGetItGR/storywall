@@ -6,7 +6,7 @@ import type { OccasionPriceValues } from '@/lib/occasions/occasionPrice';
 
 const auth = vi.hoisted(() => ({ isAuthenticated: false, isBootstrapping: false }));
 
-vi.mock('next-intl/server', () => import('@/components/occasions/wedding/__fixtures__/intlServerMock'));
+vi.mock('next-intl/server', () => import('@/components/occasions/sections/__fixtures__/intlServerMock'));
 vi.mock('@/hooks/useAuth', () => ({ useAuth: () => auth }));
 // The header needs auth and the client intl provider, the visual the motion provider; both are
 // covered by their own tests.

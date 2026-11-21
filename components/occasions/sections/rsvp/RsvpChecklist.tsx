@@ -1,8 +1,8 @@
 import { Check } from 'lucide-react';
 
-import type { WeddingCardCopy } from '@/lib/occasions/weddingCopy';
+import type { OccasionCardCopy } from '@/lib/occasions/pageCopy';
 
-type RsvpChecklistProps = { items: WeddingCardCopy[]; pill: string };
+type RsvpChecklistProps = { items: OccasionCardCopy[]; pill: string };
 
 // "All the answers": the right column's four points. From 901 px the pill scales with the column.
 export function RsvpChecklist({ items, pill }: RsvpChecklistProps) {

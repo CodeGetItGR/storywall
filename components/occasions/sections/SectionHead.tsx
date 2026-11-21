@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 
 import { cn } from '@/lib/utils';
 
-type WeddingSectionHeadProps = {
+type SectionHeadProps = {
     // An intro under the heading.
     children?: ReactNode;
     // Width and bottom spacing.
@@ -20,7 +20,7 @@ type WeddingSectionHeadProps = {
 };
 
 // A centered section head: a small kicker, a heading whose second part is bold, and an optional intro.
-export function WeddingSectionHead({
+export function SectionHead({
     children,
     className,
     heading,
@@ -29,7 +29,7 @@ export function WeddingSectionHead({
     kicker,
     kickerClassName = 'text-[#ff765f]',
     stacked = true,
-}: WeddingSectionHeadProps) {
+}: SectionHeadProps) {
     return (
         <div className={cn('mx-auto text-center', className)}>
             <p className={cn('mt-0 mb-4.5 text-[11px] font-extrabold tracking-[0.16em] uppercase', kickerClassName)}>{kicker}</p>

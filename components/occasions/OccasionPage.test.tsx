@@ -11,7 +11,7 @@ import { loadOccasionDemoPreview } from '@/lib/occasions/demoPreview.server';
 import { findOccasion } from '@/lib/occasions/occasions';
 import { routes } from '@/lib/routes';
 
-vi.mock('next-intl/server', () => import('@/components/occasions/wedding/__fixtures__/intlServerMock'));
+vi.mock('next-intl/server', () => import('@/components/occasions/sections/__fixtures__/intlServerMock'));
 vi.mock('@/lib/api/serverFetch', () => ({ serverPublicConfigGet: vi.fn() }));
 vi.mock('@/lib/occasions/demoPreview.server', () => ({ loadOccasionDemoPreview: vi.fn(async () => null) }));
 vi.mock('@/lib/landingThemes', () => ({ getLandingThemes: vi.fn(async () => []) }));

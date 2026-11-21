@@ -1,6 +1,6 @@
 import { getTranslations } from 'next-intl/server';
 
-import { GradientIcon } from '@/components/occasions/wedding/mock/GradientIcon';
+import { GradientIcon } from '@/components/occasions/sections/mock/GradientIcon';
 import type { Locale } from '@/i18n/config';
 import { QR_WEDDING_MEDIA, QR_WEDDING_SECTION, qrWeddingParentPath } from '@/lib/qrWeddingPage';
 

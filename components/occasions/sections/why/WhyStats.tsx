@@ -1,6 +1,6 @@
-import type { WeddingStatCopy } from '@/lib/occasions/weddingCopy';
+import type { OccasionStatCopy } from '@/lib/occasions/pageCopy';
 
-type WhyStatsProps = { chips: string[]; example: string; stats: WeddingStatCopy[] };
+type WhyStatsProps = { chips: string[]; example: string; stats: OccasionStatCopy[] };
 
 // One example wedding in numbers, then the four points.
 export function WhyStats({ chips, example, stats }: WhyStatsProps) {

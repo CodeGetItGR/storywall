@@ -3,16 +3,16 @@
 import { motion } from 'framer-motion';
 
 import { ProtectedImage } from '@/components/common/ProtectedImage';
-import { MockPhoto } from '@/components/occasions/wedding/mock/MockPhoto';
+import { MockPhoto } from '@/components/occasions/sections/mock/MockPhoto';
 import { useMarqueeMotion } from '@/hooks/useMarqueeMotion';
 import type { OccasionPhoto } from '@/lib/occasions/occasionMedia';
-import type { WeddingMarqueeCopy } from '@/lib/occasions/weddingCopy';
+import type { OccasionGuestPhotoCopy } from '@/lib/occasions/pageCopy';
 import { cn } from '@/lib/utils';
 
 // One copy of the tiles crosses the screen in this many seconds.
 const MARQUEE_SECONDS = 48;
 
-export type WhyMarqueeTile = WeddingMarqueeCopy & { alt: string; avatar: OccasionPhoto; avatarAlt: string; photo: OccasionPhoto };
+export type WhyMarqueeTile = OccasionGuestPhotoCopy & { alt: string; avatar: OccasionPhoto; avatarAlt: string; photo: OccasionPhoto };
 
 // One copy of the tiles. The copy that only closes the loop is hidden from assistive tech.
 function Tiles({ hidden = false, tiles }: { hidden?: boolean; tiles: WhyMarqueeTile[] }) {

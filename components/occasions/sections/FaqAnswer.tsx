@@ -1,6 +1,6 @@
 import { qrLinkAttributes } from '@/lib/linkClicks';
 
-type WeddingFaqAnswerProps = {
+type FaqAnswerProps = {
     answer: string;
     // null: the link's page is off, so the answer stands alone.
     href: string | null;
@@ -10,7 +10,7 @@ type WeddingFaqAnswerProps = {
 };
 
 // An FAQ answer, with its "Learn more →" link when it has one.
-export function WeddingFaqAnswer({ answer, href, label, toQrPage = false }: WeddingFaqAnswerProps) {
+export function FaqAnswer({ answer, href, label, toQrPage = false }: FaqAnswerProps) {
     if (!href || !label) return answer;
     return (
         <>

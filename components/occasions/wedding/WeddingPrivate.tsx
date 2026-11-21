@@ -1,25 +1,25 @@
 import { getTranslations } from 'next-intl/server';
 
-import { GradientIcon } from '@/components/occasions/wedding/mock/GradientIcon';
-import { WeddingSectionHead } from '@/components/occasions/wedding/WeddingSectionHead';
-import { WeddingWrap } from '@/components/occasions/wedding/WeddingWrap';
+import { GradientIcon } from '@/components/occasions/sections/mock/GradientIcon';
+import { SectionHead } from '@/components/occasions/sections/SectionHead';
+import { SectionWrap } from '@/components/occasions/sections/SectionWrap';
 import type { Locale } from '@/i18n/config';
-import type { WeddingCardCopy } from '@/lib/occasions/weddingCopy';
-import { WEDDING_PRIVATE_ICONS } from '@/lib/occasions/weddingFeatures';
+import type { OccasionCardCopy } from '@/lib/occasions/pageCopy';
+import { OCCASION_PRIVATE_ICONS } from '@/lib/occasions/pageFeatures';
 
 // "Only for guests": four numbered cards on what keeps the wedding's social private.
 export async function WeddingPrivate({ locale }: { locale: Locale }) {
     const t = await getTranslations({ locale, namespace: 'OccasionPages.WEDDING.private' });
-    const cards = t.raw('cards') as WeddingCardCopy[];
+    const cards = t.raw('cards') as OccasionCardCopy[];
 
     return (
         <section
             aria-labelledby="wedding-private-title"
             className="bg-white pt-17.5 pb-20 font-[Arial,Helvetica,sans-serif] text-[#151313] min-[561px]:pt-25 min-[561px]:pb-27.5"
         >
-            <WeddingWrap>
+            <SectionWrap>
                 {/* Heading */}
-                <WeddingSectionHead
+                <SectionHead
                     className="mb-9 min-[561px]:mb-15"
                     heading={t.raw('heading') as [string, string]}
                     headingClassName="text-[clamp(40px,4.4vw,72px)] leading-[0.95] tracking-[-0.05em]"
@@ -29,7 +29,7 @@ export async function WeddingPrivate({ locale }: { locale: Locale }) {
                     <p className="mx-auto mt-5.5 mb-0 max-w-160 font-[Georgia,serif] text-[clamp(17px,1.3vw,20px)] leading-[1.45] text-[#151313]/78">
                         {t('intro')}
                     </p>
-                </WeddingSectionHead>
+                </SectionHead>
                 {/* Cards */}
                 <ul className="m-0 grid list-none grid-cols-1 gap-3 p-0 min-[561px]:gap-4.5 min-[601px]:grid-cols-2 min-[1001px]:grid-cols-4">
                     {cards.map((card, index) => (
@@ -45,7 +45,7 @@ export async function WeddingPrivate({ locale }: { locale: Locale }) {
                             </span>
                             {/* A filter on a masked element is masked away, so the shadow is on a wrapper */}
                             <span className="mb-6 block w-fit drop-shadow-[0_4px_8px_rgba(230,126,105,0.14)]">
-                                <GradientIcon className="size-14" src={WEDDING_PRIVATE_ICONS[index]!} />
+                                <GradientIcon className="size-14" src={OCCASION_PRIVATE_ICONS[index]!} />
                             </span>
                             <h3 className="relative mt-0 mb-2.5 [font-family:var(--editorial)] text-[clamp(24px,1.9vw,29px)] leading-[1.05] font-normal tracking-[-0.035em]">
                                 {card.title}
@@ -54,7 +54,7 @@ export async function WeddingPrivate({ locale }: { locale: Locale }) {
                         </li>
                     ))}
                 </ul>
-            </WeddingWrap>
+            </SectionWrap>
         </section>
     );
 }

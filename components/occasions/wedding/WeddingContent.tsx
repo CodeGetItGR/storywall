@@ -15,7 +15,7 @@ import { LandingSaleButton } from '@/components/landing/LandingSaleButton';
 import { OccasionCampaignBanner } from '@/components/occasions/OccasionCampaignBanner';
 import { OccasionLinks } from '@/components/occasions/OccasionLinks';
 import { OccasionPageShell } from '@/components/occasions/OccasionPageShell';
-import { WeddingFaqAnswer } from '@/components/occasions/wedding/WeddingFaqAnswer';
+import { FaqAnswer } from '@/components/occasions/sections/FaqAnswer';
 import { WeddingFeatures } from '@/components/occasions/wedding/WeddingFeatures';
 import { WeddingHero } from '@/components/occasions/wedding/WeddingHero';
 import { WeddingPrivate } from '@/components/occasions/wedding/WeddingPrivate';
@@ -63,7 +63,7 @@ export async function WeddingContent({ campaign, demoHref, featureKeys, length, 
     const demoHeading = t.raw('demo.heading') as string[];
     const faq = occasionFaqEntries(t.raw('faq') as OccasionFaqEntry[], (key) => t(key, { ...price, ...length })).map((entry): [string, ReactNode] => [
         entry.q,
-        <WeddingFaqAnswer
+        <FaqAnswer
             answer={entry.a}
             href={entry.link ? occasionFaqLinkHref(entry.link.to, qrHref) : null}
             key={entry.q}

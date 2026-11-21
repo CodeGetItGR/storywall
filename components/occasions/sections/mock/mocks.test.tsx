@@ -1,14 +1,14 @@
 import { cleanup, render } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { GradientIcon } from '@/components/occasions/wedding/mock/GradientIcon';
-import { MockPhoto } from '@/components/occasions/wedding/mock/MockPhoto';
+import { GradientIcon } from '@/components/occasions/sections/mock/GradientIcon';
+import { MockPhoto } from '@/components/occasions/sections/mock/MockPhoto';
 
 const FACE = { src: '/landing/wedding/wedding-marquee-avatar-ioanna.webp', width: 160, height: 160, position: '50% 20%' };
 
 afterEach(cleanup);
 
-describe('wedding mocks', () => {
+describe('occasion page mocks', () => {
     it('draws a photo with its alt, cropped where the map says, after the page text', () => {
         const { container } = render(<MockPhoto alt="Φωτογραφία καλεσμένου" className="size-10" photo={FACE} sizes="40px" />);
         const image = container.querySelector('img')!;

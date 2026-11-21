@@ -8,7 +8,7 @@ import en from '@/messages/en.json';
 const live = vi.hoisted(() => ({ value: true }));
 
 vi.mock('next-intl/server', async () => ({
-    ...(await import('@/components/occasions/wedding/__fixtures__/intlServerMock')),
+    ...(await import('@/components/occasions/sections/__fixtures__/intlServerMock')),
     getLocale: async () => 'el',
 }));
 vi.mock('@/lib/qrWeddingPage.server', () => ({ loadQrWeddingPageLive: async () => live.value }));

@@ -2,8 +2,8 @@ import { occasionFeatureIcon } from '@/lib/occasions/occasionFeatures';
 
 const icon = (name: string) => `/landing/wedding/icons/${name}.webp`;
 
-// The design's order. occasionFeatureKeys() decides which of them the page shows.
-export const WEDDING_FEATURE_ORDER = [
+// The design's order of the features band. occasionFeatureKeys() decides which of them a page shows.
+export const OCCASION_PAGE_FEATURE_ORDER = [
     'invitation',
     'rsvp',
     'gallery',
@@ -16,7 +16,7 @@ export const WEDDING_FEATURE_ORDER = [
     'quiz_polls',
 ] as const;
 
-const WEDDING_FEATURE_ICONS: Record<string, string> = {
+const OCCASION_PAGE_FEATURE_ICONS: Record<string, string> = {
     invitation: icon('invitation'),
     rsvp: icon('rsvp'),
     gallery: icon('gallery'),
@@ -30,16 +30,16 @@ const WEDDING_FEATURE_ICONS: Record<string, string> = {
 };
 
 // The four "private social" cards, in order.
-export const WEDDING_PRIVATE_ICONS = [icon('invitation'), icon('manage'), icon('roles'), icon('download')] as const;
+export const OCCASION_PRIVATE_ICONS = [icon('invitation'), icon('manage'), icon('roles'), icon('download')] as const;
 
 // The offered features in the design's order. One the design has no slot for goes last, with the
 // generic icon.
-export function weddingFeatures(offered: readonly string[]): { key: string; icon: string }[] {
+export function occasionPageFeatures(offered: readonly string[]): { key: string; icon: string }[] {
     const order = (key: string) => {
-        const index = (WEDDING_FEATURE_ORDER as readonly string[]).indexOf(key);
-        return index < 0 ? WEDDING_FEATURE_ORDER.length : index;
+        const index = (OCCASION_PAGE_FEATURE_ORDER as readonly string[]).indexOf(key);
+        return index < 0 ? OCCASION_PAGE_FEATURE_ORDER.length : index;
     };
     return [...offered]
         .sort((left, right) => order(left) - order(right))
-        .map((key) => ({ key, icon: WEDDING_FEATURE_ICONS[key] ?? occasionFeatureIcon(key) }));
+        .map((key) => ({ key, icon: OCCASION_PAGE_FEATURE_ICONS[key] ?? occasionFeatureIcon(key) }));
 }

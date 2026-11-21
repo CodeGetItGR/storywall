@@ -2,9 +2,9 @@ import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { WeddingPrivate } from '@/components/occasions/wedding/WeddingPrivate';
-import { WEDDING_PRIVATE_ICONS } from '@/lib/occasions/weddingFeatures';
+import { OCCASION_PRIVATE_ICONS } from '@/lib/occasions/pageFeatures';
 
-vi.mock('next-intl/server', () => import('@/components/occasions/wedding/__fixtures__/intlServerMock'));
+vi.mock('next-intl/server', () => import('@/components/occasions/sections/__fixtures__/intlServerMock'));
 
 afterEach(cleanup);
 
@@ -21,6 +21,6 @@ describe('WeddingPrivate', () => {
         const cards = screen.getAllByRole('listitem');
         expect(cards.map((card) => card.firstElementChild?.textContent)).toEqual(['01', '02', '03', '04']);
         const icons = [...container.querySelectorAll<HTMLElement>('[class*="mask-image"]')];
-        expect(icons.map((icon) => icon.style.getPropertyValue('--icon'))).toEqual(WEDDING_PRIVATE_ICONS.map((src) => `url('${src}')`));
+        expect(icons.map((icon) => icon.style.getPropertyValue('--icon'))).toEqual(OCCASION_PRIVATE_ICONS.map((src) => `url('${src}')`));
     });
 });

@@ -1,14 +1,14 @@
 import { getTranslations } from 'next-intl/server';
 import type { ReactNode } from 'react';
 
-import { WeddingSectionHead } from '@/components/occasions/wedding/WeddingSectionHead';
-import { WeddingWrap } from '@/components/occasions/wedding/WeddingWrap';
-import { WhyMarquee } from '@/components/occasions/wedding/why/WhyMarquee';
-import { WhyQrSteps } from '@/components/occasions/wedding/why/WhyQrSteps';
-import { WhyStats } from '@/components/occasions/wedding/why/WhyStats';
-import { WHY_LABEL_CLASS, WhyWithout } from '@/components/occasions/wedding/why/WhyWithout';
+import { SectionHead } from '@/components/occasions/sections/SectionHead';
+import { SectionWrap } from '@/components/occasions/sections/SectionWrap';
+import { WhyMarquee } from '@/components/occasions/sections/why/WhyMarquee';
+import { WhyQrSteps } from '@/components/occasions/sections/why/WhyQrSteps';
+import { WhyStats } from '@/components/occasions/sections/why/WhyStats';
+import { WHY_LABEL_CLASS, WhyWithout } from '@/components/occasions/sections/why/WhyWithout';
 import type { Locale } from '@/i18n/config';
-import type { WeddingMarqueeCopy, WeddingStatCopy } from '@/lib/occasions/weddingCopy';
+import type { OccasionGuestPhotoCopy, OccasionStatCopy } from '@/lib/occasions/pageCopy';
 import { WEDDING_MARQUEE, WEDDING_QR_PHOTO, WEDDING_WITHOUT_PHOTOS } from '@/lib/occasions/weddingMedia';
 import { cn } from '@/lib/utils';
 
@@ -27,7 +27,7 @@ export async function WeddingWhy({ locale, qrHref }: WeddingWhyProps) {
         title: step.title,
         body: t.rich(`with.steps.${index}.body`, { b: bold }),
     }));
-    const tiles = (t.raw('with.marquee') as WeddingMarqueeCopy[]).map((copy, index) => ({
+    const tiles = (t.raw('with.marquee') as OccasionGuestPhotoCopy[]).map((copy, index) => ({
         ...copy,
         ...WEDDING_MARQUEE[index]!,
         alt: t('with.photoAlt', copy),
@@ -39,9 +39,9 @@ export async function WeddingWhy({ locale, qrHref }: WeddingWhyProps) {
             aria-labelledby="wedding-why-title"
             className="bg-white py-17.5 font-[Arial,Helvetica,sans-serif] leading-[normal] text-[#151313] min-[861px]:pt-22.5 min-[861px]:pb-25"
         >
-            <WeddingWrap>
+            <SectionWrap>
                 {/* Heading */}
-                <WeddingSectionHead
+                <SectionHead
                     className="mb-11.5 max-w-245"
                     heading={t.raw('heading') as [string, string]}
                     headingClassName="text-[clamp(38px,4.2vw,68px)] leading-[0.97] tracking-[-0.045em]"
@@ -55,9 +55,9 @@ export async function WeddingWhy({ locale, qrHref }: WeddingWhyProps) {
                     label={t('without.label')}
                     photos={WEDDING_WITHOUT_PHOTOS}
                 />
-            </WeddingWrap>
+            </SectionWrap>
 
-            <WeddingWrap>
+            <SectionWrap>
                 {/* With StoryWall */}
                 <div className="mt-5.5 overflow-hidden rounded-[30px] bg-[#f4f0e8] pt-7.5 pb-8.5">
                     <p className={cn(WHY_LABEL_CLASS, 'text-center text-[#ff765f]')}>{t('with.label')}</p>
@@ -69,9 +69,9 @@ export async function WeddingWhy({ locale, qrHref }: WeddingWhyProps) {
                     {/* Guests' photos */}
                     <WhyMarquee tiles={tiles} />
                     {/* Example and points */}
-                    <WhyStats chips={t.raw('with.chips') as string[]} example={t('with.example')} stats={t.raw('with.stats') as WeddingStatCopy[]} />
+                    <WhyStats chips={t.raw('with.chips') as string[]} example={t('with.example')} stats={t.raw('with.stats') as OccasionStatCopy[]} />
                 </div>
-            </WeddingWrap>
+            </SectionWrap>
         </section>
     );
 }

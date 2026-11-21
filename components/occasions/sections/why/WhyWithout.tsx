@@ -1,6 +1,6 @@
 import { useTranslations } from 'next-intl';
 
-import { MockPhoto } from '@/components/occasions/wedding/mock/MockPhoto';
+import { MockPhoto } from '@/components/occasions/sections/mock/MockPhoto';
 import type { OccasionPhoto } from '@/lib/occasions/occasionMedia';
 import { cn } from '@/lib/utils';
 

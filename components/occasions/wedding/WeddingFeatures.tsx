@@ -1,12 +1,12 @@
 import { getTranslations } from 'next-intl/server';
 
-import { GradientIcon } from '@/components/occasions/wedding/mock/GradientIcon';
-import { WeddingSectionHead } from '@/components/occasions/wedding/WeddingSectionHead';
-import { WeddingWrap } from '@/components/occasions/wedding/WeddingWrap';
+import { GradientIcon } from '@/components/occasions/sections/mock/GradientIcon';
+import { SectionHead } from '@/components/occasions/sections/SectionHead';
+import { SectionWrap } from '@/components/occasions/sections/SectionWrap';
 import type { Locale } from '@/i18n/config';
 import { landingSectionAttributes } from '@/lib/landingTracking';
 import { OCCASION_SECTION_IDS } from '@/lib/occasions/occasionSections';
-import { weddingFeatures } from '@/lib/occasions/weddingFeatures';
+import { occasionPageFeatures } from '@/lib/occasions/pageFeatures';
 
 type WeddingFeaturesProps = {
     // What the wedding plans offer (occasionFeatureKeys), so a module that is off is never advertised.
@@ -19,7 +19,7 @@ export async function WeddingFeatures({ featureKeys, locale }: WeddingFeaturesPr
     const t = await getTranslations({ locale, namespace: 'OccasionPages.WEDDING' });
     const common = await getTranslations({ locale, namespace: 'OccasionPages.common' });
     // The wedding's own words, else the shared line. A feature with neither is left out.
-    const features = weddingFeatures(featureKeys).flatMap((feature) => {
+    const features = occasionPageFeatures(featureKeys).flatMap((feature) => {
         const copy = t.has(`features.${feature.key}.title`) ? t : common.has(`features.${feature.key}.title`) ? common : null;
         if (!copy) return [];
         return [{ ...feature, title: copy(`features.${feature.key}.title`), body: copy(`features.${feature.key}.body`) }];
@@ -32,9 +32,9 @@ export async function WeddingFeatures({ featureKeys, locale }: WeddingFeaturesPr
             id={OCCASION_SECTION_IDS.features}
             {...landingSectionAttributes('features')}
         >
-            <WeddingWrap>
+            <SectionWrap>
                 {/* Heading */}
-                <WeddingSectionHead
+                <SectionHead
                     className="mb-9 max-w-250 min-[761px]:mb-14"
                     heading={t.raw('featuresHead.heading') as [string, string]}
                     headingClassName="text-[clamp(36px,9vw,46px)] leading-[1.05] tracking-[-0.05em] min-[768px]:text-[clamp(40px,4.6vw,76px)] min-[768px]:leading-[0.95]"
@@ -59,7 +59,7 @@ export async function WeddingFeatures({ featureKeys, locale }: WeddingFeaturesPr
                         </li>
                     ))}
                 </ul>
-            </WeddingWrap>
+            </SectionWrap>
         </section>
     );
 }

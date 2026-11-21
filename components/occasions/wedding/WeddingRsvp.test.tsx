@@ -3,7 +3,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { WeddingRsvp } from '@/components/occasions/wedding/WeddingRsvp';
 
-vi.mock('next-intl/server', () => import('@/components/occasions/wedding/__fixtures__/intlServerMock'));
+vi.mock('next-intl/server', () => import('@/components/occasions/sections/__fixtures__/intlServerMock'));
 
 afterEach(cleanup);
 
