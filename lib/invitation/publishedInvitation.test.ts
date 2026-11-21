@@ -46,6 +46,17 @@ describe('publishedInvitationState', () => {
         expect(publishedInvitationState(200, { ...dto, design: null })).toEqual({ kind: 'error' });
     });
 
+    it('hides the RSVP section when the event takes no replies', () => {
+        const rsvpVisible = (body: PublicInvitationDto) => {
+            const state = publishedInvitationState(200, body);
+            if (state.kind !== 'found') throw new Error(`Expected found, got ${state.kind}`);
+            return state.invitation.document.sections.filter((section) => section.type === 'rsvp').map((section) => section.visible);
+        };
+        expect(rsvpVisible(dto)).toContain(true);
+        expect(rsvpVisible({ ...dto, rsvpOpen: true })).toContain(true);
+        expect(rsvpVisible({ ...dto, rsvpOpen: false })).toEqual([false]);
+    });
+
     it('treats missing image urls as none', () => {
         const state = publishedInvitationState(200, { ...dto, imageUrls: undefined });
         expect(state.kind === 'found' && state.invitation.media('m-1')).toBeUndefined();
