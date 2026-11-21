@@ -12,15 +12,16 @@ function TotalIcon({ total }: { total: JourneyTotal }) {
 }
 
 /**
- * On the day: what guests have shared so far. Each tile is as wide as its label needs, so a long
- * label ("Φωτογραφίες & Βίντεο") takes the whole row instead of wrapping, and short ones share it.
+ * On the day: what guests have shared so far. A tile is never narrower than its label, so a long
+ * label ("Φωτογραφίες & Βίντεο") takes the whole row instead of wrapping; tiles that fit share a
+ * row in equal widths.
  */
 export function JourneyTotals({ totals }: { totals: JourneyTotal[] }) {
     if (totals.length === 0) return null;
     return (
         <dl className="flex flex-wrap gap-3">
             {totals.map((total) => (
-                <div key={total.key} className="flex flex-auto items-center gap-3 rounded-2xl bg-primary-light/40 px-4 py-3">
+                <div key={total.key} className="flex min-w-max flex-1 items-center gap-3 rounded-2xl bg-primary-light/40 px-4 py-3">
                     {/* Icon */}
                     <TotalIcon total={total} />
                     {/* Label and value: dt first for valid markup; the number shows on top */}
