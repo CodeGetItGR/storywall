@@ -12,6 +12,7 @@ import { HeOrShePromptCard } from '@/components/feed/HeOrShePromptCard';
 import { FeedCoverBlock } from '@/components/feed/layout/FeedCoverBlock';
 import { FeedDetailsBlock } from '@/components/feed/layout/FeedDetailsBlock';
 import { FeedRsvpBlock } from '@/components/feed/layout/FeedRsvpBlock';
+import { FeedTop } from '@/components/feed/layout/FeedTop';
 import { PartnerBrandingPromptModal } from '@/components/feed/partner/PartnerBrandingPromptModal';
 import { PartnerFeedCard } from '@/components/feed/partner/PartnerFeedCard';
 import { PostModal } from '@/components/feed/PostModal';
@@ -22,6 +23,7 @@ import { InstallAppBanner } from '@/components/pwa/InstallAppBanner';
 import { StoryModal } from '@/components/story/StoryModal';
 import { VendorProfilePrompt } from '@/components/vendors/VendorProfilePrompt';
 import { useFeedItems } from '@/hooks/useFeedItems';
+import { useFeedTop } from '@/hooks/useFeedTop';
 import { useHideMobileTabBarOnScroll } from '@/hooks/useHideMobileTabBarOnScroll';
 import { useRsvpPromptVisible } from '@/hooks/useRsvpPromptVisible';
 import { cn } from '@/lib/utils';
@@ -34,6 +36,7 @@ export function FeedPageContent() {
     const feedItems = useFeedItems(posts, event.partnerBranding);
     const [storyId, setStoryId] = useState<string | null>(null);
     const shouldShowRSVP = useRsvpPromptVisible({ eventId, isHost, rsvpAvailable: moduleFlags.rsvp, rsvpId: currentMemberRsvpId });
+    const top = useFeedTop(event);
 
     function openStoryModal(nextStoryId: string) {
         setStoryId(nextStoryId);
@@ -49,30 +52,28 @@ export function FeedPageContent() {
             <Header countdownTime={event.schedule.startAt ? new Date(event.schedule.startAt).getTime() : 0} eventId={eventId} />
             {/* Install */}
             <InstallAppBanner />
-            {/* Hero */}
-            <FeedCoverBlock event={event} isHost={isHost} wishlist={moduleFlags.wishlist} />
-
-            {/* Event details */}
-            <FeedDetailsBlock event={event} />
-
-            {/* Stories */}
-            {moduleFlags.stories && (
-                <section id="stories" className={cn('top-0 bg-event/90 backdrop-blur-sm')}>
-                    <StoriesRow eventId={eventId} onOpenStoryAction={openStoryModal} />
-                </section>
-            )}
-
-            {event.description && <EventDescription eventId={event.id} description={event.description} />}
-
-            {/* RSVP */}
-            {shouldShowRSVP && <FeedRsvpBlock eventId={eventId} deadline={event.schedule.rsvpDeadline ?? null} />}
+            {/* Invitation blocks, stories and RSVP */}
+            <FeedTop
+                view={top}
+                cover={<FeedCoverBlock event={event} isHost={isHost} wishlist={moduleFlags.wishlist} />}
+                details={<FeedDetailsBlock event={event} />}
+                stories={
+                    moduleFlags.stories && (
+                        <section id="stories" className={cn('top-0 bg-event/90 backdrop-blur-sm')}>
+                            <StoriesRow eventId={eventId} onOpenStoryAction={openStoryModal} />
+                        </section>
+                    )
+                }
+                description={event.description && <EventDescription eventId={event.id} description={event.description} />}
+                rsvp={shouldShowRSVP ? <FeedRsvpBlock eventId={eventId} deadline={event.schedule.rsvpDeadline ?? null} /> : null}
+            />
 
             {/* Posts */}
             <section id="posts">
                 {moduleFlags.posts && (
                     <div
                         className={cn('flex flex-col px-0 pb-24 md:pb-10', {
-                            'mt-4': (!moduleFlags.stories || !event.description) && !shouldShowRSVP,
+                            'mt-4': (!moduleFlags.stories || top.frame.middle.length === 0) && !(shouldShowRSVP && top.frame.rsvp),
                         })}
                     >
                         <ComposerCard />

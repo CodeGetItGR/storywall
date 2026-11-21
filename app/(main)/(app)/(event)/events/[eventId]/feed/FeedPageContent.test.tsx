@@ -23,7 +23,9 @@ vi.mock('@/components/feed/Banner', () => ({
         <button data-testid="banner" data-illustration={illustrationUrl ?? ''} onClick={onIllustrationError} />
     ),
 }));
-vi.mock('next-intl', () => ({ useTranslations: () => (key: string) => key }));
+// next/font only works when Next compiles the file.
+vi.mock('@/components/saveMyDate/invitation/invitationFonts', () => ({ INVITATION_FONT_CLASSES: '' }));
+vi.mock('next-intl', () => ({ useTranslations: () => (key: string) => key, useLocale: () => 'en' }));
 vi.mock('@/hooks/useGiftAccount', () => ({ useGiftAccount: () => ({ isLoading: true, data: undefined }) }));
 vi.mock('@/hooks/useHideMobileTabBarOnScroll', () => ({ useHideMobileTabBarOnScroll: () => undefined }));
 vi.mock('@/hooks/useRsvpPromptVisible', () => ({ useRsvpPromptVisible: () => false }));
