@@ -14,6 +14,7 @@ vi.mock('next/navigation', () => ({
     usePathname: () => '/events/e1/feed',
     useSearchParams: () => new URLSearchParams(),
 }));
+vi.mock('@/hooks/useOverviewFabRoom', () => ({ useOverviewFabRoom: () => false }));
 vi.mock('@/hooks/useAuth', () => ({ useAuth: () => mocks.auth }));
 vi.mock('@/hooks/useAdminDemoEventAccess', () => ({ useAdminDemoEventAccess: () => ({ isChecking: false, isAdminAllowed: false }) }));
 

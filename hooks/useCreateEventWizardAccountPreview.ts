@@ -19,6 +19,7 @@ export function useCreateEventWizardAccountPreview() {
         alt: typeCopy(form.selectedEventType).name,
         title: form.trimmedTitle,
         titleIsPlaceholder: false,
-        line: joinLine([previewWhen(locale, form.startAt), form.selectedPlan?.name ?? null]),
+        // A lite plan asks for no date: only the plan.
+        line: joinLine([form.asksDetails ? previewWhen(locale, form.startAt) : null, form.selectedPlan?.name ?? null]),
     };
 }

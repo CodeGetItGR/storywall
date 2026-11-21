@@ -1,24 +1,16 @@
 'use client';
 
-import { ChevronDown, Filter } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { type ChangeEvent, useCallback } from 'react';
 
 import { useRsvpDuplicateActions } from '@/hooks/useRsvpDuplicateActions';
 import { type RsvpListRow, useRsvpListRows } from '@/hooks/useRsvpListRows';
-import { type RosterFilter, type RosterMember, type RosterRsvp, useRsvpRoster } from '@/hooks/useRsvpRoster';
+import { type RosterMember, type RosterRsvp, useRsvpRoster } from '@/hooks/useRsvpRoster';
 
 import { RsvpDuplicateMark } from './RsvpDuplicateMark';
+import { RsvpFilterChips } from './RsvpFilterChips';
 import { RsvpGuestSummary } from './RsvpGuestSummary';
 import { RsvpRemoveReplyModal } from './RsvpRemoveReplyModal';
 import { RsvpStatusPill } from './RsvpStatusPill';
-
-const filters: { key: RosterFilter; labelKey: string }[] = [
-    { key: 'all', labelKey: 'rsvpFilters.all' },
-    { key: 'ATTENDING', labelKey: 'rsvpBreakdown.attending' },
-    { key: 'DECLINED', labelKey: 'rsvpBreakdown.declined' },
-    { key: 'NO_RESPONSE', labelKey: 'rsvpBreakdown.noResponse' },
-];
 
 type RsvpListPanelProps = {
     eventId: string;
@@ -33,13 +25,6 @@ export function RsvpListPanel({ eventId, members, rsvps, canWrite }: RsvpListPan
     const rows = useRsvpListRows(visibleGuests);
     const duplicates = useRsvpDuplicateActions(eventId);
 
-    const handleFilterChange = useCallback(
-        (event: ChangeEvent<HTMLSelectElement>) => {
-            setFilter(event.target.value as RosterFilter);
-        },
-        [setFilter],
-    );
-
     const duplicateMark = (row: RsvpListRow) =>
         row.possibleDuplicate ? (
             <RsvpDuplicateMark
@@ -52,26 +37,14 @@ export function RsvpListPanel({ eventId, members, rsvps, canWrite }: RsvpListPan
         ) : null;
 
     return (
-        <div className="flex flex-col gap-4">
+        <section aria-labelledby="rsvp-guests-title" className="flex flex-col gap-4">
+            {/* Heading */}
+            <h2 id="rsvp-guests-title" className="text-[17px] font-bold text-ink">
+                {t('rsvpGuests.title')}
+            </h2>
+
             {/* Filters */}
-            <div className="relative ml-auto inline-block w-max">
-                <Filter className="pointer-events-none absolute top-1/2 left-3 h-3.5 w-3.5 -translate-y-1/2 text-ink-faint" />
-                <select
-                    value={filter}
-                    onChange={handleFilterChange}
-                    className="min-h-5 appearance-none rounded-md border border-border bg-background py-2 pr-9 pl-8 text-sm font-semibold text-ink transition-colors hover:border-ink-faint focus:ring-2 focus:ring-primary/30 focus:outline-none"
-                >
-                    {filters.map(({ key, labelKey }) => {
-                        const count = key === 'all' ? guestCount : counts[key];
-                        return (
-                            <option key={key} value={key}>
-                                {t(labelKey)} ({count})
-                            </option>
-                        );
-                    })}
-                </select>
-                <ChevronDown className="pointer-events-none absolute top-1/2 right-3 h-4 w-4 -translate-y-1/2 text-ink-faint" />
-            </div>
+            {guestCount > 0 && <RsvpFilterChips filter={filter} counts={counts} guestCount={guestCount} onChangeAction={setFilter} />}
 
             {/* Action error */}
             {duplicates.error && (
@@ -150,6 +123,6 @@ export function RsvpListPanel({ eventId, members, rsvps, canWrite }: RsvpListPan
                 onCancelAction={duplicates.cancelRemove}
                 onConfirmAction={duplicates.confirmRemove}
             />
-        </div>
+        </section>
     );
 }

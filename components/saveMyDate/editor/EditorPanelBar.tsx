@@ -4,7 +4,7 @@ import { Palette, SlidersHorizontal } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { type ReactNode, useCallback } from 'react';
 
-import type { EditorPanel } from '@/hooks/useInvitationEditor';
+import type { EditorPanel } from '@/hooks/useEditorWorkspace';
 
 type EditorPanelBarProps = { onOpen: (panel: EditorPanel) => void };
 

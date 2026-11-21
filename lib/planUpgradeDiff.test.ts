@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
+import { planRequirementsOf } from '@/lib/__fixtures__/planRequirements';
 import type { PlanTierResponseDto } from '@/lib/api/types';
 import { buildPlanUpgradeDiff } from '@/lib/planUpgradeDiff';
 
@@ -31,6 +32,7 @@ function makePlan(overrides: Partial<PlanTierResponseDto> = {}): PlanTierRespons
         sharedGroupKey: null,
         initialOptions: [],
         extensionOptions: [],
+        requirements: planRequirementsOf(overrides.moduleKeys ?? ['gallery']),
         ...overrides,
     };
 }

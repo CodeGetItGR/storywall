@@ -6,6 +6,7 @@ import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } 
 import { createDraftServer } from '@/hooks/invitationDraftTestServer';
 import { testAuth, WithAuth } from '@/hooks/testAuthContext';
 import { EDITOR_TOUR_SEEN_KEY } from '@/lib/invitation/editorTour';
+import type { ImageRef } from '@/lib/invitation/primitives';
 import type { InvitationSection } from '@/lib/invitation/sections';
 import en from '@/messages/en.json';
 
@@ -74,6 +75,24 @@ const jpeg = (name = 'baby.jpg') => new File(['photo'], name, { type: 'image/jpe
 
 function storedSection<T extends InvitationSection['type']>(type: T) {
     return backend.stored().document.sections.find((item): item is Extract<InvitationSection, { type: T }> => item.type === type)!;
+}
+
+// The draft with these photos in its gallery.
+function withGallery(images: ImageRef[]) {
+    const { document } = backend.stored();
+    backend.saveElsewhere({
+        ...document,
+        sections: document.sections.map((item) => (item.type === 'gallery' ? { ...item, data: { ...item.data, images } } : item)),
+    });
+}
+
+const withEmptyGallery = () => withGallery([]);
+// Photos the draft has no address for, so the canvas cannot show them.
+const unshown = (count: number): ImageRef[] => Array.from({ length: count }, (_, index) => ({ source: 'media', mediaId: `gone-${index}` }));
+
+function openGallerySettings() {
+    fireEvent.click(within(section('Gallery / Carousel')).getByRole('button', { name: 'Section settings' }));
+    return screen.getByRole('complementary', { name: 'Gallery / Carousel' });
 }
 
 // Every case opens the whole editor and some wait for its autosave, which takes a while when the whole suite runs.
@@ -206,5 +225,87 @@ describe('Invitation editor: photos', { timeout: EDITOR_FLOW_TIMEOUT_MS }, () =>
         fireEvent.click(screen.getByRole('button', { name: 'Redo' }));
 
         await waitFor(() => expect(storedSection('photo').data.imageY).toBe(before + 5), { timeout: 4000 });
+    });
+
+    it('adds several photos to an empty gallery from the canvas and saves them in order', async () => {
+        withEmptyGallery();
+        await openEditor();
+        const gallery = section('Gallery / Carousel');
+
+        fireEvent.click(within(gallery).getByRole('button', { name: 'Add photos' }));
+        fireEvent.change(within(gallery).getByTestId('gallery-empty-input'), { target: { files: [jpeg('one.jpg'), jpeg('two.jpg')] } });
+
+        await waitFor(() => expect(within(gallery).getAllByRole('img')).toHaveLength(2), { timeout: 4000 });
+        await waitFor(
+            () =>
+                expect(storedSection('gallery').data.images).toEqual([
+                    { source: 'media', mediaId: 'img-1' },
+                    { source: 'media', mediaId: 'img-2' },
+                ]),
+            { timeout: 4000 },
+        );
+    });
+
+    it('deletes a gallery photo from its settings, undoable', async () => {
+        withEmptyGallery();
+        await openEditor();
+        const gallery = section('Gallery / Carousel');
+        fireEvent.click(within(gallery).getByRole('button', { name: 'Add photos' }));
+        fireEvent.change(within(gallery).getByTestId('gallery-empty-input'), { target: { files: [jpeg('one.jpg')] } });
+        await waitFor(() => expect(within(gallery).getAllByRole('img')).toHaveLength(1), { timeout: 4000 });
+
+        fireEvent.click(within(gallery).getByRole('button', { name: 'Section settings' }));
+        const settings = screen.getByRole('complementary', { name: 'Gallery / Carousel' });
+        expect(within(settings).getByText('1/10 photos')).toBeInTheDocument();
+        fireEvent.click(within(settings).getByRole('button', { name: 'Delete photo' }));
+
+        expect(within(settings).getByText('0/10 photos')).toBeInTheDocument();
+        expect(within(gallery).getByRole('button', { name: 'Add photos' })).toBeInTheDocument();
+        fireEvent.click(screen.getByRole('button', { name: 'Undo' }));
+        expect(within(settings).getByText('1/10 photos')).toBeInTheDocument();
+    });
+
+    it("keeps a wrong file's notice while the next photo of the same pick uploads", async () => {
+        withEmptyGallery();
+        await openEditor();
+        const gallery = section('Gallery / Carousel');
+        fireEvent.click(within(gallery).getByRole('button', { name: 'Add photos' }));
+        const text = new File(['notes'], 'notes.txt', { type: 'text/plain' });
+        fireEvent.change(within(gallery).getByTestId('gallery-empty-input'), { target: { files: [text, jpeg('one.jpg')] } });
+
+        await waitFor(() => expect(within(gallery).getAllByRole('img')).toHaveLength(1), { timeout: 4000 });
+        expect(screen.getByText(en.InvitationEditor.photos.errors.type)).toBeInTheDocument();
+    });
+
+    it('says the gallery is full after picking more photos than fit, once the ones that fit are in', async () => {
+        withGallery(unshown(9));
+        await openEditor();
+        const settings = openGallerySettings();
+        fireEvent.click(within(settings).getByRole('button', { name: 'Add photos' }));
+        fireEvent.change(within(settings).getByTestId('gallery-add-input'), { target: { files: [jpeg('one.jpg'), jpeg('two.jpg')] } });
+
+        await waitFor(() => expect(within(settings).getByText('10/10 photos')).toBeInTheDocument(), { timeout: 4000 });
+        expect(backend.uploads).toHaveLength(1);
+        expect(screen.getByText(en.InvitationEditor.photos.errors.galleryFull)).toBeInTheDocument();
+    });
+
+    it('says the gallery is full when an Undo fills it while a photo uploads', async () => {
+        withGallery(unshown(10));
+        await openEditor();
+        const settings = openGallerySettings();
+        fireEvent.click(within(settings).getAllByRole('button', { name: 'Delete photo' })[0]);
+        fireEvent.click(within(settings).getByRole('button', { name: 'Add photos' }));
+        fireEvent.change(within(settings).getByTestId('gallery-add-input'), { target: { files: [jpeg('one.jpg')] } });
+        fireEvent.click(screen.getByRole('button', { name: 'Undo' }));
+
+        await waitFor(() => expect(screen.getByText(en.InvitationEditor.photos.errors.galleryFull)).toBeInTheDocument(), { timeout: 4000 });
+        expect(within(settings).getByText('10/10 photos')).toBeInTheDocument();
+        expect(within(settings).queryByRole('progressbar')).not.toBeInTheDocument();
+    });
+
+    it('shows no add box for a gallery whose photos cannot be shown', async () => {
+        withGallery(unshown(2));
+        await openEditor();
+        expect(within(section('Gallery / Carousel')).queryByRole('button', { name: 'Add photos' })).not.toBeInTheDocument();
     });
 });

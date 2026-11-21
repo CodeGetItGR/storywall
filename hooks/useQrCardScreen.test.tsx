@@ -15,7 +15,7 @@ vi.mock('next-intl', () => ({
     useLocale: () => 'en',
 }));
 vi.mock('@/components/routing/EventRouteGate', () => ({
-    useEventRouteContext: () => ({ eventId: 'e1', activeEvent: { title: 'Maria & Nikos' }, isHost: true }),
+    useEventRouteContext: () => ({ eventId: 'e1', activeEvent: { title: 'Maria & Nikos', modules: [] }, isHost: true }),
 }));
 vi.mock('@/hooks/useQrLinks', () => ({ useEventQrLinks: () => mocks.links }));
 vi.mock('@/hooks/useQrCardTemplates', () => ({ useQrCardTemplates: () => ({ ...mocks.templates, refetch: mocks.refetch }) }));

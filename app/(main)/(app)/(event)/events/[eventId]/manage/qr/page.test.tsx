@@ -8,8 +8,15 @@ vi.mock('@/lib/api/serverFetch', () => ({
     serverGet: (...args: unknown[]) => serverGet(...args),
     serverGetOrNull: (...args: unknown[]) => serverGetOrNull(...args),
 }));
-const ctx = vi.hoisted(() => ({ context: null as null | { accessToken: string; isHost: boolean } }));
-vi.mock('@/lib/auth/serverEventContext', () => ({ resolveServerEventContext: async () => ctx.context }));
+const ctx = vi.hoisted(() => ({
+    context: null as null | { accessToken: string; isHost: boolean },
+    event: null as null | { id: string; eventType: string },
+}));
+const resolveServerEventDetail = vi.fn(async (_eventId: string) => ctx.event);
+vi.mock('@/lib/auth/serverEventContext', () => ({
+    resolveServerEventContext: async () => ctx.context,
+    resolveServerEventDetail: (eventId: string) => resolveServerEventDetail(eventId),
+}));
 vi.mock('./PageClient', () => ({ default: () => null }));
 
 import Page from './page';
@@ -27,6 +34,8 @@ beforeEach(() => {
     serverGet.mockReset().mockImplementation(async (path: string) => (path.endsWith('/qr-card-templates') ? { available: true, templates: [] } : []));
     serverGetOrNull.mockReset().mockResolvedValue(null);
     ctx.context = { accessToken: 'tok', isHost: true };
+    ctx.event = { id: 'e1', eventType: 'WEDDING' };
+    resolveServerEventDetail.mockClear();
 });
 
 describe('Share links prefetch', () => {
@@ -67,6 +76,47 @@ describe('Share links prefetch', () => {
         serverGetOrNull.mockResolvedValue({ vendorType: 'PLANNER', capabilities: [], accessOpen: false });
         await visit();
         expect(serverGet).not.toHaveBeenCalled();
+    });
+
+    it("seeds a host's online invitation where the event type offers one", async () => {
+        const element = await visit();
+        expect(serverGet).toHaveBeenCalledWith('/api/invitation-drafts', 'tok');
+        expect(seededKeys(element)).toEqual(expect.arrayContaining([['invitationDrafts', 'list']]));
+    });
+
+    it('never asks a planner for the invitation', async () => {
+        ctx.context = { accessToken: 'tok', isHost: false };
+        serverGetOrNull.mockResolvedValue({ vendorType: 'PLANNER', capabilities: ['QR_READ'], accessOpen: true });
+        await visit();
+        expect(serverGet).not.toHaveBeenCalledWith('/api/invitation-drafts', 'tok');
+        expect(resolveServerEventDetail).not.toHaveBeenCalled();
+    });
+
+    it('skips the invitation for an event type without online invitations', async () => {
+        ctx.event = { id: 'e1', eventType: 'BIRTHDAY' };
+        await visit();
+        expect(serverGet).not.toHaveBeenCalledWith('/api/invitation-drafts', 'tok');
+    });
+
+    it("skips the invitation when Spring can't return the event, and still seeds the rest", async () => {
+        ctx.event = null;
+        const element = await visit();
+        expect(serverGet).not.toHaveBeenCalledWith('/api/invitation-drafts', 'tok');
+        expect(seededKeys(element)).toEqual(expect.arrayContaining([['events', 'e1', 'qr-links']]));
+    });
+
+    it('still seeds the rest when the invitation request fails', async () => {
+        serverGet.mockImplementation(async (path: string) => {
+            if (path === '/api/invitation-drafts') throw new Error('Server prefetch failed');
+            return path.endsWith('/qr-card-templates') ? { available: true, templates: [] } : [];
+        });
+        const element = await visit();
+        expect(seededKeys(element)).toEqual(
+            expect.arrayContaining([
+                ['events', 'e1', 'qr-links'],
+                ['events', 'e1', 'usage'],
+            ]),
+        );
     });
 
     it('fetches nothing on an in-app navigation', async () => {

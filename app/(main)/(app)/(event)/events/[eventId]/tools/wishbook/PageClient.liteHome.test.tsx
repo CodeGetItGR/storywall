@@ -1,6 +1,7 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { capabilitiesOf } from '@/lib/__fixtures__/eventCapabilities';
 import type { EventModuleResponseDto } from '@/lib/api/types';
 
 import WishbookPage from './PageClient';
@@ -37,8 +38,13 @@ vi.mock('@/hooks/useWishbook', () => ({
     }),
     useCreateWishbookEntry: () => ({ isPending: false, mutateAsync: vi.fn(), error: null }),
     useDeleteWishbookEntry: () => ({ isPending: false, mutateAsync: vi.fn() }),
+    useMyWishes: () => ({ data: undefined, isLoading: false, error: null, hasNextPage: false, isFetchingNextPage: false }),
+    useEditWishbookEntry: () => ({ isPending: false, mutateAsync: vi.fn(), error: null, reset: vi.fn() }),
 }));
-vi.mock('@/hooks/useWishbookBook', () => ({ useSetWishHighlighted: () => ({ mutate: vi.fn(), isPending: false }) }));
+vi.mock('@/hooks/useWishbookBook', () => ({
+    useSetWishHighlighted: () => ({ mutate: vi.fn(), isPending: false }),
+    useWishbookBook: () => ({ data: undefined }),
+}));
 vi.mock('@/components/wishbook/WishbookBookPanel', () => ({
     WISHBOOK_BOOK_ID: 'wishbook-book',
     WishbookBookPanel: () => <section id="wishbook-book" data-testid="book-panel" />,
@@ -54,6 +60,7 @@ vi.mock('@/providers/EventProvider', () => ({
         deletedAt: null,
         deletionScheduledFor: null,
         modules: state.modules,
+        capabilities: capabilitiesOf(state.modules),
     }),
     useActiveMember: () => ({ id: 'm1', displayName: 'Me' }),
     useIsHost: () => state.isHost,

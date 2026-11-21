@@ -7,6 +7,7 @@ import type { MouseEvent } from 'react';
 
 import { ComposerFab } from '@/components/layout/mobile-tab-bar/ComposerFab';
 import { ContextNavSlot } from '@/components/layout/mobile-tab-bar/ContextNavSlot';
+import { OverviewFab } from '@/components/layout/mobile-tab-bar/OverviewFab';
 import { ShareInviteTab } from '@/components/layout/mobile-tab-bar/ShareInviteTab';
 import { tabIconBoxClass, TabLabel } from '@/components/layout/mobile-tab-bar/TabLabel';
 import { TabLink } from '@/components/layout/mobile-tab-bar/TabLink';
@@ -20,8 +21,9 @@ import { useHasOpenOverlay } from '@/hooks/useOverlayPresence';
 import { usePinchZoomBox } from '@/hooks/usePinchZoomBox';
 import { useHostMenuItems, useToolsMenuItems } from '@/hooks/useToolsMenuItems';
 import { useMyVendorRole } from '@/hooks/useVendors';
+import { openAnnouncementComposerFromHref } from '@/lib/announcementComposer';
+import { eventHomeHref } from '@/lib/eventCapabilities';
 import { isEventDeleted } from '@/lib/eventLifecycle';
-import { eventHomeHref } from '@/lib/liteEvents';
 import { openMyRoleSheetFromHref } from '@/lib/myRoleSheetRequests';
 import { routes } from '@/lib/routes';
 import { cn } from '@/lib/utils';
@@ -74,8 +76,7 @@ export function MobileTabBar() {
     const contextItems: ContextNavItem[] = activeEvent
         ? isHost
             ? [
-                  // Help links into the manage page's Help section, which draft events don't show.
-                  ...(isDraft ? hostItems.filter((item) => item.key !== 'help') : hostItems),
+                  ...hostItems,
                   // Hosts answer RSVPs from the dashboard's RSVP section, not the guest self-RSVP tool.
                   ...(isDraft ? [] : toolItems.filter((item) => item.key !== 'rsvp')),
               ]
@@ -97,7 +98,7 @@ export function MobileTabBar() {
 
     function handleDashboardMenuClick(event: MouseEvent<HTMLElement>) {
         const href = event.currentTarget.dataset.href;
-        if (href && !openMyRoleSheetFromHref(href)) router.push(href);
+        if (href && !openMyRoleSheetFromHref(href) && !openAnnouncementComposerFromHref(href)) router.push(href);
     }
 
     if (!showEventNavigation) return null;
@@ -220,6 +221,9 @@ export function MobileTabBar() {
                     </nav>
                 </div>
             </div>
+
+            {/* Overview */}
+            <OverviewFab raised={showComposerFab} hidden={hasOpenOverlay || isComposerFabHidden || isMobileTabBarHidden} />
 
             {/* Compose */}
             {showComposerFab && <ComposerFab hidden={hasOpenOverlay || isComposerFabHidden} />}

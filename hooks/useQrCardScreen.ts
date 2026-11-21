@@ -2,16 +2,18 @@
 
 import { useParams, useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 
 import { useEventRouteContext } from '@/components/routing/EventRouteGate';
 import { useQrCardDesigner } from '@/hooks/useQrCardDesigner';
 import { useQrCardExport } from '@/hooks/useQrCardExport';
+import { useQrCardFeatureTexts } from '@/hooks/useQrCardFeatureTexts';
 import { useQrCardTemplates } from '@/hooks/useQrCardTemplates';
 import { useEventQrLinks } from '@/hooks/useQrLinks';
 import type { QrCardTemplateDto } from '@/lib/api/types';
-import { eventHomeHref } from '@/lib/liteEvents';
+import { eventCapabilities, eventHomeHref } from '@/lib/eventCapabilities';
 import { type QrCardLine, qrCardLineKey } from '@/lib/qrCard';
+import { qrCardFeatures } from '@/lib/qrCardFeatures';
 import { routes } from '@/lib/routes';
 
 const NO_TEMPLATES: QrCardTemplateDto[] = [];
@@ -37,14 +39,17 @@ export function useQrCardScreen() {
     const status: QrCardScreenStatus =
         links.isLoading || templates.isLoading ? 'loading' : !qrLink || qrLink.status === 'REVOKED' ? 'missing' : 'ready';
 
-    const lineKey = qrLink ? qrCardLineKey(qrLink.targetType, activeEvent.modules) : null;
+    const lineKey = qrLink ? qrCardLineKey(qrLink.targetType, eventCapabilities(activeEvent)?.guestCodeActions ?? []) : null;
     const designer = useQrCardDesigner({
         templates: templates.data?.templates ?? NO_TEMPLATES,
         defaults: { title: activeEvent.title, line: lineKey ? t(`lines.${lineKey}`) : '' },
         lineKey,
+        withFeatures: true,
     });
     const exporter = useQrCardExport({ font: designer.style.headingFont, title: designer.text.title, size: designer.size });
     const lines: QrCardLine[] = [{ text: designer.text.line, tone: 'body' }];
+    const features = useMemo(() => qrCardFeatures(activeEvent.modules), [activeEvent.modules]);
+    const featureTexts = useQrCardFeatureTexts();
 
     const { refetch } = templates;
     const retryTemplates = useCallback(() => void refetch(), [refetch]);
@@ -58,6 +63,8 @@ export function useQrCardScreen() {
         designer,
         exporter,
         lines,
+        features,
+        featureTexts,
         label: t('cardLabel', { title: designer.text.title }),
         templatesFailed: templates.isError,
         retryTemplates,

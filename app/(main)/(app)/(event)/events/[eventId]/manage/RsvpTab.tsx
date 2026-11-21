@@ -1,66 +1,63 @@
 'use client';
 
-import { BarChart3, FileText, List } from 'lucide-react';
-import { useTranslations } from 'next-intl';
-import { useMemo } from 'react';
-
+import { RsvpAttendance } from '@/components/manage/rsvp/RsvpAttendance';
+import { RsvpDeadlineCard } from '@/components/manage/rsvp/RsvpDeadlineCard';
+import { RsvpHeadlineTiles } from '@/components/manage/rsvp/RsvpHeadlineTiles';
 import { RsvpListPanel } from '@/components/manage/rsvp/RsvpListPanel';
-import { RsvpReportsPanel } from '@/components/manage/rsvp/RsvpReportsPanel';
-import { RsvpStatsPanel } from '@/components/manage/rsvp/RsvpStatsPanel';
-import { type SubTabItem, SubTabs } from '@/components/ui/SubTabs';
+import { RsvpReportCards } from '@/components/manage/rsvp/RsvpReportCards';
 import type { RosterMember, RosterRsvp } from '@/hooks/useRsvpRoster';
-import { useRsvpSubTab } from '@/hooks/useRsvpSubTab';
-import type { RsvpReportOrigin, RsvpSubTab } from '@/lib/rsvpReport';
+import { useRsvpStatsReport } from '@/hooks/useRsvpStatsReport';
 
-export default function RsvpTab({
-    eventId,
-    members,
-    rsvps,
-    startAt,
-    rsvpDeadline,
-    canWrite,
-    origin,
-}: {
+type RsvpTabProps = {
     eventId: string;
     members: RosterMember[];
     rsvps: RosterRsvp[];
-    startAt: string;
+    startAt: string | null;
     rsvpDeadline: string | null;
+    timeZone: string;
     canWrite: boolean;
-    origin: RsvpReportOrigin;
-}) {
-    const t = useTranslations('ManagePage');
-    const { subTab, setSubTab } = useRsvpSubTab();
-    const tabs = useMemo<SubTabItem<RsvpSubTab>[]>(
-        () => [
-            { key: 'stats', icon: BarChart3, label: t('rsvpTabs.stats') },
-            { key: 'list', icon: List, label: t('rsvpTabs.list') },
-            { key: 'reports', icon: FileText, label: t('rsvpTabs.reports') },
-        ],
-        [t],
-    );
+};
+
+// R1a: RSVP on one page (KAN-227). Phones: deadline, numbers, reports, attendance, guests.
+// Desktop: numbers, reports and guests in the main column; deadline and attendance beside them.
+// The two columns are `contents` on phones, so `order` interleaves their blocks.
+export default function RsvpTab({ eventId, members, rsvps, startAt, rsvpDeadline, timeZone, canWrite }: RsvpTabProps) {
+    const stats = useRsvpStatsReport(eventId);
 
     return (
-        <div className="flex flex-col gap-7">
-            {/* Sub-tabs */}
-            <SubTabs tabs={tabs} active={subTab} onSelectAction={setSubTab} />
+        <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[minmax(0,1fr)_18.75rem] lg:items-start lg:gap-8">
+            {/* Main column */}
+            <div className="contents lg:flex lg:flex-col lg:gap-7">
+                {/* Numbers (nothing on a failed load: the attendance block says so once) */}
+                {(stats.isLoading || stats.report) && (
+                    <div className="order-2 lg:order-none">
+                        <RsvpHeadlineTiles totals={stats.report?.totals ?? null} isLoading={stats.isLoading} />
+                    </div>
+                )}
 
-            {/* Stats */}
-            {subTab === 'stats' && (
-                <RsvpStatsPanel
-                    eventId={eventId}
-                    canWrite={canWrite}
-                    rsvpDeadline={rsvpDeadline}
-                    countdownTarget={rsvpDeadline ?? startAt}
-                    isRsvpDeadline={Boolean(rsvpDeadline)}
-                />
-            )}
+                {/* Reports */}
+                <div className="order-3 lg:order-none">
+                    <RsvpReportCards eventId={eventId} />
+                </div>
 
-            {/* List */}
-            {subTab === 'list' && <RsvpListPanel eventId={eventId} members={members} rsvps={rsvps} canWrite={canWrite} />}
+                {/* Guests */}
+                <div className="order-5 lg:order-none">
+                    <RsvpListPanel eventId={eventId} members={members} rsvps={rsvps} canWrite={canWrite} />
+                </div>
+            </div>
 
-            {/* Reports */}
-            {subTab === 'reports' && <RsvpReportsPanel eventId={eventId} origin={origin} />}
+            {/* Side column */}
+            <div className="contents lg:sticky lg:top-6 lg:flex lg:flex-col lg:gap-6">
+                {/* Deadline */}
+                <div className="order-1 lg:order-none">
+                    <RsvpDeadlineCard eventId={eventId} rsvpDeadline={rsvpDeadline} startAt={startAt} timeZone={timeZone} canWrite={canWrite} />
+                </div>
+
+                {/* Attendance */}
+                <div className="order-4 lg:order-none">
+                    <RsvpAttendance {...stats} />
+                </div>
+            </div>
         </div>
     );
 }

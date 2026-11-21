@@ -5,29 +5,37 @@ import { endpoints } from '@/lib/api/endpoints';
 import type { Page } from '@/lib/api/pagination';
 import { serverGet, serverModuleReadable } from '@/lib/api/serverFetch';
 import type { WishbookEntryResponseDto } from '@/lib/api/types';
-import { prefetchAccessToken } from '@/lib/auth/serverEventContext';
+import { resolveServerEventContext } from '@/lib/auth/serverEventContext';
 import { makeQueryClient } from '@/lib/queryClient';
 
 import WishbookPage from './PageClient';
 
 type PageProps = { params: Promise<{ eventId: string }> };
 
-// Prefetches the wishbook's first page of entries and its count so the host
-// view renders immediately instead of showing its loading state.
+// Prefetches what the client asks for: the hosts' list for a host, the
+// caller's own wishes for a guest. Guests never get the hosts' list.
 export default async function Page({ params }: PageProps) {
     const { eventId } = await params;
-    const accessToken = await prefetchAccessToken();
+    const context = await resolveServerEventContext(eventId);
     const queryClient = makeQueryClient();
 
-    if (accessToken) {
+    if (context?.activeEventId === eventId) {
+        const { accessToken } = context;
         try {
             if (!(await serverModuleReadable(eventId, 'wishbook', accessToken))) throw new Error('wishbook unavailable');
-            const [firstPage, count] = await Promise.all([
-                serverGet<Page<WishbookEntryResponseDto>>(`${endpoints.events.wishbook(eventId)}?page=0&size=${WISHBOOK_PAGE_SIZE}`, accessToken),
-                serverGet<number>(endpoints.events.wishbookCount(eventId), accessToken),
-            ]);
-            queryClient.setQueryData(wishbookKeys.list(eventId), { pages: [firstPage], pageParams: [0] });
-            queryClient.setQueryData(wishbookKeys.count(eventId), count);
+            if (context.isHost) {
+                const firstPage = await serverGet<Page<WishbookEntryResponseDto>>(
+                    `${endpoints.events.wishbook(eventId)}?page=0&size=${WISHBOOK_PAGE_SIZE}`,
+                    accessToken,
+                );
+                queryClient.setQueryData(wishbookKeys.list(eventId), { pages: [firstPage], pageParams: [0] });
+            } else {
+                const mine = await serverGet<Page<WishbookEntryResponseDto>>(
+                    `${endpoints.events.wishbookMine(eventId)}?page=0&size=${WISHBOOK_PAGE_SIZE}`,
+                    accessToken,
+                );
+                queryClient.setQueryData(wishbookKeys.mine(eventId), { pages: [mine], pageParams: [0] });
+            }
         } catch {
             // Best-effort — the client hooks fetch normally if this fails.
         }

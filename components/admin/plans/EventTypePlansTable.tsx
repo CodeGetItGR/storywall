@@ -37,7 +37,9 @@ export function EventTypePlansTable({
     if (plans.length === 0) return <p className="px-4 py-6 text-sm text-ink-muted">{t('empty')}</p>;
 
     return (
-        <div className="overflow-x-auto">
+        // relative: the cells' sr-only labels are absolutely positioned. Without it they escape the
+        // scroller and stretch the page past the phone's width, which zooms the whole page out.
+        <div className="relative overflow-x-auto">
             <table className="w-full min-w-[860px] border-collapse text-[13px]">
                 <thead>
                     <tr className="border-b border-border text-left text-[11px] font-bold tracking-wide text-ink-faint uppercase">

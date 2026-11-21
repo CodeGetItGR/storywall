@@ -9,6 +9,7 @@ import { usageKeys } from '@/hooks/useUsage';
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
 import type {
+    AddonCheckoutRequestDto,
     CheckoutRequestDto,
     CheckoutResponseDto,
     CollaborationCodePreviewRequestDto,
@@ -40,12 +41,16 @@ const PENDING_ORDER_POLL_TIMEOUT_MS = 3 * 60 * 1000;
 
 export const billingKeys = { all: ['billing'] as const, event: (id: string) => ['events', id, 'billing'] as const };
 
+export function fetchEventBilling(eventId: string): Promise<EventBillingResponseDto> {
+    return api.get<EventBillingResponseDto>(endpoints.events.billing(eventId));
+}
+
 export function useEventBilling(eventId: string | null, enabled = true) {
     const { isAuthenticated } = useAuth();
 
     return useQuery({
         queryKey: billingKeys.event(eventId ?? ''),
-        queryFn: () => api.get<EventBillingResponseDto>(endpoints.events.billing(eventId!)),
+        queryFn: () => fetchEventBilling(eventId!),
         enabled: Boolean(eventId) && enabled && isAuthenticated,
         refetchInterval: (query) => {
             const data = query.state.data;
@@ -97,7 +102,8 @@ export function useCheckout(eventId: string) {
     return useMutation({
         // A body is required as of 2026-09 — requestsImmediateStart/acknowledgesWithdrawalTerms
         // are mandatory consent, not optional metadata (billing-fe-guide §6).
-        mutationFn: (input: CheckoutRequestDto) => api.post<CheckoutResponseDto>(endpoints.events.checkout(eventId), { ...input, ...checkoutAttribution() }),
+        mutationFn: (input: CheckoutRequestDto) =>
+            api.post<CheckoutResponseDto>(endpoints.events.checkout(eventId), { ...input, ...checkoutAttribution() }),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: billingKeys.event(eventId) });
             // Only the event itself (exact): without it, every query under
@@ -147,7 +153,8 @@ export function usePreviewCreateEventCode() {
 export function useUpgradeCheckout(eventId: string) {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: (input: UpgradeCheckoutRequestDto) => api.post<CheckoutResponseDto>(endpoints.events.upgradeCheckout(eventId), { ...input, ...checkoutAttribution() }),
+        mutationFn: (input: UpgradeCheckoutRequestDto) =>
+            api.post<CheckoutResponseDto>(endpoints.events.upgradeCheckout(eventId), { ...input, ...checkoutAttribution() }),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: billingKeys.event(eventId) });
             queryClient.invalidateQueries({ queryKey: usageKeys.event(eventId) });
@@ -190,14 +197,41 @@ export function useAddEventAddon(eventId: string) {
     });
 }
 
+// DELETE /api/events/{id}/addons/{code} — takes a draft's feature add-on back out of its activation payment (KAN-82).
+export function useRemoveEventAddon(eventId: string) {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: (paidServiceCode: string) => api.del<void>(endpoints.events.addon(eventId, paidServiceCode)),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: billingKeys.event(eventId) });
+            queryClient.invalidateQueries({ queryKey: ['events', eventId] });
+        },
+    });
+}
+
+// POST /api/events/{id}/addon-checkout — a live event pays for feature add-ons on their own (KAN-82).
+export function useAddonCheckout(eventId: string) {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: (input: AddonCheckoutRequestDto) => api.post<CheckoutResponseDto>(endpoints.events.addonCheckout(eventId), input),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: billingKeys.event(eventId) });
+        },
+    });
+}
+
+export function fetchEventWithdrawals(eventId: string): Promise<WithdrawalResponseDto[]> {
+    return api.get<WithdrawalResponseDto[]>(endpoints.events.withdrawals(eventId));
+}
+
 // GET /api/events/{id}/withdrawals — the host's own history, newest first, so the
 // most recent outcome (and its lines/refusals) survives a reload.
 export function useEventWithdrawals(eventId: string | null, enabled = true) {
     const { isAuthenticated } = useAuth();
 
     return useQuery({
-        queryKey: ['events', eventId, 'withdrawals'],
-        queryFn: () => api.get<WithdrawalResponseDto[]>(endpoints.events.withdrawals(eventId!)),
+        queryKey: withdrawalKeys.history(eventId ?? ''),
+        queryFn: () => fetchEventWithdrawals(eventId!),
         enabled: Boolean(eventId) && enabled && isAuthenticated,
         select: (withdrawals) => [...withdrawals].sort((left, right) => right.createdAt.localeCompare(left.createdAt)),
     });
@@ -205,7 +239,8 @@ export function useEventWithdrawals(eventId: string | null, enabled = true) {
 
 export const quoteKeys = {
     all: (eventId: string) => ['events', eventId, 'quote'] as const,
-    event:(eventId: string, request: QuoteRequestDto) => ['events', eventId, 'quote', request.kind, request.paidServiceCode ?? null] as const,
+    event: (eventId: string, request: QuoteRequestDto) =>
+        ['events', eventId, 'quote', request.kind, request.paidServiceCode ?? null, request.paidServiceCodes?.join(',') ?? null] as const,
 };
 
 // POST /api/events/{id}/quote — read-only pricing of an activation or a storage
@@ -231,9 +266,7 @@ export const withdrawalKeys = {
 type WithdrawalTarget = Pick<OrderSummaryDto, 'id' | 'kind'>;
 
 function withdrawalPreviewPath(eventId: string, order: WithdrawalTarget): string {
-    return order.kind === 'ACTIVATION'
-        ? endpoints.events.withdrawalPreview(eventId)
-        : endpoints.events.orderWithdrawalPreview(eventId, order.id);
+    return order.kind === 'ACTIVATION' ? endpoints.events.withdrawalPreview(eventId) : endpoints.events.orderWithdrawalPreview(eventId, order.id);
 }
 
 export function useOrderWithdrawalPreview(eventId: string, order: WithdrawalTarget | null) {

@@ -76,11 +76,13 @@ function composerValue(app: StoryAppContext): ComposerContextValue {
         openPostComposer: fn().mockName('openPostComposer'),
         openPostImagePicker: fn().mockName('openPostImagePicker'),
         openSongComposer: fn().mockName('openSongComposer'),
+        openAnnouncementComposer: fn().mockName('openAnnouncementComposer'),
         openStoryCapture: fn().mockName('openStoryCapture'),
         canCompose: true,
         canComposePost: true,
         canComposeStory: true,
         canComposeSong: true,
+        canAnnounce: false,
         ...app.composer,
     };
 }

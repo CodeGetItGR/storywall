@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
+import { useFlowEvent } from '@/hooks/useFlowEvent';
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
 import { isRateLimitedError } from '@/lib/api/errors';
@@ -50,6 +51,11 @@ export function useVerifyEmail() {
     // account that is already signed in is sent straight on.
     const pendingPath = useSyncExternalStore(subscribeToNothing, readPendingCreateEventPath, noPathOnServer);
     const signInHref = pendingPath ? routes.auth.login({ next: pendingPath }) : routes.login;
+
+    // A plan that isn't kept here was picked in another browser, or never picked.
+    useFlowEvent(
+        token && state !== 'pending' ? { name: 'Email Confirmed', result: state === 'verified' ? 'verified' : 'error', plan: pendingPath ? 'kept' : 'none' } : null,
+    );
 
     return { errorMessage, signInHref, state: token ? state : 'missing-token' };
 }

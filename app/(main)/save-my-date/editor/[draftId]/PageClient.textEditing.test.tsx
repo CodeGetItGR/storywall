@@ -90,7 +90,11 @@ function storedElement(id: string) {
         .find((element) => element.id === id);
 }
 
-describe('Invitation editor: texts', () => {
+// Each case renders the whole editor and waits on its saves, which can pass 5 seconds when the
+// whole suite runs at once.
+const EDITOR_FLOW_TIMEOUT_MS = 15_000;
+
+describe('Invitation editor: texts', { timeout: EDITOR_FLOW_TIMEOUT_MS }, () => {
     beforeAll(() => backend.server.listen({ onUnhandledRequest: 'error' }));
     // The tour has been seen: these tests are about the editor itself.
     beforeEach(() => localStorage.setItem(EDITOR_TOUR_SEEN_KEY, '1'));

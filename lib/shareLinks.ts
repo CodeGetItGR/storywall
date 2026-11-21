@@ -25,3 +25,17 @@ export function withShareLocale(url: string, locale: string): string {
 export function readShareLocale(value: string | null): Locale | null {
     return value && (locales as readonly string[]).includes(value) ? (value as Locale) : null;
 }
+
+// The address after a language switch on a shared link that names its language:
+// the same URL with the new `lang`, so a reload or a copied link keeps the choice.
+// Null when there is nothing to rewrite (another page, or no `lang` in the URL).
+export function switchedShareLocaleUrl(href: string, locale: string): string | null {
+    try {
+        const url = new URL(href);
+        if (!isSharedLinkPath(url.pathname) || !url.searchParams.has(SHARE_LOCALE_PARAM)) return null;
+        url.searchParams.set(SHARE_LOCALE_PARAM, locale);
+        return url.toString();
+    } catch {
+        return null;
+    }
+}

@@ -1,7 +1,7 @@
 'use client';
 
-import { DemoUploadScreen } from '@/components/demo/DemoUploadScreen';
+import { DemoQrScreen } from '@/components/demo/DemoQrScreen';
 
 export default function DemoUploadPage() {
-    return <DemoUploadScreen />;
+    return <DemoQrScreen page="upload" />;
 }

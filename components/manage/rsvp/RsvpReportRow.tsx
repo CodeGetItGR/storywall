@@ -1,26 +1,35 @@
 'use client';
 
-import { ChevronRight } from 'lucide-react';
+import { FileText } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { AppLink } from '@/components/ui/AppLink';
 import type { RsvpReportType } from '@/lib/api/types';
 import { routes } from '@/lib/routes';
 import type { RsvpReportOrigin } from '@/lib/rsvpReport';
+import { cn } from '@/lib/utils';
 
-export function RsvpReportRow({ eventId, reportType, origin }: { eventId: string; reportType: RsvpReportType; origin: RsvpReportOrigin }) {
+type RsvpReportRowProps = { eventId: string; reportType: RsvpReportType; origin: RsvpReportOrigin; className?: string };
+
+// One report as a card: its name and what it holds. Opens the printable report page.
+export function RsvpReportRow({ eventId, reportType, origin, className }: RsvpReportRowProps) {
     const t = useTranslations('ManagePage.rsvpReports');
 
     return (
         <AppLink
             href={routes.events.rsvpReport(eventId, reportType, origin === 'manage' ? undefined : origin)}
-            className="flex w-full items-center justify-between gap-3 rounded-xl border border-border px-3.5 py-2.5 text-left transition-colors hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+            className={cn(
+                'flex min-h-[84px] flex-col gap-1 rounded-[18px] bg-primary-light px-3.5 py-3 text-ink transition-colors hover:bg-primary/15 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary',
+                className,
+            )}
         >
-            <span className="min-w-0">
-                <span className="block text-sm font-medium text-ink">{t(`types.${reportType}.label`)}</span>
-                <span className="mt-0.5 block text-xs text-ink-muted">{t(`types.${reportType}.description`)}</span>
+            {/* Name */}
+            <span className="flex items-center gap-2 text-sm font-bold">
+                <FileText className="h-4 w-4 shrink-0 text-primary-dark" aria-hidden="true" />
+                {t(`types.${reportType}.label`)}
             </span>
-            <ChevronRight className="h-4 w-4 shrink-0 text-ink-faint" aria-hidden="true" />
+            {/* What it holds */}
+            <span className="text-xs leading-snug text-ink-muted">{t(`types.${reportType}.description`)}</span>
         </AppLink>
     );
 }

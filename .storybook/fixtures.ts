@@ -1,3 +1,4 @@
+import { planRequirementsOf } from '@/lib/__fixtures__/planRequirements';
 import type {
     AppConfigResponseDto,
     AuthorDto,
@@ -8,6 +9,7 @@ import type {
     EventSessionResponseDto,
     MediaResponseDto,
     ModuleKeyConvention,
+    PartnerRole,
     PlanTierResponseDto,
     PostResponseDto,
     QrLinkResponseDto,
@@ -184,6 +186,12 @@ export function storyModules(keys: ModuleKeyConvention[] = ALL_MODULES): EventMo
     }));
 }
 
+// The story event with a vendors module whose plan allows only these vendor types.
+export function storyEventAllowingVendors(allowedTypes: PartnerRole[]): EventDetailResponseDto {
+    const [vendors] = storyModules(['vendors']);
+    return storyEvent({ modules: [...storyModules(), { ...vendors, configuration: { maxVendors: 5, allowedTypes } }] });
+}
+
 export function storySession(overrides: Partial<EventSessionResponseDto> = {}): EventSessionResponseDto {
     return {
         id: 'ses-main',
@@ -194,6 +202,7 @@ export function storySession(overrides: Partial<EventSessionResponseDto> = {}): 
         endAt: null,
         locationName: 'Agios Nikolaos church',
         mapsUrl: null,
+        locationAddress: null,
         displayOrder: 0,
         isMain: true,
         isSecondary: false,
@@ -342,6 +351,7 @@ function storyWizardPlan(
             active: true,
         })),
         extensionOptions: [],
+        requirements: planRequirementsOf(moduleKeys),
     } as unknown as PlanTierResponseDto;
 }
 
@@ -472,3 +482,30 @@ export function storyQrLink(overrides: Partial<QrLinkResponseDto> = {}): QrLinkR
 export function storyPage<T>(content: T[], totalElements = content.length) {
     return { content, page: { number: 0, size: 20, totalElements, totalPages: 1 } };
 }
+
+// A tenth of a second of silence as a WAV data URL: a recording that loads in stories without a network fixture.
+function silentWavDataUrl(): string {
+    const sampleRate = 8000;
+    const samples = sampleRate / 10;
+    const bytes: number[] = [];
+    const text = (value: string) => bytes.push(...Array.from(value, (c) => c.charCodeAt(0)));
+    const uint = (value: number, size: number) => {
+        for (let i = 0; i < size; i++) bytes.push((value >> (8 * i)) & 0xff);
+    };
+    text('RIFF');
+    uint(36 + samples, 4);
+    text('WAVEfmt ');
+    uint(16, 4);
+    uint(1, 2); // PCM
+    uint(1, 2); // mono
+    uint(sampleRate, 4);
+    uint(sampleRate, 4); // bytes per second
+    uint(1, 2); // block align
+    uint(8, 2); // bits per sample
+    text('data');
+    uint(samples, 4);
+    for (let i = 0; i < samples; i++) bytes.push(0x80);
+    return `data:audio/wav;base64,${btoa(String.fromCharCode(...bytes))}`;
+}
+
+export const STORY_VOICE_WISH_URL = silentWavDataUrl();

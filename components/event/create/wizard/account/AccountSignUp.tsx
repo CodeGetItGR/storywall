@@ -16,6 +16,7 @@ export function AccountSignUp({ onSignedIn, isFinishing }: { onSignedIn: () => v
     const form = useRegisterForm({
         inviteToken: null,
         returnPath: null,
+        entry: 'create',
         initialFields: { email: '', firstName: '', lastName: '' },
         emailVerification: 'CODE',
         // Sign-up mailed a code: the code screen must not send another one.

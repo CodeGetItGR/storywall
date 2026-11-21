@@ -16,6 +16,8 @@ import { STORY_FILTER_PRESETS } from '@/lib/story/storyFilters';
 import { cn } from '@/lib/utils';
 
 export function ComposerModal({
+    announcementError,
+    canAnnounce,
     canComposePost,
     canComposeSong,
     canSubmit,
@@ -30,14 +32,17 @@ export function ComposerModal({
     handlePostFilesChange,
     handleRemoveImageClick,
     images,
+    isAnnouncing,
     isOpen,
     maxCaptionLength,
     maxImages,
+    selectAnnouncementMode,
     selectPostMode,
     selectSongMode,
     selectedImageForFilter,
     sizeError,
     songComposerKey,
+    submitAnnouncement,
     submitPlaylistSuggestion,
     submitPost,
     textareaRef,
@@ -45,6 +50,8 @@ export function ComposerModal({
     const t = useTranslations('ComposerCard');
     const tAlt = useTranslations('ImageAlt');
     const uploadAccept = useUploadAccept();
+    // Announcement shares the post form but is text only: no media row, hint or Add media.
+    const isAnnouncement = composerMode === 'announcement';
 
     return (
         <Modal
@@ -60,11 +67,12 @@ export function ComposerModal({
                 <div className="mb-4 flex flex-wrap items-center gap-2 pr-10">
                     <ComposerModeToggle mode="post" currentMode={composerMode} onSelectAction={selectPostMode} />
                     <ComposerModeToggle mode="song" currentMode={composerMode} onSelectAction={selectSongMode} disabled={!canComposeSong} />
+                    {canAnnounce && <ComposerModeToggle mode="announcement" currentMode={composerMode} onSelectAction={selectAnnouncementMode} />}
                 </div>
 
-                {/* Post form */}
-                <div hidden={composerMode !== 'post'}>
-                    <form onSubmit={submitPost} className="flex flex-col gap-4">
+                {/* Post and announcement form */}
+                <div hidden={composerMode === 'song'}>
+                    <form onSubmit={isAnnouncement ? submitAnnouncement : submitPost} className="flex flex-col gap-4">
                         <textarea
                             ref={textareaRef}
                             value={caption}
@@ -76,12 +84,12 @@ export function ComposerModal({
                             className="min-h-36 w-full resize-none rounded-[1.5rem] bg-surface-muted px-5 py-4 text-base leading-relaxed text-ink transition outline-none placeholder:text-ink-faint focus:ring-2 focus:ring-primary/30 sm:min-h-32 sm:text-sm"
                         />
                         <div className="-mt-2 flex items-center justify-between gap-3 text-xs text-ink-faint">
-                            <span>{t('mediaLimitHint', { count: maxImages })}</span>
+                            <span>{!isAnnouncement && t('mediaLimitHint', { count: maxImages })}</span>
                             <span>{t('captionCharacterCount', { count: caption.length, max: maxCaptionLength })}</span>
                         </div>
 
                         {/* Media previews */}
-                        {images.length > 0 && (
+                        {!isAnnouncement && images.length > 0 && (
                             <div className="grid grid-cols-10 flex-nowrap gap-2">
                                 {images.map((img) => {
                                     const isVideo = img.file.type.startsWith('video/');
@@ -152,18 +160,27 @@ export function ComposerModal({
                             </div>
                         )}
 
-                        {(sizeError || countError) && <p className="text-xs text-destructive">{sizeError ?? countError}</p>}
+                        {!isAnnouncement && (sizeError || countError) && <p className="text-xs text-destructive">{sizeError ?? countError}</p>}
+
+                        {/* Announcement error */}
+                        {isAnnouncement && announcementError && (
+                            <p role="alert" className="text-xs text-destructive">
+                                {announcementError}
+                            </p>
+                        )}
 
                         {/* Incident note */}
-                        <IncidentPausedNote />
+                        {!isAnnouncement && <IncidentPausedNote />}
 
                         {/* Actions */}
-                        <div className="flex items-center justify-between gap-2">
-                            <AddImageButton
-                                aria-label={t('addMedia')}
-                                onClick={handlePickPhotos}
-                                disabled={INCIDENT_MODE || !canComposePost || images.length >= maxImages}
-                            />
+                        <div className={cn('flex items-center gap-2', isAnnouncement ? 'justify-end' : 'justify-between')}>
+                            {!isAnnouncement && (
+                                <AddImageButton
+                                    aria-label={t('addMedia')}
+                                    onClick={handlePickPhotos}
+                                    disabled={INCIDENT_MODE || !canComposePost || images.length >= maxImages}
+                                />
+                            )}
                             <input
                                 ref={fileRef}
                                 type="file"
@@ -181,7 +198,7 @@ export function ComposerModal({
                                 className="flex min-h-11 min-w-0 items-center justify-center gap-2 rounded-full px-3 text-sm font-semibold text-white transition-opacity bg-gradient-brand hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40 sm:px-4"
                             >
                                 <Send className="h-4 w-4" />
-                                {t('post')}
+                                {isAnnouncing ? t('posting') : t('post')}
                             </button>
                         </div>
                     </form>

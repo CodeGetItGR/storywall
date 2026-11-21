@@ -6,9 +6,17 @@ import { EventDetailsStep } from '@/components/event/create/EventDetailsStep';
 import { CREATE_EVENT_WIZARD_HEADING_ID } from '@/components/event/create/wizard/createEventWizardIds';
 import { DetailsPreview } from '@/components/event/create/wizard/details/DetailsPreview';
 import { DetailsTimeZone } from '@/components/event/create/wizard/details/DetailsTimeZone';
+import { LiteDetailsStep } from '@/components/event/create/wizard/details/LiteDetailsStep';
 import { useCreateEventWizardDetails } from '@/hooks/useCreateEventWizardDetails';
+import { useCreateEventForm } from '@/providers/createEvent/CreateEventFormContext';
 
+// A lite plan asks only for the title: its own step.
 export function DetailsStep() {
+    const { asksDetails } = useCreateEventForm();
+    return asksDetails ? <FullDetailsStep /> : <LiteDetailsStep />;
+}
+
+function FullDetailsStep() {
     const t = useTranslations('CreateEventPage.wizard.details');
     const { preview, showReceptionNote, timeZone } = useCreateEventWizardDetails();
 

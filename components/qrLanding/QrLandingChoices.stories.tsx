@@ -9,7 +9,7 @@ const meta = {
     args: {
         eventId: 'evt-story',
         onChoose: fn(),
-        plan: { choices: ['join', 'upload', 'wish'], joinInviteToken: 'inv-story', uploadToken: 'up-story', wishToken: 'wish-story' },
+        plan: { choices: ['join', 'upload', 'wish'], joinInviteToken: 'inv-story', uploadToken: 'up-story', wishToken: 'wish-story', invitationSlug: null },
         coverSrc: '/landing/couple-cheering-with-guests-under-lit-arch-at-night.webp',
         eventTitle: 'Maria & Nikos',
         isSignedIn: false,
@@ -49,7 +49,7 @@ export const SignedInGuest: Story = {
 export const Member: Story = {
     args: {
         isSignedIn: true,
-        plan: { choices: ['open', 'upload', 'wishbook'], joinInviteToken: 'inv-story', uploadToken: 'up-story', wishToken: null },
+        plan: { choices: ['open', 'upload', 'wishbook'], joinInviteToken: 'inv-story', uploadToken: 'up-story', wishToken: null, invitationSlug: null },
     },
 };
 
@@ -57,7 +57,21 @@ export const Member: Story = {
 export const LiteGuestCode: Story = {
     args: {
         eventId: null,
-        plan: { choices: ['upload', 'wish'], joinInviteToken: null, uploadToken: 'self', wishToken: 'self' },
+        plan: { choices: ['upload', 'wish'], joinInviteToken: null, uploadToken: 'self', wishToken: 'self', invitationSlug: null },
         details: null,
+    },
+};
+
+// A guest scans the code of an event whose online invitation is live (KAN-225).
+export const WithInvitation: Story = {
+    tags: ['visual-mobile-only'],
+    args: {
+        plan: {
+            choices: ['join', 'invitation', 'upload', 'wish'],
+            joinInviteToken: 'inv-story',
+            uploadToken: 'up-story',
+            wishToken: 'wish-story',
+            invitationSlug: 'maria-nikos',
+        },
     },
 };
