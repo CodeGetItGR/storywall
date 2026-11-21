@@ -1202,6 +1202,19 @@ export interface FeedLayoutDto {
     updatedAt: string;
 }
 
+// PUT /api/events/{id}/feed-layout (KAN-243). revision: the one the host saw, 0 before the first save;
+// a newer one answers 409 with 5208. document.themeId must be the theme's own, or 'wall' with themeSlug null.
+export interface FeedLayoutSaveRequestDto {
+    revision: number;
+    themeSlug: string | null;
+    document: unknown;
+}
+
+export interface FeedLayoutSaveResponseDto {
+    revision: number;
+    updatedAt: string;
+}
+
 // Returned by GET /api/events (list) and POST /api/events — flat summary shape.
 // GET /api/events/{id} returns EventDetailResponseDto instead (see below).
 export interface EventResponseDto {
