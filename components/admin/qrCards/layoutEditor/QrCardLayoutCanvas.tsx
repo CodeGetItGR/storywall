@@ -6,9 +6,11 @@ import type { FocusEvent } from 'react';
 import { QrCardLayoutGuides } from '@/components/admin/qrCards/layoutEditor/QrCardLayoutGuides';
 import { QrCardLayoutHandles } from '@/components/admin/qrCards/layoutEditor/QrCardLayoutHandles';
 import { QrCardSvg } from '@/components/qrCard/QrCardSvg';
+import { useQrCardFeatureTexts } from '@/hooks/useQrCardFeatureTexts';
 import type { QrCardLayoutPointer } from '@/hooks/useQrCardLayoutPointer';
 import { QR_CARD_SAMPLE_URL } from '@/lib/adminQrCards';
 import { QR_CARD_HEIGHT, QR_CARD_WIDTH, type QrCardLine, type QrCardStyle } from '@/lib/qrCard';
+import { QR_CARD_SAMPLE_FEATURES } from '@/lib/qrCardFeatures';
 import { elementName, elementRect, QR_CARD_SAFE_AREA, type QrCardElement, qrCardHitOrder } from '@/lib/qrCardLayout';
 import { cn } from '@/lib/utils';
 
@@ -35,6 +37,7 @@ export function QrCardLayoutCanvas({
     onElementFocusAction: (event: FocusEvent<SVGElement>) => void;
 }) {
     const t = useTranslations('AdminPage.qrCards.layout');
+    const featureTexts = useQrCardFeatureTexts();
     const { overlayRef, guides, handlePointerDown, handlePointerMove, handlePointerEnd } = pointer;
 
     return (
@@ -48,6 +51,8 @@ export function QrCardLayoutCanvas({
                     lines={lines}
                     fields={fields}
                     label={t('cardLabel', { title })}
+                    features={QR_CARD_SAMPLE_FEATURES}
+                    featureTexts={featureTexts}
                     className="block h-full w-full"
                 />
 

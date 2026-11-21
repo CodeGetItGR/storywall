@@ -9,6 +9,7 @@ export function sampleInvitationPlan(overrides: Partial<PlanTierResponseDto> = {
         name: 'Premium',
         description: null,
         sortOrder: 1,
+        requirements: null,
         isDefault: false,
         isAssignable: true,
         isPublic: true,

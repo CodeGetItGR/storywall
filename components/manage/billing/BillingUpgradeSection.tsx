@@ -2,7 +2,6 @@ import { useTranslations } from 'next-intl';
 
 import { IncidentPausedNote } from '@/components/incident/IncidentPausedNote';
 import { BillingUpgradeRow } from '@/components/manage/billing/BillingUpgradeRow';
-import Section from '@/components/manage/Section';
 import { useBillingUpgradeRows } from '@/hooks/useBillingUpgradeRows';
 import { useDurationPicks } from '@/hooks/useDurationPicks';
 import type { BillingUpgradeTarget } from '@/hooks/useEventBillingPanel';
@@ -26,12 +25,17 @@ export function BillingUpgradeSection({
     if (rows.length === 0) return null;
 
     return (
-        <Section title={t('compare.upgradeOptions')} divider>
+        <section aria-labelledby="billing-upgrade-title" className="flex flex-col gap-2.5">
+            {/* Heading */}
+            <h2 id="billing-upgrade-title" className="text-base font-bold text-ink">
+                {t('compare.upgradeOptions')}
+            </h2>
+
             {/* Incident note */}
-            <IncidentPausedNote className="mb-3" />
+            <IncidentPausedNote />
 
             {/* Plans */}
-            <ul className="divide-y divide-ink/10">
+            <ul className="flex flex-col gap-3">
                 {rows.map((row) => (
                     <BillingUpgradeRow
                         key={row.code}
@@ -41,6 +45,6 @@ export function BillingUpgradeSection({
                     />
                 ))}
             </ul>
-        </Section>
+        </section>
     );
 }

@@ -12,6 +12,7 @@ import { useWithdrawalConsent } from '@/hooks/useWithdrawalConsent';
 import { ERROR_CODES, getErrorCode } from '@/lib/api/errors';
 import type { CollaborationCodePreviewResponseDto } from '@/lib/api/types';
 import { navigateToCheckout } from '@/lib/billing';
+import { flowErrorCode, trackFlow } from '@/lib/flowTracking';
 
 const ACTIVATION_QUOTE = { kind: 'ACTIVATION' } as const;
 
@@ -20,7 +21,10 @@ const ACTIVATION_QUOTE = { kind: 'ACTIVATION' } as const;
  * the "come back later and pay" and "returned from a cancelled Stripe
  * session" entry points. Mirrors the wizard's own checkout call.
  */
-export function useDraftActivationCheckout(eventId: string, { quoteEnabled, startAt }: { quoteEnabled: boolean; startAt: string | null }) {
+export function useDraftActivationCheckout(
+    eventId: string,
+    { quoteEnabled, startAt, returnTo }: { quoteEnabled: boolean; startAt: string | null; returnTo?: string },
+) {
     const checkout = useCheckout(eventId);
     const queryClient = useQueryClient();
     const consent = useWithdrawalConsent();
@@ -45,8 +49,9 @@ export function useDraftActivationCheckout(eventId: string, { quoteEnabled, star
         setCollaborationPreview(nextPreview);
     }, []);
 
-    const submit = useCallback(async () => {
-        if (!consent.consentSatisfied || !consent.termsVersion || !partnerBranding.satisfied) return;
+    // Resolves true once the payment page is opening.
+    const submit = useCallback(async (): Promise<boolean> => {
+        if (!consent.consentSatisfied || !consent.termsVersion || !partnerBranding.satisfied) return false;
         setFailure(null);
         try {
             const response = await checkout.mutateAsync({
@@ -56,9 +61,13 @@ export function useDraftActivationCheckout(eventId: string, { quoteEnabled, star
                 acknowledgesWithdrawalTerms: consent.acknowledgesWithdrawalTerms,
                 termsVersion: consent.termsVersion,
             });
-            navigateToCheckout(eventId, response);
+            trackFlow({ name: 'Checkout Open', from: 'draft' });
+            // Paying brings the host back to returnTo when one is given (Publish's add-on step).
+            navigateToCheckout(eventId, response, undefined, returnTo);
+            return true;
         } catch (checkoutError) {
-            if (consent.handleCheckoutError(checkoutError)) return;
+            trackFlow({ name: 'Checkout Error', from: 'draft', code: flowErrorCode(checkoutError) });
+            if (consent.handleCheckoutError(checkoutError)) return false;
             // The draft's duration was retired: reload the plans and the draft so
             // the overview asks for another one.
             if (getErrorCode(checkoutError) === ERROR_CODES.COVERAGE_OPTION_UNAVAILABLE) {
@@ -70,8 +79,9 @@ export function useDraftActivationCheckout(eventId: string, { quoteEnabled, star
                 startPassed: getErrorCode(checkoutError) === ERROR_CODES.EVENT_START_PASSED,
                 startAt,
             });
+            return false;
         }
-    }, [checkout, collaborationCode, consent, eventId, partnerBranding, queryClient, startAt, toErrorMessage]);
+    }, [checkout, collaborationCode, consent, eventId, partnerBranding, queryClient, returnTo, startAt, toErrorMessage]);
 
     const currentFailure = failure && failure.startAt === startAt ? failure : null;
     // The quote answers 3035 too, so a passed date shows before the host tries to pay.
@@ -86,6 +96,9 @@ export function useDraftActivationCheckout(eventId: string, { quoteEnabled, star
         submit,
         error: currentFailure?.message ?? (quoteStartPassed ? toErrorMessage(quote.error) : null),
         startPassed: Boolean(currentFailure?.startPassed) || quoteStartPassed,
+        // Any quote failure, for a screen that shows only the quote's total (Publish's add-on step).
+        quoteError: quoteEnabled && quote.error ? toErrorMessage(quote.error) : null,
+        isQuoteFetching: quoteEnabled && quote.isFetching,
         isPending: checkout.isPending,
     };
 }

@@ -5,9 +5,11 @@ import { demoEventBasePath } from '@/lib/demo/demoRouting';
 type RouteQueryValue = string | number | boolean | null | undefined;
 
 export type CheckoutIntent = 'upgrade' | 'storage' | 'extension';
+// The Add-ons page opens with this feature add-on already ticked (KAN-82).
+export const ADDONS_PRESELECT_PARAM = 'add';
 // 'billing' is kept as an alias for the plan section so existing links keep working.
 export type ManageTab =
-    'billing' | 'coverage' | 'danger' | 'gift' | 'help' | 'invitation' | 'members' | 'orders' | 'overview' | 'plan' | 'rsvp' | 'settings' | 'theme';
+    'billing' | 'coverage' | 'danger' | 'gift' | 'invitation' | 'members' | 'orders' | 'overview' | 'plan' | 'rsvp' | 'settings' | 'theme';
 
 // The demo event lives outside the real /events/{eventId} tree (which proxy.ts protects
 // behind a real session) — see docs/superpowers/plans/2026-09-05-demo-event.md, design note 1.
@@ -81,10 +83,11 @@ export const routes = {
         giftCard: (eventId: string) => `${eventBasePath(eventId)}/manage/gift/card`,
         // `from` records where the report was opened from so Close (useRsvpReportPage)
         // can return there; omitted (manage) is the default and carries no param.
-        rsvpReport: (eventId: string, reportType: RsvpReportType, from?: 'tools' | 'vendor') =>
+        rsvpReport: (eventId: string, reportType: RsvpReportType, from?: 'vendor') =>
             withQuery(`${eventBasePath(eventId)}/manage/rsvp/reports/${reportType}`, { from }),
         tools: {
-            rsvp: (eventId: string, params: { section?: string | null } = {}) => withQuery(`${eventBasePath(eventId)}/tools/rsvp`, params),
+            // Only redirects now (KAN-227): hosts land on manage?tab=rsvp. Kept for old links.
+            rsvp: (eventId: string) => `${eventBasePath(eventId)}/tools/rsvp`,
             rsvpSubmit: (eventId: string, attending?: 'attending' | 'not-attending' | null) =>
                 withQuery(`${eventBasePath(eventId)}/tools/rsvp/submit`, { attending }),
             gallery: (eventId: string) => `${eventBasePath(eventId)}/tools/gallery`,
@@ -98,14 +101,16 @@ export const routes = {
             // section: a part of the page to scroll to on arrival (VendorPageSection).
             vendorMe: (eventId: string, params: { section?: string | null } = {}) => withQuery(`${eventBasePath(eventId)}/tools/vendors/me`, params),
             playlistLive: (eventId: string) => `${eventBasePath(eventId)}/tools/playlist/live`,
-            announcement: (eventId: string) => `${eventBasePath(eventId)}/tools/announcement`,
         },
         storySchedule: (eventId: string) => `${eventBasePath(eventId)}/story/schedule`,
         // The .ics file for one calendar entry; no session = the event's own date.
         calendar: (eventId: string, session?: string | null) => withQuery(`${eventBasePath(eventId)}/calendar`, { session }),
         location: (eventId: string, role?: 'main' | 'secondary' | null) => `${eventBasePath(eventId)}/location${role ? `/${role}` : ''}`,
-        feed: (eventId: string, params: { post?: string | null; sheet?: 'role' | null } = {}) => withQuery(`${eventBasePath(eventId)}/feed`, params),
-        settingsAddons: (eventId: string) => `${eventBasePath(eventId)}/settings/addons`,
+        // compose: opens the composer in that mode (lib/announcementComposer.ts).
+        feed: (eventId: string, params: { post?: string | null; sheet?: 'role' | null; compose?: 'announcement' | null } = {}) =>
+            withQuery(`${eventBasePath(eventId)}/feed`, params),
+        settingsAddons: (eventId: string, { add }: { add?: string | null } = {}) =>
+            withQuery(`${eventBasePath(eventId)}/settings/addons`, { [ADDONS_PRESELECT_PARAM]: add }),
         // code: the plan (upgrade) or paid service (storage); option: the upgrade's or extension's coverage option id.
         checkoutReview: (eventId: string, intent: CheckoutIntent, { code, option }: { code?: string | null; option?: string | null } = {}) =>
             withQuery(`${eventBasePath(eventId)}/checkout/review`, { intent, code, option }),
@@ -117,6 +122,10 @@ export const routes = {
     saveMyDateAdmin: {
         root: '/admin/save-my-date',
         themes: '/admin/save-my-date/themes',
+        themeEditor: (themeId: string) => `/admin/save-my-date/themes/${themeId}/editor`,
+        fonts: '/admin/save-my-date/fonts',
+        fontPairings: '/admin/save-my-date/font-pairings',
+        texts: '/admin/save-my-date/texts',
     },
     reportContent: '/report-content',
     notifications: '/notifications',

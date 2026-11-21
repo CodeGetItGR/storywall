@@ -13,8 +13,10 @@ export function PlanEditorAnchors({ anchors, active }: { anchors: PlanEditorAnch
     }
 
     return (
-        // A horizontal strip on phones; a side column next to the form from md up.
-        <nav className="sticky top-0 z-10 -mx-5 flex gap-1 overflow-x-auto border-b border-border bg-card px-5 py-2 md:mx-0 md:flex-col md:self-start md:overflow-visible md:border-b-0 md:px-0 md:py-0">
+        // A horizontal strip on phones; a side column next to the form from md up. On phones the
+        // negative top and margin cancel the drawer body's top padding (py-4.5), so the strip sits
+        // flush under the drawer header instead of leaving a gap that content scrolls through.
+        <nav className="sticky -top-4.5 z-10 -mx-5 -mt-4.5 flex gap-1 overflow-x-auto border-b border-border bg-card px-5 py-2 md:top-0 md:mx-0 md:mt-0 md:flex-col md:self-start md:overflow-visible md:border-b-0 md:px-0 md:py-0">
             {anchors.map((anchor) => (
                 <button
                     key={anchor.id}

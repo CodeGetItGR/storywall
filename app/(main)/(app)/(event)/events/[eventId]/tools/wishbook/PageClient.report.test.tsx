@@ -12,9 +12,18 @@ let deletedAt: string | null = null;
 let isDemoBuilder = false;
 let isHost = true;
 let accessMode: 'standard' | 'demoBuilder' | 'demoVisitor' = 'standard';
+// The book the demo event itself has, as the snapshot carries it. null = it has none.
+let demoBook: { status: string } | null = { status: 'READY' };
 const createEntry = vi.fn();
 const setHighlighted = vi.fn();
-let entries: Array<{ id: string; authorMemberId: string | null; canDelete: boolean; highlighted?: boolean | null }> = [];
+let entries: Array<{
+    id: string;
+    authorMemberId: string | null;
+    canDelete: boolean;
+    highlighted?: boolean | null;
+    message?: string | null;
+    audio?: { url: string; durationMs: number } | null;
+}> = [];
 
 vi.mock('@/hooks/useModuleCopy', () => {
     const copy = (moduleKey: string) => ({ name: moduleKey, description: `${moduleKey} description`, cardLabel: moduleKey, Icon: () => null });
@@ -41,10 +50,11 @@ vi.mock('@/hooks/useWishbook', () => ({
                 {
                     content: entries.map((entry) => ({
                         highlighted: false,
+                        message: 'Best wishes',
+                        audio: null,
                         ...entry,
                         eventId: 'event-1',
                         guestName: 'Guest',
-                        message: 'Best wishes',
                         createdAt: '2026-09-30T12:00:00Z',
                     })),
                     page: { totalElements: entries.length },
@@ -57,8 +67,13 @@ vi.mock('@/hooks/useWishbook', () => ({
     }),
     useCreateWishbookEntry: () => ({ isPending: false, mutateAsync: createEntry, error: null }),
     useDeleteWishbookEntry: () => ({ isPending: false, mutateAsync: vi.fn() }),
+    useMyWishes: () => ({ data: undefined, isLoading: false, error: null, hasNextPage: false, isFetchingNextPage: false }),
+    useEditWishbookEntry: () => ({ isPending: false, mutateAsync: vi.fn(), error: null, reset: vi.fn() }),
 }));
-vi.mock('@/hooks/useWishbookBook', () => ({ useSetWishHighlighted: () => ({ mutate: setHighlighted, isPending: false }) }));
+vi.mock('@/hooks/useWishbookBook', () => ({
+    useSetWishHighlighted: () => ({ mutate: setHighlighted, isPending: false }),
+    useWishbookBook: (_eventId: string, enabled: boolean) => ({ data: enabled ? demoBook : undefined }),
+}));
 vi.mock('@/components/wishbook/WishbookBookPanel', () => ({
     WISHBOOK_BOOK_ID: 'wishbook-book',
     WishbookBookPanel: ({ canEditTexts }: { canEditTexts: boolean }) => <div data-testid="book-panel" data-can-edit-texts={String(canEditTexts)} />,
@@ -87,6 +102,7 @@ beforeEach(() => {
     isDemoBuilder = false;
     isHost = true;
     accessMode = 'standard';
+    demoBook = { status: 'READY' };
     createEntry.mockReset();
     setHighlighted.mockReset();
     entries = [{ id: 'w1', authorMemberId: 'm2', canDelete: true }];
@@ -174,7 +190,32 @@ describe('Wishbook composer for hosts', () => {
         fireEvent.change(screen.getByRole('textbox', { name: 'messageAriaLabel' }), { target: { value: 'Congrats!' } });
         fireEvent.click(screen.getByRole('button', { name: 'addToWishbook' }));
 
-        expect(createEntry).toHaveBeenCalledWith({ message: 'Congrats!', guestName: undefined });
+        expect(createEntry).toHaveBeenCalledWith({ message: 'Congrats!', guestName: undefined, audio: null });
+    });
+});
+
+describe('Wishbook voice wishes for hosts', () => {
+    it('a host plays a voice wish', () => {
+        entries = [{ id: 'w1', authorMemberId: 'm2', canDelete: true, message: null, audio: { url: 'https://r2.test/a.m4a', durationMs: 42_000 } }];
+        render(<WishbookPage />);
+
+        expect(screen.getByRole('button', { name: 'play' })).toBeTruthy();
+        expect(screen.getByText('0:42')).toBeTruthy();
+    });
+
+    it('a voice-only row has no empty text line', () => {
+        entries = [{ id: 'w1', authorMemberId: 'm2', canDelete: true, message: null, audio: { url: 'https://r2.test/a.m4a', durationMs: 42_000 } }];
+        render(<WishbookPage />);
+
+        const row = screen.getByRole('article');
+        expect(row.querySelectorAll('p.whitespace-pre-wrap')).toHaveLength(0);
+    });
+
+    it('a written wish has no player', () => {
+        render(<WishbookPage />);
+
+        expect(screen.getByText('Best wishes')).toBeTruthy();
+        expect(screen.queryByRole('button', { name: 'play' })).toBeNull();
     });
 });
 
@@ -196,8 +237,15 @@ describe('Wishbook book', () => {
         expect(screen.queryByTestId('book-panel')).toBeNull();
     });
 
-    it('shows no book panel in the public demo, where nothing can be built', () => {
+    it('shows the book panel in the public demo, with its texts fixed', () => {
         accessMode = 'demoVisitor';
+        render(<WishbookPage />);
+        expect(screen.getByTestId('book-panel').dataset.canEditTexts).toBe('false');
+    });
+
+    it('shows no book panel in the demo when the event has no book', () => {
+        accessMode = 'demoVisitor';
+        demoBook = null;
         render(<WishbookPage />);
         expect(screen.queryByTestId('book-panel')).toBeNull();
     });

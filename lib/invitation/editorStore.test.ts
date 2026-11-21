@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { InvitationDocument } from '@/lib/invitation/document';
 import { createInvitationEditorStore, EDITOR_HISTORY_LIMIT, EDITOR_MERGE_WINDOW_MS } from '@/lib/invitation/editorStore';
-import { previewDocument } from '@/lib/saveMyDatePreview';
+import { PREVIEW_THEME, previewDocument } from '@/lib/saveMyDatePreview';
 
 const setColor = (color: string) => (draft: { overrides: InvitationDocument['overrides'] }) => {
     draft.overrides.textColor = color;
@@ -128,5 +128,84 @@ describe('createInvitationEditorStore', () => {
             store.getState().edit(setColor(`#0000${String(index).padStart(2, '0')}`));
         }
         expect(store.getState().past).toHaveLength(EDITOR_HISTORY_LIMIT);
+    });
+
+    describe('theme edits', () => {
+        it('has no theme and ignores theme edits without one', () => {
+            const store = createInvitationEditorStore(previewDocument());
+            store.getState().editTheme((theme) => {
+                theme.colors.primary = '#000000';
+            });
+            expect(store.getState().theme).toBeUndefined();
+            expect(store.getState().past).toHaveLength(0);
+        });
+
+        it('edits the theme and the document in one step that undoes as one', () => {
+            const document = previewDocument();
+            const store = createInvitationEditorStore(document, '', PREVIEW_THEME);
+            store.getState().editTheme((theme, draft) => {
+                theme.colors.primary = '#000000';
+                draft.overrides.textColor = '#111111';
+            });
+            expect(store.getState().theme?.colors.primary).toBe('#000000');
+            expect(store.getState().document.overrides.textColor).toBe('#111111');
+            expect(store.getState().past).toHaveLength(1);
+
+            store.getState().undo();
+            expect(store.getState().theme).toEqual(PREVIEW_THEME);
+            expect(store.getState().document).toEqual(document);
+
+            store.getState().redo();
+            expect(store.getState().theme?.colors.primary).toBe('#000000');
+        });
+
+        it('keeps theme and document edits in one shared history', () => {
+            const store = createInvitationEditorStore(previewDocument(), '', PREVIEW_THEME);
+            store.getState().editTheme((theme) => {
+                theme.photoShape = 'circle';
+            });
+            store.getState().edit(setColor('#222222'));
+            store.getState().undo();
+            expect(store.getState().theme?.photoShape).toBe('circle');
+            store.getState().undo();
+            expect(store.getState().theme?.photoShape).toBe(PREVIEW_THEME.photoShape);
+        });
+
+        it('keeps the share image with the theme and undoes its change', () => {
+            const store = createInvitationEditorStore(previewDocument(), '', PREVIEW_THEME, { imageId: 'og' });
+            store.getState().editTheme((_theme, _document, share) => {
+                share.imageId = 'og-2';
+            });
+            expect(store.getState().share).toEqual({ imageId: 'og-2' });
+            store.getState().undo();
+            expect(store.getState().share).toEqual({ imageId: 'og' });
+            expect(createInvitationEditorStore(previewDocument(), '', PREVIEW_THEME).getState().share).toEqual({ imageId: null });
+            expect(createInvitationEditorStore(previewDocument()).getState().share).toBeUndefined();
+        });
+    });
+
+    it('switches theme in one undo step, even to a theme with the same document', () => {
+        const store = createInvitationEditorStore(previewDocument(), 'olive');
+        const before = store.getState().document;
+
+        // A copied theme keeps its source's themeId, so the document may not change at all.
+        store.getState().switchTheme('olive-copy', () => {});
+        expect(store.getState()).toMatchObject({ themeSlug: 'olive-copy', document: before, changeCount: 1 });
+        expect(store.getState().past).toHaveLength(1);
+
+        store.getState().edit(setColor('#111111'), 'textColor');
+        store.getState().undo();
+        store.getState().undo();
+        expect(store.getState().themeSlug).toBe('olive');
+        store.getState().redo();
+        expect(store.getState().themeSlug).toBe('olive-copy');
+        store.getState().redo();
+        expect(store.getState()).toMatchObject({ themeSlug: 'olive-copy', document: { overrides: { textColor: '#111111' } } });
+    });
+
+    it('does nothing when switching to the theme it is in', () => {
+        const store = createInvitationEditorStore(previewDocument(), 'olive');
+        store.getState().switchTheme('olive', setColor('#111111'));
+        expect(store.getState()).toMatchObject({ themeSlug: 'olive', past: [], changeCount: 0 });
     });
 });

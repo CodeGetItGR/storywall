@@ -52,7 +52,9 @@ export function CreateCoHostInvitationForm({ eventId, onDoneAction }: { eventId:
             <form onSubmit={submit} className={formPanelClass}>
                 <div className="mb-4 flex items-start justify-between gap-3">
                     <div>
-                        <p className="text-sm font-bold text-ink">{t('title')}</p>
+                        <p id="invite-co-host-title" className="text-sm font-bold text-ink">
+                            {t('title')}
+                        </p>
                         <p className="mt-1 text-xs leading-relaxed text-ink-muted">{t('subtitle')}</p>
                     </div>
                     <button

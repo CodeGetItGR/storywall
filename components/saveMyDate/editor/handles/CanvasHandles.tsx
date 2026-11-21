@@ -30,7 +30,7 @@ export function CanvasHandles({ store, frames = NO_FRAMES, children }: CanvasHan
     const withPhotos = usePhotoUploadsContext() !== null;
     const value = useMemo<CanvasHandlesValue>(() => {
         const { edit } = store.getState();
-        return { mode, edit, tools: canvasToolRenderers(mode, edit, { withPhotos, frames }) };
+        return { mode, edit, tools: canvasToolRenderers(mode, edit, { withPhotos, frames, store }) };
     }, [frames, mode, store, withPhotos]);
     const text = useContext(TextEditingContext);
 

@@ -191,6 +191,15 @@ export interface PlanTierResponseDto {
     initialOptions: CoverageOptionResponseDto[];
     // Coverage bought after activation. Nothing sells these yet (phase 2).
     extensionOptions: CoverageOptionResponseDto[];
+    // What buying the plan asks of the event (event-capabilities-fe-integration.md §2). null on ACCOUNT plans.
+    requirements: PlanRequirementsDto | null;
+}
+
+// All three true when the plan includes posts, false for a lite plan.
+export interface PlanRequirementsDto {
+    takesGuests: boolean;
+    needsSchedule: boolean;
+    needsVenue: boolean;
 }
 
 export type CoverageOptionKind = 'INITIAL' | 'EXTENSION';
@@ -996,9 +1005,11 @@ export interface EventRequestDto {
     description?: string;
     eventType: EventTypeConvention;
     visibility: EventVisibility; // required on this DTO despite the entity's DB default of PRIVATE
-    startAt: string;
+    // Optional since KAN-108: a plan with requirements.needsSchedule false sends none of startAt, endAt, timezone
+    // or location. A plan that needs a schedule gets 400 3122 without startAt, and startAt needs timezone (3008).
+    startAt?: string;
     endAt?: string; // optional — omitted, the server fills startAt + 24h
-    timezone: string;
+    timezone?: string;
     locationName?: string;
     locationAddress?: string;
     mapsUrl?: string;
@@ -1033,6 +1044,8 @@ export interface AdminProvisionScheduleItem {
     startAt?: string;
     endAt?: string;
     locationName?: string;
+    // Added 2026-11-16 (KAN-84).
+    locationAddress?: string;
     mapsUrl?: string;
     // The reception venue of a wedding or baptism; at most one.
     isSecondary?: boolean;
@@ -1108,6 +1121,18 @@ export interface QrCardLayoutDto {
         text?: Partial<Record<QrCardWordingKey, LocalizedText>> | null;
     };
     fields?: QrCardTextFieldDto[]; // up to 5; absent on layouts saved before KAN-103
+    // The picture tiles' box. null = removed; absent on layouts saved before it, which also means no tiles.
+    features?: { x: number; y: number; width: number; height: number } | null;
+    logo?: QrCardLogoDto | null; // null or absent = no logo
+}
+
+// The full StoryWall logo (icon and wordmark) at a fixed shape: its height is width × 32 / 140.
+// color: null = the brand colours, #RRGGBB = the whole logo in that one colour.
+export interface QrCardLogoDto {
+    x: number;
+    y: number;
+    width: number;
+    color: string | null;
 }
 
 // The scan lines a design can word: one per thing a code opens (QrCardPage.lines), and the gift card's.
@@ -1176,11 +1201,12 @@ export interface EventResponseDto {
     description: string | null;
     eventType: EventTypeConvention;
     visibility: EventVisibility;
-    startAt: string;
+    // null on a lite event without a date (KAN-108), with endAt and timezone.
+    startAt: string | null;
     endAt: string | null;
     coverageEndsAt: string | null; // null while DRAFT; pinned at activation
     projectedCoverage: ProjectedCoverageDto | null; // set while DRAFT, null once ACTIVE
-    timezone: string;
+    timezone: string | null;
     locationName: string | null;
     locationAddress: string | null;
     mapsUrl: string | null;
@@ -1198,7 +1224,9 @@ export interface EventResponseDto {
 }
 
 export interface EventScheduleDto {
-    startAt: string;
+    // null on a lite event without a date (lite-events-without-date-fe-integration.md §2), with endAt,
+    // timezone and projectedCoverage. capabilities.hasSchedule says the same.
+    startAt: string | null;
     endAt: string | null;
     // Null while DRAFT. Computed once at activation and never moved by later
     // startAt/endAt edits; only a paid upgrade to a longer duration moves it later.
@@ -1208,7 +1236,7 @@ export interface EventScheduleDto {
     // read, so it follows startAt as the host edits the draft. Exactly one of
     // projectedCoverage / coverageEndsAt is non-null on any event.
     projectedCoverage: ProjectedCoverageDto | null;
-    timezone: string;
+    timezone: string | null;
     rsvpDeadline: string | null;
 }
 
@@ -1229,6 +1257,23 @@ export interface EventRsvpSummaryDto {
     attending: number;
     declined: number;
     noResponse: number;
+}
+
+export type EventKind = 'FULL' | 'LITE';
+export type EventHome = 'FEED' | 'GALLERY' | 'WISHBOOK' | 'MANAGE';
+
+// What an event can do, worked out by the backend (event-capabilities-fe-integration.md §1). Read it through
+// lib/eventCapabilities.ts, never module keys. kind, home and the shows* flags follow what the event paid for,
+// whatever its state; guestCodeActions follows what a guest can do right now.
+export interface EventCapabilitiesDto {
+    kind: EventKind;
+    home: EventHome;
+    takesGuests: boolean;
+    hasSchedule: boolean;
+    showsDetailsSettings: boolean;
+    showsShareLinks: boolean;
+    showsGuestCode: boolean;
+    guestCodeActions: QrGuestAction[];
 }
 
 // Returned by GET /api/events/{id} only (not the list endpoint), added
@@ -1253,6 +1298,8 @@ export interface EventDetailResponseDto {
     theme: EventThemeDto | null;
     hosts: EventHostResponseDto[]; // only the primary host when co_hosts is off
     modules: EventModuleResponseDto[];
+    // Added 2026-11-03 (KAN-107). Missing from a demo snapshot taken before then.
+    capabilities?: EventCapabilitiesDto;
     sessions: EventSessionResponseDto[] | null; // null when schedule is off
     rsvpSummary: EventRsvpSummaryDto | null; // null when rsvp is off
     createdAt: string;
@@ -1828,7 +1875,7 @@ export interface PartnerPortalResponseDto {
 }
 // No titles or ids: the portal opens with the link alone (KAN-28).
 export interface PartnerPortalReachEventDto {
-    startAt: string;
+    startAt: string | null; // null on a lite event without a date
     vendorType: PartnerRole;
     guests: number;
     // Pro item views plus post views.
@@ -1877,7 +1924,7 @@ export interface BusinessOverviewDto {
 export interface BusinessEventDto {
     eventId: string;
     title: string;
-    startAt: string;
+    startAt: string | null; // null on a lite event without a date
     vendorType: PartnerRole;
     guests: number;
     views?: number;
@@ -2092,11 +2139,24 @@ export interface VoidCollaborationRedemptionRequestDto {
     reason: string;
 }
 // POST /api/events/{eventId}/upgrade-checkout — host, ACTIVE only (billing-fe-guide §7d).
+// The date and place an upgrade gives an event that has none (lite-events-without-date-fe-integration.md §5).
+// The server fills the end when it is left out.
+export interface EventDetailsRequestDto {
+    startAt: string;
+    endAt?: string;
+    timezone: string;
+    locationName: string;
+    locationAddress: string;
+    mapsUrl?: string;
+}
 export interface UpgradeCheckoutRequestDto extends WithdrawalConsentDto {
     attribution?: CheckoutAttributionDto;
     planTierCode: PlanTierCode;
     // Required since 2026-09-23: one of that plan's options[].coverageOptionId.
     coverageOptionId: string;
+    // Needed when the option's requirements.needsSchedule is true and the event has no date (400 3122 without
+    // them); ignored otherwise. They reach the event only when the payment settles.
+    details?: EventDetailsRequestDto;
 }
 // POST /api/events/{eventId}/extension-checkout — primary host, ACTIVE only
 // (coverage-options-and-extensions-fe-integration.md §11). Never discounted.
@@ -2217,8 +2277,10 @@ export interface UpgradeOptionResponseDto {
     // Set whenever the promotion takes something off a listed option (percent or
     // promo price); null otherwise, and for a promotion set up without a label.
     discountLabel: string | null;
+    // What moving to this plan asks of the event (event-capabilities-fe-integration.md §3).
+    requirements: PlanRequirementsDto;
 }
-export type OrderKind = 'ACTIVATION' | 'UPGRADE' | 'STORAGE_PACK' | 'EXTENSION';
+export type OrderKind = 'ACTIVATION' | 'UPGRADE' | 'STORAGE_PACK' | 'EXTENSION' | 'MODULE_UNLOCK';
 // REFUNDED: the order was paid and the money went back (a withdrawal or a lost dispute).
 export type OrderStatus = 'PENDING' | 'PAID' | 'FAILED' | 'CANCELLED' | 'REFUNDED';
 
@@ -2359,9 +2421,11 @@ export interface WithdrawalStorageAfterDto {
 // POST /api/events/{eventId}/quote (2026-09-24) — prices an activation or a
 // storage pack before checkout; answers a PriceBreakdown. Read-only.
 export interface QuoteRequestDto {
-    kind: 'ACTIVATION' | 'STORAGE_PACK';
+    kind: 'ACTIVATION' | 'STORAGE_PACK' | 'MODULE_UNLOCK';
     // Required for STORAGE_PACK, refused for ACTIVATION.
     paidServiceCode?: string;
+    // Required for MODULE_UNLOCK (KAN-82): the feature add-ons bought together.
+    paidServiceCodes?: string[];
 }
 
 // GET /api/legal/withdrawal-terms(/{version})?locale=en|el — public (2026-09-24).
@@ -2731,7 +2795,7 @@ export interface FunnelMetricsResponseDto {
         }[];
         byKind: {
             currency: string;
-            /** OrderKind: ACTIVATION | UPGRADE | STORAGE_PACK | EXTENSION */
+            /** OrderKind: ACTIVATION | UPGRADE | STORAGE_PACK | EXTENSION | MODULE_UNLOCK */
             kind: string;
             orders: number;
             amountMinor: number;
@@ -3077,7 +3141,7 @@ export interface EventDashboardRowDto {
     eventId: string;
     planTierCode: string;
     eventType: string;
-    startAt: string;
+    startAt: string | null; // null on a lite event without a date
     storageQuotaBytes: number | null;
     guestQuotaMax: number | null;
 }
@@ -3204,13 +3268,18 @@ export interface QrLinkResolutionDto {
     // The token a wish from this scan goes through, without an account: the code's own, or the event's join
     // code's. Missing when the event takes no wishes, and from a backend older than this field.
     wishToken?: string;
+    // The event's online invitation while guests can open it (KAN-239): same rule as the event's own
+    // invitationSlug. Missing when there is none, and from a backend older than this field.
+    invitationSlug?: string | null;
 }
 
 // POST /api/qr/{token}/wishes: a wish left through a GUEST code, with no account. See
 // guestwall-be docs/fe-guides/lite-tiers-fe-integration.md §4.
+// Since KAN-219 it also takes multipart/form-data: this DTO as a `wish` JSON part plus an optional `audio` part.
 export interface QrWishRequestDto {
     guestName: string;
-    message: string;
+    // Optional when the request carries a recording; the server needs one of the two (3132).
+    message?: string;
     ageConfirmed: true;
     acceptedTermsVersion: string;
     acceptedGuidelinesVersion: string;
@@ -3329,9 +3398,26 @@ export interface EventGiftAccountResponseDto {
     updatedAt: string;
 }
 
+// A wish's recording (KAN-219). url is presigned and short-lived: refetch the list for a fresh one.
+export interface WishAudioDto {
+    url: string;
+    durationMs: number;
+}
+
+// POST /api/events/{eventId}/wishbook. Since KAN-219 it also takes multipart/form-data: this DTO as a
+// `wish` JSON part plus an optional `audio` part (the recording).
 export interface WishbookEntryRequestDto {
-    message: string;
+    // Optional when the request carries a recording; the server needs one of the two (3132).
+    message?: string;
     guestName?: string;
+}
+
+// PUT /api/wishbook/{entryId} — the author only, while the event is ACTIVE (KAN-217).
+// A blank or missing message drops the text, so send the current text when only the recording changes.
+export interface WishbookEntryEditDto {
+    message?: string;
+    // Drops the stored recording. Ignored when a new one is sent.
+    removeAudio?: boolean;
 }
 
 export interface WishbookEntryResponseDto {
@@ -3339,7 +3425,10 @@ export interface WishbookEntryResponseDto {
     eventId: string;
     authorMemberId: string | null;
     guestName: string;
-    message: string;
+    // null for a voice-only wish (KAN-219).
+    message: string | null;
+    // Hosts, co-hosts and the author only; null for everyone else and for a wish without one.
+    audio: WishAudioDto | null;
     createdAt: string;
     canDelete: boolean;
     // Starred for the book (2026-10-06). Hosts get true/false; everyone else gets null.
@@ -3702,6 +3791,7 @@ export interface EventSessionRequestDto {
     endAt?: string;
     locationName?: string;
     mapsUrl?: string;
+    locationAddress?: string;
     displayOrder: number;
     isSecondary?: boolean; // defaults to false; at most one non-deleted session per event
     rsvpEnabled?: boolean; // defaults to false; guests may answer for this session only when true
@@ -3717,6 +3807,8 @@ export interface EventSessionResponseDto {
     endAt: string | null;
     locationName: string | null;
     mapsUrl: string | null;
+    // The main session's mirrors the event's own address.
+    locationAddress: string | null;
     displayOrder: number;
     isMain: boolean; // system-managed, read-only — set only via initialSessionTitle at event creation
     isSecondary: boolean;
@@ -3734,6 +3826,7 @@ export interface EventSessionPatchDto {
     clearEndAt?: boolean;
     locationName?: string;
     mapsUrl?: string | null;
+    locationAddress?: string;
     displayOrder?: number;
     isSecondary?: boolean;
     rsvpEnabled?: boolean;
@@ -3959,6 +4052,11 @@ export interface EventUsageResponseDto {
 // Consent required since 2026-09-23, when storage packs became withdrawable.
 export interface StorageCheckoutRequestDto extends WithdrawalConsentDto {
     paidServiceCode: string;
+}
+
+// POST /api/events/{eventId}/addon-checkout — a live event buys feature add-ons (MODULE_UNLOCK) in one payment (KAN-82).
+export interface AddonCheckoutRequestDto extends WithdrawalConsentDto {
+    paidServiceCodes: string[];
 }
 
 export interface OriginalMediaUrlDto {
@@ -4290,7 +4388,15 @@ export interface PlanTierRequestDto {
     eventTypeKey?: EventTypeConvention;
 }
 
-export type PlanTierPatchDto = Partial<Omit<PlanTierRequestDto, 'code' | 'scope' | 'eventTypeKey'>>;
+// A null field means "leave it". The clear flags are the only way to empty these fields, and a flag
+// sent with a value for the same field is 400.
+export type PlanTierPatchDto = Partial<Omit<PlanTierRequestDto, 'code' | 'scope' | 'eventTypeKey'>> & {
+    clearStorageBytes?: boolean;
+    clearMaxMembers?: boolean;
+    clearDiscountPercent?: boolean;
+    clearDiscountStartsAt?: boolean;
+    clearDiscountEndsAt?: boolean;
+};
 
 // POST /api/admin/plan-tiers/{id}/duplicate — clones storage/quotas/moduleKeys
 // and every coverage option (retired ones included) from the source plan into
@@ -4496,6 +4602,12 @@ export interface DemoSnapshotDto {
     giftAccount: EventGiftAccountResponseDto | null;
     // token is a "demo-qr-…" placeholder.
     qrLinks: QrLinkResponseDto[];
+    // The event's QR card designs, as /api/events/{id}/qr-card-templates returns them; empty when
+    // the event has none. Absent from a snapshot served by a backend that predates the field.
+    qrCardTemplates?: QrCardTemplateDto[];
+    // The event's own keepsake book, carried only while it is READY; its downloadUrl expires with
+    // the media URLs. Null when it has none, absent from a snapshot that predates the field.
+    wishbookBook?: WishbookBookDto | null;
     usage: EventUsageResponseDto;
 }
 
@@ -4650,6 +4762,9 @@ export type AdminAuditAction =
     | 'INVITATION_THEME_IMAGE_DELETED'
     | 'INVITATION_FONT_PAIRING_CREATED'
     | 'INVITATION_FONT_PAIRING_UPDATED'
+    | 'INVITATION_TEXT_CREATED'
+    | 'INVITATION_TEXT_UPDATED'
+    | 'INVITATION_TEXT_DELETED'
     | 'QR_CARD_TEMPLATE_DUPLICATED'
     | 'INVIART_COLLECTION_CHANGED'
     | 'SHOP_STORE_CREATED'
@@ -4723,6 +4838,8 @@ export interface ModerationContentDto {
     authorDisplayName: string | null;
     authorIsHost: boolean;
     media: MediaResponseDto[];
+    // A reported voice wish's recording (KAN-219); null for everything else.
+    audio: WishAudioDto | null;
     createdAt: string;
 }
 
@@ -4874,7 +4991,7 @@ export interface ContentNoticeDetailDto {
 export interface NoticeEventCandidateDto {
     eventId: string;
     title: string;
-    startAt: string;
+    startAt: string | null; // null on a lite event without a date
     primaryHostName: string | null;
     status: EventStatus;
     deleted: boolean;
@@ -5025,27 +5142,35 @@ export interface AdminQrCardTemplatePatchDto {
     layout?: QrCardLayoutDto; // a full layout replaces the stored one
 }
 
-// /api/admin/theme-fonts
+// Which list a font belongs to: the wall's theme presets and QR cards, or Save my date. Set on create, never changes.
+export type ThemeFontLibrary = 'WALL' | 'INVITATION';
+
+// /api/admin/theme-fonts?library=
 export interface AdminThemeFontDto {
     id: string;
     key: string;
     familyName: string;
     fallback: 'serif' | 'sans-serif';
+    library: ThemeFontLibrary;
     archived: boolean;
     url: string | null; // null until a file is uploaded; such a font can't be put on a preset
     presetCount: number;
+    // Save my date fonts only: the event types the editor offers it to, sorted. Empty means every type.
+    invitationEventTypes: string[];
 }
 
 export interface AdminThemeFontRequestDto {
     key: string;
     familyName: string;
     fallback: 'serif' | 'sans-serif';
+    library?: ThemeFontLibrary; // WALL when left out
 }
 
 export interface AdminThemeFontPatchDto {
     familyName?: string;
     fallback?: 'serif' | 'sans-serif';
     archived?: boolean;
+    invitationEventTypes?: string[]; // Save my date fonts only
 }
 
 // Why an admin closed an event when no rule was broken (admin-event-management-fe-integration.md §7).

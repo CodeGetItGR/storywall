@@ -1,8 +1,20 @@
 import { describe, expect, it } from 'vitest';
 
 import type { EventInvitationPreviewDto, QrLinkResolutionDto } from '@/lib/api/types';
-import { qrEventDetails, qrJoinAccountHrefs, qrLandingChoiceHref, qrLandingPlan, qrLandingStart, resolveQrLandingToken, splitQrLandingChoices } from '@/lib/qrLanding';
+import { invitationPublicUrl } from '@/lib/invitation/publication';
+import {
+    qrEventDetails,
+    qrJoinAccountHrefs,
+    qrLandingChoiceHref,
+    type QrLandingPlan,
+    qrLandingPlan,
+    qrLandingStart,
+    resolveQrLandingToken,
+    showsQrIntro,
+    splitQrLandingChoices,
+} from '@/lib/qrLanding';
 import { routes } from '@/lib/routes';
+import { SITE_URL } from '@/lib/seo';
 
 const guest = { isMember: false, hasWishbook: false };
 const member = { isMember: true, hasWishbook: false };
@@ -14,7 +26,7 @@ function resolution(overrides: Partial<QrLinkResolutionDto>): QrLinkResolutionDt
 describe('qrLandingPlan', () => {
     it('offers join and upload on a join code whose event takes uploads', () => {
         const plan = qrLandingPlan(resolution({ inviteToken: 'inv', uploadToken: 'up' }), guest);
-        expect(plan).toEqual({ choices: ['join', 'upload'], joinInviteToken: 'inv', uploadToken: 'up', wishToken: null });
+        expect(plan).toEqual({ choices: ['join', 'upload'], joinInviteToken: 'inv', uploadToken: 'up', wishToken: null, invitationSlug: null });
     });
 
     it('offers only join on a join code without an upload code', () => {
@@ -23,7 +35,7 @@ describe('qrLandingPlan', () => {
 
     it('offers join and upload on an old printed upload code, uploading on the scanned code', () => {
         const plan = qrLandingPlan(resolution({ targetType: 'MEDIA_UPLOAD', joinInviteToken: 'inv' }), guest);
-        expect(plan).toEqual({ choices: ['join', 'upload'], joinInviteToken: 'inv', uploadToken: 'self', wishToken: null });
+        expect(plan).toEqual({ choices: ['join', 'upload'], joinInviteToken: 'inv', uploadToken: 'self', wishToken: null, invitationSlug: null });
     });
 
     it('offers upload and wish on a lite guest code', () => {
@@ -34,7 +46,7 @@ describe('qrLandingPlan', () => {
 
     it('offers a wish on a full plan through the token the backend names', () => {
         const plan = qrLandingPlan(resolution({ inviteToken: 'inv', uploadToken: 'up', guestActions: ['WISH'], wishToken: 'join' }), guest);
-        expect(plan).toEqual({ choices: ['join', 'upload', 'wish'], joinInviteToken: 'inv', uploadToken: 'up', wishToken: 'join' });
+        expect(plan).toEqual({ choices: ['join', 'upload', 'wish'], joinInviteToken: 'inv', uploadToken: 'up', wishToken: 'join', invitationSlug: null });
     });
 
     it('offers a wish on an upload code through the join code', () => {
@@ -50,6 +62,20 @@ describe('qrLandingPlan', () => {
     it('gives a member the wishbook when the event has one', () => {
         const plan = qrLandingPlan(resolution({ inviteToken: 'inv', uploadToken: 'up' }), { isMember: true, hasWishbook: true });
         expect(plan.choices).toEqual(['open', 'upload', 'wishbook']);
+    });
+
+    it('offers the invitation after joining when the event has a live one', () => {
+        const plan = qrLandingPlan(resolution({ inviteToken: 'inv', uploadToken: 'up', invitationSlug: 'maria-nikos' }), guest);
+        expect(plan.choices).toEqual(['join', 'invitation', 'upload']);
+        expect(plan.invitationSlug).toBe('maria-nikos');
+    });
+
+    it('offers no invitation without a slug', () => {
+        expect(qrLandingPlan(resolution({ inviteToken: 'inv', invitationSlug: null }), guest).choices).not.toContain('invitation');
+    });
+
+    it('offers the invitation to a member too, after Open', () => {
+        expect(qrLandingPlan(resolution({ inviteToken: 'inv', invitationSlug: 'maria-nikos' }), member).choices.slice(0, 2)).toEqual(['open', 'invitation']);
     });
 
     it('offers nothing for a closed code', () => {
@@ -79,6 +105,11 @@ describe('qrLandingChoiceHref', () => {
         expect(qrLandingChoiceHref('upload', plan, 'e1')).toBeNull();
         expect(qrLandingChoiceHref('wish', plan, 'e1')).toBeNull();
     });
+
+    it('opens the published invitation', () => {
+        const invitationPlan: QrLandingPlan = { choices: ['invitation'], joinInviteToken: null, uploadToken: null, wishToken: null, invitationSlug: 'maria-nikos' };
+        expect(qrLandingChoiceHref('invitation', invitationPlan, 'e1')).toBe(invitationPublicUrl(SITE_URL, 'maria-nikos'));
+    });
 });
 
 describe('resolveQrLandingToken', () => {
@@ -102,7 +133,7 @@ describe('splitQrLandingChoices', () => {
 });
 
 describe('qrJoinAccountHrefs', () => {
-    const plan = { choices: ['join' as const], joinInviteToken: 'inv', uploadToken: null, wishToken: null };
+    const plan = { choices: ['join' as const], joinInviteToken: 'inv', uploadToken: null, wishToken: null, invitationSlug: null };
 
     it('sends sign-up and log-in to the feed with the invite', () => {
         expect(qrJoinAccountHrefs(plan, 'e1')).toEqual({
@@ -130,5 +161,18 @@ describe('qrEventDetails', () => {
     it('is null before the preview loads, or with neither date nor place', () => {
         expect(qrEventDetails('en', null)).toBeNull();
         expect(qrEventDetails('en', preview({ eventStartAt: '', eventLocationName: '  ' }))).toBeNull();
+    });
+});
+
+// The intro names joining, photos and a wish, so it needs all three on the page.
+describe('showsQrIntro', () => {
+    it('shows when the page offers joining, photos and a wish', () => {
+        expect(showsQrIntro(['join', 'upload', 'wish'])).toBe(true);
+    });
+
+    it('stays off when one of them is missing', () => {
+        expect(showsQrIntro(['open', 'upload', 'wish'])).toBe(false);
+        expect(showsQrIntro(['join', 'upload'])).toBe(false);
+        expect(showsQrIntro(['upload', 'wish'])).toBe(false);
     });
 });

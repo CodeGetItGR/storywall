@@ -14,6 +14,10 @@ export const eventKeys = {
     detail: (id: string) => ['events', id] as const,
 };
 
+export function fetchEventDetail(eventId: string): Promise<EventDetailResponseDto> {
+    return api.get<EventDetailResponseDto>(endpoints.events.byId(eventId));
+}
+
 // GET /api/events/{id} returns the grouped/enriched detail shape (schedule,
 // location, hosts, modules, sessions, rsvpSummary) — not the flat
 // EventResponseDto used by the list and create endpoints.
@@ -24,7 +28,7 @@ export function useEvent(eventId: string | null) {
 
     return useQuery({
         queryKey: eventKeys.detail(eventId ?? ''),
-        queryFn: () => api.get<EventDetailResponseDto>(endpoints.events.byId(eventId!)),
+        queryFn: () => fetchEventDetail(eventId!),
         enabled: Boolean(eventId) && isAuthenticated,
         staleTime,
     });

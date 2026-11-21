@@ -6,7 +6,9 @@ import type { RsvpReportSessionDto } from '@/lib/api/types';
 
 // "Reception: 184 people · 10 no answer" per session the guests could answer.
 // Events whose sessions aren't open to RSVPs have none, and no section.
-export function RsvpReportSessions({ sessions }: { sessions: RsvpReportSessionDto[] }) {
+const defaultHeadingClass = 'mb-3 text-xs font-bold tracking-wide text-ink-faint uppercase';
+
+export function RsvpReportSessions({ sessions, headingClassName = defaultHeadingClass }: { sessions: RsvpReportSessionDto[]; headingClassName?: string }) {
     const t = useTranslations('ManagePage.rsvpReport');
 
     if (sessions.length === 0) return null;
@@ -14,7 +16,7 @@ export function RsvpReportSessions({ sessions }: { sessions: RsvpReportSessionDt
     return (
         <section>
             {/* Heading */}
-            <h2 className="mb-3 text-xs font-bold tracking-wide text-ink-faint uppercase">{t('perSession')}</h2>
+            <h2 className={headingClassName}>{t('perSession')}</h2>
 
             {/* Sessions */}
             <ul className="flex flex-col gap-1.5 text-sm text-ink">

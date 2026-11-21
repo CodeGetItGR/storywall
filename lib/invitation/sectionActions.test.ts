@@ -155,6 +155,15 @@ describe('section edits through the editor store', () => {
         expect(store.getState().document.sections[1].visible).toBe(true);
     });
 
+    it('showing a section a design switch hid clears its mark', () => {
+        const document = sampleDocument();
+        document.sections[1] = { ...document.sections[1], visible: false, hiddenByTheme: true };
+        const store = createInvitationEditorStore(document);
+        store.getState().edit(setSectionVisible('s-date', true));
+        expect(store.getState().document.sections[1].visible).toBe(true);
+        expect(store.getState().document.sections[1]).not.toHaveProperty('hiddenByTheme');
+    });
+
     it('deletes a section and brings it back on undo, but keeps the footer', () => {
         const store = storeWithSample();
         store.getState().edit(deleteSection('s-date'));

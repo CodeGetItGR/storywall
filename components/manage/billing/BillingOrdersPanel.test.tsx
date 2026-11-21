@@ -70,25 +70,24 @@ describe('BillingOrdersPanel', () => {
             }),
         ]);
 
-        // Once for small screens, once for the desktop table.
-        expect(screen.getAllByText('Coverage extension')).toHaveLength(2);
-        expect(screen.getAllByText('Sep 20, 2027 to Dec 20, 2027')).toHaveLength(2);
+        expect(screen.getByText('Coverage extension')).toBeInTheDocument();
+        expect(screen.getByText('Sep 20, 2027 to Dec 20, 2027')).toBeInTheDocument();
     });
 
     it('shows no span for an unpaid extension', () => {
         renderPanel([order({ id: 'ext-2', kind: 'EXTENSION', status: 'PENDING', paidAt: null })]);
 
-        expect(screen.getAllByText('Coverage extension')).toHaveLength(2);
+        expect(screen.getByText('Coverage extension')).toBeInTheDocument();
         expect(screen.queryByText(/ to /)).not.toBeInTheDocument();
     });
 
     it('keeps the existing kinds unchanged', () => {
         renderPanel([order({ id: 'up-1', kind: 'UPGRADE' }), order({ id: 'pack-1', kind: 'STORAGE_PACK' })]);
 
-        expect(screen.getAllByText('Upgrade')).toHaveLength(2);
-        expect(screen.getAllByText('Plan upgrade. Coverage unchanged.')).toHaveLength(2);
-        expect(screen.getAllByText('Storage pack')).toHaveLength(2);
-        expect(screen.getAllByText('Permanent storage increase.')).toHaveLength(2);
+        expect(screen.getByText('Upgrade')).toBeInTheDocument();
+        expect(screen.getByText('Plan upgrade. Coverage unchanged.')).toBeInTheDocument();
+        expect(screen.getByText('Storage pack')).toBeInTheDocument();
+        expect(screen.getByText('Permanent storage increase.')).toBeInTheDocument();
     });
 
     it('offers the withdrawal function only on the orders that can still be withdrawn', () => {
@@ -97,8 +96,7 @@ describe('BillingOrdersPanel', () => {
         renderPanel([upgrade, order({ id: 'pack-1', kind: 'STORAGE_PACK' })], { ids: new Set(['up-1']), onWithdraw });
 
         const buttons = screen.getAllByRole('button', { name: 'Withdraw from contract here' });
-        // Once for small screens, once for the desktop table.
-        expect(buttons).toHaveLength(2);
+        expect(buttons).toHaveLength(1);
         fireEvent.click(buttons[0]);
         expect(onWithdraw).toHaveBeenCalledWith(upgrade);
     });
@@ -106,8 +104,26 @@ describe('BillingOrdersPanel', () => {
     it('shows a gift instead of an amount and no total', () => {
         renderPanel([order({ id: 'gift-1', paidByCaller: false, amountMinor: null })], undefined, null);
 
-        expect(screen.getAllByText('Gift')).toHaveLength(2);
+        expect(screen.getByText('Gift')).toBeInTheDocument();
         expect(screen.queryByText(/€0/)).not.toBeInTheDocument();
         expect(screen.queryByText(messages.EventPlanSettingsPage.facts.totalPaid)).not.toBeInTheDocument();
+    });
+
+    it('shows each order once, as a row with its status, date and amount, then the total paid', () => {
+        renderPanel([order({ id: 'act-1' })]);
+
+        expect(screen.queryByRole('table')).not.toBeInTheDocument();
+        const row = screen.getByRole('listitem');
+        expect(row).toHaveTextContent('Activation');
+        expect(row).toHaveTextContent(messages.EventPlanSettingsPage.orderStatus.PAID);
+        expect(row).toHaveTextContent('Sep 24, 2026');
+        expect(row).toHaveTextContent('€15.00');
+        expect(screen.getByText(messages.EventPlanSettingsPage.facts.totalPaid)).toBeInTheDocument();
+    });
+
+    it('says so when there are no orders yet', () => {
+        renderPanel([]);
+
+        expect(screen.getByText(messages.EventPlanSettingsPage.orders.empty)).toBeInTheDocument();
     });
 });

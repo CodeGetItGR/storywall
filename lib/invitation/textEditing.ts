@@ -319,12 +319,12 @@ export function textColorSwatches(document: InvitationDocument, theme: ThemeDesi
     return uniqueBy([...themeColors, ...used, ...BASE_TEXT_COLORS], (color) => color.toLowerCase());
 }
 
-function fontLabel(value: string): string {
+export function fontLabel(value: string): string {
     const first = value.split(',')[0] ?? value;
     return first.replace(/['"]/g, '').trim() || value;
 }
 
-function uploadedFontOptions(fonts: InvitationFontDto[]): FontOption[] {
+export function uploadedFontOptions(fonts: InvitationFontDto[]): FontOption[] {
     return fonts.map((font) => ({ value: `'${font.familyName}',${font.fallback}`, label: font.familyName }));
 }
 

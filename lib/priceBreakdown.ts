@@ -62,7 +62,7 @@ export function breakdownDiscountMessageKey(discount: PriceBreakdownDiscount): s
 
 // The order kinds the per-order withdrawal endpoints take. ACTIVATION goes
 // through the event endpoint instead (and withdraws the whole event).
-const ORDER_SCOPED_KINDS: readonly OrderKind[] = ['UPGRADE', 'STORAGE_PACK', 'EXTENSION'];
+const ORDER_SCOPED_KINDS: readonly OrderKind[] = ['UPGRADE', 'STORAGE_PACK', 'EXTENSION', 'MODULE_UNLOCK'];
 
 export function isOrderScopedWithdrawalKind(kind: OrderKind): boolean {
     return ORDER_SCOPED_KINDS.includes(kind);

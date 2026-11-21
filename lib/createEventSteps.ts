@@ -1,8 +1,8 @@
-import type { EventTypeConvention, ThemePresetDto } from '@/lib/api/types';
+import type { EventRequestDto, EventTypeConvention, ThemePresetDto } from '@/lib/api/types';
 import { eventTypeSlug } from '@/lib/eventTypeSlug';
 import type { CreateEventStep } from '@/providers/createEvent/CreateEventFormContext';
 
-// Every step, in order. Theme and account are shown only when they apply (wizard only for account).
+// Every step, in order. Details, theme and account are shown only when they apply (wizard only for account).
 export const CREATE_EVENT_STEPS: CreateEventStep[] = ['type', 'plan', 'details', 'theme', 'account', 'overview'];
 
 export function parseCreateEventStep(value: string | null): CreateEventStep {
@@ -20,10 +20,13 @@ export function resolveCreateEventStep(
     return parseCreateEventStep(stepParam);
 }
 
-// The steps the host walks through: the theme step only when there is something to pick, the account
-// step only in the wizard and only for a guest or an unverified account (it then stays for the run).
-export function visibleCreateEventSteps(themeStepAvailable: boolean, accountStepShown = false): CreateEventStep[] {
-    return CREATE_EVENT_STEPS.filter((step) => (step !== 'theme' || themeStepAvailable) && (step !== 'account' || accountStepShown));
+// The steps the host walks through: details unless the plan asks for nothing there, the theme step only when there
+// is something to pick, the account step only in the wizard and only for a guest or an unverified account (it then
+// stays for the run).
+export function visibleCreateEventSteps(themeStepAvailable: boolean, accountStepShown = false, detailsStepShown = true): CreateEventStep[] {
+    return CREATE_EVENT_STEPS.filter(
+        (step) => (step !== 'theme' || themeStepAvailable) && (step !== 'account' || accountStepShown) && (step !== 'details' || detailsStepShown),
+    );
 }
 
 export function stepAfter(step: CreateEventStep, steps: readonly CreateEventStep[]): CreateEventStep | null {
@@ -35,6 +38,28 @@ export function stepAfter(step: CreateEventStep, steps: readonly CreateEventStep
 export function stepBefore(step: CreateEventStep, steps: readonly CreateEventStep[], accountDone: boolean): CreateEventStep | null {
     const before = steps.slice(0, Math.max(steps.indexOf(step), 0)).filter((entry) => !(accountDone && entry === 'account'));
     return before.at(-1) ?? null;
+}
+
+// The step before or after this one among the shown steps; the same step at either end.
+export function adjacentCreateEventStep(steps: readonly CreateEventStep[], step: CreateEventStep, offset: 1 | -1): CreateEventStep {
+    return steps[steps.indexOf(step) + offset] ?? step;
+}
+
+// The date, place and first session of the event to create. A plan that doesn't ask for them sends none, whatever
+// was typed before switching to it.
+export function createEventDetailsRequest(
+    asksDetails: boolean,
+    details: { startAt: string; timezone: string; locationName: string; locationAddress: string; mapsUrl: string; initialSessionTitle?: string },
+): Pick<EventRequestDto, 'startAt' | 'timezone' | 'locationName' | 'locationAddress' | 'mapsUrl' | 'initialSessionTitle'> {
+    if (!asksDetails) return {};
+    return {
+        startAt: new Date(details.startAt).toISOString(),
+        timezone: details.timezone,
+        locationName: details.locationName.trim(),
+        locationAddress: details.locationAddress.trim(),
+        mapsUrl: details.mapsUrl.trim() || undefined,
+        initialSessionTitle: details.initialSessionTitle,
+    };
 }
 
 // Whether to offer the theme step: the chosen plan lists the theme module and the type
@@ -119,6 +144,16 @@ export function readCreateEventCheckout(run: string): CreateEventCheckout | null
     } catch {
         return null;
     }
+}
+
+// Takes the host to the first field holding them back that the browser's own check lets through:
+// one marked invalid, or a required one with only spaces in it.
+export function focusFirstInvalidField(formId: string): void {
+    const fields = Array.from(document.getElementById(formId)?.querySelectorAll('input') ?? []);
+    const field = fields.find((input) => input.getAttribute('aria-invalid') === 'true' || (input.required && !input.value.trim()));
+    if (!field) return;
+    field.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    field.focus({ preventScroll: true });
 }
 
 // Brings the first unticked checkbox in the form into view and focuses it, so a

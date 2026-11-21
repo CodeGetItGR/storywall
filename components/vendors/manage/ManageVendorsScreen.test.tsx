@@ -7,6 +7,7 @@ vi.mock('next-intl', () => ({
     useTranslations: () => (key: string, values?: Record<string, unknown>) => (values ? `${key}:${JSON.stringify(values)}` : key),
     useLocale: () => 'en',
 }));
+vi.mock('@/components/manage/nav/ManagePageFrame', () => ({ ManagePageFrame: ({ children }: { children: React.ReactNode }) => <>{children}</> }));
 vi.mock('@/components/tools/ModulePageShell', () => ({ ModulePageShell: ({ children }: { children: React.ReactNode }) => <div>{children}</div> }));
 vi.mock('@/components/routing/EventRouteGate', () => ({ useEventRouteContext: () => ({ eventId: 'e1', activeEvent: { id: 'e1' }, isHost: true }) }));
 const readable = vi.hoisted(() => ({ value: true }));
@@ -18,8 +19,14 @@ const page = vi.hoisted(() => ({ value: {} as Record<string, unknown> }));
 vi.mock('@/hooks/useManageVendors', () => ({ useManageVendors: () => page.value }));
 const invite = vi.hoisted(() => ({ value: {} as Record<string, unknown> }));
 vi.mock('@/hooks/useVendorInvite', () => ({ useVendorInvite: () => invite.value }));
-const seats = vi.hoisted(() => ({ value: { seatsLabel: null as string | null, fullNotice: null as string | null } }));
+type Seats = { seatsLabel: string | null; seatsSpoken: string | null; percent: number; fullNotice: string | null };
+const NO_SEATS: Seats = { seatsLabel: null, seatsSpoken: null, percent: 0, fullNotice: null };
+const seats = vi.hoisted(() => ({ value: {} as Seats }));
 vi.mock('@/hooks/useVendorSeats', () => ({ useVendorSeats: () => seats.value }));
+const capabilities = vi.hoisted(() => ({ value: [] as unknown[] }));
+vi.mock('@/hooks/useVendorCapabilities', () => ({ useVendorCapabilities: () => capabilities.value }));
+const scene = vi.hoisted(() => ({ value: { types: [] as string[], alt: '' } }));
+vi.mock('@/hooks/useVendorScene', () => ({ useVendorScene: () => scene.value }));
 
 const LINK = { vendorType: 'PHOTOGRAPHER', inviteToken: 't1' };
 
@@ -81,7 +88,9 @@ beforeEach(() => {
     readable.value = true;
     page.value = state();
     invite.value = inviteState();
-    seats.value = { seatsLabel: null, fullNotice: null };
+    seats.value = NO_SEATS;
+    capabilities.value = [];
+    scene.value = { types: [], alt: '' };
 });
 afterEach(cleanup);
 
@@ -146,21 +155,33 @@ describe('ManageVendorsScreen', () => {
         expect(page.value.requestRemove).toHaveBeenCalledWith('v1');
     });
 
-    it('hides and removes from the row without opening the sheet', () => {
+    it('hides and removes from the row menu without opening the sheet', async () => {
         page.value = state({ vendors: [JOINED] });
         render(<ManageVendorsScreen />);
-        fireEvent.click(screen.getByRole('button', { name: 'manage.hideNamed:{"name":"Studio X"}' }));
+        const more = 'moreFor:{"name":"Studio X"}';
+        fireEvent.click(screen.getByRole('button', { name: more }));
+        fireEvent.click(await screen.findByRole('menuitem', { name: 'manage.hide' }));
         expect(page.value.toggleHidden).toHaveBeenCalledWith('v1');
-        fireEvent.click(screen.getByRole('button', { name: 'manage.removeNamed:{"name":"Studio X"}' }));
+        fireEvent.click(screen.getByRole('button', { name: more }));
+        fireEvent.click(await screen.findByRole('menuitem', { name: 'manage.remove' }));
         expect(page.value.requestRemove).toHaveBeenCalledWith('v1');
         expect(page.value.openVendor).not.toHaveBeenCalled();
     });
 
-    it('turns the row Show off for an opted-out vendor', () => {
-        page.value = state({ vendors: [{ ...JOINED, hiddenByHost: true, optedOut: true }] });
+    it('offers Show in the menu for a vendor the host hid', async () => {
+        page.value = state({ vendors: [{ ...JOINED, hiddenByHost: true }] });
         render(<ManageVendorsScreen />);
-        const show = screen.getByRole('button', { name: 'manage.showNamed:{"name":"Studio X"}' }) as HTMLButtonElement;
-        expect(show.disabled).toBe(true);
+        fireEvent.click(screen.getByRole('button', { name: 'moreFor:{"name":"Studio X"}' }));
+        expect(await screen.findByRole('menuitem', { name: 'manage.show' })).toBeTruthy();
+    });
+
+    it('offers only Remove in the menu for an opted-out vendor', async () => {
+        page.value = state({ vendors: [{ ...JOINED, optedOut: true }] });
+        render(<ManageVendorsScreen />);
+        expect(screen.getByText('manage.hidden')).toBeTruthy();
+        fireEvent.click(screen.getByRole('button', { name: 'moreFor:{"name":"Studio X"}' }));
+        expect(await screen.findByRole('menuitem', { name: 'manage.remove' })).toBeTruthy();
+        expect(screen.queryByRole('menuitem', { name: /manage\.(show|hide)/ })).toBeNull();
     });
 
     it('asks before removing the vendor picked from a row', () => {
@@ -169,15 +190,51 @@ describe('ManageVendorsScreen', () => {
         expect(screen.getByText('manage.removeTitle:{"name":"Studio X"}')).toBeTruthy();
     });
 
-    it('shows the seat count next to Joined', () => {
-        seats.value = { seatsLabel: '1 / 5', fullNotice: null };
+    it('shows the seats bar next to Joined, read out as one phrase', () => {
+        seats.value = { ...NO_SEATS, seatsLabel: '1 / 5', seatsSpoken: '1 of 5 vendor seats used', percent: 20 };
         page.value = state({ vendors: [JOINED] });
         render(<ManageVendorsScreen />);
         expect(screen.getByText('1 / 5')).toBeTruthy();
+        expect(screen.getByRole('img', { name: '1 of 5 vendor seats used' })).toBeTruthy();
+    });
+
+    it('lists what each allowed vendor type can do once a vendor has joined', () => {
+        capabilities.value = [
+            { type: 'PLANNER', title: 'Planner', body: 'Edits the schedule.' },
+            { type: 'VENUE', title: 'Venue', body: 'The place you celebrate.' },
+        ];
+        page.value = state({ vendors: [JOINED] });
+        render(<ManageVendorsScreen />);
+        expect(screen.getByRole('heading', { name: 'manage.can.title' })).toBeTruthy();
+        expect(screen.getByText('The place you celebrate.')).toBeTruthy();
+        expect(screen.queryByText('manage.joinedEmpty')).toBeNull();
+    });
+
+    it('shows the picture and the rows in place of "What vendors can do" while nobody has joined', () => {
+        capabilities.value = [{ type: 'PHOTOGRAPHER', title: 'Photographer', body: 'Adds pro photos.' }];
+        scene.value = { types: ['PHOTOGRAPHER'], alt: 'Vendors at an event: photographer' };
+        render(<ManageVendorsScreen />);
+        expect(screen.getByRole('img', { name: 'Vendors at an event: photographer' })).toBeTruthy();
+        expect(screen.getByText('manage.joinedEmpty')).toBeTruthy();
+        expect(screen.getAllByText('Adds pro photos.')).toHaveLength(1);
+        expect(screen.queryByRole('heading', { name: 'manage.can.title' })).toBeNull();
+    });
+
+    it('leaves out the picture when the plan allows no drawn types', () => {
+        capabilities.value = [{ type: 'OTHER', title: 'other vendors', body: 'Shown in the vendor list.' }];
+        render(<ManageVendorsScreen />);
+        expect(screen.queryByRole('img', { name: /Vendors at an event/ })).toBeNull();
+        expect(screen.getByText('Shown in the vendor list.')).toBeTruthy();
+    });
+
+    it('leaves out "What vendors can do" when the plan allows no types', () => {
+        page.value = state({ vendors: [JOINED] });
+        render(<ManageVendorsScreen />);
+        expect(screen.queryByRole('heading', { name: 'manage.can.title' })).toBeNull();
     });
 
     it('swaps Invite for the full notice once every seat is taken', () => {
-        seats.value = { seatsLabel: '5 / 5', fullNotice: 'manage.full' };
+        seats.value = { ...NO_SEATS, seatsLabel: '5 / 5', seatsSpoken: '5 of 5', percent: 100, fullNotice: 'manage.full' };
         render(<ManageVendorsScreen />);
         expect(screen.getByText('manage.full')).toBeTruthy();
         expect(screen.queryByRole('button', { name: 'manage.invite' })).toBeNull();

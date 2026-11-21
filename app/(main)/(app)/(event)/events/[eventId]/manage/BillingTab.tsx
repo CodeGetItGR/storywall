@@ -5,18 +5,19 @@ import { useTranslations } from 'next-intl';
 import { BillingAddonsSection } from '@/components/manage/billing/BillingAddonsSection';
 import { BillingExtensionSection } from '@/components/manage/billing/BillingExtensionSection';
 import { BillingOrdersPanel } from '@/components/manage/billing/BillingOrdersPanel';
-import { BillingPlanSummary } from '@/components/manage/billing/BillingPlanSummary';
+import { BillingPlanCard } from '@/components/manage/billing/BillingPlanCard';
 import { BillingUpgradeSection } from '@/components/manage/billing/BillingUpgradeSection';
 import { OrderWithdrawalModal } from '@/components/manage/billing/OrderWithdrawalModal';
 import { StorageTrimNotice } from '@/components/manage/billing/StorageTrimNotice';
 import { WithdrawalHistory } from '@/components/manage/billing/WithdrawalHistory';
 import { BillingTabSkeleton } from '@/components/manage/ManageSkeletons';
-import Section from '@/components/manage/Section';
 import { useBillingWithdrawals } from '@/hooks/useBillingWithdrawals';
 import { useEventBillingPanel } from '@/hooks/useEventBillingPanel';
 import { useOrderWithdrawalFlow } from '@/hooks/useOrderWithdrawalFlow';
 import type { EventScheduleDto } from '@/lib/api/types';
 
+// KAN-229: Billing on one page, everything open. Phones: Your plan, Upgrade options, Extend coverage,
+// Paid add-ons, Order history. Desktop: Order history (and withdrawals) in a column beside the rest.
 export default function BillingTab({
     eventId,
     schedule,
@@ -66,48 +67,61 @@ export default function BillingTab({
     }
 
     return (
-        <div className="flex flex-col gap-6">
-            {/* Co-host note */}
-            {!canPurchase && !isDeleted && <p className="text-xs text-ink-muted">{tCommon('primaryHostOnly')}</p>}
+        <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[minmax(0,1fr)_20rem] lg:items-start lg:gap-7">
+            {/* Main column */}
+            <div className="flex min-w-0 flex-col gap-6">
+                {/* Co-host note */}
+                {!canPurchase && !isDeleted && <p className="text-xs text-ink-muted">{tCommon('primaryHostOnly')}</p>}
 
-            {/* Storage over the limit */}
-            <StorageTrimNotice dueAt={data.storageTrimDueAt} />
+                {/* Storage over the limit */}
+                <StorageTrimNotice dueAt={data.storageTrimDueAt} />
 
-            {/* Your plan */}
-            <BillingPlanSummary data={data} schedule={schedule} usage={panel.usage} />
+                {/* Your plan */}
+                <BillingPlanCard data={data} schedule={schedule} usage={panel.usage} />
 
-            {/* Upgrade */}
-            {!withdrawalOnly && (
-                <>
-                    {withdrawals.purchaseBlocks.upgradeBlocked && panel.upgradeTargets.length > 0 && (
-                        <p className="text-xs text-ink-muted">{tBilling('purchasesPaused.upgrades')}</p>
-                    )}
-                    <BillingUpgradeSection
+                {/* Upgrade and extend: side by side on desktop, one under the other on phones */}
+                {!withdrawalOnly && (
+                    <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[repeat(auto-fit,minmax(15rem,1fr))] lg:items-start">
+                        {/* Upgrade (hidden while empty, so Extend coverage takes the full width) */}
+                        <div className="flex flex-col gap-2 empty:hidden">
+                            {withdrawals.purchaseBlocks.upgradeBlocked && panel.upgradeTargets.length > 0 && (
+                                <p className="text-xs text-ink-muted">{tBilling('purchasesPaused.upgrades')}</p>
+                            )}
+                            <BillingUpgradeSection
+                                eventId={eventId}
+                                targets={withdrawals.purchaseBlocks.upgradeBlocked ? [] : panel.upgradeTargets}
+                                currentPlan={panel.currentPlan}
+                                extraStorageBytes={panel.usage?.extraStorageBytes ?? 0}
+                            />
+                        </div>
+
+                        {/* Extend coverage */}
+                        {!isDeleted && (
+                            <BillingExtensionSection
+                                eventId={eventId}
+                                eventStatus={data.eventStatus}
+                                coverageEndsAt={schedule.coverageEndsAt}
+                                canPurchase={canPurchase}
+                            />
+                        )}
+                    </div>
+                )}
+
+                {/* Paid add-ons */}
+                {!withdrawalOnly && (
+                    <BillingAddonsSection
                         eventId={eventId}
-                        targets={withdrawals.purchaseBlocks.upgradeBlocked ? [] : panel.upgradeTargets}
-                        currentPlan={panel.currentPlan}
-                        extraStorageBytes={panel.usage?.extraStorageBytes ?? 0}
+                        addons={data.addons}
+                        currency={insights.orderCurrency}
+                        canManage={derived.canManageAddons}
+                        hasFeatureAddons={derived.hasFeatureAddons}
                     />
-                </>
-            )}
+                )}
+            </div>
 
-            {/* Extend coverage */}
-            {!isDeleted && !withdrawalOnly && (
-                <BillingExtensionSection
-                    eventId={eventId}
-                    eventStatus={data.eventStatus}
-                    coverageEndsAt={schedule.coverageEndsAt}
-                    canPurchase={canPurchase}
-                />
-            )}
-
-            {/* Add-ons */}
-            {!withdrawalOnly && (
-                <BillingAddonsSection eventId={eventId} addons={data.addons} currency={insights.orderCurrency} canManage={derived.canManageAddons} />
-            )}
-
-            {/* Payments */}
-            <Section title={tBilling('orders.title')} divider>
+            {/* Side column */}
+            <div className="flex flex-col gap-6 lg:rounded-[24px] lg:border lg:border-border lg:px-[22px] lg:py-5">
+                {/* Order history */}
                 <BillingOrdersPanel
                     data={data}
                     derived={derived}
@@ -116,14 +130,17 @@ export default function BillingTab({
                     withdrawableOrderIds={withdrawals.withdrawableOrderIds}
                     onWithdrawAction={withdrawalFlow.open}
                 />
-            </Section>
 
-            {/* Withdrawals */}
-            {withdrawals.history.length > 0 && (
-                <Section title={tBilling('withdrawalHistory.title')} divider>
-                    <WithdrawalHistory withdrawals={withdrawals.history} />
-                </Section>
-            )}
+                {/* Withdrawals */}
+                {withdrawals.history.length > 0 && (
+                    <section aria-labelledby="billing-withdrawals-title" className="flex flex-col gap-3 border-t border-border pt-5">
+                        <h2 id="billing-withdrawals-title" className="text-[17px] font-bold text-ink">
+                            {tBilling('withdrawalHistory.title')}
+                        </h2>
+                        <WithdrawalHistory withdrawals={withdrawals.history} />
+                    </section>
+                )}
+            </div>
 
             <OrderWithdrawalModal flow={withdrawalFlow} />
         </div>

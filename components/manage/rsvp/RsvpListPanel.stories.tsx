@@ -77,6 +77,11 @@ export const MembersOnly: Story = {};
 
 export const WithInvitationReplies: Story = {
     args: { rsvps: [...memberRsvps, ...invitationRsvps] },
+    play: async ({ canvasElement, globals }) => {
+        const t = copyFor(globals).ManagePage;
+        await expect(within(canvasElement).getByRole('heading', { name: t.rsvpGuests.title })).toBeVisible();
+        await expect(within(canvasElement).getByRole('button', { name: new RegExp(`^${t.rsvpFilters.all}`) })).toHaveAttribute('aria-pressed', 'true');
+    },
 };
 
 // The event can no longer change: the mark stays, its actions don't.

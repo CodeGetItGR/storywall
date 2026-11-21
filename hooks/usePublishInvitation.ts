@@ -2,7 +2,7 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
-import { type SubmitEvent, useCallback, useEffect, useState } from 'react';
+import { type SubmitEvent, useCallback, useEffect, useRef, useState } from 'react';
 
 import { useAuth } from '@/hooks/useAuth';
 import { useSlugAvailability } from '@/hooks/useSlugAvailability';
@@ -30,6 +30,10 @@ export type PublishNotice =
 // Why the plan dialog is open.
 export type PlanPrompt = 'plan-missing' | 'coverage-ended';
 
+// Where Publish goes when the add-on step has nothing to offer after all: on with publishing
+// (the invitation is covered now), or to the plan dialog (the step couldn't read the event).
+export type AddonStepFallback = 'publish' | 'plan';
+
 type PublishInvitationOptions = {
     draftId: string;
     eventId: string | null;
@@ -39,12 +43,15 @@ type PublishInvitationOptions = {
     revision: () => number;
     // Makes a draft started signed out the account's; false when that failed.
     claim: () => Promise<boolean>;
+    // Whether the event's plan sells the invitation as an add-on the host can buy now (KAN-82).
+    offersInvitationAddon?: (eventId: string) => Promise<boolean>;
 };
 
 // Publish: saves, then publishes again straight away, asks for the link the first time,
 // or sends the host to the event's plan when it doesn't cover the invitation. Before that a
-// visitor signs in, and a draft on no event goes on one (the event step).
-export function usePublishInvitation({ draftId, eventId: openedEventId, flush, revision, claim }: PublishInvitationOptions) {
+// visitor signs in, and a draft on no event goes on one (the event step). When the plan sells
+// the invitation as an add-on, the add-on step comes first, before the link.
+export function usePublishInvitation({ draftId, eventId: openedEventId, flush, revision, claim, offersInvitationAddon }: PublishInvitationOptions) {
     const queryClient = useQueryClient();
     const router = useRouter();
     const { isAuthenticated } = useAuth();
@@ -60,6 +67,9 @@ export function usePublishInvitation({ draftId, eventId: openedEventId, flush, r
     const [sheetFailed, setSheetFailed] = useState(false);
     const [notice, setNotice] = useState<PublishNotice | null>(null);
     const [planPrompt, setPlanPrompt] = useState<PlanPrompt | null>(null);
+    const [isAddonStepOpen, setIsAddonStepOpen] = useState(false);
+    // Read after awaits, so the event step's choice counts at once.
+    const eventIdRef = useRef(openedEventId);
     const availability = useSlugAvailability(slugValue);
     const slugCheck = refused?.slug === availability.slug ? refused.check : availability.check;
 
@@ -78,6 +88,14 @@ export function usePublishInvitation({ draftId, eventId: openedEventId, flush, r
         return () => clearTimeout(timer);
     }, [notice]);
 
+    // The add-on step when the event's plan sells the invitation; false leaves Publish as it was.
+    const openAddonStep = useCallback(async () => {
+        const currentEventId = eventIdRef.current;
+        if (!offersInvitationAddon || !currentEventId || !(await offersInvitationAddon(currentEventId))) return false;
+        setIsAddonStepOpen(true);
+        return true;
+    }, [offersInvitationAddon]);
+
     const send = useCallback(
         async (slug?: string) => {
             try {
@@ -87,7 +105,10 @@ export function usePublishInvitation({ draftId, eventId: openedEventId, flush, r
                 setNotice(slug ? { kind: 'published', path: publishedInvitationPath(publication.slug) } : { kind: 'republished' });
             } catch (error) {
                 const failure = readPublishFailure(error);
-                if (failure === 'plan-missing' || failure === 'coverage-ended') {
+                if (failure === 'plan-missing') {
+                    setIsSheetOpen(false);
+                    if (!(await openAddonStep())) setPlanPrompt(failure);
+                } else if (failure === 'coverage-ended') {
                     setIsSheetOpen(false);
                     setPlanPrompt(failure);
                 } else if (failure === 'no-event') {
@@ -102,11 +123,11 @@ export function usePublishInvitation({ draftId, eventId: openedEventId, flush, r
                 }
             }
         },
-        [draftId, mutateAsync, queryClient],
+        [draftId, mutateAsync, openAddonStep, queryClient],
     );
 
     // The draft is on an event: publishes again, or asks for the link the first time.
-    const publishOnEvent = useCallback(async () => {
+    const publishOnEvent = useCallback(async (skipAddonStep = false) => {
         let publication: InvitationPublicationDto | null;
         try {
             publication = await queryClient.fetchQuery({
@@ -120,11 +141,11 @@ export function usePublishInvitation({ draftId, eventId: openedEventId, flush, r
         }
         if (publication) {
             await send();
-        } else {
+        } else if (skipAddonStep || !(await openAddonStep())) {
             setSheetFailed(false);
             setIsSheetOpen(true);
         }
-    }, [draftId, queryClient, send]);
+    }, [draftId, openAddonStep, queryClient, send]);
 
     const prepare = useCallback(async (step: () => Promise<void>) => {
         setNotice(null);
@@ -161,8 +182,9 @@ export function usePublishInvitation({ draftId, eventId: openedEventId, flush, r
     const onAttached = useCallback(
         (attachedEventId: string) => {
             setEventId(attachedEventId);
+            eventIdRef.current = attachedEventId;
             setIsEventStepOpen(false);
-            void prepare(publishOnEvent);
+            void prepare(() => publishOnEvent());
         },
         [prepare, publishOnEvent],
     );
@@ -181,6 +203,15 @@ export function usePublishInvitation({ draftId, eventId: openedEventId, flush, r
     const closeSignIn = useCallback(() => setIsSignInOpen(false), []);
     const closeEventStep = useCallback(() => setIsEventStepOpen(false), []);
     const closePlanPrompt = useCallback(() => setPlanPrompt(null), []);
+    const closeAddonStep = useCallback(() => setIsAddonStepOpen(false), []);
+    const fallBackFromAddonStep = useCallback(
+        (to: AddonStepFallback) => {
+            setIsAddonStepOpen(false);
+            if (to === 'plan') setPlanPrompt('plan-missing');
+            else void prepare(() => publishOnEvent(true));
+        },
+        [prepare, publishOnEvent],
+    );
     const seePlan = useCallback(() => {
         setPlanPrompt(null);
         if (eventId) router.push(routes.events.manage(eventId, { tab: 'plan' }));
@@ -200,6 +231,7 @@ export function usePublishInvitation({ draftId, eventId: openedEventId, flush, r
             registerHref: routes.auth.register({ next: routes.saveMyDateEditorPublish(draftId) }),
         },
         eventStep: { open: isEventStepOpen, close: closeEventStep, onAttached },
+        addonStep: { open: isAddonStepOpen && eventId !== null, eventId, close: closeAddonStep, fallBack: fallBackFromAddonStep },
         notice,
         openPublished,
         planPrompt,
@@ -222,3 +254,4 @@ export function usePublishInvitation({ draftId, eventId: openedEventId, flush, r
 export type PublishSheetState = ReturnType<typeof usePublishInvitation>['sheet'];
 export type PublishSignInState = ReturnType<typeof usePublishInvitation>['signIn'];
 export type PublishEventStepState = ReturnType<typeof usePublishInvitation>['eventStep'];
+export type PublishAddonStepState = ReturnType<typeof usePublishInvitation>['addonStep'];

@@ -10,6 +10,7 @@ import { CampaignLinkLabel } from '@/components/admin/campaigns/CampaignLinkLabe
 import { CampaignLinkShare } from '@/components/admin/campaigns/CampaignLinkShare';
 import type { CampaignLinkRow } from '@/hooks/useCampaignLinks';
 import type { CampaignDto } from '@/lib/api/types';
+import { campaignShortUrl, campaignUrl } from '@/lib/campaignLinks';
 
 // One link, opened in the links drawer: its address to copy or print, moving it to another campaign,
 // and deleting it.
@@ -49,7 +50,7 @@ export function CampaignLinkDetail({
             {/* Link */}
             <div className="space-y-3">
                 <CampaignLinkLabel label={row.label} />
-                <CampaignLinkShare url={row.url} fileName={row.link.shortCode} />
+                <CampaignLinkShare shortUrl={campaignShortUrl(row.link)} fullUrl={campaignUrl(row.link)} qrUrl={row.url} fileName={row.link.shortCode} />
             </div>
 
             {/* Move */}

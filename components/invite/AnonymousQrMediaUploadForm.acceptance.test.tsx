@@ -97,7 +97,7 @@ describe('AnonymousQrMediaUploadForm acceptance', () => {
     it('goes back to the form for another set from the sent screen', async () => {
         mutateAsync.mockResolvedValue({ created: [], failed: [] });
         const { container } = render(<AnonymousQrMediaUploadForm token="t" />);
-        fireEvent.change(screen.getByPlaceholderText('anonymousUpload.namePlaceholder'), { target: { value: 'Nikos' } });
+        fireEvent.change(screen.getByRole('textbox', { description: 'anonymousUpload.namePlaceholder' }), { target: { value: 'Nikos' } });
         chooseFile(container);
         tickBox();
         fireEvent.submit(container.querySelector('form')!);

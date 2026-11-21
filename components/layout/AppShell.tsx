@@ -12,6 +12,7 @@ import { MobileTabBar } from '@/components/layout/MobileTabBar';
 import { ReviewPrompt } from '@/components/review/ReviewPrompt';
 import { useAdminDemoEventAccess } from '@/hooks/useAdminDemoEventAccess';
 import { useAuth } from '@/hooks/useAuth';
+import { useOverviewFabRoom } from '@/hooks/useOverviewFabRoom';
 import { routes } from '@/lib/routes';
 import { cn } from '@/lib/utils';
 import { AccountPanelProvider } from '@/providers/AccountPanelProvider';
@@ -26,6 +27,8 @@ export function AppShell({ children }: { children: ReactNode }) {
     const isBlockedAdmin = user?.role === 'ADMIN' && !adminAccess.isAdminAllowed;
     // MobileTabBar stays off on account pages, so no room is kept for it there.
     const reservesTabBar = !isAccountRoute(pathname);
+    // Room for the floating Overview button above the tab bar, so it never covers the last row.
+    const reservesOverviewFab = useOverviewFabRoom();
 
     useEffect(() => {
         if (isBootstrapping) return;
@@ -49,7 +52,8 @@ export function AppShell({ children }: { children: ReactNode }) {
             <main
                 className={cn(
                     'desktop-account-page h-full min-w-0 flex-1 overflow-y-auto overscroll-contain bg-background md:ml-20 md:pb-0',
-                    reservesTabBar && 'pb-(--tab-bar-h)',
+                    reservesTabBar && 'pb-[calc(var(--tab-bar-h)+var(--overview-fab-room,0px))]',
+                    reservesOverviewFab && '[--overview-fab-room:3.5rem]',
                 )}
             >
                 {/* Demo authoring (admins on a demo event only) */}

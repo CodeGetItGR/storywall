@@ -129,13 +129,35 @@ export function isDatetimeLocalAfter(left: string | null | undefined, right: str
     return leftDate.getTime() > rightDate.getTime();
 }
 
-export function getDaysUntil(value: string | number | Date | null | undefined, referenceDate = new Date()): number | null {
+/**
+ * Calendar days from `referenceDate` to `value`, both read in `timeZone` (never below zero).
+ * The host Overview and the RSVP page both count this way, so they always agree.
+ */
+export function calendarDaysUntil(value: string | number | Date | null | undefined, timeZone: string, referenceDate = new Date()): number | null {
     if (value === null || value === undefined) return null;
 
     const date = parseDate(value);
     if (!date) return null;
 
-    return Math.max(0, Math.ceil((date.getTime() - referenceDate.getTime()) / (1000 * 60 * 60 * 24)));
+    return Math.max(0, daysBetween(localDay(referenceDate, timeZone), localDay(date, timeZone)));
+}
+
+/** The calendar day (yyyy-mm-dd) an instant falls on in a time zone. */
+export function localDay(instant: string | Date, timeZone: string): string {
+    // en-CA formats as yyyy-mm-dd.
+    return new Intl.DateTimeFormat('en-CA', { timeZone, year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date(instant));
+}
+
+/** A yyyy-mm-dd day moved by whole days. */
+export function addDays(day: string, days: number): string {
+    const date = new Date(`${day}T00:00:00Z`);
+    date.setUTCDate(date.getUTCDate() + days);
+    return date.toISOString().slice(0, 10);
+}
+
+/** Whole days from one yyyy-mm-dd day to another (negative when `to` is earlier). */
+export function daysBetween(from: string, to: string): number {
+    return Math.round((Date.parse(`${to}T00:00:00Z`) - Date.parse(`${from}T00:00:00Z`)) / 86_400_000);
 }
 
 export function formatDate(locale: string | undefined, value: string | number | Date, options: Intl.DateTimeFormatOptions): string {
@@ -170,7 +192,7 @@ export function formatShortDateTime(value: string | number | Date, locale?: stri
     return formatDate(locale ?? undefined, value, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
 }
 
-export function formatEventListDate(startAt: string | undefined, locale: string, atLabel: string): string | null {
+export function formatEventListDate(startAt: string | null | undefined, locale: string, atLabel: string): string | null {
     if (!startAt) return null;
 
     const date = parseDate(startAt);
