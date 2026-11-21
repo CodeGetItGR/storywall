@@ -29,6 +29,7 @@ export type LandingSection =
     | 'demo'
     | 'social_host'
     | 'features'
+    | 'themes'
     | 'feature_details'
     | 'reviews'
     | 'pricing'
