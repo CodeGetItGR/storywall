@@ -1,5 +1,5 @@
 import type { RsvpReportCategoryDto, RsvpReportGroupDto, RsvpReportType } from '@/lib/api/types';
-import { formatDate, getDaysUntil } from '@/lib/datetime';
+import { calendarDaysUntil, formatDate } from '@/lib/datetime';
 import { routes } from '@/lib/routes';
 
 export const RSVP_REPORT_TYPES: RsvpReportType[] = ['STATISTICS', 'FULL_LIST', 'ATTENDING_ONLY', 'WITH_CHILDREN'];
@@ -35,8 +35,9 @@ export function resolveRsvpReportCloseHref(eventId: string, from: string | null)
 export type RsvpCountdown = { labelKey: 'deadlineLabel' | 'eventDateLabel'; target: string | null; daysLeft: number };
 
 // The RSVP page's countdown: to the deadline, or to the event when none is set.
+// Days are calendar days in the event's time zone, as on the host Overview.
 // An event with no date yet and no deadline has nothing to count down to: no target, 0 days.
-export function rsvpCountdown(rsvpDeadline: string | null, startAt: string | null, now: Date = new Date()): RsvpCountdown {
+export function rsvpCountdown(rsvpDeadline: string | null, startAt: string | null, timeZone: string, now: Date = new Date()): RsvpCountdown {
     const target = rsvpDeadline ?? startAt;
-    return { labelKey: rsvpDeadline ? 'deadlineLabel' : 'eventDateLabel', target, daysLeft: getDaysUntil(target, now) ?? 0 };
+    return { labelKey: rsvpDeadline ? 'deadlineLabel' : 'eventDateLabel', target, daysLeft: calendarDaysUntil(target, timeZone, now) ?? 0 };
 }
