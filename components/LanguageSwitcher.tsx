@@ -11,7 +11,8 @@ import { publicTwinPath } from '@/i18n/publicLocale';
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
 import type { MeUpdateRequestDto } from '@/lib/api/types';
-import { syncRouterWithAddressBar } from '@/lib/overlayHistory';
+import { replacePageUrl, syncRouterWithAddressBar } from '@/lib/overlayHistory';
+import { switchedShareLocaleUrl } from '@/lib/shareLinks';
 import { cn } from '@/lib/utils';
 
 type LanguageSwitcherVariant = 'auth' | 'default' | 'sidebar';
@@ -61,8 +62,11 @@ export function LanguageSwitcher({
             }
 
             // The refresh rewrites the address bar with the router's URL; make
-            // sure it holds the current hash (e.g. an admin `#orders/<id>`).
-            syncRouterWithAddressBar();
+            // sure it holds the current hash (e.g. an admin `#orders/<id>`), and
+            // on a shared link (/q/, /invite/) the new `?lang=`, so a reload keeps it.
+            const sharedUrl = switchedShareLocaleUrl(window.location.href, next);
+            if (sharedUrl) replacePageUrl(sharedUrl);
+            else syncRouterWithAddressBar();
             startTransition(async () => {
                 await setLocale(next);
                 if (reloadOnChange) {
