@@ -30,8 +30,8 @@ import type { OccasionLengthValues } from '@/lib/occasions/occasionLength';
 import { occasionCreateHref } from '@/lib/occasions/occasionLinks';
 import type { OccasionPriceValues } from '@/lib/occasions/occasionPrice';
 import { type Occasion, occasionAlternatePaths } from '@/lib/occasions/occasions';
+import { WEDDING_PAGE_MEDIA } from '@/lib/occasions/pageMedia';
 import type { OccasionThemeId } from '@/lib/occasions/themes';
-import { WEDDING_FINAL_CTA_IMAGE } from '@/lib/occasions/weddingMedia';
 import { LandingMotionProvider } from '@/providers/LandingMotionProvider';
 
 // A three-line demo heading tops out smaller on desktop, so it fits beside the phones.
@@ -146,7 +146,7 @@ export async function WeddingContent({ campaign, demoHref, featureKeys, length, 
                 <LandingFaq centered copy={{ heading: landing('faq.heading'), intro: t('faqIntro'), items: faq }} group="wedding-faq" />
 
                 {/* Final call to action */}
-                <LandingFinalCta centered copy={finalCta} href={createHref} image={WEDDING_FINAL_CTA_IMAGE} />
+                <LandingFinalCta centered copy={finalCta} href={createHref} image={WEDDING_PAGE_MEDIA.finalCtaImage} />
 
                 {/* Other occasions */}
                 <OccasionLinks locale={locale} occasion={occasion} />

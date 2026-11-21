@@ -9,7 +9,7 @@ import { WhyStats } from '@/components/occasions/sections/why/WhyStats';
 import { WHY_LABEL_CLASS, WhyWithout } from '@/components/occasions/sections/why/WhyWithout';
 import type { Locale } from '@/i18n/config';
 import type { OccasionGuestPhotoCopy, OccasionStatCopy } from '@/lib/occasions/pageCopy';
-import { WEDDING_MARQUEE, WEDDING_QR_PHOTO, WEDDING_WITHOUT_PHOTOS } from '@/lib/occasions/weddingMedia';
+import { WEDDING_PAGE_MEDIA } from '@/lib/occasions/pageMedia';
 import { cn } from '@/lib/utils';
 
 type WeddingWhyProps = {
@@ -29,7 +29,7 @@ export async function WeddingWhy({ locale, qrHref }: WeddingWhyProps) {
     }));
     const tiles = (t.raw('with.marquee') as OccasionGuestPhotoCopy[]).map((copy, index) => ({
         ...copy,
-        ...WEDDING_MARQUEE[index]!,
+        ...WEDDING_PAGE_MEDIA.guestPhotos[index]!,
         alt: t('with.photoAlt', copy),
         avatarAlt: imageAlt('profilePhotoOf', { name: copy.name }),
     }));
@@ -53,7 +53,7 @@ export async function WeddingWhy({ locale, qrHref }: WeddingWhyProps) {
                     bubbles={t.raw('without.bubbles') as [string, string]}
                     items={t.raw('without.items') as string[]}
                     label={t('without.label')}
-                    photos={WEDDING_WITHOUT_PHOTOS}
+                    photos={WEDDING_PAGE_MEDIA.withoutPhotos}
                 />
             </SectionWrap>
 
@@ -65,7 +65,7 @@ export async function WeddingWhy({ locale, qrHref }: WeddingWhyProps) {
                         {t('with.subtitle')}
                     </p>
                     {/* QR row */}
-                    <WhyQrSteps alt={t('with.qrAlt')} photo={WEDDING_QR_PHOTO} qrHref={qrHref} steps={steps} />
+                    <WhyQrSteps alt={t('with.qrAlt')} photo={WEDDING_PAGE_MEDIA.qrPhoto} qrHref={qrHref} steps={steps} />
                     {/* Guests' photos */}
                     <WhyMarquee tiles={tiles} />
                     {/* Example and points */}
