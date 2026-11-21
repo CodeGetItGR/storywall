@@ -16,8 +16,8 @@ import { OccasionCampaignBanner } from '@/components/occasions/OccasionCampaignB
 import { OccasionLinks } from '@/components/occasions/OccasionLinks';
 import { OccasionPageShell } from '@/components/occasions/OccasionPageShell';
 import { FaqAnswer } from '@/components/occasions/sections/FaqAnswer';
+import { HeroSection } from '@/components/occasions/sections/HeroSection';
 import { WeddingFeatures } from '@/components/occasions/wedding/WeddingFeatures';
-import { WeddingHero } from '@/components/occasions/wedding/WeddingHero';
 import { WeddingPrivate } from '@/components/occasions/wedding/WeddingPrivate';
 import { WeddingRsvp } from '@/components/occasions/wedding/WeddingRsvp';
 import { WeddingWhy } from '@/components/occasions/wedding/WeddingWhy';
@@ -29,7 +29,7 @@ import { occasionFaqEntries, type OccasionFaqEntry, occasionFaqLinkHref } from '
 import type { OccasionLengthValues } from '@/lib/occasions/occasionLength';
 import { occasionCreateHref } from '@/lib/occasions/occasionLinks';
 import type { OccasionPriceValues } from '@/lib/occasions/occasionPrice';
-import { type Occasion, occasionAlternatePaths } from '@/lib/occasions/occasions';
+import type { Occasion } from '@/lib/occasions/occasions';
 import { WEDDING_PAGE_MEDIA } from '@/lib/occasions/pageMedia';
 import type { OccasionThemeId } from '@/lib/occasions/themes';
 import { LandingMotionProvider } from '@/providers/LandingMotionProvider';
@@ -81,14 +81,16 @@ export async function WeddingContent({ campaign, demoHref, featureKeys, length, 
                 {campaign?.banner ? <OccasionCampaignBanner campaign={campaign} locale={locale} /> : null}
 
                 {/* Hero */}
-                <WeddingHero
-                    alternatePaths={occasionAlternatePaths(occasion)}
+                <HeroSection
                     campaign={campaign}
                     createHref={createHref}
                     demoHref={demoHref}
                     locale={locale}
+                    media={WEDDING_PAGE_MEDIA}
+                    occasion={occasion}
                     price={price}
                     qrHref={qrHref}
+                    themesHref={null}
                 />
 
                 {/* How it works */}

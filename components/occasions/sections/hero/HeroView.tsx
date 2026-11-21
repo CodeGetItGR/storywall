@@ -1,16 +1,11 @@
-import { getTranslations } from 'next-intl/server';
-import { Fragment } from 'react';
+import { Fragment, type ReactNode } from 'react';
 
-import { LandingHeader } from '@/components/landing/LandingHeader';
+import { LandingHeader, type LandingHeaderLink } from '@/components/landing/LandingHeader';
 import { OccasionHeroActions } from '@/components/occasions/OccasionHeroActions';
 import { OccasionHeroVisual } from '@/components/occasions/OccasionHeroVisual';
 import type { Locale } from '@/i18n/config';
-import { getPublicLandingPath } from '@/i18n/publicLocale';
-import { occasionHeroSecondary } from '@/lib/landingHero';
+import type { HeroSecondaryLink } from '@/lib/landingHero';
 import { qrLinkAttributes } from '@/lib/linkClicks';
-import type { OccasionCampaign } from '@/lib/occasions/campaigns';
-import type { OccasionPriceValues } from '@/lib/occasions/occasionPrice';
-import { occasionHeaderLinks } from '@/lib/occasions/occasionSections';
 
 // The design's background: pink top left, gold top right, coral at the bottom, on white.
 const SECTION_CLASS =
@@ -24,40 +19,35 @@ const VISUAL_CLASS = [
     'min-[901px]:my-[-3%] min-[901px]:ml-0 min-[901px]:w-[min(860px,54vw)] min-[901px]:justify-self-center',
 ].join(' ');
 
-type WeddingHeroProps = {
+export type HeroViewProps = {
     alternatePaths: Record<Locale, string>;
-    campaign: OccasionCampaign | null;
-    createHref: string;
-    // null: no wedding demo; the hero shows the main button only.
-    demoHref: string | null;
-    locale: Locale;
-    price: OccasionPriceValues;
-    // The QR wedding page while it is live, else null and no link.
-    qrHref: string | null;
+    breadcrumb: { current: string; label: string };
+    header: { links: LandingHeaderLink[]; loginLabel: string; mobileLoginLabel: string };
+    homeHref: string;
+    kicker: ReactNode;
+    // The h1: the page's keyword.
+    title: ReactNode;
+    subtitle: string;
+    body: string;
+    actions: { createHref: string; createLabel: string; plansLabel: string; secondary: HeroSecondaryLink | null };
+    // The QR wedding page while it is live and the page links to it, else null.
+    qrLink: { href: string; label: string } | null;
+    trust: string[];
+    // An occasion's own phone feed and post cards; empty → the landing's.
+    visual: { feed?: ReactNode; posts?: readonly [ReactNode, ReactNode] };
 };
 
-export async function WeddingHero({ alternatePaths, campaign, createHref, demoHref, locale, price, qrHref }: WeddingHeroProps) {
-    const t = await getTranslations({ locale, namespace: 'OccasionPages.WEDDING' });
-    const common = await getTranslations({ locale, namespace: 'OccasionPages.common' });
-    const landing = await getTranslations({ locale, namespace: 'LandingPage' });
-    // A campaign may swap the body and the CTA label. The h1 always stays the keyword.
-    const c = campaign?.hero ? await getTranslations({ locale, namespace: `OccasionPages.campaigns.${campaign.id}` }) : null;
-    const nav = landing.raw('hero.nav') as string[];
-    const mobileNav = landing.raw('hero.mobileNav') as string[];
-    const home = getPublicLandingPath(locale);
-    // "From 119€" only when config gave a price.
-    const trust = [...(t.raw('hero.trust') as string[]), ...(price.range === 'none' ? [] : [t('hero.trustPrice', price)])];
-
+export function HeroView({ actions, alternatePaths, body, breadcrumb, header, homeHref, kicker, qrLink, subtitle, title, trust, visual }: HeroViewProps) {
     return (
         <section className={SECTION_CLASS}>
             {/* Header, on the hero's background */}
             <LandingHeader
                 alternatePaths={alternatePaths}
                 className="bg-transparent min-[761px]:backdrop-blur-none"
-                homeHref={home}
-                links={occasionHeaderLinks(nav, mobileNav, landing('faq.eyebrow'))}
-                loginLabel={nav.at(-1)!}
-                mobileLoginLabel={mobileNav.at(-1)!}
+                homeHref={homeHref}
+                links={header.links}
+                loginLabel={header.loginLabel}
+                mobileLoginLabel={header.mobileLoginLabel}
             />
 
             {/* Body: on phones the bottom padding makes room for the phone and cards hanging about 25vw below the visual */}
@@ -66,54 +56,48 @@ export async function WeddingHero({ alternatePaths, campaign, createHref, demoHr
                     {/* Copy */}
                     <div className="relative z-20">
                         {/* Breadcrumb */}
-                        <nav aria-label={common('breadcrumbLabel')} className="mb-3.5 min-[768px]:mb-4.5 min-[768px]:ml-1">
+                        <nav aria-label={breadcrumb.label} className="mb-3.5 min-[768px]:mb-4.5 min-[768px]:ml-1">
                             <ol className="m-0 flex list-none items-center gap-2 p-0 text-[11px] leading-[normal] font-bold tracking-[0.06em] text-[#151313]/55 uppercase">
                                 <li>
-                                    <a className="text-[#151313] no-underline hover:underline" href={home}>
+                                    <a className="text-[#151313] no-underline hover:underline" href={homeHref}>
                                         StoryWall
                                     </a>
                                 </li>
                                 <li aria-hidden="true">›</li>
-                                <li aria-current="page">{t('hero.breadcrumb')}</li>
+                                <li aria-current="page">{breadcrumb.current}</li>
                             </ol>
                         </nav>
                         {/* Kicker */}
                         <p className="mt-0 mb-4 text-[12px] leading-[1.2] font-medium tracking-[-0.02em] uppercase min-[768px]:mb-5.5 min-[768px]:ml-1 min-[768px]:text-[clamp(13px,0.9vw,16px)]">
-                            {t.rich('hero.kicker', { b: (chunks) => <strong className="font-bold">{chunks}</strong> })}
+                            {kicker}
                         </p>
                         {/* Title */}
                         <h1 className="m-0 [font-family:var(--editorial)] text-[clamp(37px,9vw,45px)] leading-[1.1] font-normal tracking-[-0.045em] min-[768px]:text-[clamp(50px,5.2vw,92px)] min-[768px]:leading-[0.91] min-[768px]:tracking-[-0.055em]">
-                            {t.rich('hero.h1', {
-                                em: (chunks) => (
-                                    <em className="[background-image:var(--brand-gradient)] bg-clip-text text-transparent italic min-[768px]:pr-[0.06em]">
-                                        {chunks}
-                                    </em>
-                                ),
-                            })}
+                            {title}
                         </h1>
                         {/* Subtitle */}
                         <p className="mt-5 mb-0 font-[Georgia,serif] text-[18px] leading-[1.3] min-[768px]:mt-6.5 min-[768px]:ml-1 min-[768px]:max-w-130 min-[768px]:text-[clamp(17px,1.35vw,21px)] min-[768px]:leading-[1.4]">
-                            {t('hero.subtitle')}
+                            {subtitle}
                         </p>
                         {/* Body */}
                         <p className="mt-3.5 mb-0 text-[15px] leading-[1.55] text-[#151313]/74 min-[768px]:ml-1 min-[768px]:max-w-[min(460px,40vw)]">
-                            {c ? c('lead') : t('hero.body')}
+                            {body}
                         </p>
                         {/* Actions */}
                         <OccasionHeroActions
-                            createHref={createHref}
-                            createLabel={c ? c('cta') : t('hero.cta')}
-                            plansLabel={landing('hero.plansCta')}
-                            secondary={occasionHeroSecondary(demoHref ? { href: demoHref, label: common('heroDemo') } : null, null)}
+                            createHref={actions.createHref}
+                            createLabel={actions.createLabel}
+                            plansLabel={actions.plansLabel}
+                            secondary={actions.secondary}
                         />
                         {/* QR page link */}
-                        {qrHref ? (
+                        {qrLink ? (
                             <a
                                 className="mt-3.5 inline-block text-[13px] font-semibold text-[#151313] underline underline-offset-3 focus-ring min-[768px]:mt-4.5 min-[768px]:ml-1"
-                                href={qrHref}
+                                href={qrLink.href}
                                 {...qrLinkAttributes('hero')}
                             >
-                                {t('hero.qrLink')}
+                                {qrLink.label}
                                 <span aria-hidden="true"> →</span>
                             </a>
                         ) : null}
@@ -132,8 +116,8 @@ export async function WeddingHero({ alternatePaths, campaign, createHref, demoHr
                         </p>
                     </div>
 
-                    {/* Visual: the landing's phone feed and floating cards */}
-                    <OccasionHeroVisual className={VISUAL_CLASS} />
+                    {/* Visual: the phone feed and floating cards */}
+                    <OccasionHeroVisual className={VISUAL_CLASS} feed={visual.feed} posts={visual.posts} />
                 </div>
             </div>
         </section>

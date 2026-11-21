@@ -1,8 +1,10 @@
 import { cleanup, render, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { WeddingHero } from '@/components/occasions/wedding/WeddingHero';
+import { HeroSection } from '@/components/occasions/sections/HeroSection';
 import type { OccasionPriceValues } from '@/lib/occasions/occasionPrice';
+import { findOccasion } from '@/lib/occasions/occasions';
+import { WEDDING_PAGE_MEDIA } from '@/lib/occasions/pageMedia';
 
 const auth = vi.hoisted(() => ({ isAuthenticated: false, isBootstrapping: false }));
 
@@ -18,15 +20,17 @@ vi.mock('@/components/occasions/OccasionHeroVisual', () => ({
 const SPAN: OccasionPriceValues = { range: 'span', from: '119€', fromName: 'START', to: '259€', toName: 'SIGNATURE' };
 const NONE: OccasionPriceValues = { range: 'none', from: '', fromName: '', to: '', toName: '' };
 
-function hero(overrides: Partial<Parameters<typeof WeddingHero>[0]> = {}) {
-    return WeddingHero({
-        alternatePaths: { el: '/el/gamos', en: '/weddings' },
+function hero(overrides: Partial<Parameters<typeof HeroSection>[0]> = {}) {
+    return HeroSection({
         campaign: null,
         createHref: '/events/new?type=wedding',
         demoHref: '/demo/wedding/feed',
         locale: 'el',
+        media: WEDDING_PAGE_MEDIA,
+        occasion: findOccasion('WEDDING')!,
         price: SPAN,
         qrHref: null,
+        themesHref: null,
         ...overrides,
     });
 }
@@ -36,7 +40,7 @@ afterEach(() => {
     auth.isAuthenticated = false;
 });
 
-describe('WeddingHero', () => {
+describe('HeroSection (wedding)', () => {
     it('has one h1, the keyword', async () => {
         render(await hero());
         const headings = screen.getAllByRole('heading', { level: 1 });
@@ -96,5 +100,10 @@ describe('WeddingHero', () => {
     it("shows the landing's phone and cards, placed as in the design", async () => {
         render(await hero());
         expect(screen.getByTestId('visual')).toHaveClass('w-[137vw]', 'min-[901px]:w-[min(860px,54vw)]');
+    });
+
+    it('shows no second button when there is neither a demo nor themes', async () => {
+        render(await hero({ demoHref: null, themesHref: null }));
+        expect(screen.getAllByRole('link').map((link) => link.textContent)).toEqual(['StoryWall', 'Δες τα πακέτα']);
     });
 });
