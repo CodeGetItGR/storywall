@@ -6,6 +6,7 @@ import { OccasionHeroActions } from '@/components/occasions/OccasionHeroActions'
 import { OccasionHeroVisual } from '@/components/occasions/OccasionHeroVisual';
 import type { Locale } from '@/i18n/config';
 import { getPublicLandingPath } from '@/i18n/publicLocale';
+import { occasionHeroSecondary } from '@/lib/landingHero';
 import { qrLinkAttributes } from '@/lib/linkClicks';
 import type { OccasionCampaign } from '@/lib/occasions/campaigns';
 import type { OccasionPriceValues } from '@/lib/occasions/occasionPrice';
@@ -102,9 +103,8 @@ export async function WeddingHero({ alternatePaths, campaign, createHref, demoHr
                         <OccasionHeroActions
                             createHref={createHref}
                             createLabel={c ? c('cta') : t('hero.cta')}
-                            demoHref={demoHref}
-                            demoLabel={common('heroDemo')}
                             plansLabel={landing('hero.plansCta')}
+                            secondary={occasionHeroSecondary(demoHref ? { href: demoHref, label: common('heroDemo') } : null, null)}
                         />
                         {/* QR page link */}
                         {qrHref ? (

@@ -8,6 +8,7 @@ import { type OccasionFeedCopy, OccasionPhoneFeed } from '@/components/occasions
 import { OccasionPostCard } from '@/components/occasions/OccasionPostCard';
 import type { Locale } from '@/i18n/config';
 import { getPublicLandingPath } from '@/i18n/publicLocale';
+import { occasionHeroSecondary } from '@/lib/landingHero';
 import type { OccasionCampaign } from '@/lib/occasions/campaigns';
 import type { OccasionHeroFeed } from '@/lib/occasions/occasionMedia';
 import type { Occasion } from '@/lib/occasions/occasions';
@@ -41,9 +42,8 @@ export async function OccasionHero({ alternatePaths, campaign, createHref, demoH
                 <OccasionHeroActions
                     createHref={createHref}
                     createLabel={c ? c('cta') : t('cta')}
-                    demoHref={demoHref}
-                    demoLabel={common('heroDemo')}
                     plansLabel={landing('hero.plansCta')}
+                    secondary={occasionHeroSecondary(demoHref ? { href: demoHref, label: common('heroDemo') } : null, null)}
                 />
             }
             // The wedding h1 marks its gradient words with <em>; this hero shows plain text.

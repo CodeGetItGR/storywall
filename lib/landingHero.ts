@@ -24,6 +24,19 @@ export function occasionHeroMainAction(isSignedIn: boolean, createHref: string):
     return isSignedIn ? { href: createHref, arrow: '↗', click: { event: 'create', placement: 'hero' } } : landingHeroMainAction(false);
 }
 
+// The hero's second button: where it goes, its label, and the click it counts.
+export type HeroSecondaryLink = { href: string; label: string; click: LandingClick };
+
+// An occasion hero's second button: its demo, or without one its themes, or none.
+export function occasionHeroSecondary(
+    demo: { href: string; label: string } | null,
+    themes: { href: string; label: string } | null,
+): HeroSecondaryLink | null {
+    if (demo) return { ...demo, click: { event: 'demo', placement: 'hero' } };
+    if (themes) return { ...themes, click: { event: 'nav', placement: 'hero', target: 'themes' } };
+    return null;
+}
+
 // The hero visual is 137vw wide on phones and min(780px, 43vw) from 761px up (HERO_VISUAL_CLASS in
 // LandingHeroVisual). Each image inside it takes a share of that width.
 const HERO_VISUAL_PHONE_VW = 137;
@@ -38,6 +51,14 @@ export function landingHeroImageSizes(phoneShare: number, desktopShare: number):
     const desktop = `min(${round(HERO_VISUAL_DESKTOP_MAX_PX * desktopShare)}px, ${round(HERO_VISUAL_DESKTOP_VW * desktopShare)}vw)`;
     return `(min-width: 761px) ${desktop}, ${round(HERO_VISUAL_PHONE_VW * phoneShare)}vw`;
 }
+
+// Shares of the hero visual's width, phone then desktop, matching LandingHeroVisual's classes.
+const HERO_PHONE_SHARE = [0.5647, 0.437] as const;
+// The screen insets 4.68% + 4.55% of the phone, and the feed track is 105.65% / 105.7% of the screen.
+const HERO_PHONE_FEED_SHARE = [HERO_PHONE_SHARE[0] * 0.9077 * 1.0565, HERO_PHONE_SHARE[1] * 0.9077 * 1.057] as const;
+export const LANDING_HERO_PHONE_SIZES = landingHeroImageSizes(...HERO_PHONE_SHARE);
+// The phone feed's images, the landing's screenshots or an occasion's own.
+export const LANDING_HERO_FEED_SIZES = landingHeroImageSizes(...HERO_PHONE_FEED_SHARE);
 
 // Reads the phone and desktop widths, `w-[N%]` and `min-[761px]:w-[N%]`, from a sprite's position class.
 export function landingHeroSpriteSizes(posClass: string): string {

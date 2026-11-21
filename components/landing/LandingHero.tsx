@@ -9,6 +9,7 @@ import { LandingHeroTypewriter } from '@/components/landing/LandingHeroTypewrite
 import { LandingHeroVisual } from '@/components/landing/LandingHeroVisual';
 import { useLandingSignedIn } from '@/hooks/useLandingSignedIn';
 import { landingHeroMainAction } from '@/lib/landingHero';
+import { routes } from '@/lib/routes';
 import { useLandingMotion } from '@/providers/LandingMotionProvider';
 
 const NAV_HREFS = ['#platformStories', '#howItWorks', '#experience', '#pricing'] as const;
@@ -67,7 +68,11 @@ export function LandingHero() {
                         <p className="mt-5 max-w-135 text-[clamp(18px,1.35vw,22px)] leading-[1.35] text-balance">{t('subtitle')}</p>
 
                         {/* Actions */}
-                        <LandingHeroActions demoLabel={t('demoCta')} main={mainAction} mainLabel={mainLabel} />
+                        <LandingHeroActions
+                            main={mainAction}
+                            mainLabel={mainLabel}
+                            secondary={{ href: routes.demo, label: t('demoCta'), click: { event: 'demo', placement: 'hero' } }}
+                        />
                     </div>
                     <LandingHeroVisual motionPaused={paused} />
                 </div>

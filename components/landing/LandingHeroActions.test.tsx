@@ -21,8 +21,28 @@ describe('LandingHeroActions', () => {
     });
 
     it('marks the main button with the plain create link on the landing', () => {
-        render(<LandingHeroActions demoLabel="Demo" main={landingHeroMainAction(false)} mainLabel="Plans" />);
+        render(
+            <LandingHeroActions
+                main={landingHeroMainAction(false)}
+                mainLabel="Plans"
+                secondary={{ href: '/demo', label: 'Demo', click: { event: 'demo', placement: 'hero' } }}
+            />,
+        );
         expect(screen.getByRole('link', { name: 'Plans' })).toHaveAttribute('data-hero-create', '/events/new');
         expect(screen.getByRole('link', { name: 'Demo' })).not.toHaveAttribute('data-hero-create');
+    });
+
+    it('sends the second button where it is told, with its own click', () => {
+        render(
+            <LandingHeroActions
+                plain
+                main={landingHeroMainAction(false)}
+                mainLabel="Plans"
+                secondary={{ href: '#themes', label: 'Themes', click: { event: 'nav', placement: 'hero', target: 'themes' } }}
+            />,
+        );
+        const link = screen.getByRole('link', { name: 'Themes' });
+        expect(link).toHaveAttribute('href', '#themes');
+        expect(JSON.parse(link.getAttribute('data-landing-click')!)).toEqual({ event: 'nav', placement: 'hero', target: 'themes' });
     });
 });
