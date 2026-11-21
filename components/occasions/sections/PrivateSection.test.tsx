@@ -1,16 +1,17 @@
 import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { WeddingPrivate } from '@/components/occasions/wedding/WeddingPrivate';
+import { PrivateSection } from '@/components/occasions/sections/PrivateSection';
+import { findOccasion } from '@/lib/occasions/occasions';
 import { OCCASION_PRIVATE_ICONS } from '@/lib/occasions/pageFeatures';
 
 vi.mock('next-intl/server', () => import('@/components/occasions/sections/__fixtures__/intlServerMock'));
 
 afterEach(cleanup);
 
-describe('WeddingPrivate', () => {
+describe('PrivateSection (wedding)', () => {
     it('shows four numbered cards, each with its icon', async () => {
-        const { container } = render(await WeddingPrivate({ locale: 'el' }));
+        const { container } = render(await PrivateSection({ locale: 'el', occasion: findOccasion('WEDDING')! }));
         expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent('Ένα ιδιωτικό Social γεμάτο στιγμές και συναισθήματα.');
         expect(screen.getAllByRole('heading', { level: 3 }).map((heading) => heading.textContent)).toEqual([
             'Ιδιωτικός τοίχος',

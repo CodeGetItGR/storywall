@@ -1,33 +1,29 @@
-import { getTranslations } from 'next-intl/server';
-
 import { GradientIcon } from '@/components/occasions/sections/mock/GradientIcon';
 import { SectionHead } from '@/components/occasions/sections/SectionHead';
 import { SectionWrap } from '@/components/occasions/sections/SectionWrap';
-import type { Locale } from '@/i18n/config';
 import type { OccasionCardCopy } from '@/lib/occasions/pageCopy';
 import { OCCASION_PRIVATE_ICONS } from '@/lib/occasions/pageFeatures';
 
-// "Only for guests": four numbered cards on what keeps the wedding's social private.
-export async function WeddingPrivate({ locale }: { locale: Locale }) {
-    const t = await getTranslations({ locale, namespace: 'OccasionPages.WEDDING.private' });
-    const cards = t.raw('cards') as OccasionCardCopy[];
+export type PrivateViewProps = { cards: OccasionCardCopy[]; heading: [string, string]; intro: string; kicker: string };
 
+// "Only for guests": four numbered cards on what keeps the occasion's social private.
+export function PrivateView({ cards, heading, intro, kicker }: PrivateViewProps) {
     return (
         <section
-            aria-labelledby="wedding-private-title"
+            aria-labelledby="private-title"
             className="bg-white pt-17.5 pb-20 font-[Arial,Helvetica,sans-serif] text-[#151313] min-[561px]:pt-25 min-[561px]:pb-27.5"
         >
             <SectionWrap>
                 {/* Heading */}
                 <SectionHead
                     className="mb-9 min-[561px]:mb-15"
-                    heading={t.raw('heading') as [string, string]}
+                    heading={heading}
                     headingClassName="text-[clamp(40px,4.4vw,72px)] leading-[0.95] tracking-[-0.05em]"
-                    id="wedding-private-title"
-                    kicker={t('kicker')}
+                    id="private-title"
+                    kicker={kicker}
                 >
                     <p className="mx-auto mt-5.5 mb-0 max-w-160 font-[Georgia,serif] text-[clamp(17px,1.3vw,20px)] leading-[1.45] text-[#151313]/78">
-                        {t('intro')}
+                        {intro}
                     </p>
                 </SectionHead>
                 {/* Cards */}
