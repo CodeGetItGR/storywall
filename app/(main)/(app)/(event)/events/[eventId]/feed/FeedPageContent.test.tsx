@@ -4,12 +4,18 @@ import type { ReactNode } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { eventKeys } from '@/hooks/useEvent';
-import type { EventDetailResponseDto } from '@/lib/api/types';
+import type { EventDetailResponseDto, FeedLayoutDto } from '@/lib/api/types';
+import { defaultFeedLayout, feedLayoutKeys } from '@/lib/feedLayout';
+import { SAMPLE_SECTIONS } from '@/lib/invitation/samples';
+import type { InvitationSection } from '@/lib/invitation/sections';
+import { FeedEditorFlagProvider } from '@/providers/FeedEditorFlagProvider';
 
 import { FeedPageContent } from './FeedPageContent';
 import { FeedPageProvider } from './FeedPageContext';
 
-// Only the banner wiring is under test: every other section is stubbed out.
+const rsvpVisible = vi.hoisted(() => ({ value: false }));
+
+// The banner wiring and the layout's frame are under test: every other section is stubbed out.
 vi.mock('@/hooks/useModuleCopy', () => {
     const copy = (moduleKey: string) => ({ name: moduleKey, description: `${moduleKey} description`, cardLabel: moduleKey, Icon: () => null });
     return {
@@ -28,9 +34,9 @@ vi.mock('@/components/saveMyDate/invitation/invitationFonts', () => ({ INVITATIO
 vi.mock('next-intl', () => ({ useTranslations: () => (key: string) => key, useLocale: () => 'en' }));
 vi.mock('@/hooks/useGiftAccount', () => ({ useGiftAccount: () => ({ isLoading: true, data: undefined }) }));
 vi.mock('@/hooks/useHideMobileTabBarOnScroll', () => ({ useHideMobileTabBarOnScroll: () => undefined }));
-vi.mock('@/hooks/useRsvpPromptVisible', () => ({ useRsvpPromptVisible: () => false }));
+vi.mock('@/hooks/useRsvpPromptVisible', () => ({ useRsvpPromptVisible: () => rsvpVisible.value }));
 vi.mock('@/components/feed/ComposerCard', () => ({ ComposerCard: () => null }));
-vi.mock('@/components/feed/EventDescription', () => ({ EventDescription: () => null }));
+vi.mock('@/components/feed/EventDescription', () => ({ EventDescription: () => <div data-testid="description" /> }));
 vi.mock('@/components/feed/EventInfoSection', () => ({ EventInfoSection: () => null }));
 vi.mock('@/components/feed/EventSessionActionButtons', () => ({ EventSessionActionButtons: () => null }));
 vi.mock('@/components/feed/FeedEmptyState', () => ({ FeedEmptyState: () => null }));
@@ -38,7 +44,8 @@ vi.mock('@/components/feed/FeedPostRenderer', () => ({ FeedPostRenderer: () => n
 vi.mock('@/components/feed/Header', () => ({ Header: () => null }));
 vi.mock('@/components/feed/PostModal', () => ({ PostModal: () => null }));
 vi.mock('@/components/feed/PublishQueueCards', () => ({ PublishQueueCards: () => null }));
-vi.mock('@/components/feed/RsvpPrompt', () => ({ RsvpPrompt: () => null }));
+vi.mock('@/components/feed/RsvpPrompt', () => ({ RsvpPrompt: () => <div data-testid="rsvp" /> }));
+vi.mock('@/hooks/useAdminInvitationThemes', () => ({ useInvitationFonts: () => ({ data: [] }) }));
 vi.mock('@/components/feed/StoriesRow', () => ({ StoriesRow: () => null }));
 vi.mock('@/components/pwa/InstallAppBanner', () => ({ InstallAppBanner: () => null }));
 vi.mock('@/components/story/StoryModal', () => ({ StoryModal: () => null }));
@@ -46,17 +53,31 @@ vi.mock('@/components/vendors/VendorProfilePrompt', () => ({ VendorProfilePrompt
 vi.mock('@/components/feed/quickActions/FeedQuickActions', () => ({ FeedQuickActions: () => null }));
 
 afterEach(cleanup);
+afterEach(() => {
+    rsvpVisible.value = false;
+});
 
-function renderFeed(illustrationUrl: string | null) {
-    const queryClient = new QueryClient();
+function savedLayout(...extra: InvitationSection[]): FeedLayoutDto {
+    const base = defaultFeedLayout();
+    return { themeSlug: null, revision: 1, document: { ...base, sections: [...base.sections, ...extra] }, design: null, imageUrls: {}, updatedAt: '2026-11-21T10:00:00Z' };
+}
+
+const dressCode = SAMPLE_SECTIONS.dressCode as InvitationSection;
+
+type FeedOptions = { description?: string | null; endAt?: string | null; layout?: FeedLayoutDto | null; flag?: boolean };
+
+function renderFeed(illustrationUrl: string | null, { description = null, endAt = null, layout, flag = false }: FeedOptions = {}) {
+    // staleTime: the seeded layout counts as fresh, so nothing is fetched for real.
+    const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false, staleTime: Infinity } } });
+    if (layout !== undefined) queryClient.setQueryData(feedLayoutKeys.detail('e-1'), layout);
     const invalidate = vi.spyOn(queryClient, 'invalidateQueries').mockResolvedValue();
     const event = {
         id: 'e-1',
         title: 'Baptism',
         coverMedia: null,
-        description: null,
+        description,
         theme: illustrationUrl ? { presetKey: 'dino', backgroundColor: '#aabbcc', illustrationUrl } : null,
-        schedule: { startAt: null, rsvpDeadline: null },
+        schedule: { startAt: null, endAt, rsvpDeadline: null },
         location: { name: null, address: null },
     } as unknown as EventDetailResponseDto;
     const value = {
@@ -72,7 +93,9 @@ function renderFeed(illustrationUrl: string | null) {
     } as unknown as Parameters<typeof FeedPageProvider>[0]['value'];
     const wrap = (children: ReactNode) => (
         <QueryClientProvider client={queryClient}>
-            <FeedPageProvider value={value}>{children}</FeedPageProvider>
+            <FeedEditorFlagProvider enabled={flag}>
+                <FeedPageProvider value={value}>{children}</FeedPageProvider>
+            </FeedEditorFlagProvider>
         </QueryClientProvider>
     );
     return { invalidate, ...render(wrap(<FeedPageContent />)) };
@@ -96,5 +119,44 @@ describe('FeedPageContent theme illustration', () => {
         const { invalidate } = renderFeed(null);
         fireEvent.click(screen.getByTestId('banner'));
         expect(invalidate).not.toHaveBeenCalled();
+    });
+});
+
+describe('FeedPageContent layout', () => {
+    it('keeps a lone description open on the default layout', () => {
+        renderFeed(null, { description: 'Hello', flag: true, layout: null });
+        expect(screen.getByTestId('description')).toBeTruthy();
+        expect(screen.queryByRole('button', { name: 'invitation' })).toBeNull();
+    });
+
+    it('folds two or more blocks into the Invitation row, which opens in place', () => {
+        renderFeed(null, { description: 'Hello', flag: true, layout: savedLayout(dressCode) });
+        expect(screen.queryByTestId('description')).toBeNull();
+        const row = screen.getByRole('button', { name: 'invitation' });
+        expect(row.getAttribute('aria-expanded')).toBe('false');
+        fireEvent.click(row);
+        expect(screen.getByTestId('description')).toBeTruthy();
+        expect(row.getAttribute('aria-expanded')).toBe('true');
+    });
+
+    it('keeps RSVP outside the fold', () => {
+        rsvpVisible.value = true;
+        renderFeed(null, { description: 'Hello', flag: true, layout: savedLayout(dressCode) });
+        expect(screen.getByTestId('rsvp')).toBeTruthy();
+        expect(screen.queryByTestId('description')).toBeNull();
+    });
+
+    it('draws only the cover and details after the event', () => {
+        rsvpVisible.value = true;
+        renderFeed(null, { description: 'Hello', endAt: '2020-01-01T00:00:00Z', flag: true, layout: savedLayout(dressCode) });
+        expect(screen.queryByTestId('description')).toBeNull();
+        expect(screen.queryByRole('button', { name: 'invitation' })).toBeNull();
+        expect(screen.queryByTestId('rsvp')).toBeNull();
+    });
+
+    it('ignores a saved layout while the flag is off', () => {
+        renderFeed(null, { description: 'Hello', flag: false, layout: savedLayout(dressCode) });
+        expect(screen.getByTestId('description')).toBeTruthy();
+        expect(screen.queryByRole('button', { name: 'invitation' })).toBeNull();
     });
 });
