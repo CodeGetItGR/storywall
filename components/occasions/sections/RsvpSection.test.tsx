@@ -4,7 +4,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { RsvpSection } from '@/components/occasions/sections/RsvpSection';
 import type { Locale } from '@/i18n/config';
 import { findOccasion } from '@/lib/occasions/occasions';
-import { WEDDING_PAGE_MEDIA } from '@/lib/occasions/pageMedia';
+import { BAPTISM_PAGE_MEDIA, WEDDING_PAGE_MEDIA } from '@/lib/occasions/pageMedia';
 
 vi.mock('next-intl/server', () => import('@/components/occasions/sections/__fixtures__/intlServerMock'));
 
@@ -51,5 +51,13 @@ describe('RsvpSection (wedding)', () => {
             'Συνοδοί & παιδιά',
             'Απλή και γρήγορη διαδικασία',
         ]);
+    });
+});
+
+describe('RsvpSection (baptism)', () => {
+    it('bolds the intro and puts children first in the checklist', async () => {
+        render(await RsvpSection({ locale: 'el', media: BAPTISM_PAGE_MEDIA, occasion: findOccasion('BAPTISM')! }));
+        expect(screen.getByText('RSVP του StoryWall').tagName).toBe('STRONG');
+        expect(screen.getAllByRole('heading', { level: 3 })[0]).toHaveTextContent('Συνοδοί & παιδιά');
     });
 });

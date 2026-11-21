@@ -25,3 +25,16 @@ describe('PrivateSection (wedding)', () => {
         expect(icons.map((icon) => icon.style.getPropertyValue('--icon'))).toEqual(OCCASION_PRIVATE_ICONS.map((src) => `url('${src}')`));
     });
 });
+
+describe('PrivateSection (baptism)', () => {
+    it('shows the four baptism cards', async () => {
+        render(await PrivateSection({ locale: 'el', occasion: findOccasion('BAPTISM')! }));
+        expect(screen.getAllByRole('heading', { level: 3 }).map((heading) => heading.textContent)).toEqual([
+            'Ιδιωτικός τοίχος',
+            'Διαχείριση από εσένα',
+            'Ρόλοι καλεσμένων',
+            'Λήψη σε αρχική ποιότητα',
+        ]);
+        expect(screen.getByText(/Γονείς, νονός ή νονά/)).toBeInTheDocument();
+    });
+});

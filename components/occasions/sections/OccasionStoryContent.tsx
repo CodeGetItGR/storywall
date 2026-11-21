@@ -20,9 +20,11 @@ import { FeaturesSection } from '@/components/occasions/sections/FeaturesSection
 import { HeroSection } from '@/components/occasions/sections/HeroSection';
 import { PrivateSection } from '@/components/occasions/sections/PrivateSection';
 import { RsvpSection } from '@/components/occasions/sections/RsvpSection';
+import { ThemesSection } from '@/components/occasions/sections/ThemesSection';
 import { WhySection } from '@/components/occasions/sections/WhySection';
 import type { Locale } from '@/i18n/config';
 import { getPublicLandingPath } from '@/i18n/publicLocale';
+import type { LandingTheme } from '@/lib/landingThemes';
 import { LANDING_TOKENS_CLASS } from '@/lib/landingTokens';
 import type { OccasionCampaign } from '@/lib/occasions/campaigns';
 import { occasionFaqEntries, type OccasionFaqEntry, occasionFaqLinkHref } from '@/lib/occasions/occasionFaq';
@@ -30,7 +32,8 @@ import type { OccasionLengthValues } from '@/lib/occasions/occasionLength';
 import { occasionCreateHref } from '@/lib/occasions/occasionLinks';
 import type { OccasionPriceValues } from '@/lib/occasions/occasionPrice';
 import type { Occasion } from '@/lib/occasions/occasions';
-import { WEDDING_PAGE_MEDIA } from '@/lib/occasions/pageMedia';
+import { OCCASION_SECTION_IDS } from '@/lib/occasions/occasionSections';
+import type { OccasionPageConfig } from '@/lib/occasions/pageConfig';
 import type { OccasionThemeId } from '@/lib/occasions/themes';
 import { LandingMotionProvider } from '@/providers/LandingMotionProvider';
 
@@ -39,28 +42,47 @@ const DEMO_LONG_HEADING_CLASS = 'min-[761px]:text-[clamp(54px,4.5vw,72px)]';
 
 type HowCopy = { heading: [string, string]; kicker: string; steps: { title: string }[] };
 
-type WeddingContentProps = {
+type OccasionStoryContentProps = {
     campaign: OccasionCampaign | null;
-    // null: no wedding demo; the demo band, the demo and the hero's demo link are left out.
+    config: OccasionPageConfig;
+    // null: no demo; the demo band, the demo and the hero's demo link are left out.
     demoHref: string | null;
     featureKeys: string[];
     length: OccasionLengthValues;
     locale: Locale;
     occasion: Occasion;
     price: OccasionPriceValues;
-    // The QR wedding page while it is live, else null.
+    // The QR wedding page while it is live and the page links to it, else null.
     qrHref: string | null;
     theme: OccasionThemeId | null;
+    // The live theme presets while the page shows its Themes section, else null.
+    themes: LandingTheme[] | null;
 };
 
-// The wedding page, section by section as in the design, with the landing's shared sections.
-export async function WeddingContent({ campaign, demoHref, featureKeys, length, locale, occasion, price, qrHref, theme }: WeddingContentProps) {
-    const t = await getTranslations({ locale, namespace: 'OccasionPages.WEDDING' });
+// A redesigned occasion page (wedding, baptism), section by section as in the design, with the landing's shared sections.
+export async function OccasionStoryContent({
+    campaign,
+    config,
+    demoHref,
+    featureKeys,
+    length,
+    locale,
+    occasion,
+    price,
+    qrHref,
+    theme,
+    themes,
+}: OccasionStoryContentProps) {
+    const t = await getTranslations({ locale, namespace: `OccasionPages.${occasion.eventType}` });
     const landing = await getTranslations({ locale, namespace: 'LandingPage' });
     const createHref = occasionCreateHref(occasion, campaign);
+    const { media } = config;
+    // Without a demo, the band and the hero's second button go to the themes.
+    const themesHref = themes ? `#${OCCASION_SECTION_IDS.themes}` : null;
     const bold = (chunks: ReactNode) => <strong className="font-bold">{chunks}</strong>;
     const how = t.raw('how') as HowCopy;
-    const demoHeading = t.raw('demo.heading') as string[];
+    // Only a page with a demo has demo copy.
+    const demoHeading = demoHref ? (t.raw('demo.heading') as string[]) : [];
     const faq = occasionFaqEntries(t.raw('faq') as OccasionFaqEntry[], (key) => t(key, { ...price, ...length })).map((entry): [string, ReactNode] => [
         entry.q,
         <FaqAnswer
@@ -86,11 +108,11 @@ export async function WeddingContent({ campaign, demoHref, featureKeys, length, 
                     createHref={createHref}
                     demoHref={demoHref}
                     locale={locale}
-                    media={WEDDING_PAGE_MEDIA}
+                    media={media}
                     occasion={occasion}
                     price={price}
                     qrHref={qrHref}
-                    themesHref={null}
+                    themesHref={themesHref}
                 />
 
                 {/* How it works */}
@@ -103,17 +125,29 @@ export async function WeddingContent({ campaign, demoHref, featureKeys, length, 
                     }}
                 />
 
-                {/* Demo band, down to the demo */}
-                {demoHref ? <LandingHeroTransition href="#demo" /> : null}
+                {/* Band, down to the demo or the themes */}
+                {demoHref ? (
+                    <LandingHeroTransition href="#demo" />
+                ) : themesHref ? (
+                    <LandingHeroTransition
+                        click={{ event: 'nav', placement: 'hero_band', target: 'themes' }}
+                        cta={t('band.cta')}
+                        href={themesHref}
+                        label={t('band.label')}
+                    />
+                ) : null}
 
                 {/* Why StoryWall */}
-                <WhySection guestPhotos="marquee" locale={locale} media={WEDDING_PAGE_MEDIA} occasion={occasion} qrHref={qrHref} />
+                <WhySection guestPhotos={config.guestPhotos} locale={locale} media={media} occasion={occasion} qrHref={qrHref} />
 
                 {/* RSVP */}
-                <RsvpSection locale={locale} media={WEDDING_PAGE_MEDIA} occasion={occasion} />
+                <RsvpSection locale={locale} media={media} occasion={occasion} />
 
                 {/* Private social */}
                 <PrivateSection locale={locale} occasion={occasion} />
+
+                {/* Themes */}
+                {themes ? <ThemesSection createHref={createHref} locale={locale} media={media} occasion={occasion} themes={themes} /> : null}
 
                 {/* Demo */}
                 {demoHref ? (
@@ -130,7 +164,7 @@ export async function WeddingContent({ campaign, demoHref, featureKeys, length, 
                 {/* Features */}
                 <FeaturesSection featureKeys={featureKeys} locale={locale} occasion={occasion} />
 
-                {/* Reviews from weddings */}
+                {/* Reviews from this occasion */}
                 <LandingReviews eventType={occasion.eventType} />
 
                 {/* Plans */}
@@ -145,10 +179,10 @@ export async function WeddingContent({ campaign, demoHref, featureKeys, length, 
                 <InviartOccasionSection eventType={occasion.eventType} locale={locale} />
 
                 {/* FAQ, one answer open at a time */}
-                <LandingFaq centered copy={{ heading: landing('faq.heading'), intro: t('faqIntro'), items: faq }} group="wedding-faq" />
+                <LandingFaq centered copy={{ heading: landing('faq.heading'), intro: t('faqIntro'), items: faq }} group={`${occasion.eventType.toLowerCase()}-faq`} />
 
                 {/* Final call to action */}
-                <LandingFinalCta centered copy={finalCta} href={createHref} image={WEDDING_PAGE_MEDIA.finalCtaImage} />
+                <LandingFinalCta centered copy={finalCta} href={createHref} image={media.finalCtaImage} />
 
                 {/* Other occasions */}
                 <OccasionLinks locale={locale} occasion={occasion} />

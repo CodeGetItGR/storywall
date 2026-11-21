@@ -1,10 +1,11 @@
 import { cleanup, render, screen, within } from '@testing-library/react';
+import type { ReactNode } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { HeroSection } from '@/components/occasions/sections/HeroSection';
 import type { OccasionPriceValues } from '@/lib/occasions/occasionPrice';
 import { findOccasion } from '@/lib/occasions/occasions';
-import { WEDDING_PAGE_MEDIA } from '@/lib/occasions/pageMedia';
+import { BAPTISM_PAGE_MEDIA, WEDDING_PAGE_MEDIA } from '@/lib/occasions/pageMedia';
 
 const auth = vi.hoisted(() => ({ isAuthenticated: false, isBootstrapping: false }));
 
@@ -14,8 +15,17 @@ vi.mock('@/hooks/useAuth', () => ({ useAuth: () => auth }));
 // covered by their own tests.
 vi.mock('@/components/landing/LandingHeader', () => ({ LandingHeader: () => <header /> }));
 vi.mock('@/components/occasions/OccasionHeroVisual', () => ({
-    OccasionHeroVisual: ({ className }: { className?: string }) => <div className={className} data-testid="visual" />,
+    OccasionHeroVisual: ({ className, feed, posts }: { className?: string; feed?: ReactNode; posts?: readonly ReactNode[] }) => (
+        <div className={className} data-testid="visual">
+            {feed}
+            {posts}
+        </div>
+    ),
 }));
+// The post cards read their alt text with useTranslations.
+vi.mock('next-intl', async (importOriginal) =>
+    (await import('@/components/occasions/sections/__fixtures__/intlClientMock')).withGreekMessages(await importOriginal()),
+);
 
 const SPAN: OccasionPriceValues = { range: 'span', from: '119€', fromName: 'START', to: '259€', toName: 'SIGNATURE' };
 const NONE: OccasionPriceValues = { range: 'none', from: '', fromName: '', to: '', toName: '' };
@@ -105,5 +115,49 @@ describe('HeroSection (wedding)', () => {
     it('shows no second button when there is neither a demo nor themes', async () => {
         render(await hero({ demoHref: null, themesHref: null }));
         expect(screen.getAllByRole('link').map((link) => link.textContent)).toEqual(['StoryWall', 'Δες τα πακέτα']);
+    });
+});
+
+describe('HeroSection (baptism)', () => {
+    const baptism = (overrides: Partial<Parameters<typeof HeroSection>[0]> = {}) =>
+        HeroSection({
+            campaign: null,
+            createHref: '/events/new?type=baptism',
+            demoHref: null,
+            locale: 'el',
+            media: BAPTISM_PAGE_MEDIA,
+            occasion: findOccasion('BAPTISM')!,
+            price: SPAN,
+            qrHref: null,
+            themesHref: '#themes',
+            ...overrides,
+        });
+
+    it('has one h1, the keyword', async () => {
+        render(await baptism());
+        expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Ηλεκτρονικό προσκλητήριο βάπτισης & ιστοσελίδα βάπτισης');
+    });
+
+    it('sends the second button to the themes, with no demo and no QR link', async () => {
+        render(await baptism());
+        const themes = screen.getByRole('link', { name: 'Δες τα θέματα' });
+        expect(themes).toHaveAttribute('href', '#themes');
+        expect(JSON.parse(themes.getAttribute('data-landing-click')!)).toEqual({ event: 'nav', placement: 'hero', target: 'themes' });
+        expect(screen.queryByRole('link', { name: 'Demo' })).toBeNull();
+        expect(screen.queryByRole('link', { name: /QR code/ })).toBeNull();
+    });
+
+    it('shows its own feed screenshot and two baptism post cards in the phone', async () => {
+        render(await baptism());
+        const visual = screen.getByTestId('visual');
+        expect(within(visual).getByRole('img', { name: 'Η αρχική σελίδα μιας βάπτισης στο StoryWall με θέμα Μονόκερος' }).getAttribute('src')).toContain(
+            'baptism-feed-unicorn',
+        );
+        expect(within(visual).getAllByRole('img', { name: 'Φωτογραφία καλεσμένου' })).toHaveLength(2);
+    });
+
+    it('names its lowest price', async () => {
+        render(await baptism({ price: { range: 'span', from: '79€', fromName: 'START', to: '179€', toName: 'SIGNATURE' } }));
+        expect(screen.getByText('Από 79€')).toBeInTheDocument();
     });
 });

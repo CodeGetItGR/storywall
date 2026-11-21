@@ -29,3 +29,11 @@ describe('FeaturesSection (wedding)', () => {
         expect(screen.getAllByRole('heading', { level: 3 })).toHaveLength(1);
     });
 });
+
+describe('FeaturesSection (baptism)', () => {
+    it("uses the baptism's own words, the shared line elsewhere, and never a themes card", async () => {
+        render(await FeaturesSection({ featureKeys: ['invitation', 'theme', 'quiz_polls'], locale: 'el', occasion: findOccasion('BAPTISM')! }));
+        expect(screen.getAllByRole('heading', { level: 3 }).map((heading) => heading.textContent)).toEqual(['Ηλεκτρονικό προσκλητήριο', 'Κουίζ & Ψηφοφορίες']);
+        expect(screen.getByText(/με το θέμα που διάλεξες/)).toBeInTheDocument();
+    });
+});
