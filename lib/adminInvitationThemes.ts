@@ -1,8 +1,9 @@
 import { getErrorCode } from '@/lib/api/errors';
 import { INVITATION_SCHEMA_VERSION, type InvitationDocument } from '@/lib/invitation/document';
-import { createSection, newSectionId } from '@/lib/invitation/newSection';
+import { createSection, newSectionId,type NewSectionType } from '@/lib/invitation/newSection';
 import { SAMPLE_SECTIONS, SAMPLE_THEME } from '@/lib/invitation/samples';
 import { sectionsForEventType } from '@/lib/invitation/sectionRules';
+import { isFeedSectionType } from '@/lib/invitation/sections';
 import type { ThemeDesign } from '@/lib/invitation/theme';
 import { readThemePreview, type ThemePreview } from '@/lib/invitation/themePreview';
 
@@ -278,13 +279,13 @@ export const BLANK_THEME_DESIGN: ThemeDesign = {
 
 // The event type's default sections, filled the way the old editor filled new ones, then the footer.
 export function blankThemeDocument(eventType: string, slug: string, newId: () => string = newSectionId): InvitationDocument {
-    const types = sectionsForEventType(eventType).default.filter((type) => type !== 'footer');
+    const types = sectionsForEventType(eventType).default.filter((type): type is NewSectionType => type !== 'footer' && !isFeedSectionType(type));
     return {
         schemaVersion: INVITATION_SCHEMA_VERSION,
         themeId: slug,
         overrides: {},
         sections: [
-            ...types.map((type) => createSection(type as Exclude<typeof type, 'footer'>, eventType, newId)),
+            ...types.map((type) => createSection(type, eventType, newId)),
             { ...SAMPLE_SECTIONS.footer, id: newId() },
         ],
     };

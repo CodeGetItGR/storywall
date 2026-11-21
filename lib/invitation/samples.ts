@@ -1,5 +1,5 @@
 import { INVITATION_SCHEMA_VERSION, type InvitationDocument } from '@/lib/invitation/document';
-import type { InvitationSection, SectionType } from '@/lib/invitation/sections';
+import { type InvitationSection, isFeedSectionType, type SectionType } from '@/lib/invitation/sections';
 import type { SectionStyle } from '@/lib/invitation/sectionStyle';
 import type { ThemeDesign } from '@/lib/invitation/theme';
 
@@ -175,6 +175,10 @@ export const SAMPLE_SECTIONS: { [T in SectionType]: SectionOf<T> } = {
         locked: true,
         style: { ...themeStyle, background: { kind: 'color', color: '#efe7ec' } },
     }),
+    feedCover: section('feedCover', {}),
+    feedDetails: section('feedDetails', {}),
+    feedDescription: section('feedDescription', {}),
+    feedRsvp: section('feedRsvp', {}),
 };
 
 export const SAMPLE_THEME: ThemeDesign = {
@@ -198,5 +202,6 @@ export const SAMPLE_DOCUMENT: InvitationDocument = {
     schemaVersion: INVITATION_SCHEMA_VERSION,
     themeId: 'theme-1',
     overrides: {},
-    sections: Object.values(SAMPLE_SECTIONS),
+    // The feed's own blocks belong to a feed layout, not to an invitation.
+    sections: Object.values(SAMPLE_SECTIONS).filter((section) => !isFeedSectionType(section.type)),
 };

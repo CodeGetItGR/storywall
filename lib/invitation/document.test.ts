@@ -8,14 +8,14 @@ import {
     upgradeInvitationDocument,
 } from '@/lib/invitation/document';
 import { SAMPLE_DOCUMENT, SAMPLE_SECTIONS, SAMPLE_THEME } from '@/lib/invitation/samples';
-import { resolveTextField, SECTION_TYPES,sectionSchema } from '@/lib/invitation/sections';
+import { FEED_SECTION_TYPES, resolveTextField, SECTION_TYPES,sectionSchema } from '@/lib/invitation/sections';
 import { themeDesignSchema } from '@/lib/invitation/theme';
 
 const clone = <T>(value: T): T => structuredClone(value);
 
 describe('invitation document format', () => {
-    it('covers all 30 section types of the old editor', () => {
-        expect(SECTION_TYPES).toHaveLength(30);
+    it('covers the 30 section types of the old editor and the 4 feed blocks', () => {
+        expect(SECTION_TYPES).toHaveLength(34);
     });
 
     it.each(SECTION_TYPES)('accepts the %s sample', (type) => {
@@ -91,5 +91,21 @@ describe('invitation document format', () => {
     it('loads a current document and refuses an unknown version', () => {
         expect(upgradeInvitationDocument(SAMPLE_DOCUMENT).schemaVersion).toBe(INVITATION_SCHEMA_VERSION);
         expect(() => upgradeInvitationDocument({ ...SAMPLE_DOCUMENT, schemaVersion: 0 })).toThrow();
+    });
+
+    it('names the four feed blocks', () => {
+        expect([...FEED_SECTION_TYPES]).toEqual(['feedCover', 'feedDetails', 'feedDescription', 'feedRsvp']);
+    });
+
+    it('holds each feed block at most once', () => {
+        const cover = clone(SAMPLE_SECTIONS.feedCover);
+        const document = { ...clone(SAMPLE_DOCUMENT), sections: [cover, { ...cover, id: 's-feedCover-2' }] };
+        expect(invitationDocumentSchema.safeParse(document).success).toBe(false);
+    });
+
+    it('stores no data on a feed block', () => {
+        const section = clone(SAMPLE_SECTIONS.feedDetails) as unknown as { data: Record<string, unknown> };
+        section.data.title = 'X';
+        expect(sectionSchema.safeParse(section).success).toBe(false);
     });
 });

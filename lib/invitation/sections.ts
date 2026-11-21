@@ -316,6 +316,13 @@ export const SECTION_DATA_SCHEMAS = {
     footer: z
         .object({ text, textColor: colorSchema.optional(), font: fontSchema.optional(), link: linkSchema })
         .strict(),
+    // The feed's own blocks (customizable feed, KAN-242). They store no data: they draw the
+    // event's live cover and title, details and countdown, description and RSVP. Only their
+    // style and text styles live in the document.
+    feedCover: z.object({}).strict(),
+    feedDetails: z.object({}).strict(),
+    feedDescription: z.object({}).strict(),
+    feedRsvp: z.object({}).strict(),
 } as const;
 
 export type SectionType = keyof typeof SECTION_DATA_SCHEMAS;
@@ -329,6 +336,14 @@ export const LINKABLE_SECTION_TYPES: ReadonlySet<SectionType> = new Set([
 
 // Sections that may appear more than once in one invitation.
 export const MULTI_INSTANCE_SECTION_TYPES: ReadonlySet<SectionType> = new Set(['blank', 'photo', 'photoFrame']);
+
+// The feed's own blocks, in their default order. Never offered in the invitation editor.
+export const FEED_SECTION_TYPES = ['feedCover', 'feedDetails', 'feedDescription', 'feedRsvp'] as const satisfies readonly SectionType[];
+export type FeedSectionType = (typeof FEED_SECTION_TYPES)[number];
+
+export function isFeedSectionType(type: SectionType): type is FeedSectionType {
+    return (FEED_SECTION_TYPES as readonly SectionType[]).includes(type);
+}
 
 function sectionSchemaFor<T extends SectionType>(type: T) {
     return z
