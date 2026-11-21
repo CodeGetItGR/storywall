@@ -1598,7 +1598,8 @@
                 "loading": "Loading themes…",
                 "current": "Current theme",
                 "saving": "Saving theme…",
-                "saved": "Theme saved"
+                "saved": "Theme saved",
+                "locked": "Needs Save my date"
             },
             "save": "Save changes",
             "saved": "Saved",
