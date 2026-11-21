@@ -30,6 +30,8 @@ export type FeedTopView = {
     folds: boolean;
     open: boolean;
     toggle: () => void;
+    // Something shows between stories and RSVP besides a closed Invitation row.
+    drawsMiddle: boolean;
 };
 
 // Everything the top of the feed draws, from the saved layout or the default one.
@@ -50,9 +52,12 @@ export function useFeedTop(event: EventDetailResponseDto): FeedTopView {
 
     const frame = useMemo(() => {
         const split = feedFrame(layout.document, { ended });
-        const draws = (section: InvitationSection) => (section.type === 'feedDescription' ? Boolean(event.description) : !isEmptyForGuests(section, ctx));
+        const draws = (section: InvitationSection) =>
+            section.type === 'feedDescription' ? Boolean(event.description) : !isEmptyForGuests(section, ctx);
         return { ...split, middle: split.middle.filter(draws) };
     }, [layout.document, ended, event.description, ctx]);
+
+    const folds = foldsMiddle(frame.middle.length);
 
     return {
         look,
@@ -62,8 +67,9 @@ export function useFeedTop(event: EventDetailResponseDto): FeedTopView {
         themeId: layout.document.themeId,
         sections: layout.document.sections,
         frame,
-        folds: foldsMiddle(frame.middle.length),
+        folds,
         open: fold.open,
         toggle: fold.toggle,
+        drawsMiddle: frame.middle.length > 0 && (!folds || fold.open),
     };
 }

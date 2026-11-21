@@ -36,7 +36,9 @@ vi.mock('@/hooks/useGiftAccount', () => ({ useGiftAccount: () => ({ isLoading: t
 vi.mock('@/hooks/useHideMobileTabBarOnScroll', () => ({ useHideMobileTabBarOnScroll: () => undefined }));
 vi.mock('@/hooks/useRsvpPromptVisible', () => ({ useRsvpPromptVisible: () => rsvpVisible.value }));
 vi.mock('@/components/feed/ComposerCard', () => ({ ComposerCard: () => null }));
-vi.mock('@/components/feed/EventDescription', () => ({ EventDescription: () => <div data-testid="description" /> }));
+vi.mock('@/components/feed/EventDescription', () => ({
+    EventDescription: ({ keepShown }: { keepShown?: boolean }) => <div data-testid="description" data-keep-shown={String(Boolean(keepShown))} />,
+}));
 vi.mock('@/components/feed/EventInfoSection', () => ({ EventInfoSection: () => null }));
 vi.mock('@/components/feed/EventSessionActionButtons', () => ({ EventSessionActionButtons: () => null }));
 vi.mock('@/components/feed/FeedEmptyState', () => ({ FeedEmptyState: () => null }));
@@ -59,7 +61,14 @@ afterEach(() => {
 
 function savedLayout(...extra: InvitationSection[]): FeedLayoutDto {
     const base = defaultFeedLayout();
-    return { themeSlug: null, revision: 1, document: { ...base, sections: [...base.sections, ...extra] }, design: null, imageUrls: {}, updatedAt: '2026-11-21T10:00:00Z' };
+    return {
+        themeSlug: null,
+        revision: 1,
+        document: { ...base, sections: [...base.sections, ...extra] },
+        design: null,
+        imageUrls: {},
+        updatedAt: '2026-11-21T10:00:00Z',
+    };
 }
 
 const dressCode = SAMPLE_SECTIONS.dressCode as InvitationSection;
@@ -125,30 +134,34 @@ describe('FeedPageContent theme illustration', () => {
 describe('FeedPageContent layout', () => {
     it('keeps a lone description open on the default layout', () => {
         renderFeed(null, { description: 'Hello', flag: true, layout: null });
-        expect(screen.getByTestId('description')).toBeTruthy();
+        // Alone, it keeps today's rule: it hides itself after two views.
+        expect(screen.getByTestId('description').dataset.keepShown).toBe('false');
         expect(screen.queryByRole('button', { name: 'invitation' })).toBeNull();
     });
 
-    it('folds two or more blocks into the Invitation row, which opens in place', () => {
+    it('folds two or more blocks into the Invitation row, which opens in place', async () => {
         renderFeed(null, { description: 'Hello', flag: true, layout: savedLayout(dressCode) });
+        const row = await screen.findByRole('button', { name: 'invitation' });
         expect(screen.queryByTestId('description')).toBeNull();
-        const row = screen.getByRole('button', { name: 'invitation' });
         expect(row.getAttribute('aria-expanded')).toBe('false');
         fireEvent.click(row);
-        expect(screen.getByTestId('description')).toBeTruthy();
+        // Inside the fold it always shows: the fold keeps it out of the way instead.
+        expect(screen.getByTestId('description').dataset.keepShown).toBe('true');
         expect(row.getAttribute('aria-expanded')).toBe('true');
     });
 
-    it('keeps RSVP outside the fold', () => {
+    it('keeps RSVP outside the fold', async () => {
         rsvpVisible.value = true;
         renderFeed(null, { description: 'Hello', flag: true, layout: savedLayout(dressCode) });
-        expect(screen.getByTestId('rsvp')).toBeTruthy();
+        expect(await screen.findByTestId('rsvp')).toBeTruthy();
         expect(screen.queryByTestId('description')).toBeNull();
     });
 
-    it('draws only the cover and details after the event', () => {
+    it('draws only the cover and details after the event', async () => {
         rsvpVisible.value = true;
         renderFeed(null, { description: 'Hello', endAt: '2020-01-01T00:00:00Z', flag: true, layout: savedLayout(dressCode) });
+        // The look loads lazily; the cover shows once it has.
+        expect(await screen.findByTestId('banner')).toBeTruthy();
         expect(screen.queryByTestId('description')).toBeNull();
         expect(screen.queryByRole('button', { name: 'invitation' })).toBeNull();
         expect(screen.queryByTestId('rsvp')).toBeNull();

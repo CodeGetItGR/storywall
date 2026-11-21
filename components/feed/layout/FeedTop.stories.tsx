@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 import { useState } from 'react';
 import { expect, userEvent, within } from 'storybook/test';
 
+import { FeedLookTop } from '@/components/feed/layout/FeedLookTop';
 import { FeedTop } from '@/components/feed/layout/FeedTop';
 import type { FeedTopView } from '@/hooks/useFeedTop';
 import { defaultFeedLayout, feedFrame, foldsMiddle, usesInvitationLook, wallThemeDesign } from '@/lib/feedLayout';
@@ -19,7 +20,9 @@ function TopStory({ extra, ended = false, styledDetails = false }: StoryArgs) {
     const [open, setOpen] = useState(false);
     const base = defaultFeedLayout();
     const sections = base.sections.map((section) =>
-        styledDetails && section.type === 'feedDetails' ? { ...section, style: { ...section.style, background: { kind: 'color' as const, color: '#F6E7EA' } } } : section,
+        styledDetails && section.type === 'feedDetails'
+            ? { ...section, style: { ...section.style, background: { kind: 'color' as const, color: '#F6E7EA' } } }
+            : section,
     );
     const document = { ...base, sections: [...sections, ...extra] };
     const ctx = { ...buildRenderContext(document, wallThemeDesign(null), () => undefined), labels: INVITATION_LABELS.en };
@@ -35,9 +38,12 @@ function TopStory({ extra, ended = false, styledDetails = false }: StoryArgs) {
         folds: foldsMiddle(frame.middle.length),
         open,
         toggle: () => setOpen((current) => !current),
+        drawsMiddle: frame.middle.length > 0 && (!foldsMiddle(frame.middle.length) || open),
     };
+    // The look straight away, not through FeedTop's lazy load, so a snapshot never catches it loading.
+    const Top = view.look ? FeedLookTop : FeedTop;
     return (
-        <FeedTop
+        <Top
             view={view}
             cover={<Box label="Cover + title" />}
             details={<Box label="Details + countdown" />}

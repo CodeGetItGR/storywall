@@ -64,7 +64,7 @@ export function FeedPageContent() {
                         </section>
                     )
                 }
-                description={event.description && <EventDescription eventId={event.id} description={event.description} />}
+                description={event.description && <EventDescription eventId={event.id} description={event.description} keepShown={top.folds} />}
                 rsvp={shouldShowRSVP ? <FeedRsvpBlock eventId={eventId} deadline={event.schedule.rsvpDeadline ?? null} /> : null}
             />
 
@@ -73,7 +73,7 @@ export function FeedPageContent() {
                 {moduleFlags.posts && (
                     <div
                         className={cn('flex flex-col px-0 pb-24 md:pb-10', {
-                            'mt-4': (!moduleFlags.stories || top.frame.middle.length === 0) && !(shouldShowRSVP && top.frame.rsvp),
+                            'mt-4': (!moduleFlags.stories || !top.drawsMiddle) && !(shouldShowRSVP && top.frame.rsvp),
                         })}
                     >
                         <ComposerCard />
