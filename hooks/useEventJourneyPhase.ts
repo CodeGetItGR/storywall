@@ -1,11 +1,20 @@
 'use client';
 
+import { useSearchParams } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
 import type { EventDetailResponseDto } from '@/lib/api/types';
 import { daysBetween, formatDate, localDay } from '@/lib/datetime';
 import { afterStartDay, currentPhase, JOURNEY_PHASES, type JourneyPhase, journeyTimeZone, primaryDay } from '@/lib/eventJourney';
+import { replacePageUrl } from '@/lib/overlayHistory';
+
+// The phase the host picked, kept in the address so Back from a stop's page opens it again.
+export const JOURNEY_PHASE_PARAM = 'phase';
+
+function parsePhase(value: string | null): JourneyPhase | null {
+    return JOURNEY_PHASES.find((phase) => phase === value) ?? null;
+}
 
 export type PhaseStep = { phase: JourneyPhase; label: string; caption: string; state: 'done' | 'current' | 'upcoming' };
 
@@ -19,7 +28,20 @@ export function useEventJourneyPhase(event: Pick<EventDetailResponseDto, 'sessio
     const t = useTranslations('ManagePage.journey');
     const locale = useLocale();
     const current = currentPhase(event, now);
-    const [selected, select] = useState<JourneyPhase>(current);
+    const searchParams = useSearchParams();
+    const [selected, setSelected] = useState<JourneyPhase>(() => parsePhase(searchParams.get(JOURNEY_PHASE_PARAM)) ?? current);
+
+    // The event's own phase needs no param, so the plain Overview address stays clean.
+    const select = useCallback(
+        (phase: JourneyPhase) => {
+            setSelected(phase);
+            const url = new URL(window.location.href);
+            if (phase === current) url.searchParams.delete(JOURNEY_PHASE_PARAM);
+            else url.searchParams.set(JOURNEY_PHASE_PARAM, phase);
+            replacePageUrl(`${url.pathname}${url.search}${url.hash}`);
+        },
+        [current],
+    );
 
     const steps = useMemo<PhaseStep[]>(() => {
         const primary = primaryDay(event);

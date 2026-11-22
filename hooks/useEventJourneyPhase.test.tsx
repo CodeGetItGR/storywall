@@ -1,5 +1,5 @@
 import { act, renderHook } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { useEventJourneyPhase } from '@/hooks/useEventJourneyPhase';
 
@@ -7,6 +7,16 @@ vi.mock('next-intl', () => ({
     useLocale: () => 'en',
     useTranslations: () => (key: string, values?: Record<string, unknown>) => (values ? `${key}:${JSON.stringify(values)}` : key),
 }));
+
+const mocks = vi.hoisted(() => ({ search: '', replacePageUrl: vi.fn() }));
+vi.mock('next/navigation', () => ({ useSearchParams: () => new URLSearchParams(mocks.search) }));
+vi.mock('@/lib/overlayHistory', () => ({ replacePageUrl: mocks.replacePageUrl }));
+
+beforeEach(() => {
+    mocks.search = '';
+    mocks.replacePageUrl.mockReset();
+    window.history.replaceState(null, '', '/events/e1/manage');
+});
 
 const event = {
     sessions: [{ id: 'main', isMain: true, startAt: '2026-12-12T16:00:00Z', endAt: null, deletedAt: null, displayOrder: 0 }],
@@ -35,6 +45,26 @@ describe('useEventJourneyPhase', () => {
         act(() => result.current.select('after'));
         expect(result.current.selected).toBe('after');
         expect(result.current.current).toBe('before');
+    });
+
+    it('keeps the picked phase in the address, and drops it for the current phase', () => {
+        const { result } = renderHook(() => useEventJourneyPhase(event, new Date('2026-11-18T10:00:00Z')));
+        act(() => result.current.select('after'));
+        expect(mocks.replacePageUrl).toHaveBeenLastCalledWith('/events/e1/manage?phase=after');
+        act(() => result.current.select('before'));
+        expect(mocks.replacePageUrl).toHaveBeenLastCalledWith('/events/e1/manage');
+    });
+
+    it('opens on the phase in the address, as after Back', () => {
+        mocks.search = 'phase=after';
+        const { result } = renderHook(() => useEventJourneyPhase(event, new Date('2026-11-18T10:00:00Z')));
+        expect(result.current.selected).toBe('after');
+    });
+
+    it('ignores a phase it does not know', () => {
+        mocks.search = 'phase=later';
+        const { result } = renderHook(() => useEventJourneyPhase(event, new Date('2026-11-18T10:00:00Z')));
+        expect(result.current.selected).toBe('before');
     });
 
     // A lite event without a date has no phases to step through.
