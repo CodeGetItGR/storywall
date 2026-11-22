@@ -144,3 +144,36 @@ export function canPrintGiftCard(gift: Pick<GiftHandoverResponseDto, 'token' | '
 export function inviteGiftFraming(gift: GiftFramingDto | null | undefined): GiftFramingDto | null {
     return gift?.claimed ? gift : null;
 }
+
+// The how-it-works steps: add the names, print the card, the recipient claims it.
+export const GIFT_STEP_COUNT = 3;
+
+/**
+ * How many of the steps are done: 0 before setup, 1 until a working card is
+ * made (a locked card needs a new one), 2 while the card waits to be claimed,
+ * all once it is claimed. A cancelled gift has no progress (null).
+ */
+export function giftStepsDone(gift: Pick<GiftHandoverResponseDto, 'status'> | null): number | null {
+    if (!gift) return 0;
+    switch (gift.status) {
+        case 'NOT_ISSUED':
+        case 'LOCKED':
+            return 1;
+        case 'ISSUED':
+            return 2;
+        case 'CLAIMED':
+        case 'COMPLETED':
+            return GIFT_STEP_COUNT;
+        default:
+            return null;
+    }
+}
+
+export type GiftStepState = 'done' | 'current' | 'upcoming' | 'plain';
+
+// How one step shows, given giftStepsDone: a cancelled gift (null) marks none.
+export function giftStepState(index: number, stepsDone: number | null): GiftStepState {
+    if (stepsDone === null) return 'plain';
+    if (index < stepsDone) return 'done';
+    return index === stepsDone ? 'current' : 'upcoming';
+}

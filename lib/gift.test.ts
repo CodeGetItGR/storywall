@@ -11,6 +11,8 @@ import {
     giftDetailsFromHandover,
     giftRequestFromInput,
     giftStatusCopy,
+    giftStepsDone,
+    giftStepState,
     inviteGiftFraming,
     isGiftHandoverPending,
     isGiftPinFormat,
@@ -187,5 +189,43 @@ describe('needsGiftPin', () => {
         expect(needsGiftPin({ emailBound: true, callerIsRecipient: null }, true)).toBe(false);
         expect(needsGiftPin({ emailBound: true, callerIsRecipient: null }, false)).toBe(false);
         expect(needsGiftPin(null, true)).toBe(false);
+    });
+});
+
+describe('giftStepsDone', () => {
+    it('starts at the first step before setup', () => {
+        expect(giftStepsDone(null)).toBe(0);
+    });
+
+    it('waits on the card until a working one is made', () => {
+        expect(giftStepsDone(gift({ status: 'NOT_ISSUED' }))).toBe(1);
+        expect(giftStepsDone(gift({ status: 'LOCKED' }))).toBe(1);
+    });
+
+    it('waits on the recipient while the card is out', () => {
+        expect(giftStepsDone(gift({ status: 'ISSUED' }))).toBe(2);
+    });
+
+    it('is done once claimed', () => {
+        expect(giftStepsDone(gift({ status: 'CLAIMED' }))).toBe(3);
+        expect(giftStepsDone(gift({ status: 'COMPLETED' }))).toBe(3);
+    });
+
+    it('has no progress when cancelled', () => {
+        expect(giftStepsDone(gift({ status: 'VOID' }))).toBeNull();
+    });
+});
+
+describe('giftStepState', () => {
+    it('marks done, current and upcoming steps', () => {
+        expect([0, 1, 2].map((index) => giftStepState(index, 1))).toEqual(['done', 'current', 'upcoming']);
+    });
+
+    it('marks every step done once claimed', () => {
+        expect([0, 1, 2].map((index) => giftStepState(index, 3))).toEqual(['done', 'done', 'done']);
+    });
+
+    it('marks none on a cancelled gift', () => {
+        expect(giftStepState(0, null)).toBe('plain');
     });
 });

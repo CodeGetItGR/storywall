@@ -13,7 +13,8 @@ type SectionMenuProps = {
     canMoveDown: boolean;
     onMoveUp: () => void;
     onMoveDown: () => void;
-    onDelete: () => void;
+    // Left out for a block that can't be deleted (the feed's own blocks).
+    onDelete?: () => void;
 };
 
 // A section's menu: move it one place up or down, or delete it.
@@ -37,9 +38,11 @@ export function SectionMenu({ canMoveUp, canMoveDown, onMoveUp, onMoveDown, onDe
                         </SectionMenuItem>
 
                         {/* Delete */}
-                        <SectionMenuItem tone="danger" onClick={onDelete} icon={<Trash2 aria-hidden="true" />}>
-                            {t('delete')}
-                        </SectionMenuItem>
+                        {onDelete && (
+                            <SectionMenuItem tone="danger" onClick={onDelete} icon={<Trash2 aria-hidden="true" />}>
+                                {t('delete')}
+                            </SectionMenuItem>
+                        )}
                     </Menu.Popup>
                 </Menu.Positioner>
             </Menu.Portal>

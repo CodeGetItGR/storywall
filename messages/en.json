@@ -6669,6 +6669,10 @@
     "FeedLayout": {
         "invitation": "Invitation"
     },
+    "FeedEditor": {
+        "edit": "Edit",
+        "saveFailed": "Couldn't save your changes. Please try again."
+    },
     "FeedQuickActions": {
         "invitation": "Invitation",
         "photos": "Photos",
@@ -8229,7 +8233,12 @@
             "recipientEmailHint": "If they sign in with this email, they won't need the PIN."
         },
         "manage": {
-            "intro": "Give this event to someone else. They claim it with a card you print.",
+            "illustrationAlt": "Gift box with the gift card",
+            "steps": [
+                { "title": "Add who it's for", "body": "Write their name and yours." },
+                { "title": "Print the card", "body": "You get a card with a QR code and a PIN." },
+                { "title": "They scan and claim", "body": "They scan the QR, sign in and enter the PIN. The event becomes theirs." }
+            ],
             "setUp": "Set up gift",
             "editTitle": "Edit gift",
             "edit": "Edit",
@@ -8239,7 +8248,6 @@
             "recipient": "For",
             "giver": "From",
             "email": "Email",
-            "none": "None",
             "status": {
                 "NOT_ISSUED": "No card yet.",
                 "ISSUED": "Card ready. Not claimed yet.",
@@ -10596,7 +10604,11 @@
             "coupleProfilesSimple": "The couple (no photos)",
             "weddingSponsorsSimple": "Wedding sponsors (no photos)",
             "photoFrame": "Framed photo",
-            "footer": "Footer"
+            "footer": "Footer",
+            "feedCover": "Cover",
+            "feedDetails": "Details",
+            "feedDescription": "Description",
+            "feedRsvp": "RSVP"
         },
         "eventPhotos": {
             "title": "Event photos",
