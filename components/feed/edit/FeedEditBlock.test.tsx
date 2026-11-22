@@ -1,12 +1,13 @@
 import { DndContext } from '@dnd-kit/core';
 import { SortableContext } from '@dnd-kit/sortable';
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { NextIntlClientProvider } from 'next-intl';
 import type { ComponentProps } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { FeedEditBlock } from '@/components/feed/edit/FeedEditBlock';
+import { defaultFeedLayout } from '@/lib/feedLayout';
 import { SAMPLE_SECTIONS } from '@/lib/invitation/samples';
 import type { InvitationSection } from '@/lib/invitation/sections';
 import en from '@/messages/en.json';
@@ -82,5 +83,38 @@ describe('FeedEditBlock taps', () => {
         const actions = renderBlock({ hasSettings: false });
         fireEvent.click(screen.getByText('Black tie'));
         expect(actions.onOpenSettings).not.toHaveBeenCalled();
+    });
+});
+
+describe('FeedEditBlock name', () => {
+    const pencil = () => screen.getByRole('button', { name: en.InvitationEditor.sectionSettings.open });
+
+    it('shows the block name right after the eye and pencil, once for screen readers', () => {
+        renderBlock();
+        const label = screen.getByText('Dress code');
+        expect(label).toHaveAttribute('aria-hidden', 'true');
+        expect(label.previousElementSibling).toBe(pencil());
+        expect(screen.getByRole('group', { name: 'Dress code' })).toBeTruthy();
+    });
+
+    it("shows the cover's name right after its pencil, in the same row as Cancel and Save", () => {
+        const cover = defaultFeedLayout().sections.find((item) => item.type === 'feedCover') as InvitationSection;
+        renderBlock({
+            section: cover,
+            name: 'Cover',
+            controls: { canHide: false, canDelete: false, movable: false, canMoveUp: false, canMoveDown: false },
+            corner: <button type="button">Cancel</button>,
+        });
+        const label = screen.getByText('Cover');
+        expect(label.previousElementSibling).toBe(pencil());
+        const row = label.closest('[data-feed-block-tools]') as HTMLElement;
+        expect(within(row).getByRole('button', { name: 'Cancel' })).toBeTruthy();
+    });
+
+    // The name is no button: a tap on it falls through to the block, which opens the settings.
+    it('lets a tap on the name through to the block', () => {
+        renderBlock();
+        expect(screen.getByText('Dress code')).toHaveClass('pointer-events-none');
+        expect(screen.getByText('Dress code').parentElement).not.toHaveClass('pointer-events-auto');
     });
 });

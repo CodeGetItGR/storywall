@@ -61,15 +61,16 @@ export function FeedEditBlock({ section, name, controls, hasSettings, actions, c
                     </span>
                 )}
 
-                {/* Tools */}
-                <FeedBlockTools section={section} controls={controls} hasSettings={hasSettings} drag={drag} actions={actions} />
-
-                {/* Save and cancel */}
-                {corner && (
-                    <div data-feed-block-tools className="absolute top-3 right-3 z-50">
-                        {corner}
-                    </div>
-                )}
+                {/* Tools, with Cancel and Save on the cover */}
+                <FeedBlockTools
+                    section={section}
+                    name={name}
+                    controls={controls}
+                    hasSettings={hasSettings}
+                    drag={drag}
+                    actions={actions}
+                    corner={corner}
+                />
             </FeedNative>
         </div>
     );

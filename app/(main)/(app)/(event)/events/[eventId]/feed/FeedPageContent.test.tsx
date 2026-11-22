@@ -257,6 +257,20 @@ describe('FeedPageContent edit mode', { timeout: 15_000 }, () => {
         expect(await screen.findByRole('button', { name: 'edit' })).toBeTruthy();
     });
 
+    it('names every block in its tools while editing, and nowhere once done', async () => {
+        renderFeed(null, { flag: true, layout: savedLayout(dressCode), isHost: true });
+        fireEvent.click(await screen.findByRole('button', { name: 'edit' }));
+        await screen.findByRole('group', { name: 'sectionNames.feedCover' }, LAZY_LOOK);
+        for (const type of ['feedCover', 'feedDetails', 'feedDescription', dressCode.type, 'feedRsvp']) {
+            const group = screen.getByRole('group', { name: `sectionNames.${type}` });
+            const tools = group.querySelector('[data-feed-block-tools]') as HTMLElement;
+            expect(within(tools).getByText(`sectionNames.${type}`)).toHaveAttribute('aria-hidden', 'true');
+        }
+        fireEvent.click(screen.getByRole('button', { name: 'cancel' }));
+        await screen.findByRole('button', { name: 'edit' });
+        expect(document.querySelector('[data-feed-block-tools]')).toBeNull();
+    });
+
     it('gives the cover no eye', async () => {
         renderFeed(null, { flag: true, layout: savedLayout(), isHost: true });
         fireEvent.click(await screen.findByRole('button', { name: 'edit' }));
