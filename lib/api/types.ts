@@ -1192,6 +1192,29 @@ export interface EventThemeDto {
     headingFont: EventThemeFontDto | null; // null = the app's fonts
 }
 
+// GET /api/events/{id}/feed-layout (guestwall-be FeedLayoutDto, KAN-243). 404 when nothing is saved.
+export interface FeedLayoutDto {
+    themeSlug: string | null; // null = the event's wall theme
+    revision: number;
+    document: unknown; // an invitation document (lib/invitation/document.ts)
+    design: unknown | null; // the Save my date theme's design; null on the wall theme
+    imageUrls: Record<string, string>; // image id to URL: the theme's images and the event photos the layout uses
+    updatedAt: string;
+}
+
+// PUT /api/events/{id}/feed-layout (KAN-243). revision: the one the host saw, 0 before the first save;
+// a newer one answers 409 with 5208. document.themeId must be the theme's own, or 'wall' with themeSlug null.
+export interface FeedLayoutSaveRequestDto {
+    revision: number;
+    themeSlug: string | null;
+    document: unknown;
+}
+
+export interface FeedLayoutSaveResponseDto {
+    revision: number;
+    updatedAt: string;
+}
+
 // Returned by GET /api/events (list) and POST /api/events — flat summary shape.
 // GET /api/events/{id} returns EventDetailResponseDto instead (see below).
 export interface EventResponseDto {

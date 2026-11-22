@@ -37,12 +37,20 @@ export function useThemePicker(event: EventDetailResponseDto, canWrite: boolean)
         [canWrite, isPending, mutate],
     );
 
+    const selectedKey = event.theme?.presetKey ?? null;
+    // Whether picking this preset (null: "No theme") would change nothing.
+    const isApplied = useCallback(
+        (presetId: string | null) =>
+            presetId === null ? selectedKey === null : presets.data?.find((preset) => preset.id === presetId)?.key === selectedKey,
+        [presets.data, selectedKey],
+    );
+
     return {
         available: available && !quiet,
         presets: presets.data ?? [],
         isLoading: presets.isLoading,
         loadError: quiet ? null : presets.error,
-        selectedKey: event.theme?.presetKey ?? null,
+        selectedKey,
         // What is applied when it is no longer among the offered presets (archived,
         // or no longer offered for the event); null while the list is still loading.
         staleTheme: presets.data && event.theme && !presets.data.some((preset) => preset.key === event.theme!.presetKey) ? event.theme : null,
@@ -53,5 +61,6 @@ export function useThemePicker(event: EventDetailResponseDto, canWrite: boolean)
         saveError: setTheme.error,
         disabled: !canWrite || isPending,
         select,
+        isApplied,
     };
 }

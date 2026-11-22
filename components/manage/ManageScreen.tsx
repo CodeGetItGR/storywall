@@ -1,11 +1,11 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 
 import { DeletedEventManageScreen } from '@/components/manage/DeletedEventManageScreen';
 import { ManageMembersSkeleton, ManageOverviewSkeleton, ManageRsvpSkeleton } from '@/components/manage/ManageSkeletons';
 import { ManageShell } from '@/components/manage/nav/ManageShell';
-import { ThemePicker } from '@/components/manage/ThemePicker';
+import { ThemeSection } from '@/components/manage/ThemeSection';
 import { useEventRouteContext } from '@/components/routing/EventRouteGate';
 import { useAppConfig } from '@/hooks/useAppConfig';
 import { useEventInvitations } from '@/hooks/useEventInvitations';
@@ -37,6 +37,7 @@ export function ManageScreen() {
         visibleSections: nav.visibleSections,
         pendingSections: giftSection.isLoading ? ['gift'] : [],
     });
+    const openBilling = useCallback(() => navigateToSection('billing'), [navigateToSection]);
     const { data: appConfig } = useAppConfig();
 
     const canWrite = isEventWritable(activeEvent?.status);
@@ -118,7 +119,7 @@ export function ManageScreen() {
 
             {section === 'settings' && <SettingsTab event={activeEvent} canWrite={canEditDetails} canUploadCover={canWrite} />}
 
-            {section === 'theme' && <ThemePicker event={activeEvent} canWrite={canEditDetails} showHeading={false} />}
+            {section === 'theme' && <ThemeSection event={activeEvent} canWrite={canEditDetails} onOpenBilling={openBilling} />}
 
             {section === 'gift' &&
                 (giftSection.isLoading ? (

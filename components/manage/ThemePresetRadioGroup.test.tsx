@@ -1,4 +1,4 @@
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { ThemePresetRadioGroup, type ThemeRadioOption } from '@/components/manage/ThemePresetRadioGroup';
@@ -201,5 +201,54 @@ describe('ThemePresetRadioGroup layout', () => {
         expect(group).toHaveClass('grid-cols-2');
         expect(group).not.toHaveClass('lg:grid-cols-4');
         expect(screen.getByRole('radio', { name: 'Preset a' }).firstElementChild).toHaveClass('aspect-square');
+    });
+});
+
+describe('Save my date cards', () => {
+    const invitation = (overrides: Partial<ThemeRadioOption> = {}): ThemeRadioOption => ({
+        id: 'invitation:rose',
+        presetId: 'invitation:rose',
+        label: 'Rose',
+        backgroundColor: null,
+        illustrationUrl: null,
+        titleColor: '#9C4A5A',
+        headingFont: null,
+        titleFontFamily: '"Playfair Display", serif',
+        selected: false,
+        ...overrides,
+    });
+
+    it("draws the title in the theme's font", () => {
+        render(<ThemePresetRadioGroup options={[invitation()]} labelledBy="h" disabled={false} onSelectAction={vi.fn()} />);
+        const title = screen.getByText('Rose').parentElement!;
+        expect(title).toHaveAttribute('data-theme-font', '');
+        expect(title.style.getPropertyValue('--event-heading-font')).toBe('"Playfair Display", serif');
+    });
+
+    it('says why a locked card needs Save my date', () => {
+        render(
+            <ThemePresetRadioGroup
+                options={[invitation({ locked: true, lockedLabel: 'Needs Save my date' })]}
+                labelledBy="h"
+                disabled={false}
+                onSelectAction={vi.fn()}
+            />,
+        );
+        expect(screen.getByRole('radio', { name: 'Rose' })).toHaveAccessibleDescription('Needs Save my date');
+        expect(screen.getByTitle('Needs Save my date')).toBeInTheDocument();
+    });
+
+    it("a locked card the host can't buy is not pickable", () => {
+        const onSelect = vi.fn();
+        render(
+            <ThemePresetRadioGroup
+                options={[invitation({ presetId: undefined, locked: true, lockedLabel: 'Needs Save my date' })]}
+                labelledBy="h"
+                disabled={false}
+                onSelectAction={onSelect}
+            />,
+        );
+        fireEvent.click(screen.getByRole('radio', { name: 'Rose' }));
+        expect(onSelect).not.toHaveBeenCalled();
     });
 });

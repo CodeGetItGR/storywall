@@ -1,11 +1,12 @@
 'use client';
 
-import { Check, Loader2 } from 'lucide-react';
-import { useState } from 'react';
+import { Check, Loader2, Lock } from 'lucide-react';
+import { useId, useState } from 'react';
 
 import { ProtectedImage } from '@/components/common/ProtectedImage';
 import type { EventThemeFontDto } from '@/lib/api/types';
-import { eventThemeStyle, isHexColor, themeFontScopeProps } from '@/lib/eventTheme';
+import { isHexColor } from '@/lib/eventTheme';
+import { themeCardTitleLook } from '@/lib/feedThemes';
 import { cn } from '@/lib/utils';
 
 // One radio of the theme picker. "Disabled" is aria-disabled with a no-op click, never the
@@ -18,6 +19,9 @@ export function ThemePresetOption({
     illustrationUrl,
     titleColor,
     headingFont,
+    titleFontFamily = null,
+    locked = false,
+    lockedLabel,
     selected,
     saving,
     disabled,
@@ -35,6 +39,11 @@ export function ThemePresetOption({
     illustrationUrl: string | null;
     titleColor: string | null;
     headingFont: EventThemeFontDto | null;
+    // A Save my date theme's title font; the title uses it instead of headingFont.
+    titleFontFamily?: string | null;
+    locked?: boolean;
+    // The lock's hover text and screen-reader description.
+    lockedLabel?: string;
     selected: boolean;
     saving: boolean;
     disabled: boolean;
@@ -49,9 +58,8 @@ export function ThemePresetOption({
     // Keyed by URL, so a new URL (art replaced, presigned refresh) gets another try.
     const [failedUrl, setFailedUrl] = useState<string | null>(null);
     const inert = disabled || presetId === undefined;
-    const themeStyle = eventThemeStyle(backgroundColor, { titleColor, headingFont });
-    // The preset's title colour, whenever the theme is usable (themeStyle is set only for a valid background).
-    const hasTitleColor = themeStyle !== undefined && titleColor !== null && isHexColor(titleColor);
+    const title = themeCardTitleLook({ backgroundColor, titleColor, headingFont, titleFontFamily });
+    const lockedId = useId();
 
     function handleClick() {
         if (inert) return;
@@ -73,6 +81,7 @@ export function ThemePresetOption({
             aria-label={label}
             aria-checked={selected}
             aria-disabled={inert}
+            aria-describedby={locked ? lockedId : undefined}
             data-option-id={optionId}
             tabIndex={tabbable ? 0 : -1}
             onClick={handleClick}
@@ -111,6 +120,18 @@ export function ThemePresetOption({
                         </span>
                     </span>
                 )}
+                {/* Lock: the theme needs Save my date */}
+                {locked && (
+                    <span
+                        title={lockedLabel}
+                        className="absolute top-2 left-2 flex h-6 w-6 items-center justify-center rounded-full bg-white/90 text-ink"
+                    >
+                        <Lock className="h-3.5 w-3.5" aria-hidden="true" />
+                        <span id={lockedId} className="sr-only">
+                            {lockedLabel}
+                        </span>
+                    </span>
+                )}
                 {saving && (
                     <span className="absolute inset-0 flex items-center justify-center bg-ink/30">
                         <Loader2 className="h-5 w-5 animate-spin text-white" aria-hidden="true" />
@@ -124,10 +145,10 @@ export function ThemePresetOption({
             </span>
             {/* Title, in the preset's heading font and title colour, centred in a fixed-height row:
                 the event's own title when there is one, else the theme name */}
-            {/* An unusable background means no theme at all, font included (EventThemeScope's rule) */}
+            {/* A preset's look needs a usable background (EventThemeScope's rule); a Save my date theme's always shows */}
             <span
-                {...themeFontScopeProps(themeStyle ? headingFont : null)}
-                style={themeStyle}
+                {...title.scopeProps}
+                style={title.style}
                 className="flex min-h-7 min-w-0 items-center justify-center"
             >
                 {/* font-size-adjust evens out how big each font looks; the padding and leading-normal
@@ -136,7 +157,7 @@ export function ThemePresetOption({
                     aria-hidden={previewTitle !== undefined || undefined}
                     className={cn(
                         'event-heading block max-w-full truncate px-1 py-1 text-center text-sm leading-normal font-semibold [font-size-adjust:0.53]',
-                        hasTitleColor ? 'text-event-title' : 'text-ink',
+                        title.hasTitleColor ? 'text-event-title' : 'text-ink',
                     )}
                 >
                     {previewTitle ?? label}

@@ -24,6 +24,7 @@ import type {
     EventMemberResponseDto,
     EventUsageResponseDto,
     ExtensionOptionResponseDto,
+    FeedLayoutDto,
     GiftHandoverResponseDto,
     MediaSummaryDto,
     QrLinkResponseDto,
@@ -36,9 +37,14 @@ import { resolveServerEventContext, resolveServerEventDetail } from '@/lib/auth/
 import { canExtendCoverage } from '@/lib/billing';
 import { isEventDeleted, isModuleAvailable, isPrimaryHost, readableModuleKeys } from '@/lib/eventLifecycle';
 import { canPickTheme } from '@/lib/eventTheme';
+import { showsFeedEditor } from '@/lib/feedEditorRelease';
+import { feedLayoutKeys } from '@/lib/feedLayout';
+import { fetchThemeCatalogue } from '@/lib/invitation/serverThemeCatalogue';
+import { invitationThemeKeys, isCatalogueEventType } from '@/lib/invitation/themeCatalogue';
 import { parseManageSection } from '@/lib/manageSections';
 import { makeQueryClient } from '@/lib/queryClient';
 import { routes } from '@/lib/routes';
+import { FeedEditorFlagProvider } from '@/providers/FeedEditorFlagProvider';
 
 import ManagePage from '../PageClient';
 
@@ -81,6 +87,20 @@ async function prefetchBilling(event: EventDetailResponseDto, eventId: string, a
     };
 }
 
+// The Theme section with the feed editor on (useThemeGrid): the feed layout (404 caches as null: the
+// default layout) and the Save my date catalogue. Not the themes' designs: they are large, and the
+// cards draw without them. Each seeds on its own.
+async function prefetchThemeGrid(eventId: string, accessToken: string) {
+    const [layout, catalogue] = await Promise.all([
+        serverGetOrNull<FeedLayoutDto>(endpoints.events.feedLayout(eventId), accessToken).catch(() => undefined),
+        fetchThemeCatalogue().catch(() => null),
+    ]);
+    return (queryClient: ReturnType<typeof makeQueryClient>) => {
+        if (layout !== undefined) queryClient.setQueryData(feedLayoutKeys.detail(eventId), layout);
+        if (catalogue) queryClient.setQueryData(invitationThemeKeys.catalogue(), catalogue);
+    };
+}
+
 type PageProps = { params: Promise<{ eventId: string }>; searchParams: Promise<{ tab?: string }> };
 
 // ManageScreen fires five host-only calls in parallel on mount (members,
@@ -99,6 +119,7 @@ export default async function Page({ params, searchParams }: PageProps) {
     // The RSVP page shows the STATISTICS report's numbers and attendance (KAN-227: no sub-tabs).
     const opensRsvp = tab === 'rsvp';
     const queryClient = makeQueryClient();
+    const feedEditor = showsFeedEditor();
     // The event doesn't depend on the memberships, so both load at once.
     const [context, event] = await Promise.all([resolveServerEventContext(eventId), resolveServerEventDetail(eventId)]);
 
@@ -125,6 +146,10 @@ export default async function Page({ params, searchParams }: PageProps) {
             const opensBilling = !isDraft && parseManageSection(tab ?? null) === 'billing';
             const membership = context.memberships.find((m) => m.eventId === eventId);
             const billing = opensBilling ? prefetchBilling(event, eventId, accessToken, isPrimaryHost(event.hosts, membership?.id)) : null;
+            // Mirrors ThemeSection: the flag, an event type with Save my date themes, and the picker
+            // offered on a live event's Theme tab.
+            const opensThemeGrid = feedEditor && !isDraft && wantsThemePresets && isCatalogueEventType(event.eventType);
+            const themeGrid = opensThemeGrid ? prefetchThemeGrid(eventId, accessToken) : null;
             const [usage, gift, lists, themePresets] = await Promise.all([
                 serverGet<EventUsageResponseDto>(endpoints.events.usage(eventId), accessToken).catch(() => null),
                 isDraft ? undefined : serverGetOrNull<GiftHandoverResponseDto>(endpoints.events.gift(eventId), accessToken).catch(() => undefined),
@@ -155,6 +180,7 @@ export default async function Page({ params, searchParams }: PageProps) {
             }
             if (journey) (await journey)(queryClient);
             if (billing) (await billing)(queryClient);
+            if (themeGrid) (await themeGrid)(queryClient);
         } catch {
             // Best-effort — ManageScreen's own hooks fetch normally if this fails.
         }
@@ -162,7 +188,9 @@ export default async function Page({ params, searchParams }: PageProps) {
 
     return (
         <HydrationBoundary state={dehydrate(queryClient)}>
-            <ManagePage />
+            <FeedEditorFlagProvider enabled={feedEditor}>
+                <ManagePage />
+            </FeedEditorFlagProvider>
         </HydrationBoundary>
     );
 }

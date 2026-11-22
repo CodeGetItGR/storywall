@@ -1,0 +1,50 @@
+/* The top of the feed inside the invitation root (FeedLook). */
+
+/* The feed page's own background stays behind the blocks; sections paint their own. */
+.smd-invitation.feed-look {
+    background: transparent;
+}
+
+/* The invitation shell's padding, height and centring are for invitation sections; feed blocks keep
+   their own spacing and layout. */
+.smd-invitation .section.feed-block {
+    display: block;
+    min-height: 0;
+    padding: 0;
+    text-align: start;
+}
+
+/* Today's feed blocks keep today's look. invitation.css is unlayered, so its element rules beat
+   every Tailwind utility; undo them here so the blocks' own classes apply again. */
+.smd-invitation .feed-native {
+    color: var(--color-foreground);
+    line-height: 1.5;
+    text-align: start;
+}
+.smd-invitation .feed-native :is(h1, h2, h3, h4) {
+    margin: revert-layer;
+    font-size: revert-layer;
+    font-family: revert-layer;
+    font-weight: revert-layer;
+}
+.smd-invitation .feed-native p {
+    margin: revert-layer;
+    line-height: revert-layer;
+    color: revert-layer;
+}
+.smd-invitation .feed-native small {
+    font-size: revert-layer;
+}
+.smd-invitation .feed-native img {
+    display: revert-layer;
+    max-width: revert-layer;
+    height: revert-layer;
+    vertical-align: revert-layer;
+}
+.smd-invitation .feed-native a {
+    color: revert-layer;
+}
+/* revert-layer above also drops this unlayered rule from globals.css; put it back. */
+[data-theme-font] .smd-invitation .feed-native .event-heading {
+    font-family: var(--event-heading-font);
+}

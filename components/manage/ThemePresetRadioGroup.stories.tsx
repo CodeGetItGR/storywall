@@ -16,9 +16,27 @@ const PRESETS: ThemeRadioOption[] = [
     { id: 'paper', label: 'Paper', backgroundColor: '#F6F1EA', titleColor: null, icon: '/icons/story.svg' },
 ].map(({ icon, ...preset }) => ({ ...preset, presetId: preset.id, illustrationUrl: icon, headingFont: null, selected: preset.id === 'olive' }));
 
+// Save my date themes as the Theme page lists them after the presets; names come from the server.
+const INVITATION_THEMES: ThemeRadioOption[] = [
+    { id: 'invitation:rose', label: 'Rose garden', backgroundColor: '#FBE6E4', titleColor: '#9C4A5A', titleFontFamily: 'Georgia, serif' },
+    { id: 'invitation:olive', label: 'Olive branch', backgroundColor: '#EEF1E4', titleColor: '#4D5A2C', titleFontFamily: '"Courier New", monospace' },
+].map((theme) => ({ ...theme, presetId: theme.id, illustrationUrl: null, headingFont: null, selected: false }));
+
 // The Theme page's grid, with "No theme" first and its label from the app's copy.
-function ThemeGrid({ previewTitle, savingPresetId }: { previewTitle?: string; savingPresetId?: string | null }) {
+function ThemeGrid({
+    previewTitle,
+    savingPresetId,
+    extra,
+    locked,
+}: {
+    previewTitle?: string;
+    savingPresetId?: string | null;
+    // Save my date cards after the presets; `locked` puts the lock on them.
+    extra?: ThemeRadioOption[];
+    locked?: boolean;
+}) {
     const t = useTranslations('ManagePage.settings.theme');
+    const extras = (extra ?? []).map((option) => (locked ? { ...option, locked: true, lockedLabel: t('locked') } : option));
     const tModules = useTranslations('Modules');
     const none: ThemeRadioOption = {
         id: 'none',
@@ -40,7 +58,7 @@ function ThemeGrid({ previewTitle, savingPresetId }: { previewTitle?: string; sa
 
             {/* Themes */}
             <ThemePresetRadioGroup
-                options={[none, ...PRESETS]}
+                options={[none, ...PRESETS, ...extras]}
                 labelledBy="theme-heading"
                 disabled={savingPresetId !== undefined}
                 savingPresetId={savingPresetId}
@@ -81,3 +99,21 @@ export const WithoutTitle: Story = { args: { previewTitle: undefined } };
 
 // A pick is being saved: a spinner on that card, the rest dimmed.
 export const Saving: Story = { tags: ['visual-skip'], args: { savingPresetId: 'sea' } };
+
+// Save my date themes after the presets, each title in its theme's font and colour.
+export const WithInvitationThemes: Story = {
+    args: { extra: INVITATION_THEMES },
+    play: async ({ canvasElement }) => {
+        await expect(within(canvasElement).getByRole('radio', { name: 'Rose garden' })).toBeInTheDocument();
+    },
+};
+
+// Without Save my date the themes show with a lock.
+export const LockedInvitationThemes: Story = {
+    args: { extra: INVITATION_THEMES, locked: true },
+    play: async ({ canvasElement, globals }) => {
+        await expect(within(canvasElement).getByRole('radio', { name: 'Rose garden' })).toHaveAccessibleDescription(
+            copyFor(globals).ManagePage.settings.theme.locked,
+        );
+    },
+};

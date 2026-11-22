@@ -18,7 +18,16 @@ function readViewCount(eventId: string) {
     return Number.isFinite(parsed) && parsed > 0 ? parsed : 0;
 }
 
-export function EventDescription({ eventId, description, className }: { eventId: string; description: string; className?: string }) {
+type EventDescriptionProps = {
+    eventId: string;
+    description: string;
+    className?: string;
+    // Inside the feed's folded Invitation row: the fold keeps it out of the way, so it always shows
+    // and counts no views.
+    keepShown?: boolean;
+};
+
+export function EventDescription({ eventId, description, className, keepShown = false }: EventDescriptionProps) {
     const sectionRef = useRef<HTMLElement | null>(null);
 
     useEffect(() => {
@@ -30,6 +39,12 @@ export function EventDescription({ eventId, description, className }: { eventId:
             return;
         }
 
+        if (keepShown) {
+            section.hidden = false;
+            section.classList.remove('invisible');
+            return;
+        }
+
         if (currentViews >= MAX_VISIBLE_VIEWS) {
             section.hidden = true;
             return;
@@ -38,7 +53,7 @@ export function EventDescription({ eventId, description, className }: { eventId:
         window.localStorage.setItem(storageKey, String(currentViews + 1));
         section.hidden = false;
         section.classList.remove('invisible');
-    }, [eventId]);
+    }, [eventId, keepShown]);
 
     return (
         <section ref={sectionRef} className={cn('invisible pt-2', className)}>

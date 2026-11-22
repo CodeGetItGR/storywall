@@ -1598,7 +1598,8 @@
                 "loading": "Loading themes…",
                 "current": "Current theme",
                 "saving": "Saving theme…",
-                "saved": "Theme saved"
+                "saved": "Theme saved",
+                "locked": "Needs Save my date"
             },
             "save": "Save changes",
             "saved": "Saved",
@@ -6664,6 +6665,9 @@
                 "schedule": "The end must be after the start."
             }
         }
+    },
+    "FeedLayout": {
+        "invitation": "Invitation"
     },
     "FeedQuickActions": {
         "invitation": "Invitation",

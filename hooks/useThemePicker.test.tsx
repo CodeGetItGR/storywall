@@ -53,6 +53,13 @@ describe('useThemePicker', () => {
         expect(mocks.presetsArg).toBeNull();
     });
 
+    it('knows which pick is already on the event', () => {
+        const { result } = renderHook(() => useThemePicker(eventWith(true, 'dino-mint'), true));
+        expect(result.current.isApplied('p1')).toBe(true);
+        expect(result.current.isApplied(null)).toBe(false);
+        expect(result.current.isApplied('other')).toBe(false);
+    });
+
     it("lists the presets and marks the event's current one", () => {
         const { result } = renderHook(() => useThemePicker(eventWith(true), true));
         expect(result.current.available).toBe(true);
