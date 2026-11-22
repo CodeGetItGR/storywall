@@ -5,7 +5,7 @@ import { useLocale, useTranslations } from 'next-intl';
 
 import { PriceBreakdownSummary } from '@/components/checkout/PriceBreakdownSummary';
 import { WithdrawalConsentSection } from '@/components/checkout/WithdrawalConsentSection';
-import { FeatureAddonLabel } from '@/components/plan/FeatureAddonLabel';
+import { FeatureAddonCheckRow } from '@/components/plan/FeatureAddonCheckRow';
 import type { InvitationAddonCheckout } from '@/hooks/useInvitationAddonStep';
 import { formatMoney } from '@/lib/billing';
 
@@ -13,9 +13,6 @@ type PublishAddonStepProps = {
     checkout: InvitationAddonCheckout;
     onCancel: () => void;
 };
-
-const ROW_CLASS = 'flex min-h-14 items-center gap-3 py-2';
-const CHECKBOX_CLASS = 'h-5 w-5 shrink-0 accent-primary';
 
 // The invitation as an add-on, with RSVP when the invitation asks for replies, then payment.
 // A draft pays its plan with them, so its plan and other add-ons are listed first.
@@ -37,23 +34,16 @@ export function PublishAddonStep({ checkout, onCancel }: PublishAddonStepProps) 
             <ul className="divide-y divide-ink/10">
                 <li>
                     {/* Always included */}
-                    <label className={ROW_CLASS}>
-                        <input type="checkbox" checked disabled readOnly className={CHECKBOX_CLASS} />
-                        <FeatureAddonLabel service={saveMyDate.service} />
-                    </label>
+                    <FeatureAddonCheckRow service={saveMyDate.service} checked />
                 </li>
                 {rsvp && (
                     <li>
-                        <label className={`${ROW_CLASS} cursor-pointer has-disabled:cursor-not-allowed has-disabled:opacity-60`}>
-                            <input
-                                type="checkbox"
-                                checked={checkout.rsvpTicked}
-                                disabled={checkout.isPending}
-                                onChange={checkout.handleRsvpChange}
-                                className={CHECKBOX_CLASS}
-                            />
-                            <FeatureAddonLabel service={rsvp.service} />
-                        </label>
+                        <FeatureAddonCheckRow
+                            service={rsvp.service}
+                            checked={checkout.rsvpTicked}
+                            disabled={checkout.isPending}
+                            onChange={checkout.handleRsvpChange}
+                        />
                     </li>
                 )}
             </ul>

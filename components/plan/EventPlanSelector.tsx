@@ -4,9 +4,10 @@ import { useTranslations } from 'next-intl';
 
 import { EventLitePlans } from '@/components/plan/EventLitePlans';
 import { MarketingPlanCard } from '@/components/plan/MarketingPlanCard';
+import { PlanAddonLine } from '@/components/plan/PlanAddonLine';
 import { LoadingState } from '@/components/ui/LoadingState';
 import { useMarketingPlanOptions } from '@/hooks/useMarketingPlanOptions';
-import type { AppMediaConfigDto, PlanTierResponseDto, PlatformModuleResponseDto } from '@/lib/api/types';
+import type { AppMediaConfigDto, PaidServiceResponseDto, PlanTierResponseDto, PlatformModuleResponseDto } from '@/lib/api/types';
 import { cn } from '@/lib/utils';
 
 type EventPlanSelectorProps = {
@@ -18,6 +19,8 @@ type EventPlanSelectorProps = {
     onSelectAction: (code: string) => void;
     onSelectDurationAction: (code: string, optionId: string) => void;
     isLoading?: boolean;
+    // By plan code: an add-on that joins the plan's payment, shown at the foot of its card (KAN-82).
+    planAddons?: Record<string, PaidServiceResponseDto>;
 };
 
 export function EventPlanSelector({
@@ -29,6 +32,7 @@ export function EventPlanSelector({
     onSelectAction,
     onSelectDurationAction,
     isLoading = false,
+    planAddons,
 }: EventPlanSelectorProps) {
     const t = useTranslations('CreateEventPage');
     const tPricing = useTranslations('LandingPage.pricing');
@@ -68,6 +72,7 @@ export function EventPlanSelector({
                                     selected={selectedCode === config.code}
                                     selectionLabel={selectedCode === config.code ? t('planSelected') : tPricing('choose')}
                                     onSelectAction={onSelectAction}
+                                    footer={planAddons?.[config.code] && <PlanAddonLine service={planAddons[config.code]} />}
                                 />
                             ))}
                         </div>
@@ -80,6 +85,7 @@ export function EventPlanSelector({
                                 onSelectAction={onSelectAction}
                                 onSelectDurationAction={onSelectDurationAction}
                                 options={lite}
+                                planAddons={planAddons}
                                 selectedCode={selectedCode}
                                 selectedLabel={t('planSelected')}
                             />

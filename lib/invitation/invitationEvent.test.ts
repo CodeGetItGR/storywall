@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { storyEvent, storyMember } from '@/.storybook/fixtures';
+import type { PaidServiceResponseDto, PlatformModuleResponseDto } from '@/lib/api/types';
 import type { InvitationDocument } from '@/lib/invitation/document';
 import {
     eventsForInvitation,
@@ -72,6 +73,32 @@ describe('plansWithInvitation', () => {
         const withIt = sampleInvitationPlan();
         const without = sampleInvitationPlan({ code: 'BASIC', moduleKeys: ['gallery'] });
         expect(plansWithInvitation([without, withIt])).toEqual([withIt]);
+    });
+
+    it('also keeps a plan that sells the invitation as an add-on', () => {
+        const withIt = sampleInvitationPlan();
+        const small = sampleInvitationPlan({ id: 'plan-small', code: 'SMALL', moduleKeys: ['posts'] });
+        const other = sampleInvitationPlan({ id: 'plan-other', code: 'OTHER', moduleKeys: ['posts'] });
+        const addon = {
+            id: 'svc-smd',
+            code: 'SMD',
+            kind: 'MODULE_UNLOCK',
+            name: 'Online invitation',
+            description: null,
+            sortOrder: 0,
+            isAssignable: true,
+            isPublic: true,
+            priceAmountMinor: 2900,
+            priceCurrency: 'EUR',
+            billingPeriod: 'ONE_TIME',
+            grantsStorageBytes: null,
+            grantsModuleKey: 'save_my_date',
+            planTierIds: ['plan-small'],
+        } as PaidServiceResponseDto;
+        const modules = [{ id: 'smd', moduleKey: 'save_my_date', name: 'Save my date', description: null, isEnabled: true, sortOrder: 0 }] as PlatformModuleResponseDto[];
+
+        expect(plansWithInvitation([withIt, small, other], [addon], modules)).toEqual([withIt, small]);
+        expect(plansWithInvitation([withIt, small], [{ ...addon, isPublic: false }], modules)).toEqual([withIt]);
     });
 });
 
