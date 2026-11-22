@@ -8,7 +8,9 @@ import { useFeedLayout } from '@/hooks/useFeedLayout';
 import { useInvitationFold } from '@/hooks/useInvitationFold';
 import type { EventDetailResponseDto } from '@/lib/api/types';
 import { isEventEnded } from '@/lib/eventLifecycle';
+import { feedEditFrame } from '@/lib/feedEditing';
 import { type FeedFrame, feedFrame, foldsMiddle, usesInvitationLook } from '@/lib/feedLayout';
+import type { InvitationDocument } from '@/lib/invitation/document';
 import { isEmptyForGuests } from '@/lib/invitation/gallery';
 import { INVITATION_LABELS } from '@/lib/invitation/labels';
 import { buildRenderContext, type RenderContext } from '@/lib/invitation/render';
@@ -34,38 +36,41 @@ export type FeedTopView = {
     drawsMiddle: boolean;
 };
 
-// Everything the top of the feed draws, from the saved layout or the default one.
-export function useFeedTop(event: EventDetailResponseDto): FeedTopView {
+// Everything the top of the feed draws, from the saved layout or the default one. While editing,
+// it draws the document being edited: every block, hidden ones too, never folded.
+export function useFeedTop(event: EventDetailResponseDto, editing?: InvitationDocument): FeedTopView {
     const enabled = useFeedEditorEnabled();
     const locale = useLocale();
     const layout = useFeedLayout(event, { enabled });
-    const look = usesInvitationLook(layout.document);
+    const document = editing ?? layout.document;
+    const look = usesInvitationLook(document);
     // The font files list is public (the published invitation reads it too).
     const fonts = useInvitationFonts(enabled && look);
     const fold = useInvitationFold();
     const ended = isEventEnded(event);
 
     const ctx = useMemo(
-        () => ({ ...buildRenderContext(layout.document, layout.theme, layout.media), labels: INVITATION_LABELS[locale === 'en' ? 'en' : 'el'] }),
-        [layout.document, layout.theme, layout.media, locale],
+        () => ({ ...buildRenderContext(document, layout.theme, layout.media), labels: INVITATION_LABELS[locale === 'en' ? 'en' : 'el'] }),
+        [document, layout.theme, layout.media, locale],
     );
 
     const frame = useMemo(() => {
-        const split = feedFrame(layout.document, { ended });
+        if (editing) return feedEditFrame(editing);
+        const split = feedFrame(document, { ended });
         const draws = (section: InvitationSection) =>
             section.type === 'feedDescription' ? Boolean(event.description) : !isEmptyForGuests(section, ctx);
         return { ...split, middle: split.middle.filter(draws) };
-    }, [layout.document, ended, event.description, ctx]);
+    }, [editing, document, ended, event.description, ctx]);
 
-    const folds = foldsMiddle(frame.middle.length);
+    const folds = !editing && foldsMiddle(frame.middle.length);
 
     return {
         look,
         lang: locale,
-        fontFaces: look ? uploadedFontFaceCss(fonts.data ?? [], [layout.document, layout.theme]) : '',
+        fontFaces: look ? uploadedFontFaceCss(fonts.data ?? [], [document, layout.theme]) : '',
         ctx,
-        themeId: layout.document.themeId,
-        sections: layout.document.sections,
+        themeId: document.themeId,
+        sections: document.sections,
         frame,
         folds,
         open: fold.open,
