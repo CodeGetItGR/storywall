@@ -260,7 +260,11 @@ describe('a feed page that draws the theme background itself', () => {
     });
 
     it('reads the automatic text contrast off the page colour when the content slot has no image', () => {
-        const plain = { ...SAMPLE_THEME, backgrounds: { ...SAMPLE_THEME.backgrounds, content: { mode: 'cover', stableRepeat: false } } } as ThemeDesign;
+        const plain = {
+            ...SAMPLE_THEME,
+            autoTextContrast: true,
+            backgrounds: { ...SAMPLE_THEME.backgrounds, content: { mode: 'cover', stableRepeat: false } },
+        } as ThemeDesign;
         const darkPage = { ...buildRenderContext(SAMPLE_DOCUMENT, { ...plain, colors: { ...plain.colors, secondary: '#111111' } }, media), pageBackdrop: true };
         expect(sectionTextContrast(auto, 2, darkPage)).toBe('light');
     });
