@@ -20,6 +20,7 @@ import {
 } from '@/lib/feedEditing';
 import { defaultFeedLayout } from '@/lib/feedLayout';
 import type { InvitationDocument } from '@/lib/invitation/document';
+import { MAX_SECTIONS } from '@/lib/invitation/document';
 import { SAMPLE_SECTIONS } from '@/lib/invitation/samples';
 import type { InvitationSection } from '@/lib/invitation/sections';
 
@@ -84,6 +85,27 @@ describe('edits', () => {
         expect(ids(next)).toEqual(['feed-feedCover', 'feed-feedDetails', 'feed-feedDescription', 'feed-feedRsvp', 'faq', 'dress']);
     });
 
+    it('leaves the document alone when a block cannot move further', () => {
+        const start = layout(dressCode, faq);
+        expect(produce(start, moveFeedBlock('feed-feedDescription', -1))).toBe(start);
+        expect(produce(start, moveFeedBlock('faq', 1))).toBe(start);
+    });
+
+    it('appends right before RSVP when there is no middle block', () => {
+        const start = produce(layout(), (draft) => {
+            draft.sections.splice(2, 1);
+        });
+        const next = produce(start, appendFeedSection(faq));
+        expect(ids(next)).toEqual(['feed-feedCover', 'feed-feedDetails', 'faq', 'feed-feedRsvp']);
+    });
+
+    it('appends nothing at the section limit', () => {
+        const start = produce(layout(), (draft) => {
+            while (draft.sections.length < MAX_SECTIONS) draft.sections.push({ ...faq, id: `x${draft.sections.length}` });
+        });
+        expect(produce(start, appendFeedSection(faq))).toBe(start);
+    });
+
     it('drags among middle blocks only', () => {
         const next = produce(layout(dressCode, faq), reorderFeedBlocks('faq', 'feed-feedDescription'));
         expect(next.sections.filter(isMiddleBlock).map((section) => section.id)).toEqual(['faq', 'feed-feedDescription', 'dress']);
@@ -126,6 +148,10 @@ describe('what the add row offers', () => {
         expect(types).toContain('dressCode');
         expect(types).not.toContain('date');
         expect(types).not.toContain('rsvp');
+    });
+
+    it('leaves out a single-use type already on the page', () => {
+        expect(addableFeedSectionTypes(layout(dressCode), 'WEDDING')).not.toContain('dressCode');
     });
 });
 
