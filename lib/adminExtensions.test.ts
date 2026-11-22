@@ -3,12 +3,15 @@ import { describe, expect, it } from 'vitest';
 import { eventPlanFixture, extensionFixture } from '@/components/admin/__fixtures__/extensionPlans';
 import {
     extensionDraftFromRow,
+    extensionPlanGroups,
     extensionRowsFromPlans,
     extensionVisibility,
     filterExtensionRows,
     isExtensionDraftValid,
     newExtensionDraft,
     parseExtensionPrice,
+    plansSellingLength,
+    serviceOffersPlan,
 } from '@/lib/adminExtensions';
 
 const classic = eventPlanFixture({
@@ -50,20 +53,57 @@ describe('filterExtensionRows', () => {
     });
 });
 
+describe('filterExtensionRows by plan', () => {
+    it('shows only the picked plan', () => {
+        const planId = 'plan-premium';
+        expect(filterExtensionRows(rows, { kind: 'ALL', status: 'ALL', search: '', planId }).map((row) => row.option.id)).toEqual(['p-6']);
+        expect(filterExtensionRows(rows, { kind: 'ALL', status: 'ALL', search: '', planId: null })).toHaveLength(3);
+    });
+});
+
+describe('serviceOffersPlan', () => {
+    it('matches a service offered to that plan or to every plan', () => {
+        expect(serviceOffersPlan({ planTierIds: [] }, 'plan-premium')).toBe(true);
+        expect(serviceOffersPlan({ planTierIds: ['plan-premium'] }, 'plan-premium')).toBe(true);
+        expect(serviceOffersPlan({ planTierIds: ['plan-classic'] }, 'plan-premium')).toBe(false);
+        expect(serviceOffersPlan({ planTierIds: ['plan-classic'] }, null)).toBe(true);
+    });
+});
+
+describe('extensionPlanGroups', () => {
+    it('groups by event type in the given order and leaves archived plans out', () => {
+        const baptism = eventPlanFixture({ id: 'plan-baptism', code: 'CLASSIC_BAPTISM', eventTypeKey: 'BAPTISM', sortOrder: 1 });
+        const hidden = eventPlanFixture({ id: 'plan-hidden', code: 'CLASSIC_OLD', eventTypeKey: 'BAPTISM', isPublic: false, sortOrder: 0 });
+        const archived = eventPlanFixture({ id: 'plan-archived', isPublic: false, isAssignable: false });
+        const groups = extensionPlanGroups([classic, baptism, hidden, archived, { ...premium, sortOrder: 1 }], ['BAPTISM', 'WEDDING']);
+
+        expect(groups.map((group) => group.eventTypeKey)).toEqual(['BAPTISM', 'WEDDING']);
+        expect(groups[0].plans.map((plan) => plan.id)).toEqual(['plan-hidden', 'plan-baptism']);
+        expect(groups[1].plans.map((plan) => plan.id)).toEqual(['plan-classic', 'plan-premium']);
+    });
+});
+
+describe('plansSellingLength', () => {
+    it('finds the plans selling that length on sale, not retired', () => {
+        expect([...plansSellingLength([classic, premium], '12')]).toEqual(['plan-classic']);
+        expect([...plansSellingLength([classic, premium], '3')]).toEqual([]);
+        expect([...plansSellingLength([classic, premium], '')]).toEqual([]);
+    });
+});
+
 describe('extension drafts', () => {
-    it('starts on the first plan, blank', () => {
-        expect(newExtensionDraft([classic, premium])).toEqual({ planTierId: 'plan-classic', months: '', price: '' });
-        expect(newExtensionDraft([])).toEqual({ planTierId: '', months: '', price: '' });
+    it('starts with no plan picked, blank', () => {
+        expect(newExtensionDraft()).toEqual({ planTierIds: [], months: '', price: '' });
     });
 
     it('fills in from an extension', () => {
-        expect(extensionDraftFromRow(rows[2])).toEqual({ planTierId: 'plan-premium', months: '6', price: '29' });
+        expect(extensionDraftFromRow(rows[2])).toEqual({ planTierIds: ['plan-premium'], months: '6', price: '29' });
     });
 
     it('needs a plan, 1 to 120 months and a price above zero', () => {
-        const valid = { planTierId: 'plan-classic', months: '6', price: '29' };
+        const valid = { planTierIds: ['plan-classic'], months: '6', price: '29' };
         expect(isExtensionDraftValid(valid)).toBe(true);
-        expect(isExtensionDraftValid({ ...valid, planTierId: '' })).toBe(false);
+        expect(isExtensionDraftValid({ ...valid, planTierIds: [] })).toBe(false);
         expect(isExtensionDraftValid({ ...valid, months: '0' })).toBe(false);
         expect(isExtensionDraftValid({ ...valid, months: '121' })).toBe(false);
         expect(isExtensionDraftValid({ ...valid, price: '0' })).toBe(false);

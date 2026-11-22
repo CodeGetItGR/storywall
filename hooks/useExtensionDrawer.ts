@@ -12,29 +12,36 @@ import {
     isExtensionDraftValid,
     newExtensionDraft,
     parseExtensionPrice,
+    plansSellingLength,
 } from '@/lib/adminExtensions';
 import { parseDurationMonths } from '@/lib/adminPlanDurations';
 import type { PlanTierResponseDto } from '@/lib/api/types';
 
 // The Paid services page's extension drawer: one extension open at a time,
-// written through the plan's coverage-option endpoints. Plan and months are
-// fixed once created; the price can change, and retiring takes it off sale
-// without deleting it.
+// written through the plan's coverage-option endpoints. A new extension can go
+// on several plans in one save. Plan and months are fixed once created; the
+// price can change, and retiring takes it off sale without deleting it.
 export function useExtensionDrawer(plans: PlanTierResponseDto[]) {
     const createOption = useCreateCoverageOption();
     const updateOption = useUpdateCoverageOption();
     const [open, setOpen] = useState(false);
     const [editingId, setEditingId] = useState<string | null>(null);
-    const [draft, setDraft] = useState<ExtensionDraft>(() => newExtensionDraft(plans));
+    const [picked, setPicked] = useState<ExtensionDraft>(newExtensionDraft);
+    const [creating, setCreating] = useState(false);
+    const [createError, setCreateError] = useState<unknown>(null);
 
     // Read from the latest plans, so a save or retire shows at once.
     const editing = editingId ? (extensionRowsFromPlans(plans).find((row) => row.option.id === editingId) ?? null) : null;
-    const isSaving = createOption.isPending || updateOption.isPending;
+    // A plan that already sells the typed length can't be picked, so it drops out of the pick.
+    const sellingLength = editing ? new Set<string>() : plansSellingLength(plans, picked.months);
+    const draft: ExtensionDraft = { ...picked, planTierIds: picked.planTierIds.filter((id) => !sellingLength.has(id)) };
+    const isSaving = creating || updateOption.isPending;
     const priceMinor = parseExtensionPrice(draft.price);
     const hasChanges = !editing || priceMinor !== editing.option.priceAmountMinor;
     const canSave = isExtensionDraftValid(draft) && hasChanges && !isSaving;
 
     function resetErrors() {
+        setCreateError(null);
         createOption.reset();
         updateOption.reset();
     }
@@ -42,14 +49,14 @@ export function useExtensionDrawer(plans: PlanTierResponseDto[]) {
     function openNew() {
         resetErrors();
         setEditingId(null);
-        setDraft(newExtensionDraft(plans));
+        setPicked(newExtensionDraft());
         setOpen(true);
     }
 
     function openEdit(row: ExtensionRow) {
         resetErrors();
         setEditingId(row.option.id);
-        setDraft(extensionDraftFromRow(row));
+        setPicked(extensionDraftFromRow(row));
         setOpen(true);
     }
 
@@ -57,11 +64,41 @@ export function useExtensionDrawer(plans: PlanTierResponseDto[]) {
         setOpen(false);
     }
 
-    function updateDraft(event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) {
-        const field = event.currentTarget.name as keyof ExtensionDraft;
+    function updateDraft(event: React.ChangeEvent<HTMLInputElement>) {
+        const field = event.currentTarget.name;
         const { value } = event.currentTarget;
-        if (field !== 'planTierId' && field !== 'months' && field !== 'price') return;
-        setDraft((current) => ({ ...current, [field]: value }));
+        if (field !== 'months' && field !== 'price') return;
+        setPicked((current) => ({ ...current, [field]: value }));
+    }
+
+    function togglePlan(planTierId: string) {
+        if (editing) return;
+        setPicked((current) => ({
+            ...current,
+            planTierIds: current.planTierIds.includes(planTierId)
+                ? current.planTierIds.filter((id) => id !== planTierId)
+                : [...current.planTierIds, planTierId],
+        }));
+    }
+
+    async function createOnPlans(planTierIds: string[], months: number, amountMinor: number) {
+        setCreating(true);
+        setCreateError(null);
+        // Sort order 0 for all: hosts see a plan's extensions shortest first.
+        const results = await Promise.allSettled(
+            planTierIds.map((planTierId) =>
+                createOption.mutateAsync({ planTierId, option: { kind: 'EXTENSION', months, priceAmountMinor: amountMinor, sortOrder: 0 } }),
+            ),
+        );
+        setCreating(false);
+        const failed = planTierIds.filter((_, index) => results[index].status === 'rejected');
+        if (failed.length === 0) {
+            close();
+            return;
+        }
+        // The plans that saved are done; only the ones that failed stay picked, to try again.
+        setPicked((current) => ({ ...current, planTierIds: failed }));
+        setCreateError(results.find((result) => result.status === 'rejected')?.reason ?? null);
     }
 
     function save(event: React.SubmitEvent<HTMLFormElement>) {
@@ -76,14 +113,7 @@ export function useExtensionDrawer(plans: PlanTierResponseDto[]) {
             return;
         }
 
-        createOption.mutate(
-            {
-                planTierId: draft.planTierId,
-                // Sort order 0 for all: hosts see a plan's extensions shortest first.
-                option: { kind: 'EXTENSION', months: parseDurationMonths(draft.months) ?? 0, priceAmountMinor: priceMinor, sortOrder: 0 },
-            },
-            { onSuccess: close },
-        );
+        void createOnPlans(draft.planTierIds, parseDurationMonths(draft.months) ?? 0, priceMinor);
     }
 
     function toggleActive() {
@@ -98,13 +128,15 @@ export function useExtensionDrawer(plans: PlanTierResponseDto[]) {
         open,
         editing,
         draft,
+        sellingLength,
         canSave,
         isSaving,
-        error: createOption.error ?? updateOption.error,
+        error: createError ?? updateOption.error,
         openNew,
         openEdit,
         close,
         updateDraft,
+        togglePlan,
         save,
         toggleActive,
     };
