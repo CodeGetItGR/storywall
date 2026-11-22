@@ -6798,6 +6798,10 @@
     "FeedLayout": {
         "invitation": "Πρόσκληση"
     },
+    "FeedEditor": {
+        "edit": "Επεξεργασία",
+        "saveFailed": "Δεν ήταν δυνατή η αποθήκευση των αλλαγών. Δοκιμάστε ξανά."
+    },
     "FeedQuickActions": {
         "invitation": "Πρόσκληση",
         "photos": "Φωτογραφίες",
@@ -10633,7 +10637,11 @@
             "coupleProfilesSimple": "Το ζευγάρι (χωρίς φωτο)",
             "weddingSponsorsSimple": "Κουμπάροι (χωρίς φωτο)",
             "photoFrame": "Φωτογραφία με κορνίζα",
-            "footer": "Υπογραφή"
+            "footer": "Υπογραφή",
+            "feedCover": "Εξώφυλλο",
+            "feedDetails": "Λεπτομέρειες",
+            "feedDescription": "Περιγραφή",
+            "feedRsvp": "RSVP"
         },
         "eventPhotos": {
             "title": "Φωτογραφίες εκδήλωσης",
