@@ -6,9 +6,12 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { useFeedEditSession } from '@/hooks/useFeedEditSession';
 import { ApiError } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
-import type { EventDetailResponseDto, FeedLayoutDto } from '@/lib/api/types';
+import type { EventDetailResponseDto, EventThemeDto, FeedLayoutDto } from '@/lib/api/types';
 import { setFeedBlockVisible } from '@/lib/feedEditing';
 import { defaultFeedLayout, feedLayoutKeys } from '@/lib/feedLayout';
+import { SAMPLE_DOCUMENT, SAMPLE_THEME } from '@/lib/invitation/samples';
+import { invitationThemeKeys } from '@/lib/invitation/themeCatalogue';
+import type { InvitationThemePublicDto } from '@/lib/invitation/themePreview';
 
 const mocks = vi.hoisted(() => ({ put: vi.fn(), push: vi.fn(), overlay: vi.fn() }));
 
@@ -29,8 +32,15 @@ function lastOverlay() {
     return { open, onClose };
 }
 
-const event = { id: 'e-1', theme: null } as unknown as EventDetailResponseDto;
-const saved: FeedLayoutDto = { themeSlug: null, revision: 3, document: defaultFeedLayout(), design: null, imageUrls: {}, updatedAt: '2026-11-22T10:00:00Z' };
+const event = { id: 'e-1', eventType: 'WEDDING', theme: null } as unknown as EventDetailResponseDto;
+const saved: FeedLayoutDto = {
+    themeSlug: null,
+    revision: 3,
+    document: defaultFeedLayout(),
+    design: null,
+    imageUrls: {},
+    updatedAt: '2026-11-22T10:00:00Z',
+};
 
 let client: QueryClient;
 function wrapper({ children }: { children: ReactNode }) {
@@ -40,6 +50,14 @@ function wrapper({ children }: { children: ReactNode }) {
 beforeEach(() => {
     client = new QueryClient({ defaultOptions: { queries: { retry: false, staleTime: Infinity }, mutations: { retry: false } } });
     client.setQueryData(feedLayoutKeys.detail('e-1'), saved);
+    client.setQueryData(invitationThemeKeys.publicTheme('rose'), {
+        slug: 'rose',
+        name: 'Rose',
+        eventType: 'WEDDING',
+        design: SAMPLE_THEME,
+        document: SAMPLE_DOCUMENT,
+        assetUrls: {},
+    } as unknown as InvitationThemePublicDto);
     mocks.put.mockReset();
     mocks.push.mockReset();
     mocks.overlay.mockReset();
@@ -226,5 +244,79 @@ describe('useFeedEditSession', () => {
         await act(() => result.current.save());
         expect(result.current.conflict).toBe(true);
         expect(lastOverlay().open).toBe(false);
+    });
+
+    const dino: EventThemeDto = {
+        presetKey: 'dino-mint',
+        backgroundColor: '#BFE6E2',
+        illustrationUrl: 'https://media.example/dino.webp',
+        titleColor: null,
+        headingFont: null,
+    };
+
+    it('holds a Save my date theme until Save, then saves the layout on it', async () => {
+        mocks.put.mockResolvedValue({ revision: 4, updatedAt: '2026-11-22T11:00:00Z' });
+        const onDone = vi.fn();
+        const { result } = renderHook(() => useFeedEditSession(event, onDone), { wrapper });
+        await act(() => result.current.pickInvitation('rose'));
+        expect(result.current.themeSlug).toBe('rose');
+        expect(result.current.dirty).toBe(true);
+        expect(mocks.put).not.toHaveBeenCalled();
+        await act(() => result.current.save());
+        expect(mocks.put).toHaveBeenCalledOnce();
+        const [path, body] = mocks.put.mock.calls[0];
+        expect(path).toBe(endpoints.events.feedLayout('e-1'));
+        expect(body.themeSlug).toBe('rose');
+        expect(body.revision).toBe(3);
+        expect(body.document.themeId).toBe(SAMPLE_DOCUMENT.themeId);
+        expect(onDone).toHaveBeenCalledOnce();
+    });
+
+    it('holds a wall preset and writes only the event theme when the layout is unchanged', async () => {
+        mocks.put.mockResolvedValue({ theme: dino });
+        const onDone = vi.fn();
+        const { result } = renderHook(() => useFeedEditSession(event, onDone), { wrapper });
+        await act(() => result.current.pickWall('p-1', dino, false));
+        expect(result.current.dirty).toBe(true);
+        expect(result.current.wallTheme).toEqual(dino);
+        await act(() => result.current.save());
+        expect(mocks.put).toHaveBeenCalledOnce();
+        expect(mocks.put).toHaveBeenCalledWith(endpoints.events.theme('e-1'), { presetId: 'p-1' });
+        expect(onDone).toHaveBeenCalledOnce();
+    });
+
+    it('keeps edit mode and the held preset when the theme write fails, and retries only it', async () => {
+        const onDone = vi.fn();
+        const { result } = renderHook(() => useFeedEditSession(event, onDone), { wrapper });
+        // A layout change a theme pick keeps (the pick clears a background colour).
+        hideRsvp(result.current);
+        await act(() => result.current.pickWall('p-1', dino, false));
+        mocks.put.mockResolvedValueOnce({ revision: 4, updatedAt: '2026-11-22T11:00:00Z' }).mockRejectedValueOnce(new Error('offline'));
+        await act(() => result.current.save());
+        expect(result.current.failed).toBe(true);
+        expect(onDone).not.toHaveBeenCalled();
+        expect(result.current.heldWall).toEqual({ presetId: 'p-1', theme: dino });
+        mocks.put.mockResolvedValueOnce({ theme: dino });
+        await act(() => result.current.save());
+        expect(mocks.put).toHaveBeenCalledTimes(3);
+        expect(mocks.put.mock.calls[2]).toEqual([endpoints.events.theme('e-1'), { presetId: 'p-1' }]);
+        expect(onDone).toHaveBeenCalledOnce();
+    });
+
+    it('drops a held preset picked back to the applied one', async () => {
+        const { result } = renderHook(() => useFeedEditSession(event, vi.fn()), { wrapper });
+        await act(() => result.current.pickWall('p-1', dino, false));
+        await act(() => result.current.pickWall(null, null, true));
+        expect(result.current.heldWall).toBeUndefined();
+        expect(result.current.dirty).toBe(false);
+    });
+
+    it('sets the background colour, and a theme pick clears it', async () => {
+        const { result } = renderHook(() => useFeedEditSession(event, vi.fn()), { wrapper });
+        act(() => result.current.setBackground('#F5E6D3'));
+        expect(result.current.background).toBe('#F5E6D3');
+        expect(result.current.dirty).toBe(true);
+        await act(() => result.current.pickInvitation('rose'));
+        expect(result.current.background).toBeUndefined();
     });
 });

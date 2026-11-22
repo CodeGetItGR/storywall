@@ -4,6 +4,8 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+import { useSetEventTheme } from '@/hooks/useEventTheme';
+import { useFeedEditThemes } from '@/hooks/useFeedEditThemes';
 import { useFeedLayout } from '@/hooks/useFeedLayout';
 import { useFeedLayoutSave } from '@/hooks/useFeedLayoutSave';
 import { useInAppLeaveGuard } from '@/hooks/useInAppLeaveGuard';
@@ -11,20 +13,26 @@ import { useInvitationEditorStore } from '@/hooks/useInvitationEditorStore';
 import { useOverlayHistory } from '@/hooks/useOverlayHistory';
 import { useUnsavedChangesWarning } from '@/hooks/useUnsavedChangesWarning';
 import type { EventDetailResponseDto } from '@/lib/api/types';
+import { setFeedBackground } from '@/lib/feedEditTheme';
 import { feedLayoutKeys } from '@/lib/feedLayout';
 import { isStaleRevision, sameDocument } from '@/lib/invitation/drafts';
 
-// One visit to edit mode: a copy of the saved layout to change, stored only on Save. Leaving with
-// changes (Cancel, phone Back, an in-app link, closing the tab) asks first.
-export function useFeedEditSession(event: Pick<EventDetailResponseDto, 'id' | 'theme'>, onDone: () => void) {
+// One visit to edit mode: a copy of the saved layout to change, and a theme pick, stored only on Save.
+// Leaving with changes (Cancel, phone Back, an in-app link, closing the tab) asks first.
+export function useFeedEditSession(event: Pick<EventDetailResponseDto, 'id' | 'eventType' | 'theme'>, onDone: () => void) {
     const router = useRouter();
     const queryClient = useQueryClient();
     const layout = useFeedLayout(event, { enabled: true });
-    // What edit mode opened on. A refetch meanwhile changes neither the revision Save names nor what Cancel goes back to.
+    // What edit mode opened on. A refetch meanwhile changes neither what Save starts from nor what Cancel goes back to.
     const [opened] = useState(layout);
-    const { store, document } = useInvitationEditorStore(opened.document, opened.themeSlug ?? '');
-    const dirty = !sameDocument(opened.document, document);
-    const { mutateAsync, isPending: saving } = useFeedLayoutSave(event.id);
+    // The layout the server holds as far as this visit knows: what it opened on, then each layout save that went through.
+    const [base, setBase] = useState(() => ({ revision: opened.revision, document: opened.document, themeSlug: opened.themeSlug ?? '' }));
+    const { store, document, themeSlug } = useInvitationEditorStore(opened.document, opened.themeSlug ?? '');
+    const themes = useFeedEditThemes(event, store, opened, themeSlug);
+    const layoutDirty = !sameDocument(base.document, document) || themeSlug !== base.themeSlug;
+    const dirty = layoutDirty || themes.heldWall !== undefined;
+    const { mutateAsync: saveLayout, isPending: savingLayout } = useFeedLayoutSave(event.id);
+    const { mutateAsync: saveWallTheme, isPending: savingWall } = useSetEventTheme(event.id);
 
     // A second tap lands before isPending re-renders. Also tells Back and links that a save is on its way.
     const inFlight = useRef(false);
@@ -76,6 +84,11 @@ export function useFeedEditSession(event: Pick<EventDetailResponseDto, 'id' | 't
     useInAppLeaveGuard(dirty && onLeave === null && !conflict, leaveTo);
     useUnsavedChangesWarning(dirty);
 
+    const setBackground = useCallback((color: string | undefined) => store.getState().edit(setFeedBackground(color), 'backgroundColor'), [store]);
+
+    // The layout first (with the held Save my date slug), then a held wall preset. A layout that went through is
+    // not sent again: after a failed theme write, Save again writes only the theme.
+    const { heldWall } = themes;
     const save = useCallback(async () => {
         if (inFlight.current) return;
         if (!dirty) {
@@ -85,7 +98,12 @@ export function useFeedEditSession(event: Pick<EventDetailResponseDto, 'id' | 't
         inFlight.current = true;
         setFailed(false);
         try {
-            await mutateAsync({ revision: opened.revision, themeSlug: opened.themeSlug, document: store.getState().document });
+            const state = store.getState();
+            if (layoutDirty) {
+                const saved = await saveLayout({ revision: base.revision, themeSlug: state.themeSlug || null, document: state.document });
+                setBase({ revision: saved.revision, document: state.document, themeSlug: state.themeSlug });
+            }
+            if (heldWall) await saveWallTheme(heldWall.presetId);
             onDone();
         } catch (error) {
             if (isStaleRevision(error)) setConflict(true);
@@ -93,9 +111,9 @@ export function useFeedEditSession(event: Pick<EventDetailResponseDto, 'id' | 't
         } finally {
             inFlight.current = false;
         }
-    }, [dirty, mutateAsync, onDone, opened, store]);
+    }, [base.revision, dirty, heldWall, layoutDirty, onDone, saveLayout, saveWallTheme, store]);
 
-    // Someone saved the layout elsewhere: fetch theirs and leave edit mode on it.
+    // Someone saved the layout elsewhere: fetch theirs and leave edit mode on it. The held theme goes with it.
     const reload = useCallback(async () => {
         setReloading(true);
         try {
@@ -110,10 +128,18 @@ export function useFeedEditSession(event: Pick<EventDetailResponseDto, 'id' | 't
     return {
         store,
         document,
-        theme: opened.theme,
-        media: opened.media,
+        themeSlug,
+        theme: themes.theme,
+        media: themes.media,
+        heldWall,
+        wallTheme: themes.wallTheme,
+        switching: themes.switching,
+        pickInvitation: themes.pickInvitation,
+        pickWall: themes.pickWall,
+        background: document.overrides.backgroundColor,
+        setBackground,
         dirty,
-        saving,
+        saving: savingLayout || savingWall,
         failed,
         conflict,
         reloading,
