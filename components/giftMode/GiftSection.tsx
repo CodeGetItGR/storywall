@@ -3,14 +3,17 @@
 import { CreditCard, Gift, Pencil, Printer } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 
+import { GiftDetailsCard } from '@/components/giftMode/GiftDetailsCard';
 import { GiftDetailsModal } from '@/components/giftMode/GiftDetailsModal';
+import { GiftIllustration } from '@/components/giftMode/GiftIllustration';
 import { GiftPinModal } from '@/components/giftMode/GiftPinModal';
+import { GiftSteps } from '@/components/giftMode/GiftSteps';
 import { AppLink } from '@/components/ui/AppLink';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { useGiftManagement } from '@/hooks/useGiftManagement';
 import type { GiftHandoverResponseDto } from '@/lib/api/types';
 import { formatDate } from '@/lib/datetime';
-import { canPrintGiftCard, giftStatusCopy } from '@/lib/gift';
+import { canPrintGiftCard, giftStatusCopy, giftStepsDone } from '@/lib/gift';
 import { routes } from '@/lib/routes';
 
 const actionClass =
@@ -35,17 +38,18 @@ export function GiftSection({
 
     return (
         <div className="space-y-6">
+            {/* How it works */}
+            <div className="grid items-center gap-6 sm:grid-cols-[minmax(0,220px)_minmax(0,1fr)] sm:gap-8">
+                <GiftIllustration className="mx-auto h-auto w-full max-w-[220px]" />
+                <GiftSteps stepsDone={giftStepsDone(gift)} />
+            </div>
+
             {/* Not set up */}
-            {!gift && (
-                <div className="space-y-3">
-                    <p className="text-sm text-ink-muted">{t('intro')}</p>
-                    {management.canEdit && (
-                        <button type="button" onClick={management.openDetails} className={actionClass}>
-                            <Gift className="h-4 w-4" aria-hidden="true" />
-                            {t('setUp')}
-                        </button>
-                    )}
-                </div>
+            {!gift && management.canEdit && (
+                <button type="button" onClick={management.openDetails} className={actionClass}>
+                    <Gift className="h-4 w-4" aria-hidden="true" />
+                    {t('setUp')}
+                </button>
             )}
 
             {gift && status && (
@@ -58,21 +62,10 @@ export function GiftSection({
                         })}
                     </p>
 
-                    {/* Details */}
-                    <dl className="grid gap-3 text-sm sm:grid-cols-3">
-                        <div>
-                            <dt className="text-xs text-ink-muted">{t('recipient')}</dt>
-                            <dd className="mt-0.5 font-medium break-words text-ink">{gift.recipientLabel}</dd>
-                        </div>
-                        <div>
-                            <dt className="text-xs text-ink-muted">{t('giver')}</dt>
-                            <dd className="mt-0.5 font-medium break-words text-ink">{gift.giverDisplayName}</dd>
-                        </div>
-                        <div>
-                            <dt className="text-xs text-ink-muted">{t('email')}</dt>
-                            <dd className="mt-0.5 font-medium break-words text-ink">{gift.recipientEmail ?? t('none')}</dd>
-                        </div>
-                    </dl>
+                    {/* Card */}
+                    <div className="max-w-md">
+                        <GiftDetailsCard eventId={eventId} gift={gift} />
+                    </div>
 
                     {/* Actions */}
                     {(management.canEdit || management.canIssue || canPrintGiftCard(gift)) && (
