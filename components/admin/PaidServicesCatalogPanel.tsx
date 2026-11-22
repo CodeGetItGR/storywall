@@ -15,12 +15,14 @@ import { AdminStatTile } from '@/components/admin/AdminStatTile';
 import { ExtensionDrawer } from '@/components/admin/ExtensionDrawer';
 import { ExtensionTableRow } from '@/components/admin/ExtensionTableRow';
 import { PaidServiceDrawer, type Visibility, visibilityOf } from '@/components/admin/PaidServiceDrawer';
+import { PaidServicesPlanFilter } from '@/components/admin/PaidServicesPlanFilter';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { LoadingState } from '@/components/ui/LoadingState';
 import { useAdminPlanTiers, useRemoveEventAddon } from '@/hooks/useAdmin';
 import { usePaidServiceMove } from '@/hooks/useAdminReorder';
 import { useExtensionDrawer } from '@/hooks/useExtensionDrawer';
-import { extensionRowsFromPlans, extensionVisibility, filterExtensionRows } from '@/lib/adminExtensions';
+import { useExtensionPlanGroups } from '@/hooks/useExtensionPlanGroups';
+import { extensionRowsFromPlans, extensionVisibility, filterExtensionRows, serviceOffersPlan } from '@/lib/adminExtensions';
 import { adminErrorMessageKey, isUuid } from '@/lib/adminUtils';
 import type { PaidServiceKind, PaidServiceResponseDto } from '@/lib/api/types';
 import { formatMoney } from '@/lib/billing';
@@ -56,6 +58,7 @@ export function PaidServicesCatalogPanel() {
     const [kindFilter, setKindFilter] = useState<CatalogKind | 'ALL'>('ALL');
     const [statusFilter, setStatusFilter] = useState<Visibility | 'ALL'>('ALL');
     const [search, setSearch] = useState('');
+    const [planFilter, setPlanFilter] = useState('');
     const [drawerOpen, setDrawerOpen] = useState(false);
     const [selectedService, setSelectedService] = useState<PaidServiceResponseDto | null>(null);
 
@@ -78,6 +81,7 @@ export function PaidServicesCatalogPanel() {
     const plans = useMemo(() => eventPlans.data ?? [], [eventPlans.data]);
     const allExtensions = useMemo(() => extensionRowsFromPlans(plans), [plans]);
     const extensionDrawer = useExtensionDrawer(plans);
+    const planGroups = useExtensionPlanGroups(plans);
 
     // Each kind has its own order, so the list groups by kind first.
     const allServices = useMemo(
@@ -107,6 +111,7 @@ export function PaidServicesCatalogPanel() {
         return allServices.filter((service) => {
             if (kindFilter !== 'ALL' && service.kind !== kindFilter) return false;
             if (statusFilter !== 'ALL' && visibilityOf(service) !== statusFilter) return false;
+            if (!serviceOffersPlan(service, planFilter || null)) return false;
             if (!needle) return true;
             return (
                 service.name.toLowerCase().includes(needle) ||
@@ -114,17 +119,17 @@ export function PaidServicesCatalogPanel() {
                 (service.description ?? '').toLowerCase().includes(needle)
             );
         });
-    }, [allServices, kindFilter, statusFilter, search]);
+    }, [allServices, kindFilter, statusFilter, planFilter, search]);
     const visibleExtensions = useMemo(
-        () => filterExtensionRows(allExtensions, { kind: kindFilter, status: statusFilter, search }),
-        [allExtensions, kindFilter, statusFilter, search],
+        () => filterExtensionRows(allExtensions, { kind: kindFilter, status: statusFilter, search, planId: planFilter || null }),
+        [allExtensions, kindFilter, statusFilter, planFilter, search],
     );
     const shownCount = visibleServices.length + visibleExtensions.length;
 
     const servicesOfKind = useMemo(() => allServices.filter((service) => service.kind === kindFilter), [allServices, kindFilter]);
     const move = usePaidServiceMove(servicesOfKind);
     // Arrows move a service among the whole of one kind, so they need one kind picked and nothing else hidden.
-    const canReorder = kindFilter !== 'ALL' && statusFilter === 'ALL' && !search.trim() && !move.isPending;
+    const canReorder = kindFilter !== 'ALL' && statusFilter === 'ALL' && !planFilter && !search.trim() && !move.isPending;
     const visibleRows = move.arrange(visibleServices);
 
     // Adjusting during render rather than in an effect: the prefilled id has to be
@@ -160,6 +165,7 @@ export function PaidServicesCatalogPanel() {
     const handleStatusFilterClick = useCallback((event: React.MouseEvent<HTMLButtonElement>) => {
         setStatusFilter(event.currentTarget.dataset.status as Visibility | 'ALL');
     }, []);
+    const handlePlanFilterChange = useCallback((event: ChangeEvent<HTMLSelectElement>) => setPlanFilter(event.target.value), []);
     const handleSearchChange = useCallback((event: ChangeEvent<HTMLInputElement>) => setSearch(event.target.value), []);
     const handleAddonCodeChange = useCallback((event: ChangeEvent<HTMLSelectElement>) => setAddonCode(event.target.value), []);
 
@@ -277,6 +283,7 @@ export function PaidServicesCatalogPanel() {
                             </button>
                         ))}
                     </div>
+                    <PaidServicesPlanFilter groups={planGroups.groups} value={planFilter} onChangeAction={handlePlanFilterChange} />
                     <p className="ml-auto shrink-0 text-xs font-semibold text-ink-faint">
                         {t('rowCount', { shown: shownCount, total: allServices.length + allExtensions.length })}
                     </p>
@@ -377,6 +384,7 @@ export function PaidServicesCatalogPanel() {
                                         row={row}
                                         statusPill={STATUS_PILL}
                                         statusDot={STATUS_DOT}
+                                        eventTypeLabel={planGroups.eventTypeLabel}
                                         onEditAction={extensionDrawer.openEdit}
                                     />
                                 ))}
@@ -395,7 +403,7 @@ export function PaidServicesCatalogPanel() {
                 onCloseAction={closeDrawer}
             />
 
-            <ExtensionDrawer drawer={extensionDrawer} plans={plans} />
+            <ExtensionDrawer drawer={extensionDrawer} plans={plans} groups={planGroups.groups} eventTypeLabel={planGroups.eventTypeLabel} />
 
             <div className="mt-7">
                 <AdminSection title={t('removeAddon.title')} description={t('removeAddon.subtitle')}>

@@ -5865,7 +5865,8 @@
             "extensions": {
                 "add": "Add extension",
                 "newTitle": "New extension",
-                "save": "Save extension"
+                "save": "Save extension",
+                "alreadySells": "Already sells this length"
             },
             "stats": {
                 "total": "Total services",

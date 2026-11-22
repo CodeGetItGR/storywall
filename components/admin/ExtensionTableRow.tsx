@@ -10,15 +10,18 @@ import { formatMoney } from '@/lib/billing';
 import { cn } from '@/lib/utils';
 
 // One coverage extension in the Paid services table. It has no name or code of
-// its own: its length names it, and it belongs to exactly one plan. Extensions
+// its own: its length names it, and it belongs to exactly one plan, shown with
+// its event type so plans that share a name stay apart. Extensions
 // are listed shortest first, so the order cell stays empty.
 export function ExtensionTableRow({
     row,
     statusPill,
     statusDot,
+    eventTypeLabel,
     onEditAction,
 }: {
     row: ExtensionRow;
+    eventTypeLabel: (eventTypeKey: string) => string;
     statusPill: Record<Visibility, string>;
     statusDot: Record<Visibility, string>;
     onEditAction: (row: ExtensionRow) => void;
@@ -50,8 +53,11 @@ export function ExtensionTableRow({
             </td>
 
             {/* Plan */}
-            <td className="max-w-56 truncate px-3 py-2.5 text-ink-muted" title={plan.name}>
-                {plan.name}
+            <td className="max-w-56 px-3 py-2.5">
+                <p className="truncate text-ink-muted" title={plan.name}>
+                    {plan.name}
+                </p>
+                {plan.eventTypeKey && <p className="truncate text-[11px] text-ink-faint">{eventTypeLabel(plan.eventTypeKey)}</p>}
             </td>
 
             {/* Status */}
