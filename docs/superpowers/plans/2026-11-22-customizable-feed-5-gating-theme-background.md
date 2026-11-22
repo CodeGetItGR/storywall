@@ -14,19 +14,19 @@
 
 ## Approved behaviour
 
-1. **Edit gating.** The Edit pill and edit mode exist only when `isModuleAvailable(event.modules, 'save_my_date')`. Hosts and co-hosts edit when it is available. The lock branches that only existed for events without Save my date inside edit mode go: `useFeedBlockActions` (Billing redirect, `locked`, `canBuy`) and `FeedAddSectionRow` (lock row, lock icon, "Needs Save my date" caption).
+1. **Edit gating.** The Edit pill and edit mode exist only when `isModuleAvailable(event.modules, 'save_my_date')`. Hosts and co-hosts edit when it is available, on every event type: a type without Save my date themes still gets Edit, adding sections, hiding, reordering and the background colour. The lock branches that only existed for events without Save my date inside edit mode go: `useFeedBlockActions` (Billing redirect, `locked`, `canBuy`) and `FeedAddSectionRow` (lock row, lock icon, "Needs Save my date" caption).
 2. **Overview banner**, in the live Overview between the journey and INVIART, never on a draft.
-   - **Locked** (no Save my date): only when the add-on is offered on the plan, the event is ACTIVE, the viewer is the main host (not the demo, not incident mode), purchases aren't paused by a withdrawal under review, the feed editor flag is on and the event type has Save my date themes. Lock icon, title, **Unlock** button to `routes.events.settingsAddons(eventId, { add: addon.code })`.
-   - **Included** (Save my date available): hosts and co-hosts on a writable event, flag on. Same title, no lock, **Start editing** button to the feed with `?edit=blocks`.
-   - **Illustration:** a small, tilted, inert live render of the event's own cover in a Save my date theme (the layout's own Save my date theme; otherwise the first Save my date theme the catalogue lists for the event type, which the owner still has to confirm), with alt text. It loads lazily; its data is prefetched on the server for the Overview.
+   - **Locked** (no Save my date): only when the add-on is offered on the plan, the event is ACTIVE, the viewer is the main host (not the demo, not incident mode), purchases aren't paused by a withdrawal under review and the feed editor flag is on. The event type doesn't matter. Lock icon, title, **Unlock** button to `routes.events.settingsAddons(eventId, { add: addon.code })`.
+   - **Included** (Save my date available): hosts and co-hosts on a writable event, flag on, any event type. Same title, no lock, **Start editing** button to the feed with `?edit=blocks`.
+   - **Illustration:** a small, tilted, inert live render of the event's own cover in a Save my date theme (the layout's own Save my date theme; otherwise the first Save my date theme the catalogue lists for the event type), with alt text. When the event type has no Save my date theme (or that theme doesn't load), the picture draws the cover in the event's current wall look instead; there is no placeholder once the data is in. It loads lazily; its data is prefetched on the server for the Overview.
 3. **`?edit=blocks`** on `routes.events.feed`: once the role and the layout are known, the param is replaced away first, then edit mode starts (focus on Cancel, as with the pill). When editing isn't allowed the param is only dropped.
-4. **Add section cards** (feed only): each addable block type as a card with a small live render (the current theme's sample section of that type, else a new section; effects and transitions stripped, no text animation; uploaded fonts) and its name. One column on phones, two from `lg`. No descriptions. The standalone Save my date editor's `AddSectionSheet` stays as it is.
-5. **Theme in edit mode.** A **Theme** pill beside Cancel and Save opens the theme grid (wall presets, then Save my date themes) in the edit sheet on phones and the side panel on desktop. A pick is held until Save: a Save my date pick switches the editor store (`planFeedThemeSwitch`), a wall pick switches back (`planFeedWallSwitch`) and/or holds the preset. The session keeps each picked theme's design and images. A theme change counts as unsaved. **Save** writes the layout PUT (with the held slug) first, then `PUT events/{id}/theme` for a held wall preset; if that second write fails, `FeedEditor.saveFailed` shows, edit mode stays and the pick stays held (Save again writes only the theme). On a conflict the existing dialog shows; Reload drops the held pick. While a wall preset is held, the feed (cover art, page colour, wall blocks) previews that preset, not `event.theme`.
-6. **One feed background colour.** A **Background** row under the theme grid, in the same sheet. Stored as `overrides.backgroundColor` (`#RRGGBB`) in the invitation document. It covers the whole feed page, posts included: every invitation section draws it, and the page's `--event-bg` takes it. Text stays readable: a colour that ink text can't be read on (contrast under 4.5, the wall presets' own rule) is drawn lightened until it can, and a theme text colour that can't be read on it falls back to ink. Picking any other theme clears it. **Default** clears it by hand. Held until Save.
+4. **Add section cards** (feed only): each addable block type as a card with a small live render (the current theme's sample section of that type, else `createSection(type, eventType)` drawn in the current theme, which is always the case on the wall theme and for event types without Save my date themes; effects and transitions stripped, no text animation; uploaded fonts) and its name. One column on phones, two from `lg`. No descriptions. The standalone Save my date editor's `AddSectionSheet` stays as it is.
+5. **Theme in edit mode.** A **Theme** pill beside Cancel and Save always shows and opens the theme sheet: the wall presets (only when the theme module lets the event pick one, the Theme page's rule), then the event type's Save my date themes (none for a type without them), then the Background row; with neither kind of theme the sheet holds just the Background row. It opens in the edit sheet on phones and the side panel on desktop. A pick is held until Save: a Save my date pick switches the editor store (`planFeedThemeSwitch`), a wall pick switches back (`planFeedWallSwitch`) and/or holds the preset. The session keeps each picked theme's design and images. A theme change counts as unsaved. **Save** writes the layout PUT (with the held slug) first, then `PUT events/{id}/theme` for a held wall preset; if that second write fails, `FeedEditor.saveFailed` shows, edit mode stays and the pick stays held (Save again writes only the theme). On a conflict the existing dialog shows; Reload drops the held pick. While a wall preset is held, the feed (cover art, page colour, wall blocks) previews that preset, not `event.theme`.
+6. **One feed background colour.** A **Background** row under the theme grid, in the same sheet. Stored as `overrides.backgroundColor` (`#RRGGBB`) in the invitation document. It covers the whole feed page, posts included: every invitation section draws it, and the page's `--event-bg` takes it. Text stays readable: a colour that ink text can't be read on (contrast under 4.5, the wall presets' own rule) is drawn lightened until it can (`readableOnInk`), and while the picked colour is that dark a warning shows under the row; a theme text colour that can't be read on it falls back to ink. Picking any other theme clears it. **Default** (shown only while a colour is set) clears `overrides.backgroundColor` by hand. A theme that fails to load keeps the current one on screen, silently; tapping it again retries. Held until Save.
 
 ## Approved wording
 
-Only these strings are new. They live under `FeedEditor.banner` in `messages/en.json` and `messages/el.json`.
+Only these strings are new. They live under `FeedEditor.banner` and `FeedEditor.background` in `messages/en.json` and `messages/el.json`.
 
 | Key | English | Greek |
 | --- | --- | --- |
@@ -34,6 +34,7 @@ Only these strings are new. They live under `FeedEditor.banner` in `messages/en.
 | `FeedEditor.banner.unlock` | Unlock | Ξεκλείδωμα |
 | `FeedEditor.banner.startEditing` | Start editing | Ξεκινήστε την επεξεργασία |
 | `FeedEditor.banner.previewAlt` | Preview of your invitation | Προεπισκόπηση της πρόσκλησής σας |
+| `FeedEditor.background.tooDark` | Too dark for the text. A lighter shade will be shown. | Πολύ σκούρο για το κείμενο. Θα εμφανιστεί μια πιο ανοιχτή απόχρωση. |
 
 Reused, unchanged: `ManagePage.sections.theme` ("Theme" / "Θέμα") for the pill and the sheet title, `InvitationEditor.sectionSettings.background` ("Background" / "Φόντο") for the colour row, `InvitationEditor.lineHeightDefault` ("Default" / "Προεπιλογή") for its reset, `InvitationEditor.sections.add`, `InvitationEditor.sections.nothingToAdd`, `InvitationEditor.close`, `InvitationEditor.sectionNames.*`, `FeedEditor.saveFailed`.
 
@@ -50,7 +51,7 @@ Reused, unchanged: `ManagePage.sections.theme` ("Theme" / "Θέμα") for the pi
 | guestwall-be `src/test/java/event_social_media/controller/event/EventFeedLayoutControllerTest.java` | Modify | 5012 without the module, saved with it, 400 for a bad colour |
 | `lib/invitation/document.ts` | Modify | `overrides.backgroundColor` in the zod format |
 | `lib/invitation/document.test.ts` | Modify | format test |
-| `lib/contrast.ts` | Modify | `INK_COLOR`, `MIN_INK_CONTRAST` (moved), `readableOnInk` |
+| `lib/contrast.ts` | Modify | `INK_COLOR`, `MIN_INK_CONTRAST` (moved), `tooDarkForInk`, `readableOnInk` |
 | `lib/contrast.test.ts` | Modify | tests |
 | `lib/adminThemePresets.ts` | Modify | re-export the moved constants |
 | `lib/invitation/render.ts` | Modify | `RenderContext.backgroundColor`; sections draw it; text colour fallback |
@@ -384,9 +385,18 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 - Modify: `lib/contrast.ts`, `lib/adminThemePresets.ts:29-31`
 - Test: `lib/contrast.test.ts`
 
-- [ ] **Step 1: Write the failing tests** (append to `lib/contrast.test.ts`; import `contrastRatio, INK_COLOR, MIN_INK_CONTRAST, readableOnInk` from `@/lib/contrast`)
+- [ ] **Step 1: Write the failing tests** (append to `lib/contrast.test.ts`; import `contrastRatio, INK_COLOR, MIN_INK_CONTRAST, readableOnInk, tooDarkForInk` from `@/lib/contrast`)
 
 ```ts
+describe('tooDarkForInk', () => {
+    it('is true only when ink text cannot be read on the colour', () => {
+        expect(tooDarkForInk('#F5E6D3')).toBe(false);
+        expect(tooDarkForInk('#FFFFFF')).toBe(false);
+        expect(tooDarkForInk('#000000')).toBe(true);
+        expect(tooDarkForInk('#1B2A4A')).toBe(true);
+    });
+});
+
 describe('readableOnInk', () => {
     it('keeps a colour ink already reads on', () => {
         expect(readableOnInk('#F5E6D3')).toBe('#F5E6D3');
@@ -405,7 +415,7 @@ describe('readableOnInk', () => {
 - [ ] **Step 2: Run it to see it fail**
 
 Run: `npx vitest run lib/contrast.test.ts`
-Expected: FAIL, `readableOnInk` is not exported.
+Expected: FAIL, `tooDarkForInk` and `readableOnInk` are not exported.
 
 - [ ] **Step 3: Implement**
 
@@ -422,12 +432,17 @@ function mixWithWhite(hex: string, amount: number): string {
     return `#${channels.map((channel) => Math.round(channel + (255 - channel) * amount).toString(16).padStart(2, '0')).join('').toUpperCase()}`;
 }
 
+// Ink text can't be read on this colour: the Background row warns, and the colour is drawn lightened.
+export function tooDarkForInk(hex: string): boolean {
+    return contrastRatio(hex, INK_COLOR) < MIN_INK_CONTRAST;
+}
+
 // The colour itself when ink text reads on it; otherwise the colour mixed toward white until it does.
 export function readableOnInk(hex: string): string {
-    if (contrastRatio(hex, INK_COLOR) >= MIN_INK_CONTRAST) return hex;
+    if (!tooDarkForInk(hex)) return hex;
     for (let step = 1; step <= 20; step += 1) {
         const mixed = mixWithWhite(hex, step / 20);
-        if (contrastRatio(mixed, INK_COLOR) >= MIN_INK_CONTRAST) return mixed;
+        if (!tooDarkForInk(mixed)) return mixed;
     }
     return '#FFFFFF';
 }
@@ -2095,7 +2110,6 @@ describe('useFeedEditThemeGrid', () => {
     it('lists the wall themes, then the Save my date themes', () => {
         const { result } = renderHook(() => useFeedEditThemeGrid(event, session()));
         expect(result.current.options.map((option) => option.id)).toEqual(['none', 'p-1', invitationThemeChoice('rose')]);
-        expect(result.current.available).toBe(true);
     });
 
     it('marks the held pick', () => {
@@ -2190,9 +2204,9 @@ export function useFeedEditThemeGrid(event: EventDetailResponseDto, session: The
         [isApplied, pickInvitation, pickWall, presets],
     );
 
+    // Empty for an event with neither kind of theme: the sheet then holds just the Background row.
     const options = [...wallOptions, ...invitationOptions];
     return {
-        available: options.length > 0,
         options,
         fontFaces: themeCards.fontFaces,
         hasInvitationThemes: invitationOptions.length > 0,
@@ -2585,6 +2599,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 - Create: `components/feed/edit/FeedBackgroundSetting.tsx`, `FeedBackgroundSetting.stories.tsx`
 - Create: `components/feed/edit/FeedThemeSheet.tsx`, `FeedThemeSheet.test.tsx`
 - Modify: `components/feed/edit/FeedEditPills.tsx`, `FeedEditPills.stories.tsx`
+- Modify: `messages/en.json`, `messages/el.json` (`FeedEditor.background.tooDark`)
 - Modify: `components/feed/edit/FeedEditTop.tsx` (final version below)
 
 - [ ] **Step 1: Write the failing sheet tests** (`components/feed/edit/FeedThemeSheet.test.tsx`)
@@ -2606,13 +2621,13 @@ const options: ThemeRadioOption[] = [
     { id: 'invitation:rose', presetId: 'invitation:rose', label: 'Rose', backgroundColor: '#EEDDCC', illustrationUrl: null, titleColor: null, headingFont: null, selected: false },
 ];
 
-function renderSheet(background?: string) {
+function renderSheet(background?: string, themes: ThemeRadioOption[] = options) {
     const props = { onSelect: vi.fn(), onBackground: vi.fn() };
     render(
         <FeedThemeSheet
             open
             isDesktop={false}
-            options={options}
+            options={themes}
             fontFaces=""
             hasInvitationThemes={false}
             disabled={false}
@@ -2646,6 +2661,20 @@ describe('FeedThemeSheet', () => {
         renderSheet();
         expect(screen.queryByRole('button', { name: 'lineHeightDefault' })).toBeNull();
     });
+
+    it('warns while the colour is too dark for the text', () => {
+        renderSheet('#000000');
+        expect(screen.getByText('tooDark')).toBeTruthy();
+        cleanup();
+        renderSheet('#F5E6D3');
+        expect(screen.queryByText('tooDark')).toBeNull();
+    });
+
+    it('holds just the Background row for an event with no themes to pick', () => {
+        renderSheet(undefined, []);
+        expect(screen.queryByRole('radiogroup')).toBeNull();
+        expect(screen.getByLabelText('sectionSettings.background')).toBeTruthy();
+    });
 });
 ```
 
@@ -2665,18 +2694,23 @@ import { useTranslations } from 'next-intl';
 import { type ChangeEvent, useCallback, useId } from 'react';
 
 import { SettingsRow } from '@/components/saveMyDate/editor/settings/SettingsControls';
+import { tooDarkForInk } from '@/lib/contrast';
 import { colorInputValue } from '@/lib/invitation/colorInput';
 
 type FeedBackgroundSettingProps = { value: string | undefined; onChange: (color: string | undefined) => void };
 
-// The feed's one background colour. Default goes back to the theme's backgrounds.
+// The feed's one background colour. Default (only while one is set) clears overrides.backgroundColor and goes
+// back to the theme's backgrounds. A colour too dark for ink text is drawn lighter (readableOnInk); the row says so.
 export function FeedBackgroundSetting({ value, onChange }: FeedBackgroundSettingProps) {
     const t = useTranslations('InvitationEditor');
+    const tBackground = useTranslations('FeedEditor.background');
     const id = useId();
     const change = useCallback((event: ChangeEvent<HTMLInputElement>) => onChange(event.target.value), [onChange]);
     const reset = useCallback(() => onChange(undefined), [onChange]);
+    const tooDark = value !== undefined && tooDarkForInk(value);
 
     return (
+        <div className="flex flex-col gap-1.5">
         <SettingsRow label={t('sectionSettings.background')} htmlFor={id}>
             <div className="flex shrink-0 items-center gap-1.5">
                 {value !== undefined && (
@@ -2697,8 +2731,45 @@ export function FeedBackgroundSetting({ value, onChange }: FeedBackgroundSetting
                 />
             </div>
         </SettingsRow>
+
+        {/* Too dark */}
+        {tooDark && (
+            <p role="status" className="text-[12px] text-(--smd-editor-muted)">
+                {tBackground('tooDark')}
+            </p>
+        )}
+        </div>
     );
 }
+```
+
+Run `npx prettier --write components/feed/edit/FeedBackgroundSetting.tsx` after writing it (it re-indents the row inside the wrapper).
+
+Add the approved warning to the messages. In `messages/en.json` the `FeedEditor` object becomes:
+
+```json
+    "FeedEditor": {
+        "background": {
+            "tooDark": "Too dark for the text. A lighter shade will be shown."
+        },
+        "edit": "Edit",
+        "saveFailed": "Couldn't save your changes. Please try again."
+    },
+```
+
+In `messages/el.json`:
+
+```json
+    "FeedEditor": {
+        "background": {
+            "tooDark": "Πολύ σκούρο για το κείμενο. Θα εμφανιστεί μια πιο ανοιχτή απόχρωση."
+        },
+        "edit": "Επεξεργασία",
+        "saveFailed": "Δεν ήταν δυνατή η αποθήκευση των αλλαγών. Δοκιμάστε ξανά."
+    },
+```
+
+If the repo has a test that checks en and el carry the same keys (`grep -rln "el.json" lib --include=*.test.ts`), add it to the Step 5 run.
 ```
 
 `FeedBackgroundSetting.stories.tsx`:
@@ -2722,6 +2793,7 @@ type Story = StoryObj<typeof meta>;
 
 export const ThemeBackgrounds: Story = {};
 export const Picked: Story = { args: { value: '#F5E6D3' } };
+export const TooDark: Story = { args: { value: '#1B2A4A' } };
 ```
 
 - [ ] **Step 4: The theme sheet** (`components/feed/edit/FeedThemeSheet.tsx`)
@@ -2751,8 +2823,8 @@ type FeedThemeSheetProps = {
     onClose: () => void;
 };
 
-// Edit mode's Theme sheet: every theme the feed can wear, then its one background colour. Picks are held
-// until Save.
+// Edit mode's Theme sheet: every theme the feed can wear (maybe none), then its one background colour.
+// Picks are held until Save.
 export function FeedThemeSheet({
     open,
     isDesktop,
@@ -2775,15 +2847,17 @@ export function FeedThemeSheet({
                 {/* Theme fonts */}
                 {hasInvitationThemes && <InvitationFontFaces css={fontFaces} />}
 
-                {/* Themes */}
-                <ThemePresetRadioGroup
-                    options={options}
-                    labelledBy={titleId}
-                    disabled={disabled}
-                    size="large"
-                    previewTitle={previewTitle}
-                    onSelectAction={onSelect}
-                />
+                {/* Themes: none for an event with neither wall themes nor Save my date themes */}
+                {options.length > 0 && (
+                    <ThemePresetRadioGroup
+                        options={options}
+                        labelledBy={titleId}
+                        disabled={disabled}
+                        size="large"
+                        previewTitle={previewTitle}
+                        onSelectAction={onSelect}
+                    />
+                )}
 
                 {/* Background */}
                 <FeedBackgroundSetting value={background} onChange={onBackground} />
@@ -2795,7 +2869,7 @@ export function FeedThemeSheet({
 
 - [ ] **Step 5: Run the sheet tests**
 
-Run: `npx vitest run components/feed/edit/FeedThemeSheet.test.tsx`
+Run: `npx vitest run components/feed/edit/FeedThemeSheet.test.tsx lib/contrast.test.ts`
 Expected: PASS.
 
 - [ ] **Step 6: The Theme pill**
@@ -2803,7 +2877,7 @@ Expected: PASS.
 In `FeedEditPills.tsx`: add `onTheme?: () => void` to the props type and parameter list, add `const tManage = useTranslations('ManagePage.sections');`, and put the pill first inside the actions row:
 
 ```tsx
-                {/* Theme: only when the event has themes to pick */}
+                {/* Theme: always in edit mode (the sheet holds at least the Background row); optional for the stories */}
                 {onTheme && (
                     <button
                         type="button"
@@ -2911,7 +2985,7 @@ export function FeedEditTop({ event, onDone, cancelRef, cover, details, stories,
         <FeedEditPills
             saving={session.saving}
             failed={session.failed}
-            onTheme={themeGrid.available ? panels.openTheme : undefined}
+            onTheme={panels.openTheme}
             onCancel={session.cancel}
             onSave={session.save}
             cancelRef={cancelRef}
@@ -3055,7 +3129,7 @@ export function FeedEditTop({ event, onDone, cancelRef, cover, details, stories,
 - [ ] **Step 8: Run the edit tests**
 
 Run: `npx vitest run components/feed "app/(main)/(app)/(event)/events/[eventId]/feed" hooks`
-Expected: PASS. (The feed page test's event has no theme module and no catalogue answer, so no Theme pill shows there; the catalogue fetch it starts fails quietly.)
+Expected: PASS. (The Theme pill now always shows in edit mode; the feed page tests find buttons by name, so an extra "theme" button changes none of them. The catalogue fetch the grid starts there fails quietly.)
 
 - [ ] **Step 9: Types and lint**
 
@@ -3065,7 +3139,7 @@ Expected: no errors.
 - [ ] **Step 10: Commit**
 
 ```bash
-git add components/feed/edit/FeedBackgroundSetting.tsx components/feed/edit/FeedBackgroundSetting.stories.tsx components/feed/edit/FeedThemeSheet.tsx components/feed/edit/FeedThemeSheet.test.tsx components/feed/edit/FeedEditPills.tsx components/feed/edit/FeedEditPills.stories.tsx components/feed/edit/FeedEditTop.tsx
+git add messages/en.json messages/el.json components/feed/edit/FeedBackgroundSetting.tsx components/feed/edit/FeedBackgroundSetting.stories.tsx components/feed/edit/FeedThemeSheet.tsx components/feed/edit/FeedThemeSheet.test.tsx components/feed/edit/FeedEditPills.tsx components/feed/edit/FeedEditPills.stories.tsx components/feed/edit/FeedEditTop.tsx
 git commit -m "KAN-245: pick the theme and background colour in edit mode
 
 Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
@@ -3086,7 +3160,7 @@ import { describe, expect, it } from 'vitest';
 
 import { type FeedEditBannerInput, feedEditBannerState } from '@/lib/feedEditBanner';
 
-const locked: FeedEditBannerInput = { flag: true, saveMyDate: false, writable: true, offered: true, checkout: true, canBuy: true, paused: false, hasThemes: true };
+const locked: FeedEditBannerInput = { flag: true, saveMyDate: false, writable: true, offered: true, checkout: true, canBuy: true, paused: false };
 
 describe('feedEditBannerState', () => {
     it('invites a main host to unlock Save my date', () => {
@@ -3094,7 +3168,7 @@ describe('feedEditBannerState', () => {
     });
 
     it('needs every condition for the lock', () => {
-        for (const change of [{ offered: false }, { checkout: false }, { canBuy: false }, { paused: true }, { hasThemes: false }]) {
+        for (const change of [{ offered: false }, { checkout: false }, { canBuy: false }, { paused: true }]) {
             expect(feedEditBannerState({ ...locked, ...change })).toBeNull();
         }
     });
@@ -3120,7 +3194,8 @@ Expected: FAIL, module not found.
 
 ```ts
 // The Overview's invitation to customize the feed (KAN-245). 'locked': the event has no Save my date and the
-// main host can buy it now; 'included': it has Save my date, so hosts can start editing.
+// main host can buy it now; 'included': it has Save my date, so hosts can start editing. Any event type: one
+// without Save my date themes still gets edit mode.
 export type FeedEditBannerState = 'locked' | 'included' | null;
 
 export type FeedEditBannerInput = {
@@ -3138,14 +3213,12 @@ export type FeedEditBannerInput = {
     canBuy: boolean;
     // A withdrawal under review pauses purchases.
     paused: boolean;
-    // The event type has Save my date themes.
-    hasThemes: boolean;
 };
 
 export function feedEditBannerState(input: FeedEditBannerInput): FeedEditBannerState {
     if (!input.flag) return null;
     if (input.saveMyDate) return input.writable ? 'included' : null;
-    return input.offered && input.checkout && input.canBuy && !input.paused && input.hasThemes ? 'locked' : null;
+    return input.offered && input.checkout && input.canBuy && !input.paused ? 'locked' : null;
 }
 ```
 
@@ -3168,26 +3241,23 @@ const mocks = vi.hoisted(() => ({ flag: true, block: null as string | null, paus
 vi.mock('@/providers/FeedEditorFlagProvider', () => ({ useFeedEditorEnabled: () => mocks.flag }));
 vi.mock('@/hooks/usePurchaseBlock', () => ({ usePurchaseBlock: () => mocks.block }));
 vi.mock('@/hooks/useBillingWithdrawals', () => ({ useStoragePurchasePaused: () => mocks.paused }));
-vi.mock('@/hooks/useInvitationThemeCatalogue', () => ({
-    useInvitationThemeCatalogue: () => ({ themes: [{ slug: 'rose', eventType: 'WEDDING' }] }),
-}));
 vi.mock('@/lib/featureAddons', async (importOriginal) => {
     const actual = await importOriginal<typeof import('@/lib/featureAddons')>();
     return { ...actual, saveMyDateAddon: () => mocks.addon };
 });
 
-function event(saveMyDate: boolean) {
+function event(saveMyDate: boolean, eventType = 'WEDDING') {
     return {
         id: 'e-1',
-        eventType: 'WEDDING',
+        eventType,
         modules: saveMyDate ? [{ moduleKey: 'save_my_date', isAvailable: true, isEnabled: true }] : [],
     } as unknown as EventDetailResponseDto;
 }
 
-function render(saveMyDate: boolean) {
+function render(saveMyDate: boolean, eventType?: string) {
     return renderHook(() =>
         useFeedEditBanner({
-            event: event(saveMyDate),
+            event: event(saveMyDate, eventType),
             eventStatus: 'ACTIVE',
             paidServices: [] as PaidServiceResponseDto[],
             modules: [] as PlatformModuleResponseDto[],
@@ -3210,6 +3280,11 @@ describe('useFeedEditBanner', () => {
 
     it('links Start editing to edit mode', () => {
         expect(render(true)).toEqual({ state: 'included', href: '/events/e-1/feed?edit=blocks' });
+    });
+
+    it('shows both banners on an event type without Save my date themes', () => {
+        expect(render(false, 'BIRTHDAY').state).toBe('locked');
+        expect(render(true, 'BIRTHDAY').state).toBe('included');
     });
 
     it('shows no lock to someone who cannot buy, or while purchases are paused', () => {
@@ -3235,7 +3310,6 @@ Expected: FAIL, module not found.
 'use client';
 
 import { useStoragePurchasePaused } from '@/hooks/useBillingWithdrawals';
-import { useInvitationThemeCatalogue } from '@/hooks/useInvitationThemeCatalogue';
 import { usePurchaseBlock } from '@/hooks/usePurchaseBlock';
 import type { EventDetailResponseDto, EventStatus, PaidServiceResponseDto, PlanTierResponseDto, PlatformModuleResponseDto } from '@/lib/api/types';
 import { isEventWritable, isModuleAvailable } from '@/lib/eventLifecycle';
@@ -3243,12 +3317,11 @@ import { featureAddonMode, saveMyDateAddon } from '@/lib/featureAddons';
 import { feedEditBannerState } from '@/lib/feedEditBanner';
 import { feedEditHref } from '@/lib/feedEditLink';
 import { INCIDENT_MODE } from '@/lib/incident';
-import { isCatalogueEventType } from '@/lib/invitation/themeCatalogue';
 import { routes } from '@/lib/routes';
 import { useFeedEditorEnabled } from '@/providers/FeedEditorFlagProvider';
 
 type FeedEditBannerInput = {
-    event: Pick<EventDetailResponseDto, 'id' | 'eventType' | 'modules'>;
+    event: Pick<EventDetailResponseDto, 'id' | 'modules'>;
     eventStatus: EventStatus;
     paidServices: PaidServiceResponseDto[];
     modules: PlatformModuleResponseDto[];
@@ -3256,7 +3329,7 @@ type FeedEditBannerInput = {
 };
 
 // Which Overview banner shows, and where its button goes. usePurchaseBlock is null only for the main host
-// outside the demo, the same viewers usePlanUpgradeHref answers for.
+// outside the demo, the same viewers usePlanUpgradeHref answers for. The event type plays no part.
 export function useFeedEditBanner({ event, eventStatus, paidServices, modules, currentPlan }: FeedEditBannerInput) {
     const flag = useFeedEditorEnabled();
     const purchaseBlock = usePurchaseBlock();
@@ -3264,13 +3337,10 @@ export function useFeedEditBanner({ event, eventStatus, paidServices, modules, c
     const addon = saveMyDateAddon(paidServices, modules, currentPlan);
     const checkout = featureAddonMode(eventStatus) === 'checkout';
     const canBuy = purchaseBlock === null && !INCIDENT_MODE;
-    const catalogueType = isCatalogueEventType(event.eventType);
     const asksToBuy = flag && !saveMyDate && addon !== null && checkout && canBuy;
     const paused = useStoragePurchasePaused(event.id, asksToBuy);
-    const catalogue = useInvitationThemeCatalogue({ enabled: asksToBuy && catalogueType });
-    const hasThemes = catalogueType && (catalogue.themes ?? []).some((theme) => theme.eventType === event.eventType);
 
-    const state = feedEditBannerState({ flag, saveMyDate, writable: isEventWritable(eventStatus), offered: addon !== null, checkout, canBuy, paused, hasThemes });
+    const state = feedEditBannerState({ flag, saveMyDate, writable: isEventWritable(eventStatus), offered: addon !== null, checkout, canBuy, paused });
     const href =
         state === 'locked' && addon ? routes.events.settingsAddons(event.id, { add: addon.code }) : state === 'included' ? feedEditHref(event.id) : null;
     return { state, href };
@@ -3305,10 +3375,13 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 
 - [ ] **Step 1: The approved strings**
 
-In `messages/en.json`, the `FeedEditor` object becomes:
+Task 15 added `background`; add `banner` beside it. In `messages/en.json`, the `FeedEditor` object becomes:
 
 ```json
     "FeedEditor": {
+        "background": {
+            "tooDark": "Too dark for the text. A lighter shade will be shown."
+        },
         "banner": {
             "previewAlt": "Preview of your invitation",
             "startEditing": "Start editing",
@@ -3324,6 +3397,9 @@ In `messages/el.json`:
 
 ```json
     "FeedEditor": {
+        "background": {
+            "tooDark": "Πολύ σκούρο για το κείμενο. Θα εμφανιστεί μια πιο ανοιχτή απόχρωση."
+        },
         "banner": {
             "previewAlt": "Προεπισκόπηση της πρόσκλησής σας",
             "startEditing": "Ξεκινήστε την επεξεργασία",
@@ -3343,17 +3419,19 @@ describe('feedEditBannerLook', () => {
 
     it("draws the layout's own Save my date theme", () => {
         const layout = { ...readFeedLayout(null, null), themeSlug: 'own', theme: SAMPLE_THEME };
-        expect(feedEditBannerLook(layout, rose)?.theme).toBe(SAMPLE_THEME);
+        expect(feedEditBannerLook(layout, rose)).toMatchObject({ kind: 'invitation', theme: SAMPLE_THEME });
     });
 
     it('puts a wall layout on the fallback theme', () => {
         const look = feedEditBannerLook(readFeedLayout(null, null), rose);
-        expect(look?.document.themeId).toBe(SAMPLE_DOCUMENT.themeId);
-        expect(look?.cover.type).toBe('feedCover');
+        expect(look.kind).toBe('invitation');
+        if (look.kind !== 'invitation') return;
+        expect(look.document.themeId).toBe(SAMPLE_DOCUMENT.themeId);
+        expect(look.cover.type).toBe('feedCover');
     });
 
-    it('has nothing to draw without a theme', () => {
-        expect(feedEditBannerLook(readFeedLayout(null, null), undefined)).toBeNull();
+    it("draws the event's wall look when the event type has no Save my date theme", () => {
+        expect(feedEditBannerLook(readFeedLayout(null, null), undefined)).toEqual({ kind: 'wall' });
     });
 });
 ```
@@ -3362,6 +3440,8 @@ describe('feedEditBannerLook', () => {
 
 Run: `npx vitest run lib/feedEditBanner.test.ts`
 Expected: FAIL, `feedEditBannerLook` is not exported.
+
+(`readFeedLayout`'s real arguments are in `lib/feedLayout.ts`; pass whatever gives the default layout on the wall theme, as the session tests' `saved` fixture does.)
 
 - [ ] **Step 4: Implement the look** (append to `lib/feedEditBanner.ts`, with the imports at the top)
 
@@ -3377,24 +3457,28 @@ import { themeImageIds } from '@/lib/invitation/themeSwitch';
 ```
 
 ```ts
-export type FeedEditBannerLook = { document: InvitationDocument; theme: ThemeDesign; media: MediaResolver; cover: InvitationSection };
+export type FeedEditBannerLook =
+    | { kind: 'invitation'; document: InvitationDocument; theme: ThemeDesign; media: MediaResolver; cover: InvitationSection }
+    | { kind: 'wall' };
+
+const WALL_LOOK: FeedEditBannerLook = { kind: 'wall' };
 
 // What the banner's picture draws: the event's cover in the layout's own Save my date theme, or, on the wall
-// theme, in the fallback theme (`fallback`, the catalogue's first for the event type). Null when neither is in.
-export function feedEditBannerLook(layout: FeedLayoutView, fallback: InvitationThemePublicDto | undefined): FeedEditBannerLook | null {
-    const withCover = (document: InvitationDocument, theme: ThemeDesign, media: MediaResolver) => {
+// theme, in the stand-in theme (`fallback`, the catalogue's first for the event type). Without one (an event
+// type with no Save my date themes, or one that doesn't load or read), the cover in the event's wall look.
+export function feedEditBannerLook(layout: FeedLayoutView, fallback: InvitationThemePublicDto | undefined): FeedEditBannerLook {
+    const withCover = (document: InvitationDocument, theme: ThemeDesign, media: MediaResolver): FeedEditBannerLook => {
         const cover = document.sections.find((section) => section.type === 'feedCover');
-        return cover ? { document, theme, media, cover } : null;
+        return cover ? { kind: 'invitation', document, theme, media, cover } : WALL_LOOK;
     };
     if (layout.themeSlug) return withCover(layout.document, layout.theme, layout.media);
-    if (!fallback) return null;
+    if (!fallback) return WALL_LOOK;
     try {
         const preview = readThemePreview(fallback);
         const document = planFeedThemeSwitch(defaultFeedLayout(), { ...preview, imageIds: themeImageIds(fallback.assetUrls) }, new Set());
         return withCover(document, preview.theme, preview.media);
     } catch {
-        // A theme that can't be read has no picture.
-        return null;
+        return WALL_LOOK;
     }
 }
 ```
@@ -3418,39 +3502,61 @@ import { useFeedLayout } from '@/hooks/useFeedLayout';
 import { useInvitationThemeCatalogue } from '@/hooks/useInvitationThemeCatalogue';
 import { fetchInvitationTheme } from '@/hooks/useInvitationThemeCards';
 import type { EventDetailResponseDto } from '@/lib/api/types';
+import { eventThemeStyle } from '@/lib/eventTheme';
 import { feedEditBannerLook } from '@/lib/feedEditBanner';
+import { feedPageTheme } from '@/lib/feedPageTheme';
 import { INVITATION_LABELS } from '@/lib/invitation/labels';
 import { buildRenderContext } from '@/lib/invitation/render';
-import { invitationThemeKeys } from '@/lib/invitation/themeCatalogue';
+import { invitationThemeKeys, isCatalogueEventType } from '@/lib/invitation/themeCatalogue';
 import { uploadedFontFaceCss } from '@/lib/invitation/uploadedFonts';
 
-// The banner picture's data. The Overview's server render prefetches the layout, the catalogue and the
-// fallback theme (manage/(root)/page.tsx), so on a full load it draws at once.
+// The banner picture's data; null only while it is still loading. The Overview's server render prefetches the
+// layout, the catalogue and the stand-in theme (manage/(root)/page.tsx), so on a full load it draws at once.
 export function useFeedEditBannerPreview(event: EventDetailResponseDto) {
     const locale = useLocale();
     const layout = useFeedLayout(event, { enabled: true });
-    const catalogue = useInvitationThemeCatalogue();
-    // Owner to confirm: the catalogue's first theme for the event type stands in for a feed on the wall theme.
-    const fallbackSlug = catalogue.themes?.find((theme) => theme.eventType === event.eventType)?.slug ?? null;
-    const needsFallback = !layout.isLoading && layout.themeSlug === null && fallbackSlug !== null;
-    const { data: fallback } = useQuery({
+    const catalogueType = isCatalogueEventType(event.eventType);
+    const catalogue = useInvitationThemeCatalogue({ enabled: catalogueType });
+    const onWall = !layout.isLoading && layout.themeSlug === null;
+    // The catalogue's first theme for the event type stands in for a feed on the wall theme.
+    const fallbackSlug = catalogueType ? (catalogue.themes?.find((theme) => theme.eventType === event.eventType)?.slug ?? null) : null;
+    const fallback = useQuery({
         queryKey: invitationThemeKeys.publicTheme(fallbackSlug ?? ''),
         queryFn: () => fetchInvitationTheme(fallbackSlug!),
-        enabled: needsFallback,
+        enabled: onWall && fallbackSlug !== null,
         staleTime: 5 * 60_000,
     });
-    const look = useMemo(() => (layout.isLoading ? null : feedEditBannerLook(layout, fallback)), [layout, fallback]);
-    const fonts = useInvitationFonts(look !== null);
+    // A disabled query stays pending, so each wait names the fetch that really runs. A failed fetch draws the wall look.
+    const waiting = layout.isLoading || (onWall && ((catalogueType && catalogue.isPending) || (fallbackSlug !== null && fallback.isPending)));
+    const { document, theme, media, revision, themeSlug } = layout;
+    const look = useMemo(
+        () => (waiting ? null : feedEditBannerLook({ document, theme, media, revision, themeSlug }, fallback.data)),
+        [waiting, document, theme, media, revision, themeSlug, fallback.data],
+    );
+    const fonts = useInvitationFonts(look?.kind === 'invitation');
 
     return useMemo(() => {
         if (!look) return null;
+        if (look.kind === 'wall') {
+            // The event's own wall theme, with the feed's background colour when it has one.
+            const wall = feedPageTheme(event.theme, document.overrides.backgroundColor).theme;
+            const style = eventThemeStyle(wall?.backgroundColor, { titleColor: wall?.titleColor, headingFont: wall?.headingFont });
+            return { kind: 'wall' as const, event: { ...event, theme: wall }, style, headingFont: style ? (wall?.headingFont ?? null) : null };
+        }
         const ctx = { ...buildRenderContext(look.document, { ...look.theme, textAnimation: 'none' }, look.media), labels: INVITATION_LABELS[locale === 'en' ? 'en' : 'el'] };
-        return { ctx, cover: look.cover, index: look.document.sections.indexOf(look.cover), lang: locale, fontFaces: uploadedFontFaceCss(fonts.data ?? [], [look.document, look.theme]) };
-    }, [look, fonts.data, locale]);
+        return {
+            kind: 'invitation' as const,
+            ctx,
+            cover: look.cover,
+            index: look.document.sections.indexOf(look.cover),
+            lang: locale,
+            fontFaces: uploadedFontFaceCss(fonts.data ?? [], [look.document, look.theme]),
+        };
+    }, [look, event, document, fonts.data, locale]);
 }
 ```
 
-`useFeedLayout` returns a new view object each render; if `look` recomputes every render, memo on `layout.document, layout.theme, layout.media, layout.themeSlug, layout.isLoading` instead and call `feedEditBannerLook({ ...layout }, fallback)` inside.
+If `useInvitationThemeCatalogue` takes no options object today, give it an optional `{ enabled = true }` (it already passes `enabled` to its `useQuery`). If `FeedLayoutView` carries more fields than these five, spread `layout` minus `isLoading`/`isLoaded` instead.
 
 - [ ] **Step 7: Write the failing banner tests** (`components/manage/overview/FeedEditBanner.test.tsx`)
 
@@ -3512,7 +3618,7 @@ export function FeedEditBanner({ state, href, illustration }: FeedEditBannerProp
 
     return (
         <section className="flex items-center gap-4 rounded-2xl bg-surface-muted p-4 sm:p-5">
-            {/* Illustration: the event's cover in a Save my date theme */}
+            {/* Illustration: the event's cover in a Save my date theme, or in its wall look */}
             <div role="img" aria-label={t('previewAlt')} className="w-24 shrink-0 sm:w-28">
                 <div className="-rotate-3 overflow-hidden rounded-xl shadow-[0_8px_22px_rgba(36,31,26,0.18)]">{illustration}</div>
             </div>
@@ -3547,18 +3653,21 @@ Expected: PASS.
 ```tsx
 'use client';
 
+import { ThemeFontFace } from '@/components/event/ThemeFontFace';
 import { FeedBlockShell } from '@/components/feed/layout/FeedBlockShell';
 import { FeedCoverBlock } from '@/components/feed/layout/FeedCoverBlock';
 import { FeedLook, FeedNative } from '@/components/feed/layout/FeedLook';
 import { useFeedEditBannerPreview } from '@/hooks/useFeedEditBannerPreview';
 import type { EventDetailResponseDto } from '@/lib/api/types';
+import { themeFontScopeProps } from '@/lib/eventTheme';
 
+// Only while the picture's data loads.
 export function FeedEditBannerPlaceholder() {
     return <div className="aspect-[4/5] w-full bg-surface" />;
 }
 
-// The event's own cover in a Save my date theme, drawn at four times the picture's width, then shrunk.
-// Inert: nothing in it takes taps or focus.
+// The event's own cover, in a Save my date theme or, without one, in its wall look; drawn at four times the
+// picture's width, then shrunk. Inert: nothing in it takes taps or focus.
 export function FeedEditBannerPreview({ event }: { event: EventDetailResponseDto }) {
     const preview = useFeedEditBannerPreview(event);
     if (!preview) return <FeedEditBannerPlaceholder />;
@@ -3566,13 +3675,22 @@ export function FeedEditBannerPreview({ event }: { event: EventDetailResponseDto
     return (
         <div aria-hidden="true" inert className="pointer-events-none aspect-[4/5] w-full overflow-hidden">
             <div className="w-[400%] origin-top-left scale-25">
-                <FeedLook ctx={preview.ctx} lang={preview.lang} fontFaces={preview.fontFaces}>
-                    <FeedBlockShell section={preview.cover} index={preview.index} ctx={preview.ctx}>
-                        <FeedNative>
-                            <FeedCoverBlock event={event} isHost={false} wishlist={false} />
-                        </FeedNative>
-                    </FeedBlockShell>
-                </FeedLook>
+                {preview.kind === 'wall' ? (
+                    // Wall look: the theme scope's colours and heading font, as on the feed itself
+                    <div className="bg-event" style={preview.style} {...themeFontScopeProps(preview.headingFont)}>
+                        <ThemeFontFace font={preview.headingFont} />
+                        <FeedCoverBlock event={preview.event} isHost={false} wishlist={false} />
+                    </div>
+                ) : (
+                    // Save my date look
+                    <FeedLook ctx={preview.ctx} lang={preview.lang} fontFaces={preview.fontFaces}>
+                        <FeedBlockShell section={preview.cover} index={preview.index} ctx={preview.ctx}>
+                            <FeedNative>
+                                <FeedCoverBlock event={event} isHost={false} wishlist={false} />
+                            </FeedNative>
+                        </FeedBlockShell>
+                    </FeedLook>
+                )}
             </div>
         </div>
     );
@@ -3685,12 +3803,13 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 - [ ] **Step 1: Add the prefetch** (below `prefetchThemeGrid`; add `serverPublicGetOrNull` to the `@/lib/api/serverFetch` import, `isEventWritable` to the `@/lib/eventLifecycle` import, and `import { invitationThemeEndpoint, type InvitationThemePublicDto } from '@/lib/invitation/themePreview';`)
 
 ```ts
-// The Overview's feed banner picture (useFeedEditBannerPreview): the feed layout, the catalogue and, for a feed on
-// the wall theme, the theme standing in for it (the catalogue's first for the event type). Each seeds on its own.
+// The Overview's feed banner picture (useFeedEditBannerPreview): the feed layout, the catalogue (theme catalogue
+// event types only, as the hook) and, for a feed on the wall theme, the theme standing in for it (the catalogue's
+// first for the event type). Each seeds on its own.
 async function prefetchFeedEditBanner(event: EventDetailResponseDto, eventId: string, accessToken: string) {
     const [layout, catalogue] = await Promise.all([
         serverGetOrNull<FeedLayoutDto>(endpoints.events.feedLayout(eventId), accessToken).catch(() => undefined),
-        fetchThemeCatalogue().catch(() => null),
+        isCatalogueEventType(event.eventType) ? fetchThemeCatalogue().catch(() => null) : Promise.resolve(null),
     ]);
     const fallbackSlug = layout?.themeSlug ? null : (catalogue?.find((theme) => theme.eventType === event.eventType)?.slug ?? null);
     // Not cached: the image URLs may expire (lib/invitation/serverThemePreview.ts).
@@ -3708,11 +3827,11 @@ async function prefetchFeedEditBanner(event: EventDetailResponseDto, eventId: st
 In `Page`, after `const themeGrid = ...`:
 
 ```ts
-            // Mirrors useFeedEditBanner's cheap gates (the flag, a theme catalogue type, and Save my date on a
-            // writable event or a live event's main host); the rest it checks itself.
+            // Mirrors useFeedEditBanner's cheap gates (the flag, and Save my date on a writable event or a live
+            // event's main host; any event type); the rest it checks itself.
             const smd = isModuleAvailable(event.modules, 'save_my_date');
             const bannerViewer = smd ? isEventWritable(event.status) : event.status === 'ACTIVE' && isPrimaryHost(event.hosts, membership?.id);
-            const opensFeedBanner = opensOverview && feedEditor && isCatalogueEventType(event.eventType) && bannerViewer;
+            const opensFeedBanner = opensOverview && feedEditor && bannerViewer;
             const feedBanner = opensFeedBanner ? prefetchFeedEditBanner(event, eventId, accessToken) : null;
 ```
 
@@ -3775,20 +3894,22 @@ Expected: nothing (the feed no longer uses either).
 - [ ] Same event, Overview as the main host: the locked banner (lock, title, Unlock) between the journey and INVIART; Unlock opens Settings > Add-ons with Save my date ticked. As a co-host: no banner. On a draft: no banner.
 - [ ] A wedding event **with** Save my date: Edit pill shows for host and co-host; Overview shows Start editing; it lands in edit mode with Cancel focused and no `?edit=` in the URL; Back leaves edit mode (asks only with changes).
 - [ ] The banner picture: tilted, the event's cover in a Save my date theme, nothing in it takes taps; a screen reader reads "Preview of your invitation".
+- [ ] An event type without Save my date themes (a birthday): without Save my date, the main host sees the locked banner, its picture the cover in the event's wall look. With Save my date: Start editing, the Edit pill, adding sections (cards drawn in the current theme), hide/reorder, and the Theme sheet showing wall presets (only with the theme module) and the Background row, or just the Background row.
 - [ ] Add section: cards with a small live picture and the block's name; one column at 375, two at 1280; tapping a card adds that block.
 - [ ] Theme pill: opens the sheet (phones) / right panel (desktop) titled Theme; block settings and the Theme sheet never show at once.
 - [ ] Pick a Save my date theme: the top of the feed redraws in it at once; nothing is saved (reload the page in another tab: unchanged); Save stores it; Cancel instead asks first and drops it.
 - [ ] Pick a wall preset: the cover art, page colour and wall blocks preview it; Save writes it (the Manage Theme section shows it after).
-- [ ] Background: pick a light colour; the whole feed (blocks, posts area, behind the tab bar) turns that colour; pick a dark one: it shows lightened and every text stays readable; Default goes back; picking a theme clears it; Save keeps it after a reload, for a guest too.
+- [ ] Background: pick a light colour; the whole feed (blocks, posts area, behind the tab bar) turns that colour; pick a dark one: it shows lightened, every text stays readable, and "Too dark for the text. A lighter shade will be shown." shows under the row until a lighter colour is picked; Default goes back; picking a theme clears it; Save keeps it after a reload, for a guest too.
 - [ ] Theme write failure: with DevTools offline after the layout save (or the theme endpoint blocked), Save shows "Couldn't save your changes. Please try again.", edit mode stays, the pick stays selected; Save again finishes.
 - [ ] Conflict: save the layout from another tab, then Save: the conflict dialog; Reload drops the held theme.
 - [ ] The standalone Save my date editor's Add section list is unchanged.
+- [ ] A Save my date theme that fails to load (block its request in DevTools): nothing changes, no message; tapping it again retries.
 - [ ] Greek: every new string shows as approved.
 
 - [ ] **Step 6: Visual check stories**
 
 Run: `npm run build-storybook`
-Expected: builds. The new stories (FeedAddSectionSheet, FeedBackgroundSetting, FeedEditPills WithTheme, FeedEditBanner) and the removed ones (FeedAddSectionRow Locked, LockedForCoHost) show in the PR's visual check for the owner.
+Expected: builds. The new stories (FeedAddSectionSheet, FeedBackgroundSetting with TooDark, FeedEditPills WithTheme, FeedEditBanner) and the removed ones (FeedAddSectionRow Locked, LockedForCoHost) show in the PR's visual check for the owner.
 
 - [ ] **Step 7: SEO**
 
