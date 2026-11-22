@@ -10,6 +10,7 @@ import { FeedAddSectionRow } from '@/components/feed/edit/FeedAddSectionRow';
 import { FeedBlockPlaceholder } from '@/components/feed/edit/FeedBlockPlaceholder';
 import { FeedBlockSheet } from '@/components/feed/edit/FeedBlockSheet';
 import { FeedEditBlock } from '@/components/feed/edit/FeedEditBlock';
+import { FeedEditInvitationSection } from '@/components/feed/edit/FeedEditInvitationSection';
 import { FeedEditPills } from '@/components/feed/edit/FeedEditPills';
 import { FeedLook, FeedNative } from '@/components/feed/layout/FeedLook';
 import { feedLookParts } from '@/components/feed/layout/FeedLookTop';
@@ -80,7 +81,16 @@ export function FeedEditTop({ event, onDone, cover, details, stories, descriptio
         // The feed's own blocks are set on the event, not typed here: their content takes no taps.
         block: (section, content) => wrap(section, base.block(section, <div inert>{content}</div>)),
         native: base.native,
-        invitation: (section) => wrap(section, base.invitation(section)),
+        // Save my date blocks read the text editor's drawing from inside InlineTextEditing, so their text is typed in place.
+        invitation: (section) =>
+            wrap(
+                section,
+                view.look ? (
+                    <FeedEditInvitationSection section={section} index={view.sections.indexOf(section)} ctx={view.ctx} />
+                ) : (
+                    base.invitation(section)
+                ),
+            ),
     };
 
     const frame = (
