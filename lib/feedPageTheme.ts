@@ -1,14 +1,18 @@
 import type { EventThemeDto } from '@/lib/api/types';
 import { contrastRatio, MIN_INK_CONTRAST, readableOnInk } from '@/lib/contrast';
+import type { FeedPageBackdrop } from '@/lib/feedPageBackdrop';
 
 // What the event pages draw while the feed overrides the event's wall theme: the feed's background colour
-// (overrides.backgroundColor), and in edit mode a held wall preset. theme null: no theme, today's look.
-export type FeedPageTheme = { theme: EventThemeDto | null };
+// (overrides.backgroundColor), a Save my date theme's backdrop, and in edit mode a held wall preset.
+// theme null: no theme, today's look.
+export type FeedPageTheme = { theme: EventThemeDto | null; backdrop?: FeedPageBackdrop };
 
 // The theme a background colour sits on when the event has none: the colour alone.
 const NO_THEME: EventThemeDto = { presetKey: '', backgroundColor: '#FFFFFF', illustrationUrl: '', titleColor: null, headingFont: null };
 
-export function feedPageTheme(wall: EventThemeDto | null, background: string | null | undefined): FeedPageTheme {
+export function feedPageTheme(wall: EventThemeDto | null, background: string | null | undefined, backdrop?: FeedPageBackdrop | null): FeedPageTheme {
+    // The host's own colour wins over the theme's background.
+    if (!background && backdrop) return { ...feedPageTheme(wall, backdrop.color), backdrop };
     if (!background) return { theme: wall };
     const backgroundColor = readableOnInk(background);
     const base = wall ?? NO_THEME;
