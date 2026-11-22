@@ -69,7 +69,9 @@
         "uploadNotice": "This is a demo. Your photos stay on this device.",
         "inviteNotice": "This is a demo. Your guests see this page and join from here.",
         "tryUpload": "Try uploading",
-        "previewInvite": "Preview invitation"
+        "previewInvite": "Preview invitation",
+        "seePlans": "See plans",
+        "backToDemo": "Back to the demo"
     },
     "EventNotFound": {
         "title": "This celebration seems to have wandered off",
@@ -10921,7 +10923,8 @@
     "PublishedInvitation": {
         "metaTitle": "Invitation",
         "notFound": "We couldn't find this invitation.",
-        "expired": "This invitation is no longer available."
+        "expired": "This invitation is no longer available.",
+        "shareImageAlt": "Invitation: {names}"
     },
     "Inviart": {
         "heading": "Invitations and more by INVIART",

@@ -6,14 +6,19 @@ import type {
     EventBillingResponseDto,
     EventDetailResponseDto,
     EventGiftAccountResponseDto,
+    EventInvitationPreviewDto,
     EventMemberResponseDto,
+    GiftCardResponseDto,
+    GiftHandoverResponseDto,
     MediaResponseDto,
+    PlaylistSuggestionLeaderboardDto,
     PostResponseDto,
     QrLinkResponseDto,
     QrLinkStatsDto,
     RsvpResponseDto,
     UserResponseDto,
     WishAudioDto,
+    WishbookBookDto,
     WishbookEntryResponseDto,
 } from '@/lib/api/types';
 import { RECENT_COMMENTS_SIZE } from '@/lib/comments';
@@ -143,6 +148,10 @@ function newId(prefix: string): string {
 
 // What the demo calls the Terms and Guidelines in force. Nothing checks it: the uploads it goes with stay in the browser.
 const DEMO_LEGAL_VERSION = 'demo';
+
+// The demo hands out the demo event's own keepsake book, which the snapshot carries. A build the
+// visitor starts can't really rebuild it, so it takes this long and ends in the same book.
+const DEMO_BOOK_BUILD_MS = 2500;
 
 // A text field of a multipart request, or null when it was left out.
 function formText(form: FormData, name: string): string | null {
@@ -303,6 +312,48 @@ export function createDemoHandlers(session: DemoSession, appOrigin: string | nul
         return { ...link, publicUrl: `${appOrigin ?? ''}${demoGuestPagePath(demoEventTypeSlugFromKey(session.eventTypeKey), page)}` };
     }
 
+    // The join link's invite preview, which the demo QR page reads for the event's date and place.
+    // None for an event without a date: the preview always carries one.
+    function invitationPreview(inviteToken: string): EventInvitationPreviewDto | undefined {
+        const event = currentEvent();
+        if (!event?.schedule.startAt || !event.schedule.timezone) return undefined;
+        return {
+            inviteToken,
+            eventId,
+            eventTitle: event.title,
+            eventSubtitle: event.subtitle,
+            eventDescription: event.description,
+            eventStartAt: event.schedule.startAt,
+            eventEndAt: event.schedule.endAt,
+            eventTimezone: event.schedule.timezone,
+            eventLocationName: event.location.name,
+            coverMediaId: event.coverMedia?.id ?? null,
+            coverMedia: event.coverMedia,
+            theme: event.theme,
+            firstName: null,
+            lastName: null,
+            email: null,
+            expired: false,
+            alreadyUsed: false,
+            gift: null,
+        };
+    }
+
+    // A wish written in the demo, from the wishbook page or the QR page. It stays in this browser.
+    function createWish(wish: Record<string, unknown>, audio: WishAudioDto | null): WishbookEntryResponseDto {
+        return db.create('wishbook', {
+            id: newId('demo-wishbook'),
+            eventId,
+            authorMemberId: null,
+            guestName: String(wish.guestName ?? 'Guest'),
+            message: wishText(wish.message),
+            audio,
+            createdAt: nowIso(),
+            canDelete: true,
+            highlighted: null,
+        });
+    }
+
     // A QR upload has no account behind it: the media carries the name the scanner typed, if any.
     function createLocalMedia(file: File, anonymousUploaderName?: string | null): MediaResponseDto {
         const url = localMediaUrl(file);
@@ -329,12 +380,82 @@ export function createDemoHandlers(session: DemoSession, appOrigin: string | nul
         });
     }
 
+    // The demo event is shown as one that was given as a gift, so the claim card has something to
+    // print. Everything here lives for this visit only; nothing reaches a recipient.
+    let gift: GiftHandoverResponseDto | null = null;
+    let giftCancelled = false;
+
+    function giftHandover(): GiftHandoverResponseDto {
+        if (!gift) {
+            const giver = db.list('members').find((member) => member.id !== viewerMemberId);
+            gift = {
+                status: 'ISSUED',
+                recipientLabel: db.get('members', viewerMemberId)?.displayName ?? '',
+                giverDisplayName: giver?.displayName ?? '',
+                recipientEmail: null,
+                token: newId('demo-gift'),
+                cardIssuedAt: currentEvent()?.createdAt ?? nowIso(),
+                claimedByDisplayName: null,
+                claimedAt: null,
+                ownershipTransfersAt: null,
+                ownershipTransferredAt: null,
+            };
+        }
+        return gift;
+    }
+
+    // A reissue kills the old card, as it does for real; the PIN is shown once, here too.
+    function issueGiftCard(): GiftCardResponseDto {
+        const token = newId('demo-gift');
+        gift = { ...giftHandover(), token, cardIssuedAt: nowIso() };
+        return { token, pin: String(Math.floor(100_000 + Math.random() * 900_000)) };
+    }
+
+    // A build the visitor started in this visit; it ends in the event's own book either way.
+    let rebuild: { requestedAt: number } | null = null;
+
+    function wishbookBook(): WishbookBookDto | null {
+        const ready = session.wishbookBook;
+        if (!ready || !rebuild) return ready;
+        const requestedAt = new Date(rebuild.requestedAt).toISOString();
+        if (Date.now() - rebuild.requestedAt < DEMO_BOOK_BUILD_MS) {
+            return {
+                ...ready,
+                status: 'RUNNING',
+                requestedAt,
+                finishedAt: null,
+                pageCount: null,
+                entryCount: null,
+                byteSize: null,
+                downloadUrl: null,
+            };
+        }
+        return { ...ready, requestedAt, finishedAt: new Date(rebuild.requestedAt + DEMO_BOOK_BUILD_MS).toISOString() };
+    }
+
+    // Songs the visitor marked as played on the live page, for this visit.
+    const playedAt = new Map<string, string | null>();
+
+    // Most-voted first, as the backend ranks them; a song marked played keeps its place.
+    function playlistLeaderboard(): PlaylistSuggestionLeaderboardDto[] {
+        return db
+            .list('playlistSuggestions')
+            .filter((suggestion) => suggestion.eventId === eventId)
+            .sort((left, right) => right.upvoteCount - left.upvoteCount || left.createdAt.localeCompare(right.createdAt))
+            .map(({ myVote: _myVote, ...suggestion }, index) => ({ ...suggestion, rank: index + 1, playedAt: playedAt.get(suggestion.id) ?? null }));
+    }
+
     return [
         // --- Allowed backend calls ---
         http.get(`${API_BASE_URL}/api/config`, () => passthrough()),
         http.get(`${API_BASE_URL}/api/demo/:eventTypeKey`, () => passthrough()),
         // The map preview's short-link lookup only asks Google, never the backend.
         ...(appOrigin ? [http.get(`${appOrigin}/api/maps/resolve`, () => passthrough())] : []),
+        // The QR cards' artwork is drawn by this app's own route, which asks for no account and
+        // sends nothing about the visitor. Without it the card shows a broken picture.
+        ...(appOrigin ? [http.get(`${appOrigin}/api/qr-card-artwork/:templateId/:version`, () => passthrough())] : []),
+        // The live discount on the QR page's promo: public, the same for every visitor.
+        ...(appOrigin ? [http.get(`${appOrigin}/api/discount-campaign`, () => passthrough())] : []),
 
         // --- Me ---
         http.get(`${API_BASE_URL}/api/me`, () => HttpResponse.json(me())),
@@ -365,7 +486,32 @@ export function createDemoHandlers(session: DemoSession, appOrigin: string | nul
         http.get(`${API_BASE_URL}/api/events/:eventId/upgrade-options`, () => HttpResponse.json([])),
         http.get(`${API_BASE_URL}/api/events/:eventId/extension-options`, () => HttpResponse.json([])),
         http.get(`${API_BASE_URL}/api/events/:eventId/qr-links/stats`, () => HttpResponse.json(qrLinkStats())),
-        http.get(`${API_BASE_URL}/api/events/:eventId/qr-card-templates`, () => HttpResponse.json({ available: false, templates: [] })),
+        // The designs the real event has, carried by the snapshot: the demo prints the same cards production does.
+        http.get(`${API_BASE_URL}/api/events/:eventId/qr-card-templates`, () =>
+            HttpResponse.json({ available: session.qrCardTemplates.length > 0, templates: session.qrCardTemplates }),
+        ),
+
+        // --- The gift the event was given as (gift mode), so the claim card can be printed here too ---
+        http.get(`${API_BASE_URL}/api/events/:eventId/gift`, () =>
+            giftCancelled ? new HttpResponse(null, { status: 404 }) : HttpResponse.json(giftHandover()),
+        ),
+        http.post(`${API_BASE_URL}/api/events/:eventId/gift/card`, () => HttpResponse.json(issueGiftCard())),
+        http.put(`${API_BASE_URL}/api/events/:eventId/gift`, async ({ request }) => {
+            const body = (await request.json()) as Record<string, unknown>;
+            giftCancelled = false;
+            gift = {
+                ...giftHandover(),
+                recipientLabel: String(body.recipientLabel ?? ''),
+                giverDisplayName: String(body.giverDisplayName ?? ''),
+                recipientEmail: (body.recipientEmail as string) ?? null,
+            };
+            return HttpResponse.json(gift);
+        }),
+        http.delete(`${API_BASE_URL}/api/events/:eventId/gift`, () => {
+            gift = null;
+            giftCancelled = true;
+            return new HttpResponse(null, { status: 204 });
+        }),
 
         // --- Gift account (one per event; absent when the module is off) ---
         http.get(`${API_BASE_URL}/api/events/:eventId/gift-account`, ({ params }) => {
@@ -445,6 +591,17 @@ export function createDemoHandlers(session: DemoSession, appOrigin: string | nul
             return HttpResponse.json({ created, failed: [] });
         }),
 
+        // --- The demo QR page: the join link's preview, and a wish sent without an account ---
+        http.get(`${API_BASE_URL}/api/event-invitations/:token/preview`, ({ params }) => {
+            const preview = invitationPreview(params.token as string);
+            return preview ? HttpResponse.json(preview) : new HttpResponse(null, { status: 404 });
+        }),
+        http.post(`${API_BASE_URL}/api/qr/:token/wishes`, async ({ request }) => {
+            const { wish, audio } = await readWish(request);
+            const record = createWish(wish, audio);
+            return HttpResponse.json({ id: record.id, createdAt: record.createdAt }, { status: 201 });
+        }),
+
         // --- Legal versions: the QR upload form sends back the versions the scanner accepted ---
         http.get(`${API_BASE_URL}/api/legal/documents/:document`, ({ params }) =>
             HttpResponse.json({ document: params.document, version: DEMO_LEGAL_VERSION, locale: 'en', markdown: '' }),
@@ -506,20 +663,19 @@ export function createDemoHandlers(session: DemoSession, appOrigin: string | nul
         }),
         ...buildPageHandlers(db, 'wishbook', '/api/events/:eventId/wishbook', 20),
         http.get(`${API_BASE_URL}/api/events/:eventId/wishbook/count`, () => HttpResponse.json(db.list('wishbook').length)),
+        // The keepsake book. 404, as the backend answers, when the demo event has none.
+        http.get(`${API_BASE_URL}/api/events/:eventId/wishbook/book`, () => {
+            const current = wishbookBook();
+            return current ? HttpResponse.json(current) : new HttpResponse(null, { status: 404 });
+        }),
+        http.post(`${API_BASE_URL}/api/events/:eventId/wishbook/book`, () => {
+            if (!session.wishbookBook) return new HttpResponse(null, { status: 404 });
+            rebuild = { requestedAt: Date.now() };
+            return HttpResponse.json(wishbookBook());
+        }),
         http.post(`${API_BASE_URL}/api/events/:eventId/wishbook`, async ({ request }) => {
             const { wish, audio } = await readWish(request);
-            const record: WishbookEntryResponseDto = db.create('wishbook', {
-                id: newId('demo-wishbook'),
-                eventId,
-                authorMemberId: null,
-                guestName: String(wish.guestName ?? 'Guest'),
-                message: wishText(wish.message),
-                audio,
-                createdAt: nowIso(),
-                canDelete: true,
-                highlighted: null,
-            });
-            return HttpResponse.json(record, { status: 201 });
+            return HttpResponse.json(createWish(wish, audio), { status: 201 });
         }),
         ...buildDetailHandlers(db, 'wishbook', '/api/wishbook/:id', { del: true }),
 
@@ -650,6 +806,14 @@ export function createDemoHandlers(session: DemoSession, appOrigin: string | nul
 
         // --- Playlist suggestions ---
         ...buildArrayHandlers(db, 'playlistSuggestions', '/api/events/:eventId/playlist-suggestions'),
+        // The live list for the host or the DJ, and the tick that marks a song played.
+        http.get(`${API_BASE_URL}/api/events/:eventId/playlist-suggestions/leaderboard`, () => HttpResponse.json(playlistLeaderboard())),
+        http.patch(`${API_BASE_URL}/api/events/:eventId/playlist-suggestions/:id/played`, async ({ params, request }) => {
+            const { played } = (await request.json()) as { played: boolean };
+            playedAt.set(params.id as string, played ? nowIso() : null);
+            const row = playlistLeaderboard().find((suggestion) => suggestion.id === params.id);
+            return row ? HttpResponse.json(row) : new HttpResponse(null, { status: 404 });
+        }),
         buildCreateHandler(db, 'playlistSuggestions', '/api/playlist-suggestions', (body) => ({
             id: newId('demo-suggestion'),
             eventId,

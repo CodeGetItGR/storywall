@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { datetimeLocalValueToIso, eventWindowFromLocalStart, formatEventDateParts, getScheduleDatetimeLocalBounds } from './datetime';
+import { calendarDaysUntil, datetimeLocalValueToIso, eventWindowFromLocalStart, formatEventDateParts, getScheduleDatetimeLocalBounds } from './datetime';
 
 describe('datetimeLocalValueToIso', () => {
     it('converts a datetime-local value to a full ISO-8601 instant with offset', () => {
@@ -79,5 +79,21 @@ describe('formatEventDateParts', () => {
 
     it("falls back to the viewer's time zone for an unknown zone", () => {
         expect(formatEventDateParts('en-GB', '2027-06-12T18:00:00+03:00', null, 'Not/AZone')?.date).toContain('2027');
+    });
+});
+
+describe('calendarDaysUntil', () => {
+    it('counts calendar days in the given time zone, ignoring the time of day', () => {
+        expect(calendarDaysUntil('2026-11-26T10:50:00Z', 'Europe/Athens', new Date('2026-11-21T08:00:00Z'))).toBe(5);
+        expect(calendarDaysUntil('2026-11-26T21:59:00Z', 'Europe/Athens', new Date('2026-11-21T22:00:00Z'))).toBe(4);
+    });
+
+    it('never goes below zero', () => {
+        expect(calendarDaysUntil('2026-11-20T10:00:00Z', 'UTC', new Date('2026-11-21T08:00:00Z'))).toBe(0);
+    });
+
+    it('returns null without a valid date', () => {
+        expect(calendarDaysUntil(null, 'UTC')).toBeNull();
+        expect(calendarDaysUntil('not-a-date', 'UTC')).toBeNull();
     });
 });

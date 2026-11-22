@@ -4,6 +4,8 @@ import path from 'node:path';
 import { ImageResponse } from 'next/og';
 import sharp from 'sharp';
 
+import { InvitationShareCard, type InvitationShareCardProps } from '@/components/saveMyDate/published/InvitationShareCard';
+import { shareJpeg } from '@/lib/og/sharePhoto';
 import { OG_IMAGE_SIZE } from '@/lib/seo';
 import { coverImageUrl, type ShareEvent } from '@/lib/shareMetadata';
 
@@ -343,4 +345,15 @@ export async function qrWeddingOgImage({ headline, alt }: { headline: string; al
         .toBuffer();
 
     return new Response(new Uint8Array(jpeg), { headers: { 'Content-Type': 'image/jpeg', 'Cache-Control': 'public, max-age=3600' } });
+}
+
+// A Save my date invitation's link preview picture when it has no photo: its title on the theme's
+// colours, as a JPEG under the messaging apps' size limit.
+export async function invitationCardOgImage(card: Omit<InvitationShareCardProps, 'fontFamily'>): Promise<Buffer> {
+    const font = await loadTitleFont(card.text, 400);
+    const image = new ImageResponse(<InvitationShareCard {...card} fontFamily={font ? TITLE_FONT : 'serif'} />, {
+        ...OG_IMAGE_SIZE,
+        fonts: font ? [{ name: TITLE_FONT, data: font, weight: 400, style: 'normal' }] : undefined,
+    });
+    return shareJpeg(sharp(Buffer.from(await image.arrayBuffer())));
 }

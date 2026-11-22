@@ -3,7 +3,7 @@
 import { ChevronRight } from 'lucide-react';
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
-import { useCallback } from 'react';
+import { type ReactNode, useCallback } from 'react';
 
 import { QrEventDetailsLine } from '@/components/qrLanding/QrEventDetailsLine';
 import { QrJoinCard } from '@/components/qrLanding/QrJoinCard';
@@ -28,6 +28,10 @@ interface QrLandingChoicesProps {
     isSignedIn: boolean;
     // When and where the event is, under its name. Null while loading or when the event has neither.
     details: QrEventDetails | null;
+    // Buttons in place of the join card's own (the demo).
+    joinActions?: ReactNode;
+    // A note under the details (the demo's).
+    notice?: ReactNode;
 }
 
 const ICONS: Record<QrLandingChoice, string> = {
@@ -42,7 +46,7 @@ const ICONS: Record<QrLandingChoice, string> = {
 // Plain rows split by thin lines, so the choices read as one short list.
 const ROW_CLASS = 'flex w-full items-center gap-4 px-2 py-4 text-left transition-colors hover:bg-surface-muted/60';
 
-export function QrLandingChoices({ plan, eventId, onChoose, coverSrc, eventTitle, isSignedIn, details }: QrLandingChoicesProps) {
+export function QrLandingChoices({ plan, eventId, onChoose, coverSrc, eventTitle, isSignedIn, details, joinActions, notice }: QrLandingChoicesProps) {
     const t = useTranslations('QrCodePage');
     const { event, rest } = splitQrLandingChoices(plan.choices);
     const eventHref = event ? qrLandingChoiceHref(event, plan, eventId) : null;
@@ -80,6 +84,9 @@ export function QrLandingChoices({ plan, eventId, onChoose, coverSrc, eventTitle
                     <QrEventDetailsLine details={details} />
                 </div>
             ) : null}
+
+            {/* Notice */}
+            {notice}
 
             {/* Other choices: first, so they are on the first screen of any phone. */}
             {rows.length > 0 ? (
@@ -121,7 +128,14 @@ export function QrLandingChoices({ plan, eventId, onChoose, coverSrc, eventTitle
 
             {/* Event card */}
             {showCard && event && eventHref ? (
-                <QrJoinCard choice={event} href={eventHref} coverSrc={coverSrc} title={eventTitle} accountHrefs={accountHrefs} />
+                <QrJoinCard
+                    choice={event}
+                    href={eventHref}
+                    coverSrc={coverSrc}
+                    title={eventTitle}
+                    accountHrefs={accountHrefs}
+                    actions={joinActions}
+                />
             ) : null}
         </div>
     );

@@ -38,6 +38,19 @@ describe('robots', () => {
         expect(previews?.disallow).not.toContain('/c/');
     });
 
+    it('keeps crawlers out of published invitations but lets link previews fetch them and their picture', () => {
+        vi.stubEnv('NEXT_PUBLIC_APP_ENV', 'production');
+        const rules = robots().rules;
+        const groups = Array.isArray(rules) ? rules : [rules];
+        const crawlers = groups.find((group) => group.userAgent === '*');
+        const images = groups.find((group) => group.userAgent === 'Googlebot-Image');
+        const previews = groups.find((group) => Array.isArray(group.userAgent));
+        expect(crawlers?.disallow).toContain('/save-my-date/i/');
+        expect(images?.disallow).toContain('/save-my-date/i/');
+        expect(previews?.disallow).not.toContain('/save-my-date/i/');
+        expect(previews?.disallow).toContain('/save-my-date/editor');
+    });
+
     describe('image search', () => {
         const imageCrawlerRules = () => {
             vi.stubEnv('NEXT_PUBLIC_APP_ENV', 'production');

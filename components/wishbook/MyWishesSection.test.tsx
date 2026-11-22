@@ -4,7 +4,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { MyWishesSection } from '@/components/wishbook/MyWishesSection';
 import type { WishbookEntryResponseDto } from '@/lib/api/types';
 
-vi.mock('next-intl', () => ({ useTranslations: () => (key: string) => key }));
+vi.mock('next-intl', () => ({ useLocale: () => 'el', useTranslations: () => (key: string) => key }));
 
 const entry: WishbookEntryResponseDto = {
     id: 'w1',
@@ -85,5 +85,13 @@ describe('MyWishesSection', () => {
         fireEvent.click(screen.getByRole('button', { name: 'loadMore' }));
 
         expect(onLoadMore).toHaveBeenCalled();
+    });
+
+    it('shows a wish’s date in the app’s language', () => {
+        const { container } = render(<MyWishesSection {...base} onSelect={vi.fn()} />);
+
+        const time = container.querySelector('time');
+        expect(time?.textContent).toBe(new Intl.DateTimeFormat('el', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(entry.createdAt)));
+        expect(time?.textContent).toMatch(/Νοε/);
     });
 });

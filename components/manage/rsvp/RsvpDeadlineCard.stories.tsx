@@ -23,6 +23,7 @@ const meta = {
         eventId: 'evt-story',
         rsvpDeadline: '2026-07-03T00:00:00Z',
         startAt: '2026-07-25T16:00:00Z',
+        timeZone: 'Europe/Athens',
         canWrite: true,
     },
 } satisfies Meta<typeof RsvpDeadlineCard>;

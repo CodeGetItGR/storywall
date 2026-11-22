@@ -1,5 +1,6 @@
 'use client';
 
+import { usePathname } from 'next/navigation';
 import type { ReactNode } from 'react';
 
 import { AccountPanelShell } from '@/components/account/AccountPanelShell';
@@ -7,6 +8,7 @@ import { DemoBanner } from '@/components/demo/DemoBanner';
 import { MobileTabBar } from '@/components/layout/MobileTabBar';
 import { useDemoMediaUrlRefresh } from '@/hooks/useDemoMediaUrlRefresh';
 import { useResetDemo } from '@/hooks/useResetDemo';
+import { isDemoGuestPagePath } from '@/lib/demo/demoRouting';
 import type { DemoSession } from '@/lib/demo/demoSession';
 import { AccountPanelProvider } from '@/providers/AccountPanelProvider';
 import { ComposerProvider } from '@/providers/ComposerProvider';
@@ -24,23 +26,31 @@ type DemoShellProps = {
 export function DemoShell({ session, etag, presignedUrlsValidUntil, children }: DemoShellProps) {
     useDemoMediaUrlRefresh(session, etag, presignedUrlsValidUntil);
     const handleReset = useResetDemo(session.eventTypeKey);
+    const isGuestPage = isDemoGuestPagePath(usePathname());
 
     return (
         <DemoAuthProvider session={session}>
             <DemoEventProvider session={session}>
                 <ComposerProvider>
                     <ModalProvider>
-                        <AccountPanelProvider>
-                            <AccountPanelShell>
-                                <div className="flex h-dvh min-h-0 flex-col overflow-hidden bg-background">
-                                    {/* Demo notice */}
-                                    <DemoBanner onResetAction={handleReset} />
-                                    {/* Content */}
-                                    <main className="min-h-0 flex-1 overflow-y-auto overscroll-contain bg-background pb-20 md:pb-0">{children}</main>
-                                    <MobileTabBar />
-                                </div>
-                            </AccountPanelShell>
-                        </AccountPanelProvider>
+                        {isGuestPage ? (
+                            // Guest page: full screen, as a scanned code opens it on a real event.
+                            <div className="h-dvh bg-background">{children}</div>
+                        ) : (
+                            <AccountPanelProvider>
+                                <AccountPanelShell>
+                                    <div className="flex h-dvh min-h-0 flex-col overflow-hidden bg-background">
+                                        {/* Demo notice */}
+                                        <DemoBanner onResetAction={handleReset} />
+                                        {/* Content */}
+                                        <main className="min-h-0 flex-1 overflow-y-auto overscroll-contain bg-background pb-20 md:pb-0">
+                                            {children}
+                                        </main>
+                                        <MobileTabBar />
+                                    </div>
+                                </AccountPanelShell>
+                            </AccountPanelProvider>
+                        )}
                     </ModalProvider>
                 </ComposerProvider>
             </DemoEventProvider>

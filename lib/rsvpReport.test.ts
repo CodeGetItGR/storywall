@@ -51,7 +51,7 @@ describe('rsvpCountdown', () => {
     const now = new Date('2026-08-12T10:00:00Z');
 
     it('counts to the RSVP deadline when there is one', () => {
-        expect(rsvpCountdown('2026-08-30T00:00:00Z', '2026-09-20T16:00:00Z', now)).toEqual({
+        expect(rsvpCountdown('2026-08-30T00:00:00Z', '2026-09-20T16:00:00Z', 'UTC', now)).toEqual({
             labelKey: 'deadlineLabel',
             target: '2026-08-30T00:00:00Z',
             daysLeft: 18,
@@ -59,14 +59,26 @@ describe('rsvpCountdown', () => {
     });
 
     it('falls back to the event date when no deadline is set', () => {
-        expect(rsvpCountdown(null, '2026-09-20T16:00:00Z', now)).toEqual({
+        expect(rsvpCountdown(null, '2026-09-20T16:00:00Z', 'UTC', now)).toEqual({
             labelKey: 'eventDateLabel',
             target: '2026-09-20T16:00:00Z',
-            daysLeft: 40,
+            daysLeft: 39,
         });
     });
 
+    it('counts calendar days in the event time zone, like the host Overview', () => {
+        // 26 Nov 12:50 in Athens, seen on 21 Nov in the morning: 5 days, not 6.
+        expect(rsvpCountdown(null, '2026-11-26T10:50:00Z', 'Europe/Athens', new Date('2026-11-21T08:00:00Z')).daysLeft).toBe(5);
+        // Just after midnight in Athens it is already 22 Nov there, though still 21 Nov in UTC.
+        expect(rsvpCountdown(null, '2026-11-26T10:50:00Z', 'Europe/Athens', new Date('2026-11-21T22:30:00Z')).daysLeft).toBe(4);
+        expect(rsvpCountdown(null, '2026-11-26T10:50:00Z', 'UTC', new Date('2026-11-21T22:30:00Z')).daysLeft).toBe(5);
+    });
+
+    it('is 0 on the day itself', () => {
+        expect(rsvpCountdown(null, '2026-11-26T10:50:00Z', 'Europe/Athens', new Date('2026-11-26T05:00:00Z')).daysLeft).toBe(0);
+    });
+
     it('never goes below zero', () => {
-        expect(rsvpCountdown('2026-08-01T00:00:00Z', '2026-09-20T16:00:00Z', now).daysLeft).toBe(0);
+        expect(rsvpCountdown('2026-08-01T00:00:00Z', '2026-09-20T16:00:00Z', 'UTC', now).daysLeft).toBe(0);
     });
 });
