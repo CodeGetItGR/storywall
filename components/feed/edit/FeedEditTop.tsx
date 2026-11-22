@@ -48,7 +48,7 @@ const nameKey = (type: SectionType) => `sectionNames.${type}` as FeedNameKey;
 export function FeedEditTop({ event, onDone, cancelRef, cover, details, stories, description, rsvp }: FeedEditTopProps) {
     const t = useTranslations('InvitationEditor');
     const session = useFeedEditSession(event, onDone);
-    const view = useFeedTop(event, session.document);
+    const view = useFeedTop(event, { document: session.document, theme: session.theme, media: session.media });
     const fonts = useInvitationFonts(true);
     const actions = useFeedBlockActions(session.store, session.document, event);
     const preview = useSettingsPreview(event, true, true);

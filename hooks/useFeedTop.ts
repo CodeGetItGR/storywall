@@ -13,8 +13,9 @@ import { type FeedFrame, feedFrame, foldsMiddle, usesInvitationLook } from '@/li
 import type { InvitationDocument } from '@/lib/invitation/document';
 import { isEmptyForGuests } from '@/lib/invitation/gallery';
 import { INVITATION_LABELS } from '@/lib/invitation/labels';
-import { buildRenderContext, type RenderContext } from '@/lib/invitation/render';
+import { buildRenderContext, type MediaResolver, type RenderContext } from '@/lib/invitation/render';
 import type { InvitationSection } from '@/lib/invitation/sections';
+import type { ThemeDesign } from '@/lib/invitation/theme';
 import { uploadedFontFaceCss } from '@/lib/invitation/uploadedFonts';
 import { useFeedEditorEnabled } from '@/providers/FeedEditorFlagProvider';
 
@@ -34,15 +35,23 @@ export type FeedTopView = {
     toggle: () => void;
     // Something shows between stories and RSVP besides a closed Invitation row.
     drawsMiddle: boolean;
+    // The feed's own background colour (overrides.backgroundColor), as picked; null without one.
+    pageBackground: string | null;
 };
 
+// What edit mode draws: the document being edited and the theme it shows (a held pick included).
+export type FeedTopEditing = { document: InvitationDocument; theme: ThemeDesign; media: MediaResolver };
+
 // Everything the top of the feed draws, from the saved layout or the default one. While editing,
-// it draws the document being edited: every block, hidden ones too, never folded.
-export function useFeedTop(event: EventDetailResponseDto, editing?: InvitationDocument): FeedTopView {
+// it draws the edit session: every block, hidden ones too, never folded, in the held theme.
+export function useFeedTop(event: EventDetailResponseDto, editing?: FeedTopEditing): FeedTopView {
     const enabled = useFeedEditorEnabled();
     const locale = useLocale();
     const layout = useFeedLayout(event, { enabled });
-    const document = editing ?? layout.document;
+    const editingDocument = editing?.document;
+    const document = editingDocument ?? layout.document;
+    const theme = editing?.theme ?? layout.theme;
+    const media = editing?.media ?? layout.media;
     const look = usesInvitationLook(document);
     // The font files list is public (the published invitation reads it too).
     const fonts = useInvitationFonts(enabled && look);
@@ -50,24 +59,24 @@ export function useFeedTop(event: EventDetailResponseDto, editing?: InvitationDo
     const ended = isEventEnded(event);
 
     const ctx = useMemo(
-        () => ({ ...buildRenderContext(document, layout.theme, layout.media), labels: INVITATION_LABELS[locale === 'en' ? 'en' : 'el'] }),
-        [document, layout.theme, layout.media, locale],
+        () => ({ ...buildRenderContext(document, theme, media), labels: INVITATION_LABELS[locale === 'en' ? 'en' : 'el'] }),
+        [document, theme, media, locale],
     );
 
     const frame = useMemo(() => {
-        if (editing) return feedEditFrame(editing);
+        if (editingDocument) return feedEditFrame(editingDocument);
         const split = feedFrame(document, { ended });
         const draws = (section: InvitationSection) =>
             section.type === 'feedDescription' ? Boolean(event.description) : !isEmptyForGuests(section, ctx);
         return { ...split, middle: split.middle.filter(draws) };
-    }, [editing, document, ended, event.description, ctx]);
+    }, [editingDocument, document, ended, event.description, ctx]);
 
-    const folds = !editing && foldsMiddle(frame.middle.length);
+    const folds = !editingDocument && foldsMiddle(frame.middle.length);
 
     return {
         look,
         lang: locale,
-        fontFaces: look ? uploadedFontFaceCss(fonts.data ?? [], [document, layout.theme]) : '',
+        fontFaces: look ? uploadedFontFaceCss(fonts.data ?? [], [document, theme]) : '',
         ctx,
         themeId: document.themeId,
         sections: document.sections,
@@ -76,5 +85,6 @@ export function useFeedTop(event: EventDetailResponseDto, editing?: InvitationDo
         open: fold.open,
         toggle: fold.toggle,
         drawsMiddle: frame.middle.length > 0 && (!folds || fold.open),
+        pageBackground: document.overrides.backgroundColor ?? null,
     };
 }

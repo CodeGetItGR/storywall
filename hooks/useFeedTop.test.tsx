@@ -6,7 +6,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { useFeedTop } from '@/hooks/useFeedTop';
 import type { EventDetailResponseDto } from '@/lib/api/types';
-import { defaultFeedLayout, feedLayoutKeys } from '@/lib/feedLayout';
+import { defaultFeedLayout, feedLayoutKeys, wallThemeDesign } from '@/lib/feedLayout';
 import { SAMPLE_SECTIONS } from '@/lib/invitation/samples';
 import type { InvitationSection } from '@/lib/invitation/sections';
 import { FeedEditorFlagProvider } from '@/providers/FeedEditorFlagProvider';
@@ -33,9 +33,11 @@ describe('useFeedTop while editing', () => {
     const editing = produce({ ...base, sections: [...base.sections, dressCode] }, (draft) => {
         draft.sections[2].visible = false;
     });
+    const theme = { ...wallThemeDesign(null), colors: { ...wallThemeDesign(null).colors, primary: '#123456' } };
+    const media = () => 'https://example.test/held.jpg';
 
     it('draws the edited document with every block, never folded, even after the event', () => {
-        const { result } = renderHook(() => useFeedTop(event, editing), { wrapper });
+        const { result } = renderHook(() => useFeedTop(event, { document: editing, theme, media }), { wrapper });
         expect(result.current.frame.middle.map((section) => section.id)).toEqual(['feed-feedDescription', 'dress']);
         expect(result.current.frame.rsvp?.type).toBe('feedRsvp');
         expect(result.current.folds).toBe(false);
@@ -43,9 +45,20 @@ describe('useFeedTop while editing', () => {
         expect(result.current.sections).toBe(editing.sections);
     });
 
+    it('draws the held theme and its images, and the picked background colour', () => {
+        const coloured = produce(editing, (draft) => {
+            draft.overrides.backgroundColor = '#F5E6D3';
+        });
+        const { result } = renderHook(() => useFeedTop(event, { document: coloured, theme, media }), { wrapper });
+        expect(result.current.ctx.theme).toBe(theme);
+        expect(result.current.ctx.media('m-1')).toBe('https://example.test/held.jpg');
+        expect(result.current.pageBackground).toBe('#F5E6D3');
+    });
+
     it('keeps the read-only rules without it', () => {
         const { result } = renderHook(() => useFeedTop(event), { wrapper });
         expect(result.current.frame.middle).toEqual([]);
         expect(result.current.frame.rsvp).toBeNull();
+        expect(result.current.pageBackground).toBeNull();
     });
 });
