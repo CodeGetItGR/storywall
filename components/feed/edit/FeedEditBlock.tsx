@@ -9,7 +9,7 @@ import { FeedBlockTools } from '@/components/feed/edit/FeedBlockTools';
 import { FeedNative } from '@/components/feed/layout/FeedLook';
 import type { FeedBlockToolActions } from '@/hooks/useFeedBlockHandlers';
 import { useSectionSortable } from '@/hooks/useSectionSortable';
-import type { FeedBlockControls } from '@/lib/feedEditing';
+import { type FeedBlockControls, leavesRoomForTools } from '@/lib/feedEditing';
 import type { InvitationSection } from '@/lib/invitation/sections';
 import { cn } from '@/lib/utils';
 
@@ -29,6 +29,7 @@ type FeedEditBlockProps = {
 export function FeedEditBlock({ section, name, controls, hasSettings, actions, corner, children }: FeedEditBlockProps) {
     const t = useTranslations('InvitationEditor.sections');
     const { setNodeRef, style, isDragging, drag } = useSectionSortable(section.id, name, !controls.movable);
+    const roomForTools = leavesRoomForTools(section);
 
     return (
         <div
@@ -45,7 +46,7 @@ export function FeedEditBlock({ section, name, controls, hasSettings, actions, c
             )}
         >
             {/* Block */}
-            <div className={cn('min-h-14', !section.visible && 'opacity-[0.48]')}>{children}</div>
+            <div className={cn('min-h-14', roomForTools && 'pt-14', !section.visible && 'opacity-[0.48]')}>{children}</div>
 
             {/* Editing tools: the app's own look, not the theme's (FeedNative undoes the invitation's element styles) */}
             <FeedNative className="contents font-sans">

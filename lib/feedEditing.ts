@@ -22,6 +22,12 @@ export function isMiddleBlock(section: Pick<InvitationSection, 'type'>): boolean
     return section.type === 'feedDescription' || !isFeedSectionType(section.type);
 }
 
+// The app draws details, description and RSVP flush to their top, where the tools sit; the cover's
+// banner and the Save my date blocks' own padding already leave room.
+export function leavesRoomForTools(section: Pick<InvitationSection, 'type'>): boolean {
+    return isFeedSectionType(section.type) && section.type !== 'feedCover';
+}
+
 // Edit mode lists every block, hidden ones too, and the middle is never dropped after the event.
 export function feedEditFrame(layout: InvitationDocument): FeedFrame {
     const find = (type: SectionType) => layout.sections.find((section) => section.type === type) ?? null;
