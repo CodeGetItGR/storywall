@@ -49,25 +49,30 @@ import { FeedEditorFlagProvider } from '@/providers/FeedEditorFlagProvider';
 import ManagePage from '../PageClient';
 
 // The Overview's journey (OverviewJourney): the setup progress (useHelpProgress reads the gift
-// account and the share links) and the totals (the gallery summary and the wishbook count).
-// Each mirrors its hook's gate: the module readable on this event, none for the QR links.
+// account and the share links), the totals (the gallery summary and the wishbook count) and the
+// extension options that decide whether the plan stop links to Extend (useAfterJourney).
+// Each mirrors its hook's gate: the module readable on this event, none for the QR links, and
+// canExtendCoverage for the extension options.
 // Each seeds on its own; a failure leaves it to the client. Resolves to the seeding step, so the
 // reads can run alongside the others while the cache still fills in a fixed order.
-async function prefetchJourney(event: EventDetailResponseDto, eventId: string, accessToken: string) {
+async function prefetchJourney(event: EventDetailResponseDto, eventId: string, accessToken: string, primaryHost: boolean) {
     const readable = readableModuleKeys(event);
-    const [giftAccount, qrLinks, mediaSummary, wishbookCount] = await Promise.all([
+    const canExtend = canExtendCoverage({ isPrimaryHost: primaryHost, eventStatus: event.status, coverageEndsAt: event.schedule.coverageEndsAt });
+    const [giftAccount, qrLinks, mediaSummary, wishbookCount, extensionOptions] = await Promise.all([
         readable.has('wishlist')
             ? serverGetOrNull<EventGiftAccountResponseDto>(endpoints.events.giftAccount(eventId), accessToken).catch(() => undefined)
             : undefined,
         serverGet<QrLinkResponseDto[]>(endpoints.events.qrLinks(eventId), accessToken).catch(() => null),
         readable.has('gallery') ? serverGet<MediaSummaryDto>(endpoints.events.mediaSummary(eventId), accessToken).catch(() => null) : null,
         readable.has('wishbook') ? serverGet<number>(endpoints.events.wishbookCount(eventId), accessToken).catch(() => null) : null,
+        canExtend ? serverGet<ExtensionOptionResponseDto[]>(endpoints.events.extensionOptions(eventId), accessToken).catch(() => null) : null,
     ]);
     return (queryClient: ReturnType<typeof makeQueryClient>) => {
         if (giftAccount !== undefined) queryClient.setQueryData(giftAccountKeys.event(eventId), giftAccount);
         if (qrLinks) queryClient.setQueryData(qrLinkKeys.list(eventId), normalizeList(qrLinks).items);
         if (mediaSummary) queryClient.setQueryData(galleryArchiveKeys.summary(eventId), mediaSummary);
         if (wishbookCount !== null) queryClient.setQueryData(wishbookKeys.count(eventId), wishbookCount);
+        if (extensionOptions) queryClient.setQueryData(extensionOptionsKeys.event(eventId), extensionOptions);
     };
 }
 
@@ -141,11 +146,12 @@ export default async function Page({ params, searchParams }: PageProps) {
             // The journey shows on a live event's Overview only (a draft's Overview is its plan panel).
             // It starts with the reads below, not after them, and seeds once they have.
             const opensOverview = !isDraft && (tab === undefined || tab === 'overview');
-            const journey = opensOverview ? prefetchJourney(event, eventId, accessToken) : null;
+            const membership = context.memberships.find((m) => m.eventId === eventId);
+            const primaryHost = isPrimaryHost(event.hosts, membership?.id);
+            const journey = opensOverview ? prefetchJourney(event, eventId, accessToken, primaryHost) : null;
             // Billing, and its older ?tab= names (parseManageSection), on a live event only.
             const opensBilling = !isDraft && parseManageSection(tab ?? null) === 'billing';
-            const membership = context.memberships.find((m) => m.eventId === eventId);
-            const billing = opensBilling ? prefetchBilling(event, eventId, accessToken, isPrimaryHost(event.hosts, membership?.id)) : null;
+            const billing = opensBilling ? prefetchBilling(event, eventId, accessToken, primaryHost) : null;
             // Mirrors ThemeSection: the flag, an event type with Save my date themes, and the picker
             // offered on a live event's Theme tab.
             const opensThemeGrid = feedEditor && !isDraft && wantsThemePresets && isCatalogueEventType(event.eventType);

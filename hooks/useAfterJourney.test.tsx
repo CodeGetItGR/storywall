@@ -1,5 +1,5 @@
 import { renderHook } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { useAfterJourney } from '@/hooks/useAfterJourney';
 
@@ -12,9 +12,16 @@ vi.mock('@/hooks/useHostAnnouncementLink', () => ({ useHostAnnouncementLink: () 
 vi.mock('@/hooks/useGalleryArchive', () => ({ useGallerySummary: () => ({ data: { photoCount: 12, videoCount: 2 } }) }));
 vi.mock('@/hooks/useWishbook', () => ({ useWishbookCount: () => ({ data: 3 }) }));
 
+const mocks = vi.hoisted(() => ({ isPrimaryHost: true, extensionOptions: [{ coverageOptionId: 'm1', months: 1 }] as unknown[] | undefined }));
+vi.mock('@/hooks/useIsPrimaryHost', () => ({ useIsPrimaryHost: () => mocks.isPrimaryHost }));
+vi.mock('@/hooks/useBilling', () => ({
+    useExtensionOptions: (_eventId: string, enabled: boolean) => ({ data: enabled ? mocks.extensionOptions : undefined }),
+}));
+
 const event = {
     id: 'e1',
     eventType: 'WEDDING',
+    status: 'ACTIVE',
     deletedAt: null,
     modules: ['gallery', 'wishbook'].map((moduleKey) => ({ moduleKey, isEnabled: true, isAvailable: true })),
     sessions: [
@@ -23,6 +30,14 @@ const event = {
     ],
     schedule: { startAt: '2026-12-12T16:00:00Z', timezone: 'Europe/Athens', coverageEndsAt: '2027-03-12T00:00:00Z' },
 } as never;
+
+const now = new Date('2026-12-14T10:00:00Z');
+const planStop = () => renderHook(() => useAfterJourney(event, 'Premium', now)).result.current.stops.at(-1);
+
+beforeEach(() => {
+    mocks.isPrimaryHost = true;
+    mocks.extensionOptions = [{ coverageOptionId: 'm1', months: 1 }];
+});
 
 describe('useAfterJourney', () => {
     it('starts with later sessions, then media, wishbook, announcement and the plan', () => {
@@ -40,5 +55,20 @@ describe('useAfterJourney', () => {
         const plan = renderHook(() => useAfterJourney(event, 'Premium', new Date('2026-12-14T10:00:00Z'))).result.current.stops.at(-1);
         expect(plan).toMatchObject({ title: 'Premium', detail: expect.stringMatching(/^journey\.coverageEnds:/) });
         expect(plan?.links?.[0].label).toBe('journey.extend');
+    });
+
+    it('leaves out Extend when the plan sells no extension', () => {
+        mocks.extensionOptions = [];
+        expect(planStop()?.links).toBeUndefined();
+    });
+
+    it('leaves out Extend for a co-host', () => {
+        mocks.isPrimaryHost = false;
+        expect(planStop()?.links).toBeUndefined();
+    });
+
+    it('leaves out Extend once coverage has ended', () => {
+        const ended = renderHook(() => useAfterJourney(event, 'Premium', new Date('2027-03-13T00:00:00Z'))).result.current.stops.at(-1);
+        expect(ended?.links).toBeUndefined();
     });
 });
