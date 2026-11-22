@@ -2,14 +2,14 @@
 
 import { Play, Star } from 'lucide-react';
 import Image from 'next/image';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 
 import { Banner } from '@/components/feed/Banner';
 import { LiteActionIcon } from '@/components/liteHome/LiteActionIcon';
 import { QrCardSvg } from '@/components/qrCard/QrCardSvg';
 import { SubTabs } from '@/components/ui/SubTabs';
 import type { LiteWish, useLitePlanArt } from '@/hooks/useLitePlanArt';
-import { dateTimeFormat } from '@/lib/format';
+import { formatDate } from '@/lib/datetime';
 import { cn } from '@/lib/utils';
 import { formatClipDuration } from '@/lib/wishbook/voice';
 
@@ -104,13 +104,14 @@ function LiteGalleryGrid({ art, className }: { art: Art; className?: string }) {
 
 // One wishbook entry: the guest, when, and their written or recorded wish.
 function LiteWishEntry({ wish, date, className }: { wish: LiteWish; date: string; className?: string }) {
+    const locale = useLocale();
     return (
         <article className={cn('rounded-[1.5rem] bg-surface-muted/70 px-4 py-4', className)}>
             {/* Header */}
             <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
                     <p className="text-sm font-semibold text-ink">{wish.author}</p>
-                    <time className="text-xs text-ink-faint">{dateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(date))}</time>
+                    <time className="text-xs text-ink-faint">{formatDate(locale, date, { dateStyle: 'medium', timeStyle: 'short' })}</time>
                 </div>
                 <span className="flex h-9 w-9 shrink-0 items-center justify-center text-ink-faint">
                     <Star className="h-4 w-4" aria-hidden="true" />
