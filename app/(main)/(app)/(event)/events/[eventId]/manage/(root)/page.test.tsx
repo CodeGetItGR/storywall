@@ -7,6 +7,9 @@ const mocks = vi.hoisted(() => ({
     resolveServerEventDetail: vi.fn(),
     serverGet: vi.fn(),
     serverGetOrNull: vi.fn(),
+    serverPublicGetOrNull: vi.fn(),
+    fetchThemeCatalogue: vi.fn(),
+    showsFeedEditor: vi.fn(),
     redirect: vi.fn(() => {
         throw new Error('NEXT_REDIRECT');
     }),
@@ -16,10 +19,20 @@ vi.mock('@/lib/auth/serverEventContext', () => ({
     resolveServerEventContext: mocks.resolveServerEventContext,
     resolveServerEventDetail: mocks.resolveServerEventDetail,
 }));
-vi.mock('@/lib/api/serverFetch', () => ({ serverGet: mocks.serverGet, serverGetOrNull: mocks.serverGetOrNull }));
+vi.mock('@/lib/api/serverFetch', () => ({
+    serverGet: mocks.serverGet,
+    serverGetOrNull: mocks.serverGetOrNull,
+    serverPublicGetOrNull: mocks.serverPublicGetOrNull,
+}));
+vi.mock('@/lib/invitation/serverThemeCatalogue', () => ({ fetchThemeCatalogue: mocks.fetchThemeCatalogue }));
+vi.mock('@/lib/feedEditorRelease', () => ({ showsFeedEditor: mocks.showsFeedEditor }));
 vi.mock('@/i18n/serverLocale', () => ({ getServerLocale: async () => 'en' }));
 vi.mock('../PageClient', () => ({ default: () => null }));
 vi.mock('next/navigation', () => ({ redirect: mocks.redirect }));
+
+import { defaultFeedLayout, feedLayoutKeys } from '@/lib/feedLayout';
+import { SAMPLE_THEME } from '@/lib/invitation/samples';
+import { invitationThemeKeys } from '@/lib/invitation/themeCatalogue';
 
 import Page from './page';
 
@@ -39,6 +52,28 @@ const journeyEvent = {
 
 const themedEvent = { ...liveEvent, modules: [...liveEvent.modules, { moduleKey: 'theme', isAvailable: false, isEnabled: true }] };
 
+// A live wedding with Save my date: the Overview's feed banner shows to every host.
+const bannerEvent = {
+    ...liveEvent,
+    eventType: 'WEDDING',
+    theme: null,
+    hosts: [{ memberId: 'm-main', displayOrder: 0 }],
+    modules: [...liveEvent.modules, { moduleKey: 'save_my_date', isAvailable: true, isEnabled: true }],
+};
+const catalogue = [
+    { slug: 'baptism-first', eventType: 'BAPTISM' },
+    { slug: 'wedding-first', eventType: 'WEDDING' },
+];
+const ownThemeLayout = {
+    themeSlug: 'olive-garden',
+    revision: 2,
+    document: { ...defaultFeedLayout(), themeId: 'olive-garden' },
+    design: SAMPLE_THEME,
+    imageUrls: {},
+    updatedAt: '2026-11-21T10:00:00Z',
+};
+const bannerKeys = [feedLayoutKeys.detail('e1'), invitationThemeKeys.catalogue(), invitationThemeKeys.publicTheme('wedding-first')];
+
 function visit(searchParams: { tab?: string; section?: string } = {}) {
     return Page({ params: Promise.resolve({ eventId: 'e1' }), searchParams: Promise.resolve(searchParams) });
 }
@@ -54,6 +89,9 @@ describe('ManagePage (server)', () => {
         mocks.resolveServerEventDetail.mockReset().mockResolvedValue(liveEvent);
         mocks.serverGet.mockReset().mockResolvedValue([]);
         mocks.serverGetOrNull.mockReset().mockResolvedValue(null);
+        mocks.serverPublicGetOrNull.mockReset().mockResolvedValue({ slug: 'wedding-first' });
+        mocks.fetchThemeCatalogue.mockReset().mockResolvedValue(catalogue);
+        mocks.showsFeedEditor.mockReset().mockReturnValue(false);
         mocks.redirect.mockClear();
     });
 
@@ -251,5 +289,89 @@ describe('ManagePage (server)', () => {
 
         expect(seededKeys(await visit())).toEqual([]);
         expect(mocks.serverGet).not.toHaveBeenCalled();
+    });
+
+    describe("the Overview's feed banner picture", () => {
+        beforeEach(() => {
+            mocks.showsFeedEditor.mockReturnValue(true);
+            mocks.resolveServerEventDetail.mockResolvedValue(bannerEvent);
+        });
+
+        it('seeds the layout, the catalogue and the stand-in theme for a feed on the wall theme', async () => {
+            const element = await visit();
+
+            expect(mocks.serverGetOrNull).toHaveBeenCalledWith('/api/events/e1/feed-layout', 'token-1');
+            expect(mocks.serverPublicGetOrNull).toHaveBeenCalledWith('/api/invitation-themes/wedding-first');
+            expect(seededKeys(element)).toEqual(expect.arrayContaining(bannerKeys));
+        });
+
+        it('seeds only the layout when it has its own Save my date theme', async () => {
+            mocks.serverGetOrNull.mockImplementation((path: string) => Promise.resolve(path.endsWith('/feed-layout') ? ownThemeLayout : null));
+
+            const keys = seededKeys(await visit());
+
+            expect(mocks.fetchThemeCatalogue).not.toHaveBeenCalled();
+            expect(mocks.serverPublicGetOrNull).not.toHaveBeenCalled();
+            expect(keys).toEqual(expect.arrayContaining([bannerKeys[0]]));
+            expect(keys).not.toEqual(expect.arrayContaining([bannerKeys[1]]));
+        });
+
+        it('seeds only the layout for an event type without Save my date themes', async () => {
+            mocks.resolveServerEventDetail.mockResolvedValue({ ...bannerEvent, eventType: 'BIRTHDAY' });
+
+            const keys = seededKeys(await visit());
+
+            expect(mocks.fetchThemeCatalogue).not.toHaveBeenCalled();
+            expect(keys).toEqual(expect.arrayContaining([bannerKeys[0]]));
+        });
+
+        it('leaves the catalogue to the client when the layout fails', async () => {
+            mocks.serverGetOrNull.mockImplementation((path: string) =>
+                path.endsWith('/feed-layout') ? Promise.reject(new Error('Server prefetch failed')) : Promise.resolve(null),
+            );
+
+            const keys = seededKeys(await visit());
+
+            expect(mocks.fetchThemeCatalogue).not.toHaveBeenCalled();
+            expect(keys).not.toEqual(expect.arrayContaining([bannerKeys[0]]));
+            expect(keys).toEqual(expect.arrayContaining([['events', 'e1', 'usage']]));
+        });
+
+        it('keeps the layout and the catalogue when the stand-in theme fails', async () => {
+            mocks.serverPublicGetOrNull.mockRejectedValue(new Error('Server fetch failed'));
+
+            const keys = seededKeys(await visit());
+
+            expect(keys).toEqual(expect.arrayContaining(bannerKeys.slice(0, 2)));
+            expect(keys).not.toEqual(expect.arrayContaining([bannerKeys[2]]));
+        });
+
+        it('seeds it for the main host of an event without Save my date, who may buy it', async () => {
+            mocks.resolveServerEventContext.mockResolvedValue({ ...hostContext, memberships: [{ eventId: 'e1', id: 'm-main' }] });
+            mocks.resolveServerEventDetail.mockResolvedValue({ ...bannerEvent, modules: liveEvent.modules });
+
+            expect(seededKeys(await visit())).toEqual(expect.arrayContaining(bannerKeys));
+        });
+
+        it('skips it for a co-host of an event without Save my date', async () => {
+            mocks.resolveServerEventContext.mockResolvedValue({ ...hostContext, memberships: [{ eventId: 'e1', id: 'm-co' }] });
+            mocks.resolveServerEventDetail.mockResolvedValue({ ...bannerEvent, modules: liveEvent.modules });
+
+            await visit();
+
+            expect(mocks.serverGetOrNull).not.toHaveBeenCalledWith('/api/events/e1/feed-layout', 'token-1');
+        });
+
+        it('skips it without the feed editor, on another section and on a draft', async () => {
+            mocks.showsFeedEditor.mockReturnValue(false);
+            await visit();
+            mocks.showsFeedEditor.mockReturnValue(true);
+            await visit({ tab: 'members' });
+            mocks.resolveServerEventDetail.mockResolvedValue({ ...bannerEvent, status: 'DRAFT' });
+            await visit();
+
+            expect(mocks.serverGetOrNull).not.toHaveBeenCalledWith('/api/events/e1/feed-layout', 'token-1');
+            expect(mocks.fetchThemeCatalogue).not.toHaveBeenCalled();
+        });
     });
 });

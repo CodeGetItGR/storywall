@@ -15,7 +15,7 @@ import { wishbookKeys } from '@/hooks/useWishbook';
 import { getServerLocale } from '@/i18n/serverLocale';
 import { endpoints } from '@/lib/api/endpoints';
 import { normalizeList } from '@/lib/api/pagination';
-import { serverGet, serverGetOrNull } from '@/lib/api/serverFetch';
+import { serverGet, serverGetOrNull, serverPublicGetOrNull } from '@/lib/api/serverFetch';
 import type {
     EventBillingResponseDto,
     EventDetailResponseDto,
@@ -35,12 +35,15 @@ import type {
 } from '@/lib/api/types';
 import { resolveServerEventContext, resolveServerEventDetail } from '@/lib/auth/serverEventContext';
 import { canExtendCoverage } from '@/lib/billing';
-import { isEventDeleted, isModuleAvailable, isPrimaryHost, readableModuleKeys } from '@/lib/eventLifecycle';
+import { isEventDeleted, isEventWritable, isModuleAvailable, isPrimaryHost, readableModuleKeys } from '@/lib/eventLifecycle';
 import { canPickTheme } from '@/lib/eventTheme';
+import { featureAddonMode } from '@/lib/featureAddons';
 import { showsFeedEditor } from '@/lib/feedEditorRelease';
-import { feedLayoutKeys } from '@/lib/feedLayout';
+import { feedLayoutKeys, readFeedLayout } from '@/lib/feedLayout';
+import { INCIDENT_MODE } from '@/lib/incident';
 import { fetchThemeCatalogue } from '@/lib/invitation/serverThemeCatalogue';
 import { invitationThemeKeys, isCatalogueEventType } from '@/lib/invitation/themeCatalogue';
+import { invitationThemeEndpoint, type InvitationThemePublicDto } from '@/lib/invitation/themePreview';
 import { parseManageSection } from '@/lib/manageSections';
 import { makeQueryClient } from '@/lib/queryClient';
 import { routes } from '@/lib/routes';
@@ -106,6 +109,26 @@ async function prefetchThemeGrid(eventId: string, accessToken: string) {
     };
 }
 
+// The Overview's feed banner picture (useFeedEditBannerPreview): the feed layout (404 caches as null), then, as
+// the hook asks for them only for a feed on the wall theme of an event type with Save my date themes, the
+// catalogue and the theme it lists first for the type, which stands in. Each seeds on its own; a failed layout
+// leaves the rest to the client, which only knows what to ask for once the layout is in.
+async function prefetchFeedEditBanner(event: EventDetailResponseDto, eventId: string, accessToken: string) {
+    const layout = await serverGetOrNull<FeedLayoutDto>(endpoints.events.feedLayout(eventId), accessToken).catch(() => undefined);
+    const onWall = layout !== undefined && readFeedLayout(layout, event.theme).themeSlug === null;
+    const catalogue = onWall && isCatalogueEventType(event.eventType) ? await fetchThemeCatalogue().catch(() => null) : null;
+    const fallbackSlug = catalogue?.find((theme) => theme.eventType === event.eventType)?.slug ?? null;
+    // Not cached: the image URLs may expire (lib/invitation/serverThemePreview.ts).
+    const fallback = fallbackSlug
+        ? await serverPublicGetOrNull<InvitationThemePublicDto>(invitationThemeEndpoint(fallbackSlug)).catch(() => null)
+        : null;
+    return (queryClient: ReturnType<typeof makeQueryClient>) => {
+        if (layout !== undefined) queryClient.setQueryData(feedLayoutKeys.detail(eventId), layout);
+        if (catalogue) queryClient.setQueryData(invitationThemeKeys.catalogue(), catalogue);
+        if (fallbackSlug && fallback) queryClient.setQueryData(invitationThemeKeys.publicTheme(fallbackSlug), fallback);
+    };
+}
+
 type PageProps = { params: Promise<{ eventId: string }>; searchParams: Promise<{ tab?: string }> };
 
 // ManageScreen fires five host-only calls in parallel on mount (members,
@@ -115,6 +138,7 @@ type PageProps = { params: Promise<{ eventId: string }>; searchParams: Promise<{
 // wouldn't have requested anyway. A live event's Overview also prefetches its
 // journey's reads (gift account, QR links, media summary, wishbook count; see
 // prefetchJourney), alongside the rest.
+// A live event's Overview with the feed editor also prefetches its feed banner's picture (prefetchFeedEditBanner).
 // The RSVP page's STATISTICS report is prefetched when that page opens.
 export default async function Page({ params, searchParams }: PageProps) {
     const { eventId } = await params;
@@ -156,6 +180,14 @@ export default async function Page({ params, searchParams }: PageProps) {
             // offered on a live event's Theme tab.
             const opensThemeGrid = feedEditor && !isDraft && wantsThemePresets && isCatalogueEventType(event.eventType);
             const themeGrid = opensThemeGrid ? prefetchThemeGrid(eventId, accessToken) : null;
+            // Mirrors useFeedEditBanner as far as the server knows it: the flag, and Save my date on a writable
+            // event, or else a live event's main host outside incident mode (the offer on the plan and a paused
+            // purchase it checks itself). Any event type.
+            const saveMyDate = isModuleAvailable(event.modules, 'save_my_date');
+            const bannerViewer = saveMyDate
+                ? isEventWritable(event.status)
+                : featureAddonMode(event.status) === 'checkout' && primaryHost && !INCIDENT_MODE;
+            const feedBanner = opensOverview && feedEditor && bannerViewer ? prefetchFeedEditBanner(event, eventId, accessToken) : null;
             const [usage, gift, lists, themePresets] = await Promise.all([
                 serverGet<EventUsageResponseDto>(endpoints.events.usage(eventId), accessToken).catch(() => null),
                 isDraft ? undefined : serverGetOrNull<GiftHandoverResponseDto>(endpoints.events.gift(eventId), accessToken).catch(() => undefined),
@@ -187,6 +219,7 @@ export default async function Page({ params, searchParams }: PageProps) {
             if (journey) (await journey)(queryClient);
             if (billing) (await billing)(queryClient);
             if (themeGrid) (await themeGrid)(queryClient);
+            if (feedBanner) (await feedBanner)(queryClient);
         } catch {
             // Best-effort — ManageScreen's own hooks fetch normally if this fails.
         }
