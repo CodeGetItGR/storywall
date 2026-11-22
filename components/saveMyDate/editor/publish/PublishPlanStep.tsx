@@ -1,13 +1,15 @@
 'use client';
 
 import { Loader2 } from 'lucide-react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { useId } from 'react';
 
 import { WithdrawalConsentSection } from '@/components/checkout/WithdrawalConsentSection';
 import { EventPlanSelector } from '@/components/plan/EventPlanSelector';
+import { FeatureAddonCheckRow } from '@/components/plan/FeatureAddonCheckRow';
 import { DateTimeField } from '@/components/ui/DateTimeField';
 import type { InvitationEventCheckout } from '@/hooks/useInvitationEventCheckout';
+import { formatMoney } from '@/lib/billing';
 
 type PublishPlanStepProps = {
     checkout: InvitationEventCheckout;
@@ -21,6 +23,8 @@ const FIELD_CLASS = 'h-11 w-full rounded-xl border border-border bg-white px-3 t
 // A new event from the invitation: its plan and length, what the invitation doesn't say, and payment.
 export function PublishPlanStep({ checkout, onBack, onCancel }: PublishPlanStepProps) {
     const t = useTranslations('InvitationEditor');
+    const tFeatures = useTranslations('EventAddonsSettingsPage.features');
+    const locale = useLocale();
     const titleId = useId();
     const hasPlans = checkout.isLoadingPlans || checkout.plans.length > 0;
 
@@ -40,9 +44,20 @@ export function PublishPlanStep({ checkout, onBack, onCancel }: PublishPlanStepP
                     onSelectAction={checkout.selectPlan}
                     onSelectDurationAction={checkout.selectDuration}
                     isLoading={checkout.isLoadingPlans}
+                    planAddons={checkout.planAddons}
                 />
             ) : (
                 <p className="text-ink-muted">{t('noInvitationPlans')}</p>
+            )}
+
+            {/* RSVP add-on, when the invitation asks for replies */}
+            {hasPlans && checkout.rsvpAddon && (
+                <FeatureAddonCheckRow
+                    service={checkout.rsvpAddon}
+                    checked={checkout.rsvpTicked}
+                    disabled={checkout.isPending}
+                    onChange={checkout.handleRsvpChange}
+                />
             )}
 
             {/* Event details the invitation doesn't give */}
@@ -81,6 +96,13 @@ export function PublishPlanStep({ checkout, onBack, onCancel }: PublishPlanStepP
             {checkout.error && (
                 <p role="alert" className="font-medium text-rose-700">
                     {checkout.error}
+                </p>
+            )}
+
+            {/* Total: the plan and the add-ons picked */}
+            {hasPlans && checkout.total && (
+                <p className="text-base font-bold tabular-nums">
+                    {tFeatures('total', { amount: formatMoney(locale, checkout.total.amountMinor, checkout.total.currency) })}
                 </p>
             )}
 
