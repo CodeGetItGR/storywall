@@ -34,12 +34,12 @@ export function FeedEditPills({ saving, failed, onCancel, onSave }: FeedEditPill
 
             {/* Save error */}
             {failed && (
-                <p
+                <div
                     role="alert"
                     className="max-w-64 rounded-xl bg-background/95 px-3 py-2 text-right text-sm text-destructive shadow-[0_8px_22px_rgba(36,31,26,0.18)]"
                 >
                     {tFeed('saveFailed')}
-                </p>
+                </div>
             )}
         </div>
     );

@@ -11,7 +11,7 @@ import { FeedBlockPlaceholder } from '@/components/feed/edit/FeedBlockPlaceholde
 import { FeedBlockSheet } from '@/components/feed/edit/FeedBlockSheet';
 import { FeedEditBlock } from '@/components/feed/edit/FeedEditBlock';
 import { FeedEditPills } from '@/components/feed/edit/FeedEditPills';
-import { FeedLook } from '@/components/feed/layout/FeedLook';
+import { FeedLook, FeedNative } from '@/components/feed/layout/FeedLook';
 import { feedLookParts } from '@/components/feed/layout/FeedLookTop';
 import { FeedTopFrame, type FeedTopParts, type FeedTopProps, PLAIN_PARTS } from '@/components/feed/layout/FeedTopFrame';
 import { SettingsPartEditor } from '@/components/manage/settings/SettingsPartEditor';
@@ -92,7 +92,11 @@ export function FeedEditTop({ event, onDone, cover, details, stories, descriptio
             stories={stories}
             description={description || <FeedBlockPlaceholder name={t('sectionNames.feedDescription')} />}
             rsvp={rsvp ?? <FeedBlockPlaceholder name={t('sectionNames.feedRsvp')} />}
-            afterMiddle={<FeedAddSectionRow locked={actions.locked} canBuy={actions.canBuy} onAdd={actions.openAdd} />}
+            afterMiddle={
+                <FeedNative className="font-sans">
+                    <FeedAddSectionRow locked={actions.locked} canBuy={actions.canBuy} onAdd={actions.openAdd} />
+                </FeedNative>
+            }
         />
     );
 
@@ -107,13 +111,16 @@ export function FeedEditTop({ event, onDone, cover, details, stories, descriptio
                 onDragEnd={drag.onDragEnd}
             >
                 <SortableContext items={middleIds} strategy={verticalListSortingStrategy}>
-                    {view.look ? (
-                        <FeedLook ctx={view.ctx} lang={view.lang} fontFaces={view.fontFaces}>
-                            {frame}
-                        </FeedLook>
-                    ) : (
-                        frame
-                    )}
+                    {/* Its own stacking context: the tools stay under the feed's sticky header. */}
+                    <div className="isolate">
+                        {view.look ? (
+                            <FeedLook ctx={view.ctx} lang={view.lang} fontFaces={view.fontFaces}>
+                                {frame}
+                            </FeedLook>
+                        ) : (
+                            frame
+                        )}
+                    </div>
                 </SortableContext>
             </DndContext>
 

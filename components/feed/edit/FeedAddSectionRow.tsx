@@ -13,10 +13,10 @@ export function FeedAddSectionRow({ locked, canBuy, onAdd }: FeedAddSectionRowPr
     // A co-host can't buy Save my date: only the lock shows.
     if (locked && !canBuy) {
         return (
-            <p className="flex items-center justify-center gap-2 px-4 py-4 text-sm text-ink-muted">
+            <div className="flex items-center justify-center gap-2 px-4 py-4 text-sm text-ink-muted">
                 <Lock className="h-4 w-4" aria-hidden="true" />
                 {tTheme('locked')}
-            </p>
+            </div>
         );
     }
 

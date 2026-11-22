@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl';
 import type { ReactNode } from 'react';
 
 import { FeedBlockTools } from '@/components/feed/edit/FeedBlockTools';
+import { FeedNative } from '@/components/feed/layout/FeedLook';
 import type { FeedBlockToolActions } from '@/hooks/useFeedBlockHandlers';
 import { useSectionSortable } from '@/hooks/useSectionSortable';
 import type { FeedBlockControls } from '@/lib/feedEditing';
@@ -46,18 +47,21 @@ export function FeedEditBlock({ section, name, controls, hasSettings, actions, c
             {/* Block */}
             <div className={cn('min-h-14', !section.visible && 'opacity-[0.48]')}>{children}</div>
 
-            {/* Hidden from guests */}
-            {!section.visible && (
-                <span className="pointer-events-none absolute top-14 left-2.5 z-30 rounded-full border border-black/10 bg-white/95 px-2.5 py-1 text-[11px] text-[#555]">
-                    {t('hidden')}
-                </span>
-            )}
+            {/* Editing tools: the app's own look, not the theme's (FeedNative undoes the invitation's element styles) */}
+            <FeedNative className="contents font-sans">
+                {/* Hidden from guests */}
+                {!section.visible && (
+                    <span className="pointer-events-none absolute top-14 left-2.5 z-30 rounded-full border border-black/10 bg-white/95 px-2.5 py-1 text-[11px] text-[#555]">
+                        {t('hidden')}
+                    </span>
+                )}
 
-            {/* Tools */}
-            <FeedBlockTools section={section} controls={controls} hasSettings={hasSettings} drag={drag} actions={actions} />
+                {/* Tools */}
+                <FeedBlockTools section={section} controls={controls} hasSettings={hasSettings} drag={drag} actions={actions} />
 
-            {/* Save and cancel */}
-            {corner && <div className="absolute top-3 right-3 z-50">{corner}</div>}
+                {/* Save and cancel */}
+                {corner && <div className="absolute top-3 right-3 z-50">{corner}</div>}
+            </FeedNative>
         </div>
     );
 }

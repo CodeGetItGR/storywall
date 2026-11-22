@@ -25,7 +25,7 @@ export function FeedCoverBlock({ event, isHost, wishlist, corner }: FeedCoverBlo
     const cover = useFeedCoverBlock(event, wishlist);
 
     return (
-        <section className="relative mt-3">
+        <section className="relative isolate mt-3">
             <Banner
                 image={event.coverMedia?.mediaUrl ?? null}
                 illustrationUrl={event.theme?.illustrationUrl ?? null}
