@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { INK_COLOR } from '@/lib/contrast';
+import { INK_COLOR, readableOnInk } from '@/lib/contrast';
 import { defaultFeedLayout, wallThemeDesign } from '@/lib/feedLayout';
 import type { InvitationElement } from '@/lib/invitation/elements';
 import {
@@ -206,13 +206,23 @@ describe('the feed background colour', () => {
 
     it('is drawn lightened when ink text cannot be read on it', () => {
         const feed = buildRenderContext(document('#000000'), wallThemeDesign(null), photoUrl);
-        expect(feed.backgroundColor).not.toBe('#000000');
+        expect(feed.backgroundColor).toBe(readableOnInk('#000000'));
     });
 
     it('falls back to ink for a theme text colour that cannot be read on it', () => {
         const light = { ...wallThemeDesign(null), colors: { ...wallThemeDesign(null).colors, text: '#FFFFFF' } };
         expect(buildRenderContext(document('#F5E6D3'), light, photoUrl).textColor).toBe(INK_COLOR);
         expect(buildRenderContext(document(), light, photoUrl).textColor).toBe('#FFFFFF');
+    });
+
+    it('decides the automatic text contrast, not the section colour', () => {
+        const dark = {
+            ...base.sections[0],
+            style: { ...base.sections[0].style, textContrast: 'auto', background: { kind: 'color', color: '#000000' } },
+        } as InvitationSection;
+        const feed = buildRenderContext(document('#F5E6D3'), wallThemeDesign(null), photoUrl);
+        expect(sectionTextContrast(dark, 0, feed)).toBe('normal');
+        expect(sectionTextContrast(dark, 0, buildRenderContext(document(), wallThemeDesign(null), photoUrl))).toBe('light');
     });
 
     it('changes nothing without one', () => {
