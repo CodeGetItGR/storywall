@@ -5859,7 +5859,13 @@
             "kinds": {
                 "STORAGE_PACK": "Storage pack",
                 "RECURRING_ADDON": "Add-on",
-                "MODULE_UNLOCK": "Module unlock"
+                "MODULE_UNLOCK": "Module unlock",
+                "EXTENSION": "Extension"
+            },
+            "extensions": {
+                "add": "Add extension",
+                "newTitle": "New extension",
+                "save": "Save extension"
             },
             "stats": {
                 "total": "Total services",

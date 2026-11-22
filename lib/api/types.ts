@@ -189,7 +189,7 @@ export interface PlanTierResponseDto {
     // responses list live ones only; admin responses include retired ones
     // (active: false). Empty = not on sale. Always empty on ACCOUNT scope.
     initialOptions: CoverageOptionResponseDto[];
-    // Coverage bought after activation. Nothing sells these yet (phase 2).
+    // Coverage bought after activation, created on the admin Paid services page.
     extensionOptions: CoverageOptionResponseDto[];
     // What buying the plan asks of the event (event-capabilities-fe-integration.md §2). null on ACCOUNT plans.
     requirements: PlanRequirementsDto | null;
