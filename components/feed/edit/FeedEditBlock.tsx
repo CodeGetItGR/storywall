@@ -22,7 +22,7 @@ type FeedEditBlockProps = {
     actions: FeedBlockToolActions;
     // Its settings are open: the outline stays on.
     active?: boolean;
-    // The cover's top corner: Cancel and Save.
+    // The cover's top corner: Theme, Cancel and Save.
     corner?: ReactNode;
     children: ReactNode;
 };
@@ -65,7 +65,7 @@ export function FeedEditBlock({ section, name, controls, hasSettings, actions, a
                     </span>
                 )}
 
-                {/* Tools, with Cancel and Save on the cover */}
+                {/* Tools, with Theme, Cancel and Save on the cover */}
                 <FeedBlockTools
                     section={section}
                     name={name}

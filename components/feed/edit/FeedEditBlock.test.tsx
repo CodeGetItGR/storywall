@@ -111,6 +111,23 @@ describe('FeedEditBlock name', () => {
         expect(within(row).getByRole('button', { name: 'Cancel' })).toBeTruthy();
     });
 
+    // On a phone Theme, Cancel and Save leave the cover's name no room.
+    it("hides the cover's name on phones only", () => {
+        const cover = defaultFeedLayout().sections.find((item) => item.type === 'feedCover') as InvitationSection;
+        renderBlock({
+            section: cover,
+            name: 'Cover',
+            controls: { canHide: false, canDelete: false, movable: false, canMoveUp: false, canMoveDown: false },
+            corner: <button type="button">Cancel</button>,
+        });
+        expect(screen.getByText('Cover')).toHaveClass('max-sm:hidden');
+    });
+
+    it('keeps the name of a block without a corner on phones', () => {
+        renderBlock();
+        expect(screen.getByText('Dress code')).not.toHaveClass('max-sm:hidden');
+    });
+
     // The name is no button: a tap on it falls through to the block, which opens the settings.
     it('lets a tap on the name through to the block', () => {
         renderBlock();

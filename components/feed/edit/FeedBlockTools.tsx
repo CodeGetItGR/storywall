@@ -11,6 +11,7 @@ import { type FeedBlockToolActions, useFeedBlockHandlers } from '@/hooks/useFeed
 import type { SectionDragHandle } from '@/hooks/useSectionSortable';
 import type { FeedBlockControls } from '@/lib/feedEditing';
 import type { InvitationSection } from '@/lib/invitation/sections';
+import { cn } from '@/lib/utils';
 
 type FeedBlockToolsProps = {
     section: InvitationSection;
@@ -19,12 +20,13 @@ type FeedBlockToolsProps = {
     hasSettings: boolean;
     drag: SectionDragHandle;
     actions: FeedBlockToolActions;
-    // The cover's top corner: Cancel and Save.
+    // The cover's top corner: Theme, Cancel and Save.
     corner?: ReactNode;
 };
 
 // One block's tools: eye, pencil and the block's name on the left, drag and menu on the right (middle blocks only).
-// The cover's right corner holds Cancel and Save instead. The name gives way to them, cut short when it is long.
+// The cover's right corner holds Theme, Cancel and Save instead. The name gives way to them, cut short when it is long,
+// and on phones the cover drops its name: the three leave it no room.
 export function FeedBlockTools({ section, name, controls, hasSettings, drag, actions, corner }: FeedBlockToolsProps) {
     const t = useTranslations('InvitationEditor.sections');
     const on = useFeedBlockHandlers(section.id, actions);
@@ -52,7 +54,10 @@ export function FeedBlockTools({ section, name, controls, hasSettings, drag, act
                 {/* The block's group already carries its name for screen readers. */}
                 <span
                     aria-hidden="true"
-                    className="pointer-events-none min-w-0 truncate rounded-full bg-white/95 px-2.5 py-1 text-[12px] text-[#555] shadow-[0_4px_14px_rgba(0,0,0,0.16)]"
+                    className={cn(
+                        'pointer-events-none min-w-0 truncate rounded-full bg-white/95 px-2.5 py-1 text-[12px] text-[#555] shadow-[0_4px_14px_rgba(0,0,0,0.16)]',
+                        corner && 'max-sm:hidden',
+                    )}
                 >
                     {name}
                 </span>
@@ -80,7 +85,7 @@ export function FeedBlockTools({ section, name, controls, hasSettings, drag, act
                 </div>
             )}
 
-            {/* Save and cancel */}
+            {/* Theme, Cancel and Save */}
             {corner && <div className="pointer-events-auto mr-0.5 shrink-0">{corner}</div>}
         </div>
     );
