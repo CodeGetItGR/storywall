@@ -1,5 +1,5 @@
 import type { EventThemeDto } from '@/lib/api/types';
-import { readableOnInk } from '@/lib/contrast';
+import { contrastRatio, MIN_INK_CONTRAST, readableOnInk } from '@/lib/contrast';
 
 // What the event pages draw while the feed overrides the event's wall theme: the feed's background colour
 // (overrides.backgroundColor), and in edit mode a held wall preset. theme null: no theme, today's look.
@@ -10,7 +10,11 @@ const NO_THEME: EventThemeDto = { presetKey: '', backgroundColor: '#FFFFFF', ill
 
 export function feedPageTheme(wall: EventThemeDto | null, background: string | null | undefined): FeedPageTheme {
     if (!background) return { theme: wall };
-    return { theme: { ...(wall ?? NO_THEME), backgroundColor: readableOnInk(background) } };
+    const backgroundColor = readableOnInk(background);
+    const base = wall ?? NO_THEME;
+    // A title colour that can't be read on the feed's colour falls back to ink (null: --event-title is left unset).
+    const titleColor = base.titleColor && contrastRatio(base.titleColor, backgroundColor) >= MIN_INK_CONTRAST ? base.titleColor : null;
+    return { theme: { ...base, backgroundColor, titleColor } };
 }
 
 // The feed page publishes its override ('feed'); edit mode publishes the one it previews ('edit'), which wins.

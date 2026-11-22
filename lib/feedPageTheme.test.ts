@@ -27,6 +27,16 @@ describe('feedPageTheme', () => {
         expect(feedPageTheme(null, '#F5E6D3').theme?.backgroundColor).toBe('#F5E6D3');
         expect(feedPageTheme(null, '#000000').theme?.backgroundColor).not.toBe('#000000');
     });
+
+    it("keeps the preset's title colour when it reads on the background colour", () => {
+        const titled = { ...dino, titleColor: '#7A1F3D' };
+        expect(feedPageTheme(titled, '#F5E6D3').theme?.titleColor).toBe('#7A1F3D');
+    });
+
+    it("drops the preset's title colour to ink when it can't be read on the background colour", () => {
+        const titled = { ...dino, titleColor: '#F0E0D0' };
+        expect(feedPageTheme(titled, '#F5E6D3').theme?.titleColor).toBeNull();
+    });
 });
 
 describe('the published override', () => {

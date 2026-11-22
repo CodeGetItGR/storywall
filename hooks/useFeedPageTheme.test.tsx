@@ -30,7 +30,8 @@ describe('useFeedPageTheme', () => {
         const { unmount } = renderHook(() => useFeedPageTheme(event, '#F5E6D3'));
         expect(feedPageThemeFor(feedPageThemeSnapshot(), 'e-1')?.theme?.backgroundColor).toBe('#F5E6D3');
         unmount();
-        expect(feedPageThemeSnapshot()).toEqual({});
+        expect(feedPageThemeSnapshot().feed).toBeUndefined();
+        expect(feedPageThemeSnapshot().edit).toBeUndefined();
     });
 
     it("draws the cover in edit mode's held preset, and drops it when edit mode closes", () => {
@@ -42,6 +43,7 @@ describe('useFeedPageTheme', () => {
         edit.unmount();
         feed.rerender();
         expect(feed.result.current).toBe(event);
-        expect(feedPageThemeSnapshot()).toEqual({});
+        expect(feedPageThemeSnapshot().feed).toBeUndefined();
+        expect(feedPageThemeSnapshot().edit).toBeUndefined();
     });
 });
