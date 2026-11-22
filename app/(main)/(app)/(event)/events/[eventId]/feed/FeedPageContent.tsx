@@ -26,6 +26,7 @@ import { StoryModal } from '@/components/story/StoryModal';
 import { VendorProfilePrompt } from '@/components/vendors/VendorProfilePrompt';
 import { useFeedEditFocus } from '@/hooks/useFeedEditFocus';
 import { useFeedEditMode } from '@/hooks/useFeedEditMode';
+import { useFeedEditTrigger } from '@/hooks/useFeedEditTrigger';
 import { useFeedItems } from '@/hooks/useFeedItems';
 import { useFeedTop } from '@/hooks/useFeedTop';
 import { useHideMobileTabBarOnScroll } from '@/hooks/useHideMobileTabBarOnScroll';
@@ -44,6 +45,7 @@ export function FeedPageContent() {
     const top = useFeedTop(event);
     const editMode = useFeedEditMode(event, isHost, isRoleLoading);
     const { start: startEditing, finish: finishEditing, editPill, cancelPill } = useFeedEditFocus(editMode.start, editMode.finish);
+    useFeedEditTrigger({ settled: editMode.settled, canEdit: editMode.canEdit, start: startEditing });
     const topParts = {
         cover: (
             <FeedCoverBlock
