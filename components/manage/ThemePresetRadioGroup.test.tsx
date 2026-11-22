@@ -202,6 +202,13 @@ describe('ThemePresetRadioGroup layout', () => {
         expect(group).not.toHaveClass('lg:grid-cols-4');
         expect(screen.getByRole('radio', { name: 'Preset a' }).firstElementChild).toHaveClass('aspect-square');
     });
+
+    it('draws white cards only on a dark surface', () => {
+        const { rerender } = render(<ThemePresetRadioGroup options={[preset('a')]} labelledBy="heading" disabled={false} onSelectAction={vi.fn()} />);
+        expect(screen.getByRole('radio', { name: 'Preset a' })).not.toHaveClass('bg-white');
+        rerender(<ThemePresetRadioGroup options={[preset('a')]} labelledBy="heading" disabled={false} onDark onSelectAction={vi.fn()} />);
+        expect(screen.getByRole('radio', { name: 'Preset a' })).toHaveClass('bg-white');
+    });
 });
 
 describe('Save my date cards', () => {

@@ -56,6 +56,7 @@ vi.mock('@/hooks/useEventOverviewPlan', () => ({
     }),
 }));
 vi.mock('@/components/manage/overview/OverviewJourney', () => ({ OverviewJourney: () => null }));
+vi.mock('@/components/manage/overview/FeedEditBannerSection', () => ({ FeedEditBannerSection: () => null }));
 vi.mock('@/components/manage/ManageSkeletons', () => ({ ManageDraftOverviewSkeleton: () => null }));
 vi.mock('@/components/manage/OverviewDraftPanel', () => ({
     OverviewDraftPanel: ({ themeSection }: { themeSection?: ReactNode }) => <div data-testid="draft-panel">{themeSection}</div>,

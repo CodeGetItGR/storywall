@@ -16,6 +16,7 @@ import {
     leavesRoomForTools,
     moveFeedBlock,
     noFeedUploads,
+    opensBlockSettings,
     reorderFeedBlocks,
     setFeedBlockVisible,
 } from '@/lib/feedEditing';
@@ -196,5 +197,59 @@ describe('the pencil sheet', () => {
 
     it('refuses uploads', async () => {
         await expect(noFeedUploads(new Blob())).rejects.toThrow();
+    });
+});
+
+describe('a tap on a block', () => {
+    function block(inner: string) {
+        const node = document.createElement('div');
+        node.innerHTML = inner;
+        document.body.append(node);
+        return node;
+    }
+
+    it('opens its settings when it lands on the block itself or its plain content', () => {
+        const node = block('<div><p id="text">Hello</p></div>');
+        expect(opensBlockSettings(node, node)).toBe(true);
+        expect(opensBlockSettings(node.querySelector('#text'), node)).toBe(true);
+        node.remove();
+    });
+
+    it("leaves the block's own controls, inline text and tools to do their own job", () => {
+        const node = block(
+            [
+                '<button id="button"><svg id="icon"></svg></button>',
+                '<a id="link" href="#">Link</a>',
+                '<input id="input" />',
+                '<textarea id="textarea"></textarea>',
+                '<select id="select"></select>',
+                '<label id="label">Label</label>',
+                '<details><summary id="summary">More</summary></details>',
+                '<span id="role" role="button">Tap</span>',
+                '<p id="typing" contenteditable="true">Typing</p>',
+                '<p data-smd-text="field:title"><span id="smd">Title</span></p>',
+                '<div data-feed-block-tools><span id="tool">Name</span></div>',
+            ].join(''),
+        );
+        for (const id of ['button', 'icon', 'link', 'input', 'textarea', 'select', 'label', 'summary', 'role', 'typing', 'smd', 'tool']) {
+            expect(opensBlockSettings(node.querySelector(`#${id}`), node), id).toBe(false);
+        }
+        node.remove();
+    });
+
+    it('ignores a tap from outside the block, such as its menu drawn elsewhere on the page', () => {
+        const node = block('<p>Hello</p>');
+        const menu = block('<div role="menuitem" id="item">Move up</div>');
+        expect(opensBlockSettings(menu.querySelector('#item'), node)).toBe(false);
+        expect(opensBlockSettings(null, node)).toBe(false);
+        node.remove();
+        menu.remove();
+    });
+
+    it('still opens settings when the block itself sits inside a control', () => {
+        const outer = block('<label><div id="inner"><p id="text">Hello</p></div></label>');
+        const node = outer.querySelector('#inner') as HTMLElement;
+        expect(opensBlockSettings(node.querySelector('#text'), node)).toBe(true);
+        outer.remove();
     });
 });

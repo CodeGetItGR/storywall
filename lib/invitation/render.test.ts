@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
+import { INK_COLOR, readableOnInk } from '@/lib/contrast';
+import { defaultFeedLayout, wallThemeDesign } from '@/lib/feedLayout';
 import type { InvitationElement } from '@/lib/invitation/elements';
 import {
     buildRenderContext,
@@ -7,12 +9,14 @@ import {
     isDarkColor,
     resolveFont,
     sectionBackground,
+    sectionBackgroundPhotos,
     sectionShell,
     sectionTextContrast,
     textStyleCss,
     themeAssetName,
 } from '@/lib/invitation/render';
 import { SAMPLE_DOCUMENT, SAMPLE_SECTIONS, SAMPLE_THEME } from '@/lib/invitation/samples';
+import type { InvitationSection } from '@/lib/invitation/sections';
 import type { ThemeDesign } from '@/lib/invitation/theme';
 
 const media = (id: string) => `https://cdn.test/${id}`;
@@ -72,7 +76,13 @@ describe('sectionBackground', () => {
     });
 
     it('falls back to white and the secondary colour without theme images', () => {
-        const plain = withTheme({ backgrounds: { top: { mode: 'cover', stableRepeat: false }, content: { mode: 'cover', stableRepeat: false }, extra: { mode: 'cover', stableRepeat: false } } });
+        const plain = withTheme({
+            backgrounds: {
+                top: { mode: 'cover', stableRepeat: false },
+                content: { mode: 'cover', stableRepeat: false },
+                extra: { mode: 'cover', stableRepeat: false },
+            },
+        });
         expect(sectionBackground(blank, 0, plain)).toEqual({ style: { background: '#ffffff' }, hasThemeImage: false });
         expect(sectionBackground(blank, 1, plain).style).toEqual({ background: '#efe7ec' });
     });
@@ -171,5 +181,56 @@ describe('themeAssetName', () => {
     it('names theme elements and nothing else', () => {
         expect(themeAssetName({ source: 'theme', assetId: 'el-leaf' }, ctx)).toBe('Φύλλο');
         expect(themeAssetName({ source: 'media', mediaId: 'm-1' }, ctx)).toBeUndefined();
+    });
+});
+
+describe('the feed background colour', () => {
+    const base = defaultFeedLayout();
+    const photo = {
+        ...(SAMPLE_SECTIONS.dressCode as InvitationSection),
+        style: { ...SAMPLE_SECTIONS.dressCode.style, background: { kind: 'image', image: { source: 'media', mediaId: 'm-1' } } },
+    } as InvitationSection;
+    const document = (backgroundColor?: string) => ({
+        ...base,
+        overrides: backgroundColor ? { backgroundColor } : {},
+        sections: [...base.sections, photo],
+    });
+    const photoUrl = () => 'https://media.example/photo.webp';
+
+    it('is every section background, photos included', () => {
+        const feed = buildRenderContext(document('#F5E6D3'), wallThemeDesign(null), photoUrl);
+        expect(sectionBackground(base.sections[0], 0, feed).style.background).toBe('#F5E6D3');
+        expect(sectionBackground(photo, 4, feed).style.background).toBe('#F5E6D3');
+        expect(sectionBackgroundPhotos(photo, 4, feed)).toBeUndefined();
+    });
+
+    it('is drawn lightened when ink text cannot be read on it', () => {
+        const feed = buildRenderContext(document('#000000'), wallThemeDesign(null), photoUrl);
+        expect(feed.backgroundColor).toBe(readableOnInk('#000000'));
+    });
+
+    it('falls back to ink for a theme text colour that cannot be read on it', () => {
+        const light = { ...wallThemeDesign(null), colors: { ...wallThemeDesign(null).colors, text: '#FFFFFF' } };
+        expect(buildRenderContext(document('#F5E6D3'), light, photoUrl).textColor).toBe(INK_COLOR);
+        expect(buildRenderContext(document(), light, photoUrl).textColor).toBe('#FFFFFF');
+    });
+
+    it('decides the automatic text contrast, not the section colour', () => {
+        const dark = {
+            ...base.sections[0],
+            style: { ...base.sections[0].style, textContrast: 'auto', background: { kind: 'color', color: '#000000' } },
+        } as InvitationSection;
+        const feed = buildRenderContext(document('#F5E6D3'), wallThemeDesign(null), photoUrl);
+        expect(sectionTextContrast(dark, 0, feed)).toBe('normal');
+        expect(sectionTextContrast(dark, 0, buildRenderContext(document(), wallThemeDesign(null), photoUrl))).toBe('light');
+    });
+
+    it('changes nothing without one', () => {
+        const feed = buildRenderContext(document(), wallThemeDesign(null), photoUrl);
+        expect(feed.backgroundColor).toBeUndefined();
+        expect(sectionBackgroundPhotos(photo, 4, feed)).toEqual({
+            desktop: 'https://media.example/photo.webp',
+            mobile: 'https://media.example/photo.webp',
+        });
     });
 });

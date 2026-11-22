@@ -1,5 +1,6 @@
 import type { CSSProperties } from 'react';
 
+import { contrastRatio, INK_COLOR, MIN_INK_CONTRAST, readableOnInk } from '@/lib/contrast';
 import { activeEffect, revealsBackground, type SectionEffect } from '@/lib/invitation/backgroundEffects';
 import type { CanvasTools } from '@/lib/invitation/canvasTools';
 import type { InvitationDocument } from '@/lib/invitation/document';
@@ -27,6 +28,9 @@ export type RenderContext = {
     bodyFont: string;
     buttonFont?: string;
     textColor: string;
+    // The customizable feed's one background colour (overrides.backgroundColor), made readable for ink
+    // text. Every section shows it instead of its own background.
+    backgroundColor?: string;
     // A preset decides the font of text that has none of its own.
     presetMode: boolean;
     // A preset the host picked replaces every font on the page.
@@ -52,6 +56,14 @@ export type RenderContext = {
 const DEFAULT_TEXT_COLOR = '#2f2b2d';
 const DEFAULT_SECONDARY = '#efe7ec';
 
+const HEX_COLOR = /^#[0-9a-fA-F]{6}$/;
+
+// A theme text colour that can't be read on the feed's background colour gives way to ink.
+function textColorOn(background: string | undefined, color: string): string {
+    if (!background || !HEX_COLOR.test(color)) return color;
+    return contrastRatio(color, background) < MIN_INK_CONTRAST ? INK_COLOR : color;
+}
+
 export function buildRenderContext(
     document: InvitationDocument,
     theme: ThemeDesign,
@@ -61,13 +73,15 @@ export function buildRenderContext(
 ): RenderContext {
     const forcePreset = Boolean(document.overrides.typographyPresetId && hostPreset);
     const dateSection = document.sections.find((section) => section.type === 'date');
+    const backgroundColor = document.overrides.backgroundColor ? readableOnInk(document.overrides.backgroundColor) : undefined;
     return {
         theme,
         media,
         titleFont: forcePreset && hostPreset ? hostPreset.titleFont : theme.fonts.title,
         bodyFont: forcePreset && hostPreset ? hostPreset.bodyFont : theme.fonts.body,
         buttonFont: forcePreset && hostPreset ? hostPreset.buttonFont : theme.fonts.button,
-        textColor: document.overrides.textColor ?? theme.colors.text ?? DEFAULT_TEXT_COLOR,
+        textColor: document.overrides.textColor ?? textColorOn(backgroundColor, theme.colors.text ?? DEFAULT_TEXT_COLOR),
+        backgroundColor,
         presetMode: forcePreset || Boolean(theme.typographyPresetId),
         forcePreset,
         eventIso: dateSection?.type === 'date' ? dateSection.data.iso : undefined,
@@ -145,6 +159,7 @@ function alternatingColor(index: number, ctx: RenderContext): string {
 export type SectionBackground = { style: CSSProperties; hasThemeImage: boolean };
 
 export function sectionBackground(section: InvitationSection, index: number, ctx: RenderContext): SectionBackground {
+    if (ctx.backgroundColor) return { style: { background: ctx.backgroundColor }, hasThemeImage: false };
     const { background } = section.style;
     if (background.kind === 'color') {
         return { style: { background: background.color || ctx.theme.colors.secondary }, hasThemeImage: false };
@@ -186,6 +201,7 @@ function cssUrl(url: string): string {
 export type SectionPhotos = { desktop: string; mobile: string };
 
 export function sectionBackgroundPhotos(section: InvitationSection, index: number, ctx: RenderContext): SectionPhotos | undefined {
+    if (ctx.backgroundColor) return undefined;
     const { background } = section.style;
     if (background.kind === 'color') return undefined;
     if (background.kind === 'image') {
@@ -213,6 +229,7 @@ export function sectionPhotoTint(section: InvitationSection, index: number, ctx:
 
 // A solid colour behind the section, or '' when it shows an image.
 function solidBackgroundColor(section: InvitationSection, index: number, ctx: RenderContext): string {
+    if (ctx.backgroundColor) return ctx.backgroundColor;
     const { background } = section.style;
     if (background.kind === 'color') return background.color || ctx.theme.colors.secondary || DEFAULT_SECONDARY;
     if (background.kind === 'image') return '';

@@ -36,6 +36,7 @@ export function ThemePresetRadioGroup({
     disabled,
     savingPresetId,
     size = 'default',
+    onDark = false,
     previewTitle,
     onSelectAction,
 }: {
@@ -46,6 +47,8 @@ export function ThemePresetRadioGroup({
     savingPresetId?: string | null;
     // `large`: two cards per row with tight gaps and bigger art, for the narrow event-creation column.
     size?: 'default' | 'large';
+    // White cards, for a dark surface (the feed's Theme sheet): the titles keep their own colours.
+    onDark?: boolean;
     // The event's title, previewed in each theme's font with the theme name below it.
     previewTitle?: string;
     onSelectAction: (presetId: string | null) => void;
@@ -107,6 +110,7 @@ export function ThemePresetRadioGroup({
                     disabled={disabled}
                     tabbable={option.id === tabbableId}
                     size={size}
+                    onDark={onDark}
                     previewTitle={previewTitle}
                     onSelectAction={onSelectAction}
                     onFocusAction={setFocusedId}

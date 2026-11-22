@@ -7,25 +7,30 @@ import { useTranslations } from 'next-intl';
 import type { ReactNode, Ref } from 'react';
 
 import { FeedAddSectionRow } from '@/components/feed/edit/FeedAddSectionRow';
+import { FeedAddSectionSheet } from '@/components/feed/edit/FeedAddSectionSheet';
 import { FeedBlockPlaceholder } from '@/components/feed/edit/FeedBlockPlaceholder';
 import { FeedBlockSheet } from '@/components/feed/edit/FeedBlockSheet';
 import { FeedEditBlock } from '@/components/feed/edit/FeedEditBlock';
 import { FeedEditInvitationSection } from '@/components/feed/edit/FeedEditInvitationSection';
 import { FeedEditPills } from '@/components/feed/edit/FeedEditPills';
+import { FeedThemeSheet } from '@/components/feed/edit/FeedThemeSheet';
 import { FeedLook, FeedNative } from '@/components/feed/layout/FeedLook';
 import { feedLookParts } from '@/components/feed/layout/FeedLookTop';
 import { FeedTopFrame, type FeedTopParts, type FeedTopProps, PLAIN_PARTS } from '@/components/feed/layout/FeedTopFrame';
 import { SettingsPartEditor } from '@/components/manage/settings/SettingsPartEditor';
 import { EditorConflictDialog } from '@/components/saveMyDate/editor/EditorConflictDialog';
 import { EditorLeaveDialog } from '@/components/saveMyDate/editor/EditorLeaveDialog';
-import { AddSectionSheet } from '@/components/saveMyDate/editor/sections/AddSectionSheet';
 import { DeleteSectionDialog } from '@/components/saveMyDate/editor/sections/DeleteSectionDialog';
 import { InlineTextEditing } from '@/components/saveMyDate/editor/text/InlineTextEditing';
 import { useInvitationFonts } from '@/hooks/useAdminInvitationThemes';
 import { useFeedBlockActions } from '@/hooks/useFeedBlockActions';
 import type { FeedBlockToolActions } from '@/hooks/useFeedBlockHandlers';
 import { useFeedBlockSheet } from '@/hooks/useFeedBlockSheet';
+import { useFeedEditPanels } from '@/hooks/useFeedEditPanels';
 import { useFeedEditSession } from '@/hooks/useFeedEditSession';
+import { useFeedEditThemeGrid } from '@/hooks/useFeedEditThemeGrid';
+import { useEditPageTheme } from '@/hooks/useFeedPageTheme';
+import { useFeedSectionPreviews } from '@/hooks/useFeedSectionPreviews';
 import { useFeedTop } from '@/hooks/useFeedTop';
 import { useSectionDrag } from '@/hooks/useSectionDrag';
 import { useSettingsPreview } from '@/hooks/useSettingsPreview';
@@ -43,16 +48,28 @@ type FeedEditTopProps = Omit<FeedTopProps, 'view'> & { event: EventDetailRespons
 type FeedNameKey = `sectionNames.${NewSectionType | FeedSectionType}`;
 const nameKey = (type: SectionType) => `sectionNames.${type}` as FeedNameKey;
 
-// The top of the feed in edit mode: the same frame as the feed, every block with its tools,
-// Save my date text typed in place, and the Add section row closing the middle.
+// The top of the feed in edit mode: the same frame as the feed, every block with its tools, Save my date
+// text typed in place, the Add section row closing the middle, and the Theme sheet. All held until Save.
 export function FeedEditTop({ event, onDone, cancelRef, cover, details, stories, description, rsvp }: FeedEditTopProps) {
     const t = useTranslations('InvitationEditor');
     const session = useFeedEditSession(event, onDone);
-    const view = useFeedTop(event, session.document);
+    const view = useFeedTop(event, { document: session.document, theme: session.theme, media: session.media });
+    useEditPageTheme(event.id, session.wallTheme, session.background);
     const fonts = useInvitationFonts(true);
-    const actions = useFeedBlockActions(session.store, session.document, event, session.leaveTo);
+    const actions = useFeedBlockActions(session.store, session.document, event);
+    const sectionPreviews = useFeedSectionPreviews({
+        types: actions.addable,
+        themeSlug: session.themeSlug,
+        document: session.document,
+        theme: session.theme,
+        media: session.media,
+        eventType: event.eventType,
+        enabled: actions.adding,
+    });
     const preview = useSettingsPreview(event, true, true);
     const sheet = useFeedBlockSheet(session.store, session.document, session.theme, session.media, fonts.data, preview.parts);
+    const panels = useFeedEditPanels(sheet.openFor, sheet.close, actions.openAdd);
+    const themeGrid = useFeedEditThemeGrid(event, session);
     const middleIds = view.frame.middle.map((section) => section.id);
     const drag = useSectionDrag(middleIds.length, actions.reorder);
 
@@ -60,10 +77,17 @@ export function FeedEditTop({ event, onDone, cancelRef, cover, details, stories,
         onToggleVisible: actions.toggleVisible,
         onMove: actions.move,
         onDelete: actions.askDelete,
-        onOpenSettings: sheet.openFor,
+        onOpenSettings: panels.openSettings,
     };
     const pills = (
-        <FeedEditPills saving={session.saving} failed={session.failed} onCancel={session.cancel} onSave={session.save} cancelRef={cancelRef} />
+        <FeedEditPills
+            saving={session.saving}
+            failed={session.failed}
+            onTheme={panels.openTheme}
+            onCancel={session.cancel}
+            onSave={session.save}
+            cancelRef={cancelRef}
+        />
     );
 
     const wrap = (section: InvitationSection, node: ReactNode) => (
@@ -74,6 +98,7 @@ export function FeedEditTop({ event, onDone, cancelRef, cover, details, stories,
             controls={feedBlockControls(session.document.sections, section)}
             hasSettings={sheet.hasSettings(section)}
             actions={tools}
+            active={sheet.section?.id === section.id}
             corner={section.type === 'feedCover' ? pills : undefined}
         >
             {node}
@@ -108,7 +133,7 @@ export function FeedEditTop({ event, onDone, cancelRef, cover, details, stories,
             afterMiddle={
                 actions.showAdd && (
                     <FeedNative className="font-sans">
-                        <FeedAddSectionRow locked={actions.locked} canBuy={actions.canBuy} onAdd={actions.openAdd} />
+                        <FeedAddSectionRow onAdd={panels.openAdd} />
                     </FeedNative>
                 )
             }
@@ -160,8 +185,23 @@ export function FeedEditTop({ event, onDone, cancelRef, cover, details, stories,
                 onCloseAction={preview.closeEditor}
             />
 
+            {/* Theme */}
+            <FeedThemeSheet
+                open={panels.themeOpen}
+                isDesktop={preview.isDesktop}
+                options={themeGrid.options}
+                fontFaces={themeGrid.fontFaces}
+                hasInvitationThemes={themeGrid.hasInvitationThemes}
+                disabled={themeGrid.disabled}
+                previewTitle={themeGrid.previewTitle}
+                background={session.background}
+                onSelect={themeGrid.select}
+                onBackground={session.setBackground}
+                onClose={panels.closeTheme}
+            />
+
             {/* Add section */}
-            <AddSectionSheet open={actions.adding} types={actions.addable} onAdd={actions.add} onClose={actions.closeAdd} />
+            <FeedAddSectionSheet open={actions.adding} previews={sectionPreviews} onAdd={actions.add} onClose={actions.closeAdd} />
 
             {/* Delete */}
             <DeleteSectionDialog

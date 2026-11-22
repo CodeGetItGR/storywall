@@ -1,5 +1,6 @@
 import { InviartOverviewSection } from '@/components/inviart/InviartOverviewSection';
 import { ManageDraftOverviewSkeleton } from '@/components/manage/ManageSkeletons';
+import { FeedEditBannerSection } from '@/components/manage/overview/FeedEditBannerSection';
 import { OverviewJourney } from '@/components/manage/overview/OverviewJourney';
 import { OverviewDraftPanel } from '@/components/manage/OverviewDraftPanel';
 import { ThemePicker } from '@/components/manage/ThemePicker';
@@ -108,6 +109,9 @@ export default function OverviewTab({
         <div className="flex flex-col gap-8">
             {/* Journey */}
             <OverviewJourney event={event} eventUsage={eventUsage} planName={currentPlan?.name ?? null} counts={counts} />
+
+            {/* Customize the feed */}
+            <FeedEditBannerSection event={event} eventStatus={eventStatus} paidServices={paidServices} modules={modules} currentPlan={currentPlan} />
 
             {/* INVIART */}
             <InviartOverviewSection eventType={eventType} />

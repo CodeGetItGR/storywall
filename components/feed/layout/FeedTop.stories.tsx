@@ -39,6 +39,7 @@ function TopStory({ extra, ended = false, styledDetails = false }: StoryArgs) {
         open,
         toggle: () => setOpen((current) => !current),
         drawsMiddle: frame.middle.length > 0 && (!foldsMiddle(frame.middle.length) || open),
+        pageBackground: null,
     };
     // The look straight away, not through FeedTop's lazy load, so a snapshot never catches it loading.
     const Top = view.look ? FeedLookTop : FeedTop;

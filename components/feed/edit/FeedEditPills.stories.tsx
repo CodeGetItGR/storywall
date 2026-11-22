@@ -15,3 +15,4 @@ type Story = StoryObj<typeof meta>;
 export const Idle: Story = {};
 export const Saving: Story = { args: { saving: true } };
 export const Failed: Story = { args: { failed: true } };
+export const WithTheme: Story = { args: { onTheme: fn() } };
