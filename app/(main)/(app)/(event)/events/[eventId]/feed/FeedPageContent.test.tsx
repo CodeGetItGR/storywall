@@ -25,7 +25,6 @@ vi.mock('next/navigation', () => ({
     usePathname: () => '/events/e-1/feed',
     useSearchParams: () => new URLSearchParams(),
 }));
-vi.mock('@/hooks/usePlanUpgradeHref', () => ({ usePlanUpgradeHref: () => '/events/e-1/manage?tab=billing' }));
 
 // The banner wiring and the layout's frame are under test: every other section is stubbed out.
 vi.mock('@/hooks/useModuleCopy', () => {
