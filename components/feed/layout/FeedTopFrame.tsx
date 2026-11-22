@@ -14,6 +14,8 @@ export type FeedTopProps = {
     description: ReactNode;
     // null when today's rules don't ask this member to reply.
     rsvp: ReactNode | null;
+    // Edit mode's Add section row, after the middle blocks.
+    afterMiddle?: ReactNode;
 };
 
 // How the frame draws its pieces: plainly, or in the invitation look (FeedLookTop).
@@ -35,7 +37,7 @@ export const PLAIN_PARTS: FeedTopParts = {
 
 // The top of the feed in its fixed frame: cover, details, stories, the host's middle blocks
 // (folded for returning members once there are two or more), RSVP.
-export function FeedTopFrame({ view, cover, details, stories, description, rsvp, parts }: FeedTopProps & { parts: FeedTopParts }) {
+export function FeedTopFrame({ view, cover, details, stories, description, rsvp, afterMiddle, parts }: FeedTopProps & { parts: FeedTopParts }) {
     const { frame } = view;
     const middle = frame.middle.map((section) =>
         section.type === 'feedDescription' ? parts.block(section, description) : parts.invitation(section),
@@ -56,6 +58,7 @@ export function FeedTopFrame({ view, cover, details, stories, description, rsvp,
             {view.folds && parts.native(<InvitationFoldRow open={view.open} onToggle={view.toggle} controls={MIDDLE_ID} />)}
             {view.folds && view.open && <div id={MIDDLE_ID}>{middle}</div>}
             {!view.folds && middle}
+            {afterMiddle}
 
             {/* RSVP */}
             {frame.rsvp && rsvp && parts.block(frame.rsvp, rsvp)}
