@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { EventThemeScope } from '@/components/event/EventThemeScope';
 import type { EventDetailResponseDto } from '@/lib/api/types';
+import { publishFeedPageTheme } from '@/lib/feedPageTheme';
 
 const state = vi.hoisted(() => ({
     event: null as Partial<EventDetailResponseDto> | null,
@@ -49,6 +50,11 @@ afterEach(() => {
     state.event = null;
     state.routeEventId = 'e-1';
     state.pathname = '/events/e-1/feed';
+});
+
+afterEach(() => {
+    publishFeedPageTheme('feed', null);
+    publishFeedPageTheme('edit', null);
 });
 
 describe('EventThemeScope', () => {
@@ -129,6 +135,18 @@ describe('EventThemeScope', () => {
         expect(document.querySelector('style')).toBeNull();
         expect(root).not.toHaveAttribute('data-theme-font');
         expect(root.style.getPropertyValue('--event-title')).toBe('');
+    });
+
+    it("draws the feed's override for this event", () => {
+        state.event = themedEvent;
+        publishFeedPageTheme('feed', { eventId: 'e-1', value: { theme: { ...themedEvent.theme!, backgroundColor: '#F5E6D3' } } });
+        expect(renderScope().style.getPropertyValue('--event-bg')).toBe('#F5E6D3');
+    });
+
+    it("ignores another event's override", () => {
+        state.event = themedEvent;
+        publishFeedPageTheme('feed', { eventId: 'e-2', value: { theme: null } });
+        expect(renderScope().style.getPropertyValue('--event-bg')).toBe('#BFE6E2');
     });
 
     it.each(['red', null])('declares no font on an unusable background (%s)', (backgroundColor) => {

@@ -26,6 +26,7 @@ import { useFeedBlockActions } from '@/hooks/useFeedBlockActions';
 import type { FeedBlockToolActions } from '@/hooks/useFeedBlockHandlers';
 import { useFeedBlockSheet } from '@/hooks/useFeedBlockSheet';
 import { useFeedEditSession } from '@/hooks/useFeedEditSession';
+import { useEditPageTheme } from '@/hooks/useFeedPageTheme';
 import { useFeedTop } from '@/hooks/useFeedTop';
 import { useSectionDrag } from '@/hooks/useSectionDrag';
 import { useSettingsPreview } from '@/hooks/useSettingsPreview';
@@ -49,6 +50,7 @@ export function FeedEditTop({ event, onDone, cancelRef, cover, details, stories,
     const t = useTranslations('InvitationEditor');
     const session = useFeedEditSession(event, onDone);
     const view = useFeedTop(event, { document: session.document, theme: session.theme, media: session.media });
+    useEditPageTheme(event.id, session.wallTheme, session.background);
     const fonts = useInvitationFonts(true);
     const actions = useFeedBlockActions(session.store, session.document, event);
     const preview = useSettingsPreview(event, true, true);

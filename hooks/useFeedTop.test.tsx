@@ -5,7 +5,7 @@ import type { ReactNode } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
 import { useFeedTop } from '@/hooks/useFeedTop';
-import type { EventDetailResponseDto } from '@/lib/api/types';
+import type { EventDetailResponseDto, FeedLayoutDto } from '@/lib/api/types';
 import { defaultFeedLayout, feedLayoutKeys, wallThemeDesign } from '@/lib/feedLayout';
 import { SAMPLE_SECTIONS } from '@/lib/invitation/samples';
 import type { InvitationSection } from '@/lib/invitation/sections';
@@ -17,15 +17,20 @@ vi.mock('@/hooks/useAdminInvitationThemes', () => ({ useInvitationFonts: () => (
 // An event that has ended: the read-only feed keeps only the cover and details.
 const event = { id: 'e-1', theme: null, description: null, schedule: { endAt: '2020-01-01T00:00:00Z' } } as unknown as EventDetailResponseDto;
 
-function wrapper({ children }: { children: ReactNode }) {
-    const client = new QueryClient({ defaultOptions: { queries: { retry: false, staleTime: Infinity } } });
-    client.setQueryData(feedLayoutKeys.detail('e-1'), null);
-    return (
-        <QueryClientProvider client={client}>
-            <FeedEditorFlagProvider enabled>{children}</FeedEditorFlagProvider>
-        </QueryClientProvider>
-    );
+// saved: the feed layout in the cache (null: nothing saved).
+function wrapperWith(saved: FeedLayoutDto | null) {
+    return function Wrapper({ children }: { children: ReactNode }) {
+        const client = new QueryClient({ defaultOptions: { queries: { retry: false, staleTime: Infinity } } });
+        client.setQueryData(feedLayoutKeys.detail('e-1'), saved);
+        return (
+            <QueryClientProvider client={client}>
+                <FeedEditorFlagProvider enabled>{children}</FeedEditorFlagProvider>
+            </QueryClientProvider>
+        );
+    };
 }
+
+const wrapper = wrapperWith(null);
 
 describe('useFeedTop while editing', () => {
     const dressCode = { ...(SAMPLE_SECTIONS.dressCode as InvitationSection), id: 'dress' };
@@ -60,5 +65,16 @@ describe('useFeedTop while editing', () => {
         expect(result.current.frame.middle).toEqual([]);
         expect(result.current.frame.rsvp).toBeNull();
         expect(result.current.pageBackground).toBeNull();
+    });
+});
+
+describe('useFeedTop on the feed', () => {
+    it("hands back the saved layout's background colour", () => {
+        const document = produce(defaultFeedLayout(), (draft) => {
+            draft.overrides.backgroundColor = '#F5E6D3';
+        });
+        const saved: FeedLayoutDto = { themeSlug: null, revision: 3, document, design: null, imageUrls: {}, updatedAt: '2026-11-22T10:00:00Z' };
+        const { result } = renderHook(() => useFeedTop(event), { wrapper: wrapperWith(saved) });
+        expect(result.current.pageBackground).toBe('#F5E6D3');
     });
 });
