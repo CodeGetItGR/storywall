@@ -6669,6 +6669,10 @@
     "FeedLayout": {
         "invitation": "Invitation"
     },
+    "FeedEditor": {
+        "edit": "Edit",
+        "saveFailed": "Couldn't save your changes. Please try again."
+    },
     "FeedQuickActions": {
         "invitation": "Invitation",
         "photos": "Photos",
@@ -10596,7 +10600,11 @@
             "coupleProfilesSimple": "The couple (no photos)",
             "weddingSponsorsSimple": "Wedding sponsors (no photos)",
             "photoFrame": "Framed photo",
-            "footer": "Footer"
+            "footer": "Footer",
+            "feedCover": "Cover",
+            "feedDetails": "Details",
+            "feedDescription": "Description",
+            "feedRsvp": "RSVP"
         },
         "eventPhotos": {
             "title": "Event photos",

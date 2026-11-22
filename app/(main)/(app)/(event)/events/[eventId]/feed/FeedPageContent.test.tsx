@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
@@ -14,6 +14,18 @@ import { FeedPageContent } from './FeedPageContent';
 import { FeedPageProvider } from './FeedPageContext';
 
 const rsvpVisible = vi.hoisted(() => ({ value: false }));
+const api = vi.hoisted(() => ({ put: vi.fn() }));
+
+vi.mock('@/lib/api/client', async (importOriginal) => {
+    const actual = await importOriginal<typeof import('@/lib/api/client')>();
+    return { ...actual, api: { ...actual.api, put: api.put } };
+});
+vi.mock('next/navigation', () => ({
+    useRouter: () => ({ push: vi.fn() }),
+    usePathname: () => '/events/e-1/feed',
+    useSearchParams: () => new URLSearchParams(),
+}));
+vi.mock('@/hooks/usePlanUpgradeHref', () => ({ usePlanUpgradeHref: () => '/events/e-1/manage?tab=billing' }));
 
 // The banner wiring and the layout's frame are under test: every other section is stubbed out.
 vi.mock('@/hooks/useModuleCopy', () => {
@@ -31,7 +43,11 @@ vi.mock('@/components/feed/Banner', () => ({
 }));
 // next/font only works when Next compiles the file.
 vi.mock('@/components/saveMyDate/invitation/invitationFonts', () => ({ INVITATION_FONT_CLASSES: '' }));
-vi.mock('next-intl', () => ({ useTranslations: () => (key: string) => key, useLocale: () => 'en' }));
+// The translator also answers `has`, which the Settings labels ask before reading a key.
+vi.mock('next-intl', () => ({
+    useTranslations: () => Object.assign((key: string) => key, { has: () => false, rich: (key: string) => key }),
+    useLocale: () => 'en',
+}));
 vi.mock('@/hooks/useGiftAccount', () => ({ useGiftAccount: () => ({ isLoading: true, data: undefined }) }));
 vi.mock('@/hooks/useHideMobileTabBarOnScroll', () => ({ useHideMobileTabBarOnScroll: () => undefined }));
 vi.mock('@/hooks/useRsvpPromptVisible', () => ({ useRsvpPromptVisible: () => rsvpVisible.value }));
@@ -54,6 +70,18 @@ vi.mock('@/components/story/StoryModal', () => ({ StoryModal: () => null }));
 vi.mock('@/components/vendors/VendorProfilePrompt', () => ({ VendorProfilePrompt: () => null }));
 vi.mock('@/components/feed/quickActions/FeedQuickActions', () => ({ FeedQuickActions: () => null }));
 
+// jsdom has no matchMedia; the edit sheet asks whether the screen is desktop-wide.
+window.matchMedia = ((query: string) => ({
+    matches: false,
+    media: query,
+    onchange: null,
+    addEventListener: () => undefined,
+    removeEventListener: () => undefined,
+    addListener: () => undefined,
+    removeListener: () => undefined,
+    dispatchEvent: () => false,
+})) as unknown as typeof window.matchMedia;
+
 afterEach(cleanup);
 afterEach(() => {
     rsvpVisible.value = false;
@@ -73,9 +101,16 @@ function savedLayout(...extra: InvitationSection[]): FeedLayoutDto {
 
 const dressCode = SAMPLE_SECTIONS.dressCode as InvitationSection;
 
-type FeedOptions = { description?: string | null; endAt?: string | null; layout?: FeedLayoutDto | null; flag?: boolean };
+type FeedOptions = {
+    description?: string | null;
+    endAt?: string | null;
+    layout?: FeedLayoutDto | null;
+    flag?: boolean;
+    isHost?: boolean;
+    modules?: { moduleKey: string; isAvailable: boolean; isEnabled: boolean }[];
+};
 
-function renderFeed(illustrationUrl: string | null, { description = null, endAt = null, layout, flag = false }: FeedOptions = {}) {
+function renderFeed(illustrationUrl: string | null, { description = null, endAt = null, layout, flag = false, isHost = false, modules = [] }: FeedOptions = {}) {
     // staleTime: the seeded layout counts as fresh, so nothing is fetched for real.
     const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false, staleTime: Infinity } } });
     if (layout !== undefined) queryClient.setQueryData(feedLayoutKeys.detail('e-1'), layout);
@@ -83,6 +118,11 @@ function renderFeed(illustrationUrl: string | null, { description = null, endAt 
     const event = {
         id: 'e-1',
         title: 'Baptism',
+        status: 'ACTIVE',
+        eventType: 'WEDDING',
+        hosts: [],
+        partnerBrandingPrompt: null,
+        modules,
         coverMedia: null,
         description,
         theme: illustrationUrl ? { presetKey: 'dino', backgroundColor: '#aabbcc', illustrationUrl } : null,
@@ -94,7 +134,7 @@ function renderFeed(illustrationUrl: string | null, { description = null, endAt 
         eventId: 'e-1',
         currentMemberRsvpId: null,
         isFetchingNextPage: false,
-        isHost: false,
+        isHost,
         loadMoreRef: { current: null },
         loadingMoreLabel: '',
         moduleFlags: { rsvp: false, stories: false, posts: false, wishlist: false },
@@ -174,5 +214,82 @@ describe('FeedPageContent layout', { timeout: 15_000 }, () => {
         renderFeed(null, { description: 'Hello', flag: false, layout: savedLayout(dressCode) });
         expect(screen.getByTestId('description')).toBeTruthy();
         expect(screen.queryByRole('button', { name: 'invitation' })).toBeNull();
+    });
+});
+
+// The edit code loads lazily, so the first lookup after tapping Edit waits for it.
+describe('FeedPageContent edit mode', { timeout: 15_000 }, () => {
+    afterEach(() => api.put.mockReset());
+
+    // First in this block: once the edit code is in, later taps never wait for it.
+    it('keeps the feed top on screen while the edit code loads', async () => {
+        renderFeed(null, { flag: true, layout: savedLayout(), isHost: true });
+        fireEvent.click(await screen.findByRole('button', { name: 'edit' }));
+        expect(screen.getByTestId('banner')).toBeTruthy();
+        expect(await screen.findByRole('group', { name: 'sectionNames.feedCover' }, LAZY_LOOK)).toBeTruthy();
+    });
+
+    it('moves focus to Cancel in edit mode, and back to Edit after', async () => {
+        renderFeed(null, { flag: true, layout: savedLayout(), isHost: true });
+        fireEvent.click(await screen.findByRole('button', { name: 'edit' }));
+        const cancel = await screen.findByRole('button', { name: 'cancel' }, LAZY_LOOK);
+        expect(document.activeElement).toBe(cancel);
+        fireEvent.click(cancel);
+        const edit = await screen.findByRole('button', { name: 'edit' });
+        expect(document.activeElement).toBe(edit);
+    });
+
+    it('shows Edit to a host only', async () => {
+        renderFeed(null, { flag: true, layout: savedLayout(), isHost: true });
+        expect(await screen.findByRole('button', { name: 'edit' })).toBeTruthy();
+        cleanup();
+        renderFeed(null, { flag: true, layout: savedLayout(), isHost: false });
+        expect(screen.queryByRole('button', { name: 'edit' })).toBeNull();
+    });
+
+    it('lists every block while editing, and Cancel leaves at once with no changes', async () => {
+        renderFeed(null, { flag: true, layout: savedLayout(dressCode), isHost: true });
+        fireEvent.click(await screen.findByRole('button', { name: 'edit' }));
+        expect(await screen.findByRole('group', { name: 'sectionNames.feedCover' }, LAZY_LOOK)).toBeTruthy();
+        expect(screen.getByRole('group', { name: 'sectionNames.feedRsvp' })).toBeTruthy();
+        expect(screen.getByRole('group', { name: `sectionNames.${dressCode.type}` })).toBeTruthy();
+        fireEvent.click(screen.getByRole('button', { name: 'cancel' }));
+        expect(await screen.findByRole('button', { name: 'edit' })).toBeTruthy();
+    });
+
+    it('gives the cover no eye', async () => {
+        renderFeed(null, { flag: true, layout: savedLayout(), isHost: true });
+        fireEvent.click(await screen.findByRole('button', { name: 'edit' }));
+        const cover = await screen.findByRole('group', { name: 'sectionNames.feedCover' }, LAZY_LOOK);
+        expect(within(cover).queryByRole('button', { name: 'hide' })).toBeNull();
+    });
+
+    it('hides a block and saves the layout with its revision', async () => {
+        api.put.mockResolvedValue({ revision: 2, updatedAt: '2026-11-22T10:00:00Z' });
+        renderFeed(null, { flag: true, layout: savedLayout(), isHost: true });
+        fireEvent.click(await screen.findByRole('button', { name: 'edit' }));
+        const rsvp = await screen.findByRole('group', { name: 'sectionNames.feedRsvp' }, LAZY_LOOK);
+        fireEvent.click(within(rsvp).getByRole('button', { name: 'hide' }));
+        expect(within(rsvp).getByText('hidden')).toBeTruthy();
+        fireEvent.click(screen.getByRole('button', { name: 'save' }));
+        await waitFor(() => expect(api.put).toHaveBeenCalledOnce());
+        const [, body] = api.put.mock.calls[0];
+        expect(body.revision).toBe(1);
+        expect(body.document.sections.find((section: InvitationSection) => section.type === 'feedRsvp').visible).toBe(false);
+    });
+
+    it('asks before Cancel drops changes', async () => {
+        renderFeed(null, { flag: true, layout: savedLayout(), isHost: true });
+        fireEvent.click(await screen.findByRole('button', { name: 'edit' }));
+        const rsvp = await screen.findByRole('group', { name: 'sectionNames.feedRsvp' }, LAZY_LOOK);
+        fireEvent.click(within(rsvp).getByRole('button', { name: 'hide' }));
+        fireEvent.click(screen.getByRole('button', { name: 'cancel' }));
+        expect(await screen.findByText('leaveTitle')).toBeTruthy();
+    });
+
+    it('locks Add section without Save my date', async () => {
+        renderFeed(null, { flag: true, layout: savedLayout(), isHost: true });
+        fireEvent.click(await screen.findByRole('button', { name: 'edit' }));
+        expect((await screen.findAllByText('locked', {}, LAZY_LOOK)).length).toBeGreaterThan(0);
     });
 });
