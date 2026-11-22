@@ -7,6 +7,7 @@ import { useTranslations } from 'next-intl';
 import type { ReactNode, Ref } from 'react';
 
 import { FeedAddSectionRow } from '@/components/feed/edit/FeedAddSectionRow';
+import { FeedAddSectionSheet } from '@/components/feed/edit/FeedAddSectionSheet';
 import { FeedBlockPlaceholder } from '@/components/feed/edit/FeedBlockPlaceholder';
 import { FeedBlockSheet } from '@/components/feed/edit/FeedBlockSheet';
 import { FeedEditBlock } from '@/components/feed/edit/FeedEditBlock';
@@ -18,7 +19,6 @@ import { FeedTopFrame, type FeedTopParts, type FeedTopProps, PLAIN_PARTS } from 
 import { SettingsPartEditor } from '@/components/manage/settings/SettingsPartEditor';
 import { EditorConflictDialog } from '@/components/saveMyDate/editor/EditorConflictDialog';
 import { EditorLeaveDialog } from '@/components/saveMyDate/editor/EditorLeaveDialog';
-import { AddSectionSheet } from '@/components/saveMyDate/editor/sections/AddSectionSheet';
 import { DeleteSectionDialog } from '@/components/saveMyDate/editor/sections/DeleteSectionDialog';
 import { InlineTextEditing } from '@/components/saveMyDate/editor/text/InlineTextEditing';
 import { useInvitationFonts } from '@/hooks/useAdminInvitationThemes';
@@ -27,6 +27,7 @@ import type { FeedBlockToolActions } from '@/hooks/useFeedBlockHandlers';
 import { useFeedBlockSheet } from '@/hooks/useFeedBlockSheet';
 import { useFeedEditSession } from '@/hooks/useFeedEditSession';
 import { useEditPageTheme } from '@/hooks/useFeedPageTheme';
+import { useFeedSectionPreviews } from '@/hooks/useFeedSectionPreviews';
 import { useFeedTop } from '@/hooks/useFeedTop';
 import { useSectionDrag } from '@/hooks/useSectionDrag';
 import { useSettingsPreview } from '@/hooks/useSettingsPreview';
@@ -53,6 +54,15 @@ export function FeedEditTop({ event, onDone, cancelRef, cover, details, stories,
     useEditPageTheme(event.id, session.wallTheme, session.background);
     const fonts = useInvitationFonts(true);
     const actions = useFeedBlockActions(session.store, session.document, event);
+    const sectionPreviews = useFeedSectionPreviews({
+        types: actions.addable,
+        themeSlug: session.themeSlug,
+        document: session.document,
+        theme: session.theme,
+        media: session.media,
+        eventType: event.eventType,
+        enabled: actions.adding,
+    });
     const preview = useSettingsPreview(event, true, true);
     const sheet = useFeedBlockSheet(session.store, session.document, session.theme, session.media, fonts.data, preview.parts);
     const middleIds = view.frame.middle.map((section) => section.id);
@@ -164,7 +174,7 @@ export function FeedEditTop({ event, onDone, cancelRef, cover, details, stories,
             />
 
             {/* Add section */}
-            <AddSectionSheet open={actions.adding} types={actions.addable} onAdd={actions.add} onClose={actions.closeAdd} />
+            <FeedAddSectionSheet open={actions.adding} previews={sectionPreviews} onAdd={actions.add} onClose={actions.closeAdd} />
 
             {/* Delete */}
             <DeleteSectionDialog
