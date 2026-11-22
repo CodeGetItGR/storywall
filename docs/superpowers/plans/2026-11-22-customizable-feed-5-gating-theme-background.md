@@ -2364,6 +2364,7 @@ type FeedSectionPreviewsInput = {
 };
 
 // The Add section cards' pictures, drawn in the theme edit mode shows, with no text animation.
+// Without a Save my date theme (no samples), every card is createSection(type, eventType).
 export function useFeedSectionPreviews({ types, themeSlug, document, theme, media, eventType, enabled }: FeedSectionPreviewsInput): FeedSectionPreviews {
     const locale = useLocale();
     const samples = useThemeSampleSections(enabled && themeSlug ? themeSlug : null);
