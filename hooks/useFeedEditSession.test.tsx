@@ -8,16 +8,16 @@ import { ApiError } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
 import type { EventDetailResponseDto, EventThemeDto, FeedLayoutDto } from '@/lib/api/types';
 import { setFeedBlockVisible } from '@/lib/feedEditing';
-import { defaultFeedLayout, feedLayoutKeys } from '@/lib/feedLayout';
+import { defaultFeedLayout, feedLayoutKeys, WALL_THEME_ID } from '@/lib/feedLayout';
 import { SAMPLE_DOCUMENT, SAMPLE_THEME } from '@/lib/invitation/samples';
 import { invitationThemeKeys } from '@/lib/invitation/themeCatalogue';
 import type { InvitationThemePublicDto } from '@/lib/invitation/themePreview';
 
-const mocks = vi.hoisted(() => ({ put: vi.fn(), push: vi.fn(), overlay: vi.fn() }));
+const mocks = vi.hoisted(() => ({ put: vi.fn(), get: vi.fn(), push: vi.fn(), overlay: vi.fn() }));
 
 vi.mock('@/lib/api/client', async (importOriginal) => {
     const actual = await importOriginal<typeof import('@/lib/api/client')>();
-    return { ...actual, api: { ...actual.api, put: mocks.put } };
+    return { ...actual, api: { ...actual.api, put: mocks.put, get: mocks.get } };
 });
 vi.mock('next/navigation', () => ({ useRouter: () => ({ push: mocks.push }) }));
 vi.mock('@/hooks/useOverlayHistory', () => ({
@@ -42,6 +42,18 @@ const saved: FeedLayoutDto = {
     updatedAt: '2026-11-22T10:00:00Z',
 };
 
+// A Save my date theme's public answer. 'rose' is cached; any other slug loads through api.get.
+function publicTheme(slug: string) {
+    return {
+        slug,
+        name: slug,
+        eventType: 'WEDDING',
+        design: SAMPLE_THEME,
+        document: SAMPLE_DOCUMENT,
+        assetUrls: {},
+    } as unknown as InvitationThemePublicDto;
+}
+
 let client: QueryClient;
 function wrapper({ children }: { children: ReactNode }) {
     return <QueryClientProvider client={client}>{children}</QueryClientProvider>;
@@ -50,15 +62,9 @@ function wrapper({ children }: { children: ReactNode }) {
 beforeEach(() => {
     client = new QueryClient({ defaultOptions: { queries: { retry: false, staleTime: Infinity }, mutations: { retry: false } } });
     client.setQueryData(feedLayoutKeys.detail('e-1'), saved);
-    client.setQueryData(invitationThemeKeys.publicTheme('rose'), {
-        slug: 'rose',
-        name: 'Rose',
-        eventType: 'WEDDING',
-        design: SAMPLE_THEME,
-        document: SAMPLE_DOCUMENT,
-        assetUrls: {},
-    } as unknown as InvitationThemePublicDto);
+    client.setQueryData(invitationThemeKeys.publicTheme('rose'), publicTheme('rose'));
     mocks.put.mockReset();
+    mocks.get.mockReset();
     mocks.push.mockReset();
     mocks.overlay.mockReset();
 });
@@ -294,6 +300,7 @@ describe('useFeedEditSession', () => {
         mocks.put.mockResolvedValueOnce({ revision: 4, updatedAt: '2026-11-22T11:00:00Z' }).mockRejectedValueOnce(new Error('offline'));
         await act(() => result.current.save());
         expect(result.current.failed).toBe(true);
+        expect(result.current.dirty).toBe(true);
         expect(onDone).not.toHaveBeenCalled();
         expect(result.current.heldWall).toEqual({ presetId: 'p-1', theme: dino });
         mocks.put.mockResolvedValueOnce({ theme: dino });
@@ -345,5 +352,92 @@ describe('useFeedEditSession', () => {
         await act(() => result.current.pickWall('p-1', dino, false));
         expect(result.current.background).toBe('#F5E6D3');
         expect(result.current.heldWall).toEqual({ presetId: 'p-1', theme: dino });
+    });
+
+    it('keeps the current theme when a Save my date theme fails to load, and a second tap retries', async () => {
+        mocks.get.mockRejectedValueOnce(new Error('offline')).mockResolvedValueOnce(publicTheme('lily'));
+        const { result } = renderHook(() => useFeedEditSession(event, vi.fn()), { wrapper });
+        await act(() => result.current.pickInvitation('lily'));
+        expect(result.current.themeSlug).toBe('');
+        expect(result.current.document.themeId).toBe(WALL_THEME_ID);
+        expect(result.current.switching).toBe(false);
+        await act(() => result.current.pickInvitation('lily'));
+        expect(mocks.get).toHaveBeenCalledTimes(2);
+        expect(result.current.themeSlug).toBe('lily');
+    });
+
+    it('ignores Save while a pick is still loading, and the pick lands after', async () => {
+        let finish: (value: unknown) => void = () => undefined;
+        mocks.get.mockReturnValueOnce(new Promise((resolve) => (finish = resolve)));
+        const onDone = vi.fn();
+        const { result } = renderHook(() => useFeedEditSession(event, onDone), { wrapper });
+        hideRsvp(result.current);
+        let picking: Promise<void> = Promise.resolve();
+        act(() => {
+            picking = result.current.pickInvitation('lily');
+        });
+        await act(() => result.current.save());
+        expect(mocks.put).not.toHaveBeenCalled();
+        expect(onDone).not.toHaveBeenCalled();
+        await act(async () => {
+            finish(publicTheme('lily'));
+            await picking;
+        });
+        expect(result.current.themeSlug).toBe('lily');
+        expect(result.current.dirty).toBe(true);
+    });
+
+    it('ignores a pick while Save is on its way', async () => {
+        let finish: (value: unknown) => void = () => undefined;
+        mocks.put.mockReturnValueOnce(new Promise((resolve) => (finish = resolve)));
+        const onDone = vi.fn();
+        const { result } = renderHook(() => useFeedEditSession(event, onDone), { wrapper });
+        hideRsvp(result.current);
+        let saving: Promise<void> = Promise.resolve();
+        act(() => {
+            saving = result.current.save();
+        });
+        await act(() => result.current.pickInvitation('rose'));
+        expect(result.current.themeSlug).toBe('');
+        await act(async () => {
+            finish({ revision: 4, updatedAt: '2026-11-22T11:00:00Z' });
+            await saving;
+        });
+        expect(mocks.put).toHaveBeenCalledOnce();
+        expect(mocks.put.mock.calls[0][1].themeSlug).toBeNull();
+        expect(onDone).toHaveBeenCalledOnce();
+    });
+
+    it('never sends the held preset when the layout save conflicts, and reload drops it', async () => {
+        mocks.put.mockRejectedValue(new ApiError(409, { errorCode: 5208 }));
+        const onDone = vi.fn();
+        const { result } = renderHook(() => useFeedEditSession(event, onDone), { wrapper });
+        hideRsvp(result.current);
+        await act(() => result.current.pickWall('p-1', dino, false));
+        await act(() => result.current.save());
+        expect(result.current.conflict).toBe(true);
+        expect(mocks.put).toHaveBeenCalledOnce();
+        expect(mocks.put.mock.calls[0][0]).toBe(endpoints.events.feedLayout('e-1'));
+        vi.spyOn(client, 'invalidateQueries').mockResolvedValue();
+        await act(() => result.current.reload());
+        expect(mocks.put).toHaveBeenCalledOnce();
+        expect(onDone).toHaveBeenCalledOnce();
+    });
+
+    it('switches from a Save my date theme back to the wall on a wall pick, clearing the background colour', async () => {
+        const { result } = renderHook(() => useFeedEditSession(event, vi.fn()), { wrapper });
+        await act(() => result.current.pickInvitation('rose'));
+        act(() => result.current.setBackground('#F5E6D3'));
+        await act(() => result.current.pickWall(null, null, true));
+        expect(result.current.themeSlug).toBe('');
+        expect(result.current.document.themeId).toBe(WALL_THEME_ID);
+        expect(result.current.background).toBeUndefined();
+        expect(result.current.heldWall).toBeUndefined();
+    });
+
+    it('adds no undo step for a wall pick when no colour is set', async () => {
+        const { result } = renderHook(() => useFeedEditSession(event, vi.fn()), { wrapper });
+        await act(() => result.current.pickWall('p-1', dino, false));
+        expect(result.current.store.getState().past).toHaveLength(0);
     });
 });

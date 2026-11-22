@@ -1,7 +1,7 @@
 'use client';
 
 import { useQueryClient } from '@tanstack/react-query';
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { type RefObject, useCallback, useMemo, useRef, useState } from 'react';
 
 import { fetchInvitationTheme } from '@/hooks/useInvitationThemeCards';
 import type { EventDetailResponseDto, EventThemeDto } from '@/lib/api/types';
@@ -20,11 +20,13 @@ type ThemeLook = { theme: ThemeDesign; media: MediaResolver };
 // The theme edit mode shows, held until Save. A Save my date theme lives in the editor store (its slug and the
 // planned document); its design and images are kept here per theme, like the old editor's. A wall preset is held
 // beside the store and previewed in place of event.theme. Any pick clears the background colour.
+// saveInFlight: set while Save is on its way; a pick then is ignored, so Save writes what was on screen when tapped.
 export function useFeedEditThemes(
     event: Pick<EventDetailResponseDto, 'eventType' | 'theme'>,
     store: InvitationEditorStore,
     opened: FeedLayoutView,
     themeSlug: string,
+    saveInFlight: RefObject<boolean>,
 ) {
     const queryClient = useQueryClient();
     const [looks, setLooks] = useState<Record<string, ThemeLook>>(() =>
@@ -49,19 +51,25 @@ export function useFeedEditThemes(
         );
     }, [loadTheme, store]);
 
-    const run = useCallback(async (step: () => Promise<void>) => {
-        if (busy.current) return;
-        busy.current = true;
-        setSwitching(true);
-        try {
-            await step();
-        } catch {
-            // A theme that doesn't load leaves the current one on screen.
-        } finally {
-            busy.current = false;
-            setSwitching(false);
-        }
-    }, []);
+    // The theme grid is also disabled while switching; these guards keep the hook safe on its own.
+    const run = useCallback(
+        async (step: () => Promise<void>) => {
+            if (busy.current || saveInFlight.current) return;
+            busy.current = true;
+            setSwitching(true);
+            try {
+                await step();
+            } catch {
+                // A theme that doesn't load leaves the current one on screen.
+            } finally {
+                busy.current = false;
+                setSwitching(false);
+            }
+        },
+        [saveInFlight],
+    );
+    // Read by Save: true from the tap that starts a pick, before switching re-renders.
+    const isSwitching = useCallback(() => busy.current, []);
 
     const pickInvitation = useCallback(
         (slug: string) =>
@@ -92,7 +100,7 @@ export function useFeedEditThemes(
                     store
                         .getState()
                         .switchTheme('', replaceFeedDocument(planFeedWallSwitch(store.getState().document, look, event.eventType, oldIds)));
-                } else {
+                } else if (store.getState().document.overrides.backgroundColor !== undefined) {
                     store.getState().edit(setFeedBackground(undefined));
                 }
                 setHeldWall(applied ? undefined : { presetId, theme: wallTheme });
@@ -104,5 +112,5 @@ export function useFeedEditThemes(
     const wallLook = useMemo(() => wallThemeDesign(wallTheme), [wallTheme]);
     const look = themeSlug ? (looks[themeSlug] ?? { theme: opened.theme, media: opened.media }) : { theme: wallLook, media: opened.media };
 
-    return { theme: look.theme, media: look.media, heldWall, wallTheme, switching, pickInvitation, pickWall };
+    return { theme: look.theme, media: look.media, heldWall, wallTheme, switching, isSwitching, pickInvitation, pickWall };
 }

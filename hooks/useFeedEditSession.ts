@@ -28,14 +28,13 @@ export function useFeedEditSession(event: Pick<EventDetailResponseDto, 'id' | 'e
     // The layout the server holds as far as this visit knows: what it opened on, then each layout save that went through.
     const [base, setBase] = useState(() => ({ revision: opened.revision, document: opened.document, themeSlug: opened.themeSlug ?? '' }));
     const { store, document, themeSlug } = useInvitationEditorStore(opened.document, opened.themeSlug ?? '');
-    const themes = useFeedEditThemes(event, store, opened, themeSlug);
+    // A second tap lands before isPending re-renders. Also tells Back, links and theme picks that a save is on its way.
+    const inFlight = useRef(false);
+    const themes = useFeedEditThemes(event, store, opened, themeSlug, inFlight);
     const layoutDirty = !sameDocument(base.document, document) || themeSlug !== base.themeSlug;
     const dirty = layoutDirty || themes.heldWall !== undefined;
     const { mutateAsync: saveLayout, isPending: savingLayout } = useFeedLayoutSave(event.id);
     const { mutateAsync: saveWallTheme, isPending: savingWall } = useSetEventTheme(event.id);
-
-    // A second tap lands before isPending re-renders. Also tells Back and links that a save is on its way.
-    const inFlight = useRef(false);
 
     // What a yes in the leave dialog does; null while the dialog is closed.
     const [onLeave, setOnLeave] = useState<(() => void) | null>(null);
@@ -88,9 +87,10 @@ export function useFeedEditSession(event: Pick<EventDetailResponseDto, 'id' | 'e
 
     // The layout first (with the held Save my date slug), then a held wall preset. A layout that went through is
     // not sent again: after a failed theme write, Save again writes only the theme.
-    const { heldWall } = themes;
+    // Save is ignored while a picked theme is still loading, so the pick is not lost (the grid is also disabled then).
+    const { heldWall, isSwitching } = themes;
     const save = useCallback(async () => {
-        if (inFlight.current) return;
+        if (inFlight.current || isSwitching()) return;
         if (!dirty) {
             onDone();
             return;
@@ -111,7 +111,7 @@ export function useFeedEditSession(event: Pick<EventDetailResponseDto, 'id' | 'e
         } finally {
             inFlight.current = false;
         }
-    }, [base.revision, dirty, heldWall, layoutDirty, onDone, saveLayout, saveWallTheme, store]);
+    }, [base.revision, dirty, heldWall, isSwitching, layoutDirty, onDone, saveLayout, saveWallTheme, store]);
 
     // Someone saved the layout elsewhere: fetch theirs and leave edit mode on it. The held theme goes with it.
     const reload = useCallback(async () => {
