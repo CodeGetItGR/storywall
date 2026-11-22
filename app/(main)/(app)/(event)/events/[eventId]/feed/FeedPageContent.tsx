@@ -36,12 +36,13 @@ import { useFeedPage } from './FeedPageContext';
 
 export function FeedPageContent() {
     useHideMobileTabBarOnScroll();
-    const { currentMemberRsvpId, event, eventId, isFetchingNextPage, isHost, loadMoreRef, loadingMoreLabel, moduleFlags, posts } = useFeedPage();
+    const { currentMemberRsvpId, event, eventId, isFetchingNextPage, isHost, isRoleLoading, loadMoreRef, loadingMoreLabel, moduleFlags, posts } =
+        useFeedPage();
     const feedItems = useFeedItems(posts, event.partnerBranding);
     const [storyId, setStoryId] = useState<string | null>(null);
     const shouldShowRSVP = useRsvpPromptVisible({ eventId, isHost, rsvpAvailable: moduleFlags.rsvp, rsvpId: currentMemberRsvpId });
     const top = useFeedTop(event);
-    const editMode = useFeedEditMode(event, isHost);
+    const editMode = useFeedEditMode(event, isHost, isRoleLoading);
     const { start: startEditing, finish: finishEditing, editPill, cancelPill } = useFeedEditFocus(editMode.start, editMode.finish);
     const topParts = {
         cover: (
@@ -58,7 +59,9 @@ export function FeedPageContent() {
                 <StoriesRow eventId={eventId} onOpenStoryAction={openStoryModal} />
             </section>
         ),
-        description: event.description && <EventDescription eventId={event.id} description={event.description} keepShown={top.folds || editMode.editing} />,
+        description: event.description && (
+            <EventDescription eventId={event.id} description={event.description} keepShown={top.folds || editMode.editing} />
+        ),
         rsvp: shouldShowRSVP ? <FeedRsvpBlock eventId={eventId} deadline={event.schedule.rsvpDeadline ?? null} /> : null,
     };
 

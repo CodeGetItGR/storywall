@@ -10,6 +10,8 @@ type FeedPageContextValue = {
     currentMemberRsvpId: string | null;
     isFetchingNextPage: boolean;
     isHost: boolean;
+    // The viewer's role is still loading: isHost may still turn true.
+    isRoleLoading: boolean;
     loadMoreRef: RefCallback<HTMLDivElement>;
     loadingMoreLabel: string;
     moduleFlags: Record<ModuleKeyConvention, boolean>;

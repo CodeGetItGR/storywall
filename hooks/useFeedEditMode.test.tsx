@@ -19,9 +19,13 @@ beforeEach(() => {
     mocks.get.mockImplementation(() => new Promise(() => undefined));
 });
 
-const active = { id: 'e-1', theme: null, status: 'ACTIVE' } as unknown as EventDetailResponseDto;
+const SAVE_MY_DATE = [{ moduleKey: 'save_my_date', isAvailable: true, isEnabled: true }];
+const active = { id: 'e-1', theme: null, status: 'ACTIVE', modules: SAVE_MY_DATE } as unknown as EventDetailResponseDto;
 
-function wrap({ flag = true, loaded = true }: { flag?: boolean; loaded?: boolean } = {}, client = new QueryClient({ defaultOptions: { queries: { retry: false, staleTime: Infinity } } })) {
+function wrap(
+    { flag = true, loaded = true }: { flag?: boolean; loaded?: boolean } = {},
+    client = new QueryClient({ defaultOptions: { queries: { retry: false, staleTime: Infinity } } }),
+) {
     if (loaded) client.setQueryData(feedLayoutKeys.detail('e-1'), null);
     return function Wrapper({ children }: { children: ReactNode }) {
         return (
@@ -70,5 +74,16 @@ describe('useFeedEditMode', () => {
         expect(result.current.canEdit).toBe(true);
         expect(result.current.editing).toBe(true);
     });
-});
 
+    it('is off without Save my date', () => {
+        const without = { ...active, modules: [] } as unknown as EventDetailResponseDto;
+        expect(renderHook(() => useFeedEditMode(without, true), { wrapper: wrap() }).result.current.canEdit).toBe(false);
+    });
+
+    it('is settled once the role and the layout are known', () => {
+        expect(renderHook(() => useFeedEditMode(active, true, true), { wrapper: wrap() }).result.current.settled).toBe(false);
+        expect(renderHook(() => useFeedEditMode(active, true), { wrapper: wrap({ loaded: false }) }).result.current.settled).toBe(false);
+        expect(renderHook(() => useFeedEditMode(active, true), { wrapper: wrap() }).result.current.settled).toBe(true);
+        expect(renderHook(() => useFeedEditMode(active, false), { wrapper: wrap({ flag: false, loaded: false }) }).result.current.settled).toBe(true);
+    });
+});

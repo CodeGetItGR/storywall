@@ -50,7 +50,7 @@ export function FeedEditTop({ event, onDone, cancelRef, cover, details, stories,
     const session = useFeedEditSession(event, onDone);
     const view = useFeedTop(event, session.document);
     const fonts = useInvitationFonts(true);
-    const actions = useFeedBlockActions(session.store, session.document, event, session.leaveTo);
+    const actions = useFeedBlockActions(session.store, session.document, event);
     const preview = useSettingsPreview(event, true, true);
     const sheet = useFeedBlockSheet(session.store, session.document, session.theme, session.media, fonts.data, preview.parts);
     const middleIds = view.frame.middle.map((section) => section.id);
@@ -109,7 +109,7 @@ export function FeedEditTop({ event, onDone, cancelRef, cover, details, stories,
             afterMiddle={
                 actions.showAdd && (
                     <FeedNative className="font-sans">
-                        <FeedAddSectionRow locked={actions.locked} canBuy={actions.canBuy} onAdd={actions.openAdd} />
+                        <FeedAddSectionRow onAdd={actions.openAdd} />
                     </FeedNative>
                 )
             }
