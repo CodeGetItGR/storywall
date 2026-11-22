@@ -13,7 +13,7 @@ import { feedEditBannerLook, feedEditBannerPicture } from '@/lib/feedEditBannerL
 import { invitationThemeKeys, isCatalogueEventType } from '@/lib/invitation/themeCatalogue';
 
 // The banner picture's data; null only while it is still loading. The Overview's server render prefetches the
-// layout, the catalogue and the stand-in theme (manage/(root)/page.tsx), so on a full load it draws at once.
+// layout, the catalogue, the stand-in theme and its fonts (manage/(root)/page.tsx), so on a full load it draws at once.
 export function useFeedEditBannerPreview(event: EventDetailResponseDto) {
     const locale = useLocale();
     const layout = useFeedLayout(event, { enabled: true });
