@@ -1,21 +1,17 @@
 'use client';
 
 import { useLocale } from 'next-intl';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 
 import { useInvitationFonts } from '@/hooks/useAdminInvitationThemes';
 import { useThemeSampleSections } from '@/hooks/useThemeSampleSections';
-import { feedSectionPreview } from '@/lib/feedSectionPreview';
+import { buildFeedSectionPreviews, type FeedSectionPreviews } from '@/lib/feedSectionPreview';
 import type { InvitationDocument } from '@/lib/invitation/document';
-import { INVITATION_LABELS } from '@/lib/invitation/labels';
 import type { NewSectionType } from '@/lib/invitation/newSection';
-import { buildRenderContext, type MediaResolver, type RenderContext } from '@/lib/invitation/render';
-import type { InvitationSection } from '@/lib/invitation/sections';
+import type { MediaResolver } from '@/lib/invitation/render';
 import type { ThemeDesign } from '@/lib/invitation/theme';
-import { uploadedFontFaceCss } from '@/lib/invitation/uploadedFonts';
 
-export type FeedSectionPreview = { type: NewSectionType; section: InvitationSection };
-export type FeedSectionPreviews = { items: FeedSectionPreview[]; ctx: RenderContext; lang: string; fontFaces: string };
+export type { FeedSectionPreview, FeedSectionPreviews } from '@/lib/feedSectionPreview';
 
 type FeedSectionPreviewsInput = {
     types: NewSectionType[];
@@ -29,8 +25,9 @@ type FeedSectionPreviewsInput = {
     enabled: boolean;
 };
 
-// The Add section cards' pictures, drawn in the theme edit mode shows, with no text animation.
-// Without a Save my date theme (no samples), every card is createSection(type, eventType).
+// The Add section cards' pictures, drawn in the theme edit mode shows. Built only while the picker is open; while it
+// closes (and until it opens again) the last cards stay, so the sheet doesn't change as it slides away. Null until
+// it first opens. The samples load whether or not it is open, so the cards don't change on first open either.
 export function useFeedSectionPreviews({
     types,
     themeSlug,
@@ -39,22 +36,18 @@ export function useFeedSectionPreviews({
     media,
     eventType,
     enabled,
-}: FeedSectionPreviewsInput): FeedSectionPreviews {
+}: FeedSectionPreviewsInput): FeedSectionPreviews | null {
     const locale = useLocale();
-    const samples = useThemeSampleSections(enabled && themeSlug ? themeSlug : null);
-    const fonts = useInvitationFonts(enabled);
+    const samples = useThemeSampleSections(themeSlug || null);
+    const fonts = useInvitationFonts(true);
+    const fontList = fonts.data;
 
-    const items = useMemo(
-        () => types.map((type) => ({ type, section: feedSectionPreview(type, samples?.sections ?? null, eventType) })),
-        [types, samples, eventType],
+    const live = useMemo(
+        () => (enabled ? buildFeedSectionPreviews({ types, document, theme, media, eventType, samples, fonts: fontList ?? [], locale }) : null),
+        [enabled, types, document, theme, media, eventType, samples, fontList, locale],
     );
-    const ctx = useMemo(() => {
-        const sampleMedia: MediaResolver = (mediaId) => samples?.imageUrls[mediaId] ?? media(mediaId);
-        return {
-            ...buildRenderContext(document, { ...theme, textAnimation: 'none' }, sampleMedia),
-            labels: INVITATION_LABELS[locale === 'en' ? 'en' : 'el'],
-        };
-    }, [document, theme, media, samples, locale]);
+    const [last, setLast] = useState(live);
+    if (live && live !== last) setLast(live);
 
-    return { items, ctx, lang: locale, fontFaces: enabled ? uploadedFontFaceCss(fonts.data ?? [], [document, theme]) : '' };
+    return live ?? last;
 }

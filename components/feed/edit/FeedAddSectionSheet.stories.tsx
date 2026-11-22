@@ -3,22 +3,28 @@ import { fn } from 'storybook/test';
 
 import { FeedAddSectionSheet } from '@/components/feed/edit/FeedAddSectionSheet';
 import { defaultFeedLayout, wallThemeDesign } from '@/lib/feedLayout';
-import { feedSectionPreview } from '@/lib/feedSectionPreview';
-import { INVITATION_LABELS } from '@/lib/invitation/labels';
-import { buildRenderContext } from '@/lib/invitation/render';
+import { buildFeedSectionPreviews } from '@/lib/feedSectionPreview';
+import type { NewSectionType } from '@/lib/invitation/newSection';
 
-const ctx = {
-    ...buildRenderContext(defaultFeedLayout(), { ...wallThemeDesign(null), textAnimation: 'none' }, () => undefined),
-    labels: INVITATION_LABELS.en,
-};
-const types = ['coupleNames', 'dressCode', 'faq'] as const;
+// The wall theme: no Save my date samples, so every card is a new section.
+const previews = (types: NewSectionType[]) =>
+    buildFeedSectionPreviews({
+        types,
+        document: defaultFeedLayout(),
+        theme: wallThemeDesign(null),
+        media: () => undefined,
+        eventType: 'WEDDING',
+        samples: null,
+        fonts: [],
+        locale: 'en',
+    });
 
 const meta = {
     title: 'Feed/Edit/FeedAddSectionSheet',
     component: FeedAddSectionSheet,
     args: {
         open: true,
-        previews: { items: types.map((type) => ({ type, section: feedSectionPreview(type, null, 'WEDDING') })), ctx, lang: 'en', fontFaces: '' },
+        previews: previews(['coupleNames', 'dressCode', 'faq']),
         onAdd: fn(),
         onClose: fn(),
     },
@@ -28,4 +34,5 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Cards: Story = {};
-export const NothingToAdd: Story = { args: { previews: { items: [], ctx, lang: 'en', fontFaces: '' } } };
+export const EmptyGallery: Story = { args: { previews: previews(['gallery', 'faq']) } };
+export const NothingToAdd: Story = { args: { previews: previews([]) } };
