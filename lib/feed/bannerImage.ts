@@ -4,6 +4,8 @@ import { preload } from 'react-dom';
 import type { EventDetailResponseDto } from '@/lib/api/types';
 
 export const BANNER_IMAGE_SIZES = '(max-width: 1024px) 100vw, 800px';
+// A small picture of the banner (the Overview's feed banner): never preloaded, never fetched at full width.
+export const BANNER_THUMBNAIL_SIZES = '112px';
 
 // The theme's illustration takes the cover's place on the banner.
 export function bannerImageSrc(event: Pick<EventDetailResponseDto, 'coverMedia' | 'theme'>): string | null {

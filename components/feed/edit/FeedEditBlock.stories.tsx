@@ -37,3 +37,5 @@ type Story = StoryObj<typeof meta>;
 
 export const Visible: Story = {};
 export const Hidden: Story = { args: { section: { ...section, visible: false } } };
+// Its settings are open.
+export const Active: Story = { args: { active: true } };

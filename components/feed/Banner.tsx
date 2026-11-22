@@ -3,7 +3,7 @@ import type { ReactNode } from 'react';
 import { ProtectedImage } from '@/components/common/ProtectedImage';
 import { BannerFallback } from '@/components/feed/BannerFallback';
 import { BannerOverlay } from '@/components/feed/BannerOverlay';
-import { BANNER_IMAGE_SIZES } from '@/lib/feed/bannerImage';
+import { BANNER_IMAGE_SIZES, BANNER_THUMBNAIL_SIZES } from '@/lib/feed/bannerImage';
 
 export function Banner({
     image,
@@ -14,6 +14,7 @@ export function Banner({
     glowVisible,
     fallbackActionHref,
     fallbackActionLabel,
+    thumbnail = false,
 }: {
     image: string | null;
     // A theme's illustration. Takes the cover's place, and so also the "add cover photo" prompt's.
@@ -25,7 +26,10 @@ export function Banner({
     glowVisible: boolean;
     fallbackActionHref?: string;
     fallbackActionLabel?: string;
+    // Drawn as a small picture: the image isn't preloaded and is fetched at the picture's size.
+    thumbnail?: boolean;
 }) {
+    const sizes = thumbnail ? BANNER_THUMBNAIL_SIZES : BANNER_IMAGE_SIZES;
     // Illustration mode: the art sits clean on the theme colour and the title goes below it in
     // dark ink. The cover-photo overlay (dark gradient, white title) would only muddy it.
     if (illustrationUrl) {
@@ -38,8 +42,8 @@ export function Banner({
                             alt={title}
                             fill
                             className="object-contain"
-                            preload
-                            sizes={BANNER_IMAGE_SIZES}
+                            preload={!thumbnail}
+                            sizes={sizes}
                             onError={onIllustrationError}
                         />
                     </div>
@@ -58,7 +62,7 @@ export function Banner({
             <div className="relative isolate overflow-hidden rounded-[1.5rem]">
                 <div className="relative aspect-16/11 w-full">
                     {image ? (
-                        <ProtectedImage src={image} alt={title} fill className="object-cover" preload sizes={BANNER_IMAGE_SIZES} />
+                        <ProtectedImage src={image} alt={title} fill className="object-cover" preload={!thumbnail} sizes={sizes} />
                     ) : (
                         <BannerFallback actionHref={fallbackActionHref} actionLabel={fallbackActionLabel} />
                     )}

@@ -8,7 +8,7 @@ import {
     upgradeInvitationDocument,
 } from '@/lib/invitation/document';
 import { SAMPLE_DOCUMENT, SAMPLE_SECTIONS, SAMPLE_THEME } from '@/lib/invitation/samples';
-import { FEED_SECTION_TYPES, resolveTextField, SECTION_TYPES,sectionSchema } from '@/lib/invitation/sections';
+import { FEED_SECTION_TYPES, resolveTextField, SECTION_TYPES, sectionSchema } from '@/lib/invitation/sections';
 import { themeDesignSchema } from '@/lib/invitation/theme';
 
 const clone = <T>(value: T): T => structuredClone(value);
@@ -107,5 +107,22 @@ describe('invitation document format', () => {
         const section = clone(SAMPLE_SECTIONS.feedDetails) as unknown as { data: Record<string, unknown> };
         section.data.title = 'X';
         expect(sectionSchema.safeParse(section).success).toBe(false);
+    });
+});
+
+describe('the feed background colour', () => {
+    const withBackground = (backgroundColor: string) => ({
+        ...SAMPLE_DOCUMENT,
+        overrides: { ...SAMPLE_DOCUMENT.overrides, backgroundColor },
+    });
+
+    it('takes a #RRGGBB colour', () => {
+        expect(invitationDocumentSchema.safeParse(withBackground('#AABBCC')).success).toBe(true);
+    });
+
+    it('refuses anything else', () => {
+        for (const bad of ['red', 'transparent', '#abc', '#AABBCCDD']) {
+            expect(invitationDocumentSchema.safeParse(withBackground(bad)).success).toBe(false);
+        }
     });
 });

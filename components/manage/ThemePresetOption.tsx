@@ -27,6 +27,7 @@ export function ThemePresetOption({
     disabled,
     tabbable,
     size = 'default',
+    onDark = false,
     previewTitle,
     onSelectAction,
     onFocusAction,
@@ -49,6 +50,8 @@ export function ThemePresetOption({
     disabled: boolean;
     tabbable: boolean;
     size?: 'default' | 'large';
+    // A white card, for a dark surface.
+    onDark?: boolean;
     // The event's title, shown in the theme's font as a preview; the theme name then goes below it.
     previewTitle?: string;
     onSelectAction: (presetId: string | null) => void;
@@ -89,6 +92,7 @@ export function ThemePresetOption({
             className={cn(
                 'bg-surface flex min-w-0 flex-col text-left transition aria-disabled:cursor-not-allowed',
                 size === 'large' ? 'gap-1 rounded-xl p-1 pb-1.5' : 'gap-1.5 rounded-[18px] p-2 pb-2.5',
+                onDark && 'bg-white',
                 selected ? 'ring-2 ring-primary' : 'ring-1 ring-border hover:ring-primary/40',
                 disabled && !selected && 'opacity-60',
             )}

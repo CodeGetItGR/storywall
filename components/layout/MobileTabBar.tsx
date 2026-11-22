@@ -117,7 +117,13 @@ export function MobileTabBar() {
         <>
             {/* Navigation */}
             <div className="pointer-events-none fixed inset-0 z-40 md:hidden" style={pinchZoomBox}>
-                <div className="pointer-events-auto absolute bottom-0 left-1/2 w-full max-w-lg -translate-x-1/2">
+                {/* While hidden it lets taps through to what is under it, such as the text toolbar. */}
+                <div
+                    className={cn(
+                        'absolute bottom-0 left-1/2 w-full max-w-lg -translate-x-1/2',
+                        isMobileTabBarHidden ? 'pointer-events-none' : 'pointer-events-auto',
+                    )}
+                >
                     <nav
                         aria-label={t('eventNavigation')}
                         aria-hidden={isMobileTabBarHidden}

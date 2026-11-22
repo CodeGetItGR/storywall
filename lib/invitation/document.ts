@@ -1,8 +1,8 @@
 import { z } from 'zod';
 
 import { colorSchema, idSchema, type ImageRef } from '@/lib/invitation/primitives';
-import { type InvitationSection,MULTI_INSTANCE_SECTION_TYPES, sectionSchema } from '@/lib/invitation/sections';
-import { type ThemeDesign,themeDesignSchema } from '@/lib/invitation/theme';
+import { type InvitationSection, MULTI_INSTANCE_SECTION_TYPES, sectionSchema } from '@/lib/invitation/sections';
+import { type ThemeDesign, themeDesignSchema } from '@/lib/invitation/theme';
 
 export const INVITATION_SCHEMA_VERSION = 1;
 
@@ -15,7 +15,15 @@ export const invitationDocumentSchema = z
         themeId: idSchema,
         // The only parts of the theme a host may change.
         overrides: z
-            .object({ typographyPresetId: idSchema.optional(), textColor: colorSchema.optional() })
+            .object({
+                typographyPresetId: idSchema.optional(),
+                textColor: colorSchema.optional(),
+                // The customizable feed's one background colour (KAN-245): every section and the page behind the posts.
+                backgroundColor: z
+                    .string()
+                    .regex(/^#[0-9a-fA-F]{6}$/)
+                    .optional(),
+            })
             .strict(),
         sections: z.array(sectionSchema).max(MAX_SECTIONS),
     })
@@ -69,7 +77,10 @@ type Upgrade = (document: Record<string, unknown>) => Record<string, unknown>;
 export const INVITATION_UPGRADES: Record<number, Upgrade> = {};
 
 export function upgradeInvitationDocument(raw: unknown): InvitationDocument {
-    let document = z.object({ schemaVersion: z.number().int().min(1) }).loose().parse(raw) as Record<string, unknown>;
+    let document = z
+        .object({ schemaVersion: z.number().int().min(1) })
+        .loose()
+        .parse(raw) as Record<string, unknown>;
     for (let version = document.schemaVersion as number; version < INVITATION_SCHEMA_VERSION; version += 1) {
         const upgrade = INVITATION_UPGRADES[version];
         if (!upgrade) throw new Error(`No upgrade from invitation schema ${version}`);

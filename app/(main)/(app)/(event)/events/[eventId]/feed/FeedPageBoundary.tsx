@@ -17,7 +17,7 @@ import { ApiError } from '@/lib/api/client';
 import { EVENT_MODULE_KEYS, type ModuleKeyConvention } from '@/lib/api/types';
 import { uniqueById } from '@/lib/postQueries';
 import { routes } from '@/lib/routes';
-import { useActiveMember, useIsHost } from '@/providers/EventProvider';
+import { useActiveMember, useEventContextLoading, useIsHost } from '@/providers/EventProvider';
 
 import { FeedPageContent } from './FeedPageContent';
 import { FeedPageProvider } from './FeedPageContext';
@@ -28,6 +28,7 @@ export function FeedPageBoundary({ eventId }: { eventId: string }) {
     const queryClient = useQueryClient();
     const activeMember = useActiveMember();
     const isHost = useIsHost();
+    const isRoleLoading = useEventContextLoading();
     const currentMemberRsvpId = activeMember?.rsvpId ?? null;
     const { data: appConfig } = useAppConfig();
 
@@ -93,6 +94,7 @@ export function FeedPageBoundary({ eventId }: { eventId: string }) {
                 eventId,
                 isFetchingNextPage,
                 isHost,
+                isRoleLoading,
                 loadMoreRef,
                 loadingMoreLabel: t('loadingMore'),
                 moduleFlags,

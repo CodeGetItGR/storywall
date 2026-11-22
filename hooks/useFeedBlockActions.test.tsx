@@ -1,5 +1,5 @@
 import { act, renderHook } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { useStore } from 'zustand';
 
 import { useFeedBlockActions } from '@/hooks/useFeedBlockActions';
@@ -10,35 +10,21 @@ import { createInvitationEditorStore } from '@/lib/invitation/editorStore';
 import { SAMPLE_SECTIONS } from '@/lib/invitation/samples';
 import type { InvitationSection } from '@/lib/invitation/sections';
 
-const upgrade = vi.hoisted(() => ({ href: '/events/e-1/manage?tab=billing' as string | null }));
-vi.mock('@/hooks/usePlanUpgradeHref', () => ({ usePlanUpgradeHref: () => upgrade.href }));
-
 const dressCode = { ...(SAMPLE_SECTIONS.dressCode as InvitationSection), id: 'dress' };
 
-function eventWith(saveMyDate: boolean) {
-    return {
-        id: 'e-1',
-        eventType: 'WEDDING',
-        modules: saveMyDate ? [{ moduleKey: 'save_my_date', isAvailable: true, isEnabled: true }] : [],
-    } as unknown as EventDetailResponseDto;
-}
+const event = { id: 'e-1', eventType: 'WEDDING' } as unknown as EventDetailResponseDto;
 
-function setup(saveMyDate = true, extra: InvitationSection[] = [dressCode]) {
+function setup(extra: InvitationSection[] = [dressCode]) {
     const base = defaultFeedLayout();
     const store = createInvitationEditorStore({ ...base, sections: [...base.sections, ...extra] });
-    const leaveTo = vi.fn();
     const hook = renderHook(() => {
         const document = useStore(store, (state) => state.document);
-        return useFeedBlockActions(store, document, eventWith(saveMyDate), leaveTo);
+        return useFeedBlockActions(store, document, event);
     });
-    return { store, leaveTo, ...hook };
+    return { store, ...hook };
 }
 
 const middle = (sections: InvitationSection[]) => sections.filter((section) => section.id === 'dress' || section.type === 'feedDescription');
-
-beforeEach(() => {
-    upgrade.href = '/events/e-1/manage?tab=billing';
-});
 
 describe('useFeedBlockActions', () => {
     it('hides and shows a block', () => {
@@ -77,28 +63,14 @@ describe('useFeedBlockActions', () => {
 
     it('leaves out the Add section row at the section limit', () => {
         expect(setup().result.current.showAdd).toBe(true);
-        const full = Array.from({ length: MAX_SECTIONS - defaultFeedLayout().sections.length }, (_, index) => ({ ...dressCode, id: `dress-${index}` }));
-        const { result } = setup(true, full);
+        const full = Array.from({ length: MAX_SECTIONS - defaultFeedLayout().sections.length }, (_, index) => ({
+            ...dressCode,
+            id: `dress-${index}`,
+        }));
+        const { result } = setup(full);
         expect(result.current.addable).toEqual([]);
         expect(result.current.showAdd).toBe(false);
         act(() => result.current.openAdd());
         expect(result.current.adding).toBe(false);
-    });
-
-    it('sends a host without Save my date to Billing', () => {
-        const { leaveTo, result } = setup(false);
-        expect(result.current.locked).toBe(true);
-        expect(result.current.showAdd).toBe(true);
-        act(() => result.current.openAdd());
-        expect(result.current.adding).toBe(false);
-        expect(leaveTo).toHaveBeenCalledWith('/events/e-1/manage?tab=billing');
-    });
-
-    it('does nothing for a co-host who cannot buy', () => {
-        upgrade.href = null;
-        const { leaveTo, result } = setup(false);
-        expect(result.current.canBuy).toBe(false);
-        act(() => result.current.openAdd());
-        expect(leaveTo).not.toHaveBeenCalled();
     });
 });

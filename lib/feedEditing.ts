@@ -150,3 +150,16 @@ export function feedSettingsGroups(groups: readonly SettingsGroup[]): SettingsGr
 }
 
 export const noFeedUploads: ImageUploader = () => Promise.reject(new Error('The feed takes no photo uploads yet.'));
+
+// What keeps its own job when tapped inside a block: anything the host presses or types in,
+// the Save my date text typed in place, and the block's tools (data-feed-block-tools, the cover's Cancel and Save too).
+const OWN_TAP =
+    'button, a, input, textarea, select, label, summary, [role="button"], [contenteditable="true"], [data-smd-text], [data-feed-block-tools]';
+
+// In edit mode a tap anywhere else on a block opens its settings. A tap from outside the block
+// (its menu is drawn elsewhere on the page, though React passes the click up through the block) does not.
+export function opensBlockSettings(target: EventTarget | null, block: Element): boolean {
+    if (!(target instanceof Element) || !block.contains(target)) return false;
+    const own = target.closest(OWN_TAP);
+    return own === null || !block.contains(own);
+}
