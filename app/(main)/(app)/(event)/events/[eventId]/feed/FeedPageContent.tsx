@@ -3,6 +3,8 @@
 import { useState } from 'react';
 
 import { ComposerCard } from '@/components/feed/ComposerCard';
+import { FeedEditPill } from '@/components/feed/edit/FeedEditPill';
+import { LazyFeedEditTop } from '@/components/feed/edit/LazyFeedEditTop';
 import { EventDescription } from '@/components/feed/EventDescription';
 import { FeedEmptyState } from '@/components/feed/FeedEmptyState';
 import { FeedPostRenderer } from '@/components/feed/FeedPostRenderer';
@@ -22,6 +24,7 @@ import { StoriesRow } from '@/components/feed/StoriesRow';
 import { InstallAppBanner } from '@/components/pwa/InstallAppBanner';
 import { StoryModal } from '@/components/story/StoryModal';
 import { VendorProfilePrompt } from '@/components/vendors/VendorProfilePrompt';
+import { useFeedEditMode } from '@/hooks/useFeedEditMode';
 import { useFeedItems } from '@/hooks/useFeedItems';
 import { useFeedTop } from '@/hooks/useFeedTop';
 import { useHideMobileTabBarOnScroll } from '@/hooks/useHideMobileTabBarOnScroll';
@@ -37,6 +40,25 @@ export function FeedPageContent() {
     const [storyId, setStoryId] = useState<string | null>(null);
     const shouldShowRSVP = useRsvpPromptVisible({ eventId, isHost, rsvpAvailable: moduleFlags.rsvp, rsvpId: currentMemberRsvpId });
     const top = useFeedTop(event);
+    const editMode = useFeedEditMode(event, isHost);
+    const topParts = {
+        cover: (
+            <FeedCoverBlock
+                event={event}
+                isHost={isHost}
+                wishlist={moduleFlags.wishlist}
+                corner={editMode.canEdit && !editMode.editing ? <FeedEditPill onClick={editMode.start} /> : undefined}
+            />
+        ),
+        details: <FeedDetailsBlock event={event} />,
+        stories: moduleFlags.stories && (
+            <section id="stories" className={cn('top-0 bg-event/90 backdrop-blur-sm')}>
+                <StoriesRow eventId={eventId} onOpenStoryAction={openStoryModal} />
+            </section>
+        ),
+        description: event.description && <EventDescription eventId={event.id} description={event.description} keepShown={top.folds || editMode.editing} />,
+        rsvp: shouldShowRSVP ? <FeedRsvpBlock eventId={eventId} deadline={event.schedule.rsvpDeadline ?? null} /> : null,
+    };
 
     function openStoryModal(nextStoryId: string) {
         setStoryId(nextStoryId);
@@ -53,20 +75,7 @@ export function FeedPageContent() {
             {/* Install */}
             <InstallAppBanner />
             {/* Invitation blocks, stories and RSVP */}
-            <FeedTop
-                view={top}
-                cover={<FeedCoverBlock event={event} isHost={isHost} wishlist={moduleFlags.wishlist} />}
-                details={<FeedDetailsBlock event={event} />}
-                stories={
-                    moduleFlags.stories && (
-                        <section id="stories" className={cn('top-0 bg-event/90 backdrop-blur-sm')}>
-                            <StoriesRow eventId={eventId} onOpenStoryAction={openStoryModal} />
-                        </section>
-                    )
-                }
-                description={event.description && <EventDescription eventId={event.id} description={event.description} keepShown={top.folds} />}
-                rsvp={shouldShowRSVP ? <FeedRsvpBlock eventId={eventId} deadline={event.schedule.rsvpDeadline ?? null} /> : null}
-            />
+            {editMode.editing ? <LazyFeedEditTop event={event} onDone={editMode.finish} {...topParts} /> : <FeedTop view={top} {...topParts} />}
 
             {/* Posts */}
             <section id="posts">
