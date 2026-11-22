@@ -355,13 +355,11 @@ describe('FeedPageContent on a Save my date theme', { timeout: 15_000 }, () => {
         expect(feedPageThemeFor(feedPageThemeSnapshot(), 'e-1')?.backdrop?.image?.desktop).toBe('https://media.test/content.jpg');
     });
 
-    it('draws the stories row on the page, not on its own colour', () => {
+    it('draws the stories row on the page wherever the page draws a backdrop, and on its own colour elsewhere', () => {
         const { container } = renderFeed(null, { flag: true, layout: themed, stories: true });
-        expect(container.querySelector('#stories')?.className).not.toContain('bg-event/90');
-    });
-
-    it('keeps the stories row colour on the wall theme', () => {
-        const { container } = renderFeed(null, { flag: true, layout: null, stories: true });
-        expect(container.querySelector('#stories')?.className).toContain('bg-event/90');
+        const row = container.querySelector('#stories')?.className ?? '';
+        expect(row).toContain('bg-event/90');
+        expect(row).toContain('[.feed-backdrop_&]:bg-transparent');
+        expect(row).toContain('[.feed-backdrop_&]:backdrop-blur-none');
     });
 });

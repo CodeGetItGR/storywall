@@ -59,8 +59,12 @@ export function FeedPageContent() {
         ),
         details: <FeedDetailsBlock event={event} />,
         stories: moduleFlags.stories && (
-            // On a Save my date theme the row sits on the page's own background.
-            <section id="stories" className={cn('top-0', !top.backdrop && 'bg-event/90 backdrop-blur-sm')}>
+            // On a Save my date theme the row sits on the page's own background: inside the scope that draws
+            // the backdrop, so it follows a theme held in edit mode too.
+            <section
+                id="stories"
+                className="top-0 bg-event/90 backdrop-blur-sm [.feed-backdrop_&]:bg-transparent [.feed-backdrop_&]:backdrop-blur-none"
+            >
                 <StoriesRow eventId={eventId} onOpenStoryAction={openStoryModal} />
             </section>
         ),
