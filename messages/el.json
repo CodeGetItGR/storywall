@@ -5589,7 +5589,13 @@
             "kinds": {
                 "STORAGE_PACK": "Πακέτο χώρου",
                 "RECURRING_ADDON": "Πρόσθετο",
-                "MODULE_UNLOCK": "Ξεκλείδωμα εργαλείου"
+                "MODULE_UNLOCK": "Ξεκλείδωμα εργαλείου",
+                "EXTENSION": "Επέκταση"
+            },
+            "extensions": {
+                "add": "Προσθήκη επέκτασης",
+                "newTitle": "Νέα επέκταση",
+                "save": "Αποθήκευση επέκτασης"
             },
             "stats": {
                 "total": "Σύνολο υπηρεσιών",
