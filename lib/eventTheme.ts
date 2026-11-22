@@ -46,7 +46,12 @@ export function themeFontFaceCss(font: EventThemeFontDto | null | undefined): st
     return `@font-face{font-family:"theme-${font.key}";src:url("${font.url}") format("woff2");font-display:swap;}`;
 }
 
-export type EventThemeExtras = { titleColor?: string | null; headingFont?: EventThemeFontDto | null };
+export type EventThemeExtras = {
+    titleColor?: string | null;
+    headingFont?: EventThemeFontDto | null;
+    // The post cards' own colour (the feed's Save my date theme, spec P1). Without one they take the page colour.
+    cardColor?: string | null;
+};
 
 // The theme as CSS custom properties: --event-bg for `bg-event` surfaces, the same colour for post
 // cards (--event-card-bg) with a darker shade of it as their divider (--event-card-line), the muted
@@ -56,10 +61,11 @@ export type EventThemeExtras = { titleColor?: string | null; headingFont?: Event
 // Undefined keeps the default look: no theme, or a value that isn't #RRGGBB.
 export function eventThemeStyle(backgroundColor: string | null | undefined, extras: EventThemeExtras = {}): CSSProperties | undefined {
     if (!backgroundColor || !isHexColor(backgroundColor)) return undefined;
+    const card = extras.cardColor && isHexColor(extras.cardColor) ? extras.cardColor : backgroundColor;
     const style: Record<string, string> = {
         '--event-bg': backgroundColor,
-        '--event-card-bg': backgroundColor,
-        '--event-card-line': `color-mix(in oklab, ${backgroundColor} 85%, #000000)`,
+        '--event-card-bg': card,
+        '--event-card-line': `color-mix(in oklab, ${card} 85%, #000000)`,
         '--surface-muted': `color-mix(in oklab, ${backgroundColor} 15%, #ffffff)`,
         '--orangish': '#ffffff',
     };

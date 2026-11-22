@@ -58,6 +58,37 @@ afterEach(() => {
 });
 
 describe('EventThemeScope', () => {
+    it("draws the feed's theme backdrop behind the page and puts the post cards on its light tone", () => {
+        state.event = themedEvent;
+        publishFeedPageTheme('feed', {
+            eventId: 'e-1',
+            value: {
+                theme: { ...themedEvent.theme!, backgroundColor: '#EFE7EC' },
+                backdrop: {
+                    color: '#EFE7EC',
+                    image: { desktop: 'https://media.example/d.jpg', mobile: 'https://media.example/m.jpg' },
+                    size: '100% auto',
+                    repeat: 'repeat-y',
+                    position: 'center top',
+                    cardColor: '#F9F5F7',
+                },
+            },
+        });
+        const root = renderScope();
+        expect(root.className).toContain('feed-backdrop');
+        expect(root.style.getPropertyValue('--event-bg')).toBe('#EFE7EC');
+        expect(root.style.getPropertyValue('--event-card-bg')).toBe('#F9F5F7');
+        expect(root.style.getPropertyValue('--event-card-line')).toBe('color-mix(in oklab, #F9F5F7 85%, #000000)');
+        expect(root.style.getPropertyValue('--feed-backdrop-mobile')).toBe('url("https://media.example/m.jpg")');
+    });
+
+    it('draws no backdrop for the background colour alone', () => {
+        state.event = themedEvent;
+        publishFeedPageTheme('feed', { eventId: 'e-1', value: { theme: { ...themedEvent.theme!, backgroundColor: '#F5E6D3' } } });
+        const root = renderScope();
+        expect(root.className).not.toContain('feed-backdrop');
+        expect(root.style.getPropertyValue('--event-card-bg')).toBe('#F5E6D3');
+    });
     it("sets the route event's theme colour as --event-bg", () => {
         state.event = themedEvent;
         const root = renderScope();
