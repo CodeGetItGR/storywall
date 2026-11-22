@@ -12,11 +12,15 @@ import { AdminSection } from '@/components/admin/AdminSection';
 import { AdminSortableList } from '@/components/admin/AdminSortableList';
 import { AdminSortableRow } from '@/components/admin/AdminSortableRow';
 import { AdminStatTile } from '@/components/admin/AdminStatTile';
+import { ExtensionDrawer } from '@/components/admin/ExtensionDrawer';
+import { ExtensionTableRow } from '@/components/admin/ExtensionTableRow';
 import { PaidServiceDrawer, type Visibility, visibilityOf } from '@/components/admin/PaidServiceDrawer';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { LoadingState } from '@/components/ui/LoadingState';
 import { useAdminPlanTiers, useRemoveEventAddon } from '@/hooks/useAdmin';
 import { usePaidServiceMove } from '@/hooks/useAdminReorder';
+import { useExtensionDrawer } from '@/hooks/useExtensionDrawer';
+import { extensionRowsFromPlans, extensionVisibility, filterExtensionRows } from '@/lib/adminExtensions';
 import { adminErrorMessageKey, isUuid } from '@/lib/adminUtils';
 import type { PaidServiceKind, PaidServiceResponseDto } from '@/lib/api/types';
 import { formatMoney } from '@/lib/billing';
@@ -24,7 +28,10 @@ import { bySortOrder } from '@/lib/sortOrder';
 import { cn } from '@/lib/utils';
 
 const KINDS: PaidServiceKind[] = ['STORAGE_PACK', 'RECURRING_ADDON', 'MODULE_UNLOCK'];
-const KIND_FILTERS: Array<PaidServiceKind | 'ALL'> = ['ALL', ...KINDS];
+// Extensions are listed here too, though each is a coverage option of one plan
+// rather than a paid service.
+type CatalogKind = PaidServiceKind | 'EXTENSION';
+const KIND_FILTERS: Array<CatalogKind | 'ALL'> = ['ALL', ...KINDS, 'EXTENSION'];
 const STATUS_FILTERS: Array<Visibility | 'ALL'> = ['ALL', 'LIVE', 'HIDDEN', 'ARCHIVED'];
 
 const STATUS_DOT: Record<Visibility, string> = {
@@ -46,7 +53,7 @@ export function PaidServicesCatalogPanel() {
     const locale = useLocale();
     const { focus } = useAdminNavigation();
 
-    const [kindFilter, setKindFilter] = useState<PaidServiceKind | 'ALL'>('ALL');
+    const [kindFilter, setKindFilter] = useState<CatalogKind | 'ALL'>('ALL');
     const [statusFilter, setStatusFilter] = useState<Visibility | 'ALL'>('ALL');
     const [search, setSearch] = useState('');
     const [drawerOpen, setDrawerOpen] = useState(false);
@@ -68,6 +75,9 @@ export function PaidServicesCatalogPanel() {
     });
     const eventPlans = useAdminPlanTiers('EVENT', true);
     const removeAddon = useRemoveEventAddon();
+    const plans = useMemo(() => eventPlans.data ?? [], [eventPlans.data]);
+    const allExtensions = useMemo(() => extensionRowsFromPlans(plans), [plans]);
+    const extensionDrawer = useExtensionDrawer(plans);
 
     // Each kind has its own order, so the list groups by kind first.
     const allServices = useMemo(
@@ -85,8 +95,12 @@ export function PaidServicesCatalogPanel() {
             else if (status === 'HIDDEN') hidden += 1;
             else archived += 1;
         }
-        return { total: allServices.length, live, hidden, archived };
-    }, [allServices]);
+        for (const row of allExtensions) {
+            if (extensionVisibility(row.option) === 'LIVE') live += 1;
+            else archived += 1;
+        }
+        return { total: allServices.length + allExtensions.length, live, hidden, archived };
+    }, [allServices, allExtensions]);
 
     const visibleServices = useMemo(() => {
         const needle = search.trim().toLowerCase();
@@ -101,6 +115,11 @@ export function PaidServicesCatalogPanel() {
             );
         });
     }, [allServices, kindFilter, statusFilter, search]);
+    const visibleExtensions = useMemo(
+        () => filterExtensionRows(allExtensions, { kind: kindFilter, status: statusFilter, search }),
+        [allExtensions, kindFilter, statusFilter, search],
+    );
+    const shownCount = visibleServices.length + visibleExtensions.length;
 
     const servicesOfKind = useMemo(() => allServices.filter((service) => service.kind === kindFilter), [allServices, kindFilter]);
     const move = usePaidServiceMove(servicesOfKind);
@@ -136,7 +155,7 @@ export function PaidServicesCatalogPanel() {
     const closeRemoveConfirm = useCallback(() => setConfirmRemoveOpen(false), []);
 
     const handleKindFilterClick = useCallback((event: React.MouseEvent<HTMLButtonElement>) => {
-        setKindFilter(event.currentTarget.dataset.kind as PaidServiceKind | 'ALL');
+        setKindFilter(event.currentTarget.dataset.kind as CatalogKind | 'ALL');
     }, []);
     const handleStatusFilterClick = useCallback((event: React.MouseEvent<HTMLButtonElement>) => {
         setStatusFilter(event.currentTarget.dataset.status as Visibility | 'ALL');
@@ -176,7 +195,7 @@ export function PaidServicesCatalogPanel() {
     const showIdError = trimmedId.length > 0 && !isUuid(trimmedId);
     const canRemove = isUuid(trimmedId) && Boolean(addonCode);
     const selectedAddon = allServices.find((service) => service.code === addonCode) ?? null;
-    const plansById = useMemo(() => new Map((eventPlans.data ?? []).map((plan) => [plan.id, plan.name])), [eventPlans.data]);
+    const plansById = useMemo(() => new Map(plans.map((plan) => [plan.id, plan.name])), [plans]);
 
     return (
         <div className="mx-auto max-w-6xl px-4 pt-5 pb-16 text-[15px] sm:px-6 lg:px-8 lg:pt-6 lg:pb-10">
@@ -186,14 +205,24 @@ export function PaidServicesCatalogPanel() {
                     <h1 className="mt-1 text-2xl font-extrabold tracking-tight text-ink sm:text-3xl">{t('title')}</h1>
                     <p className="mt-1.5 max-w-2xl text-sm leading-6 text-ink-muted">{t('subtitle')}</p>
                 </div>
-                <button
-                    type="button"
-                    onClick={openCreate}
-                    className="inline-flex min-h-10 items-center gap-2 rounded-lg bg-ink px-4 text-sm font-semibold text-white shadow-sm"
-                >
-                    <Plus className="h-4 w-4" />
-                    {t('create')}
-                </button>
+                <div className="flex flex-wrap gap-2">
+                    <button
+                        type="button"
+                        onClick={extensionDrawer.openNew}
+                        className="inline-flex min-h-10 items-center gap-2 rounded-lg border border-border bg-card px-4 text-sm font-semibold text-ink"
+                    >
+                        <Plus className="h-4 w-4" aria-hidden="true" />
+                        {t('extensions.add')}
+                    </button>
+                    <button
+                        type="button"
+                        onClick={openCreate}
+                        className="inline-flex min-h-10 items-center gap-2 rounded-lg bg-ink px-4 text-sm font-semibold text-white shadow-sm"
+                    >
+                        <Plus className="h-4 w-4" />
+                        {t('create')}
+                    </button>
+                </div>
             </header>
 
             <div className="mb-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -249,7 +278,7 @@ export function PaidServicesCatalogPanel() {
                         ))}
                     </div>
                     <p className="ml-auto shrink-0 text-xs font-semibold text-ink-faint">
-                        {t('rowCount', { shown: visibleServices.length, total: allServices.length })}
+                        {t('rowCount', { shown: shownCount, total: allServices.length + allExtensions.length })}
                     </p>
                 </div>
 
@@ -258,11 +287,11 @@ export function PaidServicesCatalogPanel() {
                     <p className="px-4 py-6 text-sm text-status-danger">{t(`errors.${adminErrorMessageKey(servicesQuery.error)}`)}</p>
                 )}
                 {move.error && <p className="px-4 pt-3 text-sm text-status-danger">{t(`errors.${adminErrorMessageKey(move.error)}`)}</p>}
-                {!servicesQuery.isLoading && !servicesQuery.error && visibleServices.length === 0 && (
+                {!servicesQuery.isLoading && !servicesQuery.error && shownCount === 0 && (
                     <p className="px-4 py-6 text-sm text-ink-muted">{t('empty')}</p>
                 )}
 
-                {!servicesQuery.isLoading && !servicesQuery.error && visibleServices.length > 0 && (
+                {!servicesQuery.isLoading && !servicesQuery.error && shownCount > 0 && (
                     <div className="overflow-x-auto">
                         <table className="w-full min-w-[720px] border-collapse text-sm">
                             <thead>
@@ -342,6 +371,15 @@ export function PaidServicesCatalogPanel() {
                                         );
                                     })}
                                 </AdminSortableList>
+                                {visibleExtensions.map((row) => (
+                                    <ExtensionTableRow
+                                        key={row.option.id}
+                                        row={row}
+                                        statusPill={STATUS_PILL}
+                                        statusDot={STATUS_DOT}
+                                        onEditAction={extensionDrawer.openEdit}
+                                    />
+                                ))}
                             </tbody>
                         </table>
                     </div>
@@ -353,9 +391,11 @@ export function PaidServicesCatalogPanel() {
                 open={drawerOpen}
                 service={selectedService}
                 services={allServices}
-                eventPlans={eventPlans.data ?? []}
+                eventPlans={plans}
                 onCloseAction={closeDrawer}
             />
+
+            <ExtensionDrawer drawer={extensionDrawer} plans={plans} />
 
             <div className="mt-7">
                 <AdminSection title={t('removeAddon.title')} description={t('removeAddon.subtitle')}>
