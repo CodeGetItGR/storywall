@@ -50,6 +50,16 @@ describe('useFeedEditMode', () => {
         expect(renderHook(() => useFeedEditMode(active, true), { wrapper: wrap({ loaded: false }) }).result.current.canEdit).toBe(false);
     });
 
+    it('drops edit mode for good when editing stops being allowed', () => {
+        const { result, rerender } = renderHook(({ isHost }) => useFeedEditMode(active, isHost), { wrapper: wrap(), initialProps: { isHost: true } });
+        act(() => result.current.start());
+        rerender({ isHost: false });
+        expect(result.current.editing).toBe(false);
+        rerender({ isHost: true });
+        expect(result.current.canEdit).toBe(true);
+        expect(result.current.editing).toBe(false);
+    });
+
     it('stays in edit mode when a later refetch fails', async () => {
         const client = new QueryClient({ defaultOptions: { queries: { retry: false, staleTime: Infinity } } });
         const { result } = renderHook(() => useFeedEditMode(active, true), { wrapper: wrap({}, client) });

@@ -14,6 +14,8 @@ export function useFeedEditMode(event: Pick<EventDetailResponseDto, 'id' | 'them
     const layout = useFeedLayout(event, { enabled });
     const canEdit = enabled && isHost && isEventWritable(event.status) && layout.isLoaded;
     const [editing, setEditing] = useState(false);
+    // Once editing isn't allowed any more, edit mode ends for good: it can't come back on its own later.
+    if (editing && !canEdit) setEditing(false);
     const start = useCallback(() => setEditing(true), []);
     const finish = useCallback(() => setEditing(false), []);
 
