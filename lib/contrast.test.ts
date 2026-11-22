@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { contrastRatio, relativeLuminance } from '@/lib/contrast';
+import { contrastRatio, INK_COLOR, MIN_INK_CONTRAST, readableOnInk, relativeLuminance, tooDarkForInk } from '@/lib/contrast';
 
 describe('relativeLuminance', () => {
     it('is 0 for black and 1 for white', () => {
@@ -33,5 +33,28 @@ describe('contrastRatio', () => {
         const ratio = contrastRatio('#5A256F', '#1E93A7');
         expect(ratio).toBeLessThan(3);
         expect(ratio).toBeGreaterThan(2.99);
+    });
+});
+
+describe('tooDarkForInk', () => {
+    it('is true only when ink text cannot be read on the colour', () => {
+        expect(tooDarkForInk('#F5E6D3')).toBe(false);
+        expect(tooDarkForInk('#FFFFFF')).toBe(false);
+        expect(tooDarkForInk('#000000')).toBe(true);
+        expect(tooDarkForInk('#1B2A4A')).toBe(true);
+    });
+});
+
+describe('readableOnInk', () => {
+    it('keeps a colour ink already reads on', () => {
+        expect(readableOnInk('#F5E6D3')).toBe('#F5E6D3');
+    });
+
+    it('lightens a dark colour until ink reads on it', () => {
+        for (const dark of ['#000000', '#1B2A4A', '#7A1F3D']) {
+            const readable = readableOnInk(dark);
+            expect(readable).not.toBe(dark);
+            expect(contrastRatio(readable, INK_COLOR)).toBeGreaterThanOrEqual(MIN_INK_CONTRAST);
+        }
     });
 });

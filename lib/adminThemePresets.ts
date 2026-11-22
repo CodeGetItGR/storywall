@@ -9,12 +9,12 @@ import type {
     AdminThemePresetRequestDto,
     EventTypeConvention,
 } from '@/lib/api/types';
-import { contrastRatio } from '@/lib/contrast';
+import { contrastRatio, INK_COLOR, MIN_INK_CONTRAST } from '@/lib/contrast';
 import { isHexColor } from '@/lib/eventTheme';
 import { resolveLocalizedText } from '@/lib/localizedText';
 
 // Re-exported for existing admin callers; host code imports '@/lib/contrast' directly.
-export { contrastRatio };
+export { contrastRatio, INK_COLOR, MIN_INK_CONTRAST };
 
 // Mirrors the backend's validation (event theme spec, "Admin" API) for inline
 // feedback only; the server stays the authority.
@@ -25,10 +25,6 @@ export const THEME_ILLUSTRATION_TYPES = ['image/png', 'image/webp'];
 export const THEME_ILLUSTRATION_ACCEPT = THEME_ILLUSTRATION_TYPES.join(',');
 const DEFAULT_THEME_COLOR = '#FFFFFF';
 
-// Mirrors the --ink token in app/globals.css (the app's text colour on a themed
-// background). The backend rejects backgrounds below MIN_INK_CONTRAST against it.
-export const INK_COLOR = '#241F1A';
-export const MIN_INK_CONTRAST = 4.5;
 // The backend rejects a title colour below this against the preset's background (3055).
 export const MIN_TITLE_CONTRAST = 3;
 
