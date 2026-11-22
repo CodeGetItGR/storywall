@@ -44,7 +44,7 @@ export function FeedPageContent() {
     const [storyId, setStoryId] = useState<string | null>(null);
     const shouldShowRSVP = useRsvpPromptVisible({ eventId, isHost, rsvpAvailable: moduleFlags.rsvp, rsvpId: currentMemberRsvpId });
     const top = useFeedTop(event);
-    const coverEvent = useFeedPageTheme(event, top.pageBackground);
+    const coverEvent = useFeedPageTheme(event, top.pageBackground, top.backdrop);
     const editMode = useFeedEditMode(event, isHost, isRoleLoading);
     const { start: startEditing, finish: finishEditing, editPill, cancelPill } = useFeedEditFocus(editMode.start, editMode.finish);
     useFeedEditTrigger({ settled: editMode.settled, canEdit: editMode.canEdit, start: startEditing });
@@ -59,7 +59,8 @@ export function FeedPageContent() {
         ),
         details: <FeedDetailsBlock event={event} />,
         stories: moduleFlags.stories && (
-            <section id="stories" className={cn('top-0 bg-event/90 backdrop-blur-sm')}>
+            // On a Save my date theme the row sits on the page's own background.
+            <section id="stories" className={cn('top-0', !top.backdrop && 'bg-event/90 backdrop-blur-sm')}>
                 <StoriesRow eventId={eventId} onOpenStoryAction={openStoryModal} />
             </section>
         ),

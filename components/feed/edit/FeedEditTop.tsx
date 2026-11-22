@@ -54,7 +54,7 @@ export function FeedEditTop({ event, onDone, cancelRef, cover, details, stories,
     const t = useTranslations('InvitationEditor');
     const session = useFeedEditSession(event, onDone);
     const view = useFeedTop(event, { document: session.document, theme: session.theme, media: session.media });
-    useEditPageTheme(event.id, session.wallTheme, session.background);
+    useEditPageTheme(event.id, session.wallTheme, session.background, view.backdrop);
     const fonts = useInvitationFonts(true);
     const actions = useFeedBlockActions(session.store, session.document, event);
     const sectionPreviews = useFeedSectionPreviews({

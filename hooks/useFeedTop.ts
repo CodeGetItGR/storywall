@@ -9,6 +9,7 @@ import { useInvitationFold } from '@/hooks/useInvitationFold';
 import type { EventDetailResponseDto } from '@/lib/api/types';
 import { isEventEnded } from '@/lib/eventLifecycle';
 import { feedEditFrame } from '@/lib/feedEditing';
+import { type FeedPageBackdrop, feedPageBackdrop } from '@/lib/feedPageBackdrop';
 import { type FeedFrame, feedFrame, foldsMiddle, usesInvitationLook } from '@/lib/feedLayout';
 import type { InvitationDocument } from '@/lib/invitation/document';
 import { isEmptyForGuests } from '@/lib/invitation/gallery';
@@ -37,6 +38,9 @@ export type FeedTopView = {
     drawsMiddle: boolean;
     // The feed's own background colour (overrides.backgroundColor), as picked; null without one.
     pageBackground: string | null;
+    // A Save my date theme's background, drawn behind the whole page (null on the wall theme, or under the
+    // host's own background colour).
+    backdrop: FeedPageBackdrop | null;
 };
 
 // What edit mode draws: the document being edited and the theme it shows (a held pick included).
@@ -58,9 +62,15 @@ export function useFeedTop(event: EventDetailResponseDto, editing?: FeedTopEditi
     const fold = useInvitationFold();
     const ended = isEventEnded(event);
 
+    const backdrop = useMemo(() => feedPageBackdrop(document, theme, media), [document, theme, media]);
+
     const ctx = useMemo(
-        () => ({ ...buildRenderContext(document, theme, media), labels: INVITATION_LABELS[locale === 'en' ? 'en' : 'el'] }),
-        [document, theme, media, locale],
+        () => ({
+            ...buildRenderContext(document, theme, media),
+            labels: INVITATION_LABELS[locale === 'en' ? 'en' : 'el'],
+            pageBackdrop: backdrop !== null,
+        }),
+        [document, theme, media, locale, backdrop],
     );
 
     const frame = useMemo(() => {
@@ -86,5 +96,6 @@ export function useFeedTop(event: EventDetailResponseDto, editing?: FeedTopEditi
         toggle: fold.toggle,
         drawsMiddle: frame.middle.length > 0 && (!folds || fold.open),
         pageBackground: document.overrides.backgroundColor ?? null,
+        backdrop,
     };
 }

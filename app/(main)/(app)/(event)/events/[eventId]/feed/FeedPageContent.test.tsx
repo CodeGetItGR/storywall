@@ -6,7 +6,8 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { eventKeys } from '@/hooks/useEvent';
 import type { EventDetailResponseDto, FeedLayoutDto } from '@/lib/api/types';
 import { defaultFeedLayout, feedLayoutKeys } from '@/lib/feedLayout';
-import { SAMPLE_SECTIONS } from '@/lib/invitation/samples';
+import { feedPageThemeFor, feedPageThemeSnapshot, publishFeedPageTheme } from '@/lib/feedPageTheme';
+import { SAMPLE_SECTIONS, SAMPLE_THEME } from '@/lib/invitation/samples';
 import type { InvitationSection } from '@/lib/invitation/sections';
 import { FeedEditorFlagProvider } from '@/providers/FeedEditorFlagProvider';
 
@@ -113,11 +114,12 @@ type FeedOptions = {
     flag?: boolean;
     isHost?: boolean;
     modules?: { moduleKey: string; isAvailable: boolean; isEnabled: boolean }[];
+    stories?: boolean;
 };
 
 function renderFeed(
     illustrationUrl: string | null,
-    { description = null, endAt = null, layout, flag = false, isHost = false, modules = [] }: FeedOptions = {},
+    { description = null, endAt = null, layout, flag = false, isHost = false, modules = [], stories = false }: FeedOptions = {},
 ) {
     // staleTime: the seeded layout counts as fresh, so nothing is fetched for real.
     const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false, staleTime: Infinity } } });
@@ -145,7 +147,7 @@ function renderFeed(
         isHost,
         loadMoreRef: { current: null },
         loadingMoreLabel: '',
-        moduleFlags: { rsvp: false, stories: false, posts: false, wishlist: false },
+        moduleFlags: { rsvp: false, stories, posts: false, wishlist: false },
         posts: [],
     } as unknown as Parameters<typeof FeedPageProvider>[0]['value'];
     const wrap = (children: ReactNode) => (
@@ -335,5 +337,31 @@ describe('FeedPageContent edit mode', { timeout: 15_000 }, () => {
         const rsvp = await screen.findByRole('group', { name: 'sectionNames.feedRsvp' }, LAZY_LOOK);
         fireEvent.click(within(rsvp).getByRole('button', { name: 'hide' }));
         expect(screen.queryByRole('dialog')).toBeNull();
+    });
+});
+
+describe('FeedPageContent on a Save my date theme', { timeout: 15_000 }, () => {
+    afterEach(() => publishFeedPageTheme('feed', null));
+    const themed: FeedLayoutDto = {
+        ...savedLayout(),
+        themeSlug: 'olive',
+        document: { ...defaultFeedLayout(), themeId: 'olive' },
+        design: SAMPLE_THEME,
+        imageUrls: { 'm-content': 'https://media.test/content.jpg' },
+    };
+
+    it("puts the theme's background behind the whole page", () => {
+        renderFeed(null, { flag: true, layout: themed });
+        expect(feedPageThemeFor(feedPageThemeSnapshot(), 'e-1')?.backdrop?.image?.desktop).toBe('https://media.test/content.jpg');
+    });
+
+    it('draws the stories row on the page, not on its own colour', () => {
+        const { container } = renderFeed(null, { flag: true, layout: themed, stories: true });
+        expect(container.querySelector('#stories')?.className).not.toContain('bg-event/90');
+    });
+
+    it('keeps the stories row colour on the wall theme', () => {
+        const { container } = renderFeed(null, { flag: true, layout: null, stories: true });
+        expect(container.querySelector('#stories')?.className).toContain('bg-event/90');
     });
 });
