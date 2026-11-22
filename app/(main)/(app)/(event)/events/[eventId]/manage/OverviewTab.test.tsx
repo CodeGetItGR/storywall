@@ -24,6 +24,7 @@ vi.mock('@/components/manage/overview/OverviewJourney', () => ({
     OverviewJourney: ({ counts }: { counts: { memberCount: number } }) => <p data-testid="journey">{counts.memberCount}</p>,
 }));
 vi.mock('@/components/inviart/InviartOverviewSection', () => ({ InviartOverviewSection: () => null }));
+vi.mock('@/components/manage/overview/FeedEditBannerSection', () => ({ FeedEditBannerSection: () => null }));
 vi.mock('@/components/manage/ManageSkeletons', () => ({ ManageDraftOverviewSkeleton: () => null }));
 vi.mock('@/components/manage/OverviewDraftPanel', () => ({
     OverviewDraftPanel: ({ themeSection }: { themeSection?: ReactNode }) => <div data-testid="draft-panel">{themeSection}</div>,
