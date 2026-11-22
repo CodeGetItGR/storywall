@@ -3,7 +3,7 @@
 import dynamic from 'next/dynamic';
 
 import { FeedEditBanner } from '@/components/manage/overview/FeedEditBanner';
-import { FeedEditBannerPlaceholder } from '@/components/manage/overview/FeedEditBannerPreview';
+import { FeedEditBannerPlaceholder } from '@/components/manage/overview/FeedEditBannerPlaceholder';
 import { useFeedEditBanner } from '@/hooks/useFeedEditBanner';
 import type { EventDetailResponseDto, EventStatus, PaidServiceResponseDto, PlanTierResponseDto, PlatformModuleResponseDto } from '@/lib/api/types';
 

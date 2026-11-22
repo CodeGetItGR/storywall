@@ -28,7 +28,7 @@ export function FeedEditBanner({ state, href, illustration }: FeedEditBannerProp
                 </h2>
                 <AppLink
                     href={href}
-                    className="inline-flex h-10 items-center rounded-full px-4 text-sm font-semibold text-white transition-opacity bg-gradient-brand hover:opacity-90 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+                    className="inline-flex min-h-10 items-center rounded-full px-4 py-2 text-center text-sm leading-tight font-semibold text-balance text-white transition-opacity bg-gradient-brand hover:opacity-90 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
                 >
                     {state === 'locked' ? t('unlock') : t('startEditing')}
                 </AppLink>

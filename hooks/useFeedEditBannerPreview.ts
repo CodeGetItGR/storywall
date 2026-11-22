@@ -9,13 +9,8 @@ import { useFeedLayout } from '@/hooks/useFeedLayout';
 import { fetchInvitationTheme } from '@/hooks/useInvitationThemeCards';
 import { useInvitationThemeCatalogue } from '@/hooks/useInvitationThemeCatalogue';
 import type { EventDetailResponseDto } from '@/lib/api/types';
-import { eventThemeStyle } from '@/lib/eventTheme';
-import { feedEditBannerLook } from '@/lib/feedEditBanner';
-import { feedPageTheme } from '@/lib/feedPageTheme';
-import { INVITATION_LABELS } from '@/lib/invitation/labels';
-import { buildRenderContext } from '@/lib/invitation/render';
+import { feedEditBannerLook, feedEditBannerPicture } from '@/lib/feedEditBannerLook';
 import { invitationThemeKeys, isCatalogueEventType } from '@/lib/invitation/themeCatalogue';
-import { uploadedFontFaceCss } from '@/lib/invitation/uploadedFonts';
 
 // The banner picture's data; null only while it is still loading. The Overview's server render prefetches the
 // layout, the catalogue and the stand-in theme (manage/(root)/page.tsx), so on a full load it draws at once.
@@ -23,9 +18,9 @@ export function useFeedEditBannerPreview(event: EventDetailResponseDto) {
     const locale = useLocale();
     const layout = useFeedLayout(event, { enabled: true });
     const catalogueType = isCatalogueEventType(event.eventType);
-    const catalogue = useInvitationThemeCatalogue({ enabled: catalogueType });
     const onWall = !layout.isLoading && layout.themeSlug === null;
-    // The catalogue's first theme for the event type stands in for a feed on the wall theme.
+    // The catalogue is read only for a feed on the wall theme: its first theme for the event type stands in.
+    const catalogue = useInvitationThemeCatalogue({ enabled: catalogueType && onWall });
     const fallbackSlug = catalogueType ? (catalogue.themes?.find((theme) => theme.eventType === event.eventType)?.slug ?? null) : null;
     const fallback = useQuery({
         queryKey: invitationThemeKeys.publicTheme(fallbackSlug ?? ''),
@@ -42,25 +37,8 @@ export function useFeedEditBannerPreview(event: EventDetailResponseDto) {
     );
     const fonts = useInvitationFonts(look?.kind === 'invitation');
 
-    return useMemo(() => {
-        if (!look) return null;
-        if (look.kind === 'wall') {
-            // The event's own wall theme, with the feed's background colour when it has one.
-            const wall = feedPageTheme(event.theme, document.overrides.backgroundColor).theme;
-            const style = eventThemeStyle(wall?.backgroundColor, { titleColor: wall?.titleColor, headingFont: wall?.headingFont });
-            return { kind: 'wall' as const, event: { ...event, theme: wall }, style, headingFont: style ? (wall?.headingFont ?? null) : null };
-        }
-        const ctx = {
-            ...buildRenderContext(look.document, { ...look.theme, textAnimation: 'none' }, look.media),
-            labels: INVITATION_LABELS[locale === 'en' ? 'en' : 'el'],
-        };
-        return {
-            kind: 'invitation' as const,
-            ctx,
-            cover: look.cover,
-            index: look.document.sections.indexOf(look.cover),
-            lang: locale,
-            fontFaces: uploadedFontFaceCss(fonts.data ?? [], [look.document, look.theme]),
-        };
-    }, [look, event, document, fonts.data, locale]);
+    return useMemo(
+        () => (look ? feedEditBannerPicture(look, { event, layoutDocument: document, fonts: fonts.data ?? [], locale }) : null),
+        [look, event, document, fonts.data, locale],
+    );
 }

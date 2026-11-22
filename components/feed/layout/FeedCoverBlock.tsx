@@ -17,10 +17,12 @@ type FeedCoverBlockProps = {
     wishlist: boolean;
     // The top corner: the Edit pill for hosts.
     corner?: ReactNode;
+    // Drawn as a small picture (the Overview's feed banner): the banner image isn't preloaded.
+    thumbnail?: boolean;
 };
 
 // The feed's cover + title block (feedCover): the banner with the session and gift buttons.
-export function FeedCoverBlock({ event, isHost, wishlist, corner }: FeedCoverBlockProps) {
+export function FeedCoverBlock({ event, isHost, wishlist, corner, thumbnail }: FeedCoverBlockProps) {
     const t = useTranslations('FeedPage');
     const cover = useFeedCoverBlock(event, wishlist);
 
@@ -34,6 +36,7 @@ export function FeedCoverBlock({ event, isHost, wishlist, corner }: FeedCoverBlo
                 glowVisible={cover.pageLoaded}
                 fallbackActionHref={isHost ? coverPhotoSettingsHref(event.id) : undefined}
                 fallbackActionLabel={isHost ? t('addCoverPhoto') : undefined}
+                thumbnail={thumbnail}
                 actions={
                     <>
                         <EventSessionActionButtons event={event} />
