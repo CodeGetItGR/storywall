@@ -21,6 +21,11 @@ export function contrastRatio(first: string, second: string): number {
 export const INK_COLOR = '#241F1A';
 export const MIN_INK_CONTRAST = 4.5;
 
+// Mirrors --ink-muted: the feed's grey labels. A feed background colour must keep them at about the contrast they have on the
+// app's own backgrounds (cream is 3.3).
+export const INK_MUTED_COLOR = '#8A7C70';
+export const MIN_INK_MUTED_CONTRAST = 3;
+
 function mixWithWhite(hex: string, amount: number): string {
     const channels = [1, 3, 5].map((start) => parseInt(hex.slice(start, start + 2), 16));
     return `#${channels
@@ -33,12 +38,12 @@ function mixWithWhite(hex: string, amount: number): string {
         .toUpperCase()}`;
 }
 
-// Ink text can't be read on this colour: the Background row warns, and the colour is drawn lightened.
+// Ink text, or the muted ink labels, can't be read on this colour: the Background row warns, and the colour is drawn lightened.
 export function tooDarkForInk(hex: string): boolean {
-    return contrastRatio(hex, INK_COLOR) < MIN_INK_CONTRAST;
+    return contrastRatio(hex, INK_COLOR) < MIN_INK_CONTRAST || contrastRatio(hex, INK_MUTED_COLOR) < MIN_INK_MUTED_CONTRAST;
 }
 
-// The colour itself when ink text reads on it; otherwise the colour mixed toward white until it does.
+// The colour itself when ink and muted ink text read on it; otherwise the colour mixed toward white until they do.
 export function readableOnInk(hex: string): string {
     if (!tooDarkForInk(hex)) return hex;
     for (let step = 1; step <= 20; step += 1) {

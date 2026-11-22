@@ -11,7 +11,7 @@ import { cn } from '@/lib/utils';
 type FeedBackgroundSettingProps = { value: string | undefined; disabled: boolean; onChange: (color: string | undefined) => void };
 
 // The feed's one background colour. Default (only while one is set) clears overrides.backgroundColor and goes
-// back to the theme's backgrounds. A colour too dark for ink text is drawn lighter (readableOnInk); the row says so.
+// back to the theme's backgrounds. A colour too dark for ink or muted ink text is drawn lighter (readableOnInk); the row says so.
 // Disabled while Save runs or a theme loads: either would drop a colour set meanwhile.
 export function FeedBackgroundSetting({ value, disabled, onChange }: FeedBackgroundSettingProps) {
     const t = useTranslations('InvitationEditor');
