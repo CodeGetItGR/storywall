@@ -164,21 +164,59 @@ describe('useFeedEditSession', () => {
         expect(lastOverlay().open).toBe(true);
     });
 
-    it('closes the Back layer while saving, and again if the save fails', async () => {
+    it('keeps the Back layer while saving, and Back does nothing until the save is in', async () => {
         let fail: (error: unknown) => void = () => undefined;
         mocks.put.mockReturnValueOnce(new Promise((_, reject) => (fail = reject)));
-        const { result } = renderHook(() => useFeedEditSession(event, vi.fn()), { wrapper });
+        const onDone = vi.fn();
+        const { result } = renderHook(() => useFeedEditSession(event, onDone), { wrapper });
         hideRsvp(result.current);
         let saving: Promise<void> = Promise.resolve();
         act(() => {
             saving = result.current.save();
         });
-        await waitFor(() => expect(lastOverlay().open).toBe(false));
+        await waitFor(() => expect(result.current.saving).toBe(true));
+        expect(lastOverlay().open).toBe(true);
+
+        // Back took the layer's history entry: it is put straight back, and nothing else happens.
+        const { onClose } = lastOverlay();
+        mocks.overlay.mockClear();
+        act(() => onClose());
+        expect(onDone).not.toHaveBeenCalled();
+        expect(result.current.leaving).toBe(false);
+        await waitFor(() => expect(lastOverlay().open).toBe(true));
+        expect(mocks.overlay.mock.calls.some(([open]) => open === false)).toBe(true);
+
+        // A failed save keeps the edits on screen, still behind Back.
         await act(async () => {
             fail(new ApiError(500, { errorCode: 5004 }));
             await saving;
         });
+        expect(result.current.failed).toBe(true);
+        expect(result.current.dirty).toBe(true);
         expect(lastOverlay().open).toBe(true);
+        act(() => lastOverlay().onClose());
+        expect(result.current.leaving).toBe(true);
+    });
+
+    it('holds links while saving, without asking', async () => {
+        let finish: (value: unknown) => void = () => undefined;
+        mocks.put.mockReturnValueOnce(new Promise((resolve) => (finish = resolve)));
+        const onDone = vi.fn();
+        const { result } = renderHook(() => useFeedEditSession(event, onDone), { wrapper });
+        hideRsvp(result.current);
+        let saving: Promise<void> = Promise.resolve();
+        act(() => {
+            saving = result.current.save();
+        });
+        act(() => result.current.leaveTo('/events/e-1/manage'));
+        expect(result.current.leaving).toBe(false);
+        expect(mocks.push).not.toHaveBeenCalled();
+        await act(async () => {
+            finish({ revision: 4, updatedAt: '2026-11-22T10:05:00Z' });
+            await saving;
+        });
+        expect(onDone).toHaveBeenCalledOnce();
+        expect(result.current.leaving).toBe(false);
     });
 
     it('closes the Back layer while the conflict dialog shows', async () => {

@@ -2,7 +2,7 @@
 
 import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { useFeedLayout } from '@/hooks/useFeedLayout';
 import { useFeedLayoutSave } from '@/hooks/useFeedLayoutSave';
@@ -26,6 +26,9 @@ export function useFeedEditSession(event: Pick<EventDetailResponseDto, 'id' | 't
     const dirty = !sameDocument(opened.document, document);
     const { mutateAsync, isPending: saving } = useFeedLayoutSave(event.id);
 
+    // A second tap lands before isPending re-renders. Also tells Back and links that a save is on its way.
+    const inFlight = useRef(false);
+
     // What a yes in the leave dialog does; null while the dialog is closed.
     const [onLeave, setOnLeave] = useState<(() => void) | null>(null);
     const [failed, setFailed] = useState(false);
@@ -40,12 +43,15 @@ export function useFeedEditSession(event: Pick<EventDetailResponseDto, 'id' | 't
         [dirty],
     );
     const cancel = useCallback(() => leaveOr(onDone), [leaveOr, onDone]);
+    // While a save is on its way a link is held, without asking: it can neither drop the edits nor be lost behind a dialog.
     const leaveTo = useCallback(
-        (href: string) =>
+        (href: string) => {
+            if (inFlight.current) return;
             leaveOr(() => {
                 onDone();
                 router.push(href);
-            }),
+            });
+        },
         [leaveOr, onDone, router],
     );
     const leave = useCallback(() => {
@@ -55,14 +61,21 @@ export function useFeedEditSession(event: Pick<EventDetailResponseDto, 'id' | 't
     }, [onLeave]);
     const stay = useCallback(() => setOnLeave(null), []);
 
-    // Phone Back works like Cancel. While a dialog is open, Back belongs to the dialog. While saving there is
-    // nothing to ask (the save is already on its way), so the layer is closed cleanly and comes back if the save fails.
-    useOverlayHistory(onLeave === null && !conflict && !saving, cancel);
+    // Phone Back works like Cancel. While a dialog is open, Back belongs to the dialog. While saving, Back does
+    // nothing: the layer it just closed is put straight back, so a failed save still has its edits on screen.
+    const [reopenBack, setReopenBack] = useState(false);
+    useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- the layer stays closed for one commit, so it registers again and pushes a fresh history entry.
+        if (reopenBack) setReopenBack(false);
+    }, [reopenBack]);
+    const back = useCallback(() => {
+        if (inFlight.current) setReopenBack(true);
+        else cancel();
+    }, [cancel]);
+    useOverlayHistory(onLeave === null && !conflict && !reopenBack, back);
     useInAppLeaveGuard(dirty && onLeave === null && !conflict, leaveTo);
     useUnsavedChangesWarning(dirty);
 
-    // A second tap lands before isPending re-renders.
-    const inFlight = useRef(false);
     const save = useCallback(async () => {
         if (inFlight.current) return;
         if (!dirty) {
