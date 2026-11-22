@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { useFeedEditTrigger } from '@/hooks/useFeedEditTrigger';
 
-const mocks = vi.hoisted(() => ({ search: 'edit=blocks', replace: vi.fn(), start: vi.fn() }));
+const mocks = vi.hoisted(() => ({ search: 'edit=blocks', updatesUrl: true, replace: vi.fn(), start: vi.fn() }));
 
 vi.mock('next/navigation', () => ({
     usePathname: () => '/events/e1/feed',
@@ -12,24 +12,31 @@ vi.mock('next/navigation', () => ({
 vi.mock('@/lib/overlayHistory', () => ({
     replacePageUrl: (url: string) => {
         mocks.replace(url);
-        mocks.search = new URL(url, 'http://local').search.slice(1);
+        if (mocks.updatesUrl) mocks.search = new URL(url, 'http://local').search.slice(1);
     },
 }));
 
 beforeEach(() => {
     mocks.search = 'edit=blocks';
+    mocks.updatesUrl = true;
     mocks.replace.mockReset();
     mocks.start.mockReset();
 });
 
 describe('useFeedEditTrigger', () => {
-    it('drops the param, then starts editing', () => {
+    it('drops the param, then starts editing only once it is gone', () => {
+        // Next updates the URL later, not inside replacePageUrl.
+        mocks.updatesUrl = false;
         const { rerender } = renderHook(() => useFeedEditTrigger({ settled: true, canEdit: true, start: mocks.start }));
-        rerender();
         expect(mocks.replace).toHaveBeenCalledWith('/events/e1/feed');
+        expect(mocks.start).not.toHaveBeenCalled();
+        rerender();
+        expect(mocks.start).not.toHaveBeenCalled();
+        mocks.search = '';
+        rerender();
         expect(mocks.start).toHaveBeenCalledOnce();
-        // renderHook flushes the re-render inside act, so check the order: the param goes before edit mode starts.
-        expect(mocks.replace.mock.invocationCallOrder[0]).toBeLessThan(mocks.start.mock.invocationCallOrder[0]);
+        rerender();
+        expect(mocks.start).toHaveBeenCalledOnce();
     });
 
     it('waits until the role and the layout are known', () => {
