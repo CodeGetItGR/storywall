@@ -74,6 +74,7 @@ export function FeedEditTop({ event, onDone, cancelRef, cover, details, stories,
             controls={feedBlockControls(session.document.sections, section)}
             hasSettings={sheet.hasSettings(section)}
             actions={tools}
+            active={sheet.section?.id === section.id}
             corner={section.type === 'feedCover' ? pills : undefined}
         >
             {node}

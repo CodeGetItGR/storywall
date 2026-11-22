@@ -310,6 +310,8 @@ describe('FeedPageContent edit mode', { timeout: 15_000 }, () => {
         fireEvent.click(screen.getByRole('group', { name: `sectionNames.${dressCode.type}` }));
         expect(await screen.findByRole('dialog', { name: `sectionNames.${dressCode.type}` })).toBeTruthy();
         expect(screen.queryByRole('dialog', { name: 'sectionNames.feedCover' })).toBeNull();
+        expect(screen.getByRole('group', { name: `sectionNames.${dressCode.type}` })).toHaveAttribute('aria-current', 'true');
+        expect(cover).not.toHaveAttribute('aria-current');
     });
 
     it("keeps the tools from opening the block's settings", async () => {

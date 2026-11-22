@@ -118,3 +118,19 @@ describe('FeedEditBlock name', () => {
         expect(screen.getByText('Dress code').parentElement).not.toHaveClass('pointer-events-auto');
     });
 });
+
+describe('FeedEditBlock while its settings are open', () => {
+    it('keeps the accent outline and marks the block as the current one', () => {
+        renderBlock({ active: true });
+        const group = screen.getByRole('group', { name: 'Dress code' });
+        expect(group).toHaveAttribute('aria-current', 'true');
+        expect(group).toHaveClass('outline-2', 'outline-(--smd-editor-accent)');
+    });
+
+    it('shows the outline only on hover or focus otherwise', () => {
+        renderBlock();
+        const group = screen.getByRole('group', { name: 'Dress code' });
+        expect(group).not.toHaveAttribute('aria-current');
+        expect(group).not.toHaveClass('outline-2');
+    });
+});

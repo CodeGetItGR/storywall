@@ -20,15 +20,17 @@ type FeedEditBlockProps = {
     controls: FeedBlockControls;
     hasSettings: boolean;
     actions: FeedBlockToolActions;
+    // Its settings are open: the outline stays on.
+    active?: boolean;
     // The cover's top corner: Cancel and Save.
     corner?: ReactNode;
     children: ReactNode;
 };
 
 // One block of the feed while editing: dimmed with a badge when hidden, with its tools on top.
-// Tapping it opens its settings.
+// Tapping it opens its settings; while they are open it keeps its outline.
 // Only middle blocks drag; the rest pass locked to the sortable, so they stay put.
-export function FeedEditBlock({ section, name, controls, hasSettings, actions, corner, children }: FeedEditBlockProps) {
+export function FeedEditBlock({ section, name, controls, hasSettings, actions, active = false, corner, children }: FeedEditBlockProps) {
     const t = useTranslations('InvitationEditor.sections');
     const { setNodeRef, style, isDragging, drag } = useSectionSortable(section.id, name, !controls.movable);
     const roomForTools = leavesRoomForTools(section);
@@ -41,11 +43,13 @@ export function FeedEditBlock({ section, name, controls, hasSettings, actions, c
             data-editor-section={section.id}
             role="group"
             aria-label={name}
+            aria-current={active || undefined}
             // Not a tab stop, but takes focus after the block next to it is deleted.
             tabIndex={-1}
             onClick={onTap}
             className={cn(
                 'smd-editor relative outline-offset-[-2px] focus-within:outline-2 focus-within:outline-(--smd-editor-accent) hover:outline-2 hover:outline-(--smd-editor-accent)',
+                active && 'outline-2 outline-(--smd-editor-accent)',
                 isDragging && 'z-50 shadow-[0_10px_28px_rgba(0,0,0,0.35)]',
             )}
         >
