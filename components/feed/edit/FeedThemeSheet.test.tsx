@@ -60,6 +60,12 @@ describe('FeedThemeSheet', () => {
         expect(onSelect).toHaveBeenCalledWith('invitation:rose');
     });
 
+    // The sheet is dark: on white cards each theme's title keeps its own colour and stays readable.
+    it('draws the theme cards on white', () => {
+        renderSheet();
+        for (const card of screen.getAllByRole('radio')) expect(card).toHaveClass('bg-white');
+    });
+
     it('sets the background colour, and Default clears it', () => {
         const { onBackground } = renderSheet('#F5E6D3');
         fireEvent.change(screen.getByLabelText('sectionSettings.background'), { target: { value: '#aabbcc' } });

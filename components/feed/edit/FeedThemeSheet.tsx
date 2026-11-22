@@ -53,6 +53,7 @@ export function FeedThemeSheet({
                         labelledBy={titleId}
                         disabled={disabled}
                         size="large"
+                        onDark
                         previewTitle={previewTitle}
                         onSelectAction={onSelect}
                     />
