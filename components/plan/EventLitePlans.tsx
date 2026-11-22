@@ -4,7 +4,9 @@ import { useTranslations } from 'next-intl';
 
 import { LitePlansSection } from '@/components/plan/LitePlansSection';
 import { MarketingPlanCard } from '@/components/plan/MarketingPlanCard';
+import { PlanAddonLine } from '@/components/plan/PlanAddonLine';
 import type { MarketingPlanOption } from '@/hooks/useMarketingPlanOptions';
+import type { PaidServiceResponseDto } from '@/lib/api/types';
 import { cn } from '@/lib/utils';
 
 // A narrower grid than the full plans', so the lite cards come out smaller.
@@ -19,6 +21,7 @@ type EventLitePlansProps = {
     onSelectAction: (code: string) => void;
     onSelectDurationAction: (code: string, optionId: string) => void;
     className?: string;
+    planAddons?: Record<string, PaidServiceResponseDto>;
 };
 
 // The creation picker's lite plans in their own titled section.
@@ -30,6 +33,7 @@ export function EventLitePlans({
     onSelectAction,
     onSelectDurationAction,
     className,
+    planAddons,
 }: EventLitePlansProps) {
     const tPricing = useTranslations('LandingPage.pricing');
     const count = Math.min(options.length, 3);
@@ -45,6 +49,7 @@ export function EventLitePlans({
                         durationLabel={tPricing('durationLabel')}
                         expandLabel={tPricing('showFeatures')}
                         featured={false}
+                        footer={planAddons?.[config.code] && <PlanAddonLine service={planAddons[config.code]} />}
                         key={config.id}
                         listPriceLabel={tPricing('listPrice')}
                         onDurationChangeAction={onSelectDurationAction}

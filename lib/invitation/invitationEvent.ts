@@ -1,4 +1,13 @@
-import type { EventDetailResponseDto, EventMemberResponseDto, EventRequestDto, EventTypeConvention, PlanTierResponseDto } from '@/lib/api/types';
+import type {
+    EventDetailResponseDto,
+    EventMemberResponseDto,
+    EventRequestDto,
+    EventTypeConvention,
+    PaidServiceResponseDto,
+    PlanTierResponseDto,
+    PlatformModuleResponseDto,
+} from '@/lib/api/types';
+import { saveMyDateAddon } from '@/lib/featureAddons';
 import type { InvitationDocument } from '@/lib/invitation/document';
 import { isCatalogueEventType } from '@/lib/invitation/themeCatalogue';
 import { SAVE_MY_DATE_MODULE_KEY, showsSaveMyDate } from '@/lib/saveMyDateRelease';
@@ -88,9 +97,15 @@ export function offersOnlineInvitation(eventType: string): boolean {
     return showsSaveMyDate() && isCatalogueEventType(eventType);
 }
 
-// The plans that let the event publish its invitation.
-export function plansWithInvitation(plans: PlanTierResponseDto[]): PlanTierResponseDto[] {
-    return plans.filter((plan) => plan.moduleKeys.includes(SAVE_MY_DATE_MODULE_KEY));
+// The plans that let the event publish its invitation: those that include it, and those that sell it as an add-on (KAN-82).
+export function plansWithInvitation(
+    plans: PlanTierResponseDto[],
+    paidServices: PaidServiceResponseDto[] = [],
+    platformModules: PlatformModuleResponseDto[] = [],
+): PlanTierResponseDto[] {
+    return plans.filter(
+        (plan) => plan.moduleKeys.includes(SAVE_MY_DATE_MODULE_KEY) || saveMyDateAddon(paidServices, platformModules, plan) !== null,
+    );
 }
 
 // Events the host may put the invitation on: hosted, of the theme's type, not deleted and without an

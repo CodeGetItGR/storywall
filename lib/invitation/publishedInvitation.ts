@@ -18,6 +18,8 @@ export type PublicInvitationDto = {
     updatedAt: string;
     // What the invitation follows from its event (KAN-84). Missing from a backend older than it.
     event?: InvitationEventData | null;
+    // Whether the event takes RSVP replies now, through its plan or an add-on (KAN-82). Older backends leave it out.
+    rsvpOpen?: boolean;
 };
 
 // The event part of the read, checked before it is drawn. Extra fields from a newer backend are fine.
@@ -112,13 +114,19 @@ export function publicInvitationRsvpEndpoint(slug: string): string {
 export function readPublishedInvitation(dto: PublicInvitationDto): PublishedInvitation {
     const imageUrls = dto.imageUrls ?? {};
     const event = readInvitationEventData(dto.event);
+    const document = resolveLinkedSections(upgradeInvitationDocument(dto.document), event);
     return {
-        document: resolveLinkedSections(upgradeInvitationDocument(dto.document), event),
+        document: dto.rsvpOpen === false ? withoutRsvp(document) : document,
         theme: themeDesignSchema.parse(dto.design),
         media: (mediaId) => imageUrls[mediaId],
         publishedAt: dto.updatedAt,
         joinUrl: event?.joinUrl ?? undefined,
     };
+}
+
+// The copy with its RSVP section hidden, for an event that takes no replies.
+export function withoutRsvp(document: InvitationDocument): InvitationDocument {
+    return { ...document, sections: document.sections.map((section) => (section.type === 'rsvp' ? { ...section, visible: false } : section)) };
 }
 
 // The backend answers 404 for a link that isn't live and 410 (5221) once it has expired.
