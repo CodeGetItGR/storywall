@@ -1,9 +1,9 @@
 'use client';
 
+import '@/components/event/feedBackdrop.css';
+
 import { usePathname } from 'next/navigation';
 import type { ReactNode } from 'react';
-
-import '@/components/event/feedBackdrop.css';
 
 import { ThemeFontFace } from '@/components/event/ThemeFontFace';
 import { useFeedPageThemeOverride } from '@/hooks/useFeedPageTheme';

@@ -2,8 +2,8 @@ import { produce } from 'immer';
 import { describe, expect, it } from 'vitest';
 
 import { lightTone, readableOnInk } from '@/lib/contrast';
-import { feedBackdropStyle, FEED_CARD_LIGHTEN, feedPageBackdrop } from '@/lib/feedPageBackdrop';
 import { defaultFeedLayout, wallThemeDesign } from '@/lib/feedLayout';
+import { FEED_CARD_LIGHTEN, feedBackdropStyle, feedPageBackdrop } from '@/lib/feedPageBackdrop';
 import { SAMPLE_THEME } from '@/lib/invitation/samples';
 import type { ThemeDesign } from '@/lib/invitation/theme';
 
