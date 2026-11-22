@@ -1,6 +1,7 @@
 import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
 import { redirect } from 'next/navigation';
 
+import { adminInvitationThemeKeys } from '@/hooks/useAdminInvitationThemes';
 import { billingKeys, extensionOptionsKeys, upgradeOptionsKeys } from '@/hooks/useBilling';
 import { eventInvitationKeys } from '@/hooks/useEventInvitations';
 import { eventMemberKeys } from '@/hooks/useEventMembers';
@@ -38,10 +39,12 @@ import { canExtendCoverage } from '@/lib/billing';
 import { isEventDeleted, isEventWritable, isModuleAvailable, isPrimaryHost, readableModuleKeys } from '@/lib/eventLifecycle';
 import { canPickTheme } from '@/lib/eventTheme';
 import { featureAddonMode } from '@/lib/featureAddons';
+import { feedEditBannerLook } from '@/lib/feedEditBannerLook';
 import { showsFeedEditor } from '@/lib/feedEditorRelease';
 import { feedLayoutKeys, readFeedLayout } from '@/lib/feedLayout';
 import { INCIDENT_MODE } from '@/lib/incident';
 import { fetchThemeCatalogue } from '@/lib/invitation/serverThemeCatalogue';
+import { fetchUploadedFonts } from '@/lib/invitation/serverUploadedFonts';
 import { invitationThemeKeys, isCatalogueEventType } from '@/lib/invitation/themeCatalogue';
 import { invitationThemeEndpoint, type InvitationThemePublicDto } from '@/lib/invitation/themePreview';
 import { parseManageSection } from '@/lib/manageSections';
@@ -111,21 +114,28 @@ async function prefetchThemeGrid(eventId: string, accessToken: string) {
 
 // The Overview's feed banner picture (useFeedEditBannerPreview): the feed layout (404 caches as null), then, as
 // the hook asks for them only for a feed on the wall theme of an event type with Save my date themes, the
-// catalogue and the theme it lists first for the type, which stands in. Each seeds on its own; a failed layout
-// leaves the rest to the client, which only knows what to ask for once the layout is in.
+// catalogue and the theme it lists first for the type, which stands in; and the uploaded fonts once the picture
+// draws in a Save my date look. Each seeds on its own; a failed layout leaves the rest to the client, which only
+// knows what to ask for once the layout is in.
 async function prefetchFeedEditBanner(event: EventDetailResponseDto, eventId: string, accessToken: string) {
     const layout = await serverGetOrNull<FeedLayoutDto>(endpoints.events.feedLayout(eventId), accessToken).catch(() => undefined);
-    const onWall = layout !== undefined && readFeedLayout(layout, event.theme).themeSlug === null;
+    const view = layout === undefined ? null : readFeedLayout(layout, event.theme);
+    const onWall = view !== null && view.themeSlug === null;
     const catalogue = onWall && isCatalogueEventType(event.eventType) ? await fetchThemeCatalogue().catch(() => null) : null;
     const fallbackSlug = catalogue?.find((theme) => theme.eventType === event.eventType)?.slug ?? null;
     // Not cached: the image URLs may expire (lib/invitation/serverThemePreview.ts).
     const fallback = fallbackSlug
         ? await serverPublicGetOrNull<InvitationThemePublicDto>(invitationThemeEndpoint(fallbackSlug)).catch(() => null)
         : null;
+    // The hook's own rule (useInvitationFonts while the look is 'invitation'). An empty answer (a failure, too)
+    // isn't seeded, so the client still asks.
+    const invitationLook = view !== null && feedEditBannerLook(view, fallback ?? undefined).kind === 'invitation';
+    const fonts = invitationLook ? await fetchUploadedFonts().catch(() => []) : [];
     return (queryClient: ReturnType<typeof makeQueryClient>) => {
         if (layout !== undefined) queryClient.setQueryData(feedLayoutKeys.detail(eventId), layout);
         if (catalogue) queryClient.setQueryData(invitationThemeKeys.catalogue(), catalogue);
         if (fallbackSlug && fallback) queryClient.setQueryData(invitationThemeKeys.publicTheme(fallbackSlug), fallback);
+        if (fonts.length > 0) queryClient.setQueryData(adminInvitationThemeKeys.fonts, fonts);
     };
 }
 

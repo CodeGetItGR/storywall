@@ -9,6 +9,7 @@ const mocks = vi.hoisted(() => ({
     serverGetOrNull: vi.fn(),
     serverPublicGetOrNull: vi.fn(),
     fetchThemeCatalogue: vi.fn(),
+    fetchUploadedFonts: vi.fn(),
     showsFeedEditor: vi.fn(),
     redirect: vi.fn(() => {
         throw new Error('NEXT_REDIRECT');
@@ -25,13 +26,15 @@ vi.mock('@/lib/api/serverFetch', () => ({
     serverPublicGetOrNull: mocks.serverPublicGetOrNull,
 }));
 vi.mock('@/lib/invitation/serverThemeCatalogue', () => ({ fetchThemeCatalogue: mocks.fetchThemeCatalogue }));
+vi.mock('@/lib/invitation/serverUploadedFonts', () => ({ fetchUploadedFonts: mocks.fetchUploadedFonts }));
 vi.mock('@/lib/feedEditorRelease', () => ({ showsFeedEditor: mocks.showsFeedEditor }));
 vi.mock('@/i18n/serverLocale', () => ({ getServerLocale: async () => 'en' }));
 vi.mock('../PageClient', () => ({ default: () => null }));
 vi.mock('next/navigation', () => ({ redirect: mocks.redirect }));
 
+import { adminInvitationThemeKeys } from '@/hooks/useAdminInvitationThemes';
 import { defaultFeedLayout, feedLayoutKeys } from '@/lib/feedLayout';
-import { SAMPLE_THEME } from '@/lib/invitation/samples';
+import { SAMPLE_DOCUMENT, SAMPLE_THEME } from '@/lib/invitation/samples';
 import { invitationThemeKeys } from '@/lib/invitation/themeCatalogue';
 
 import Page from './page';
@@ -72,6 +75,9 @@ const ownThemeLayout = {
     imageUrls: {},
     updatedAt: '2026-11-21T10:00:00Z',
 };
+// The catalogue's first wedding theme, as GET /api/invitation-themes/{slug} answers it.
+const standIn = { slug: 'wedding-first', name: 'Wedding', eventType: 'WEDDING', design: SAMPLE_THEME, document: SAMPLE_DOCUMENT, assetUrls: {} };
+const uploadedFonts = [{ key: 'brush', familyName: 'Brush', fallback: 'serif', url: 'https://fonts/brush.woff2' }];
 const bannerKeys = [feedLayoutKeys.detail('e1'), invitationThemeKeys.catalogue(), invitationThemeKeys.publicTheme('wedding-first')];
 
 function visit(searchParams: { tab?: string; section?: string } = {}) {
@@ -89,7 +95,8 @@ describe('ManagePage (server)', () => {
         mocks.resolveServerEventDetail.mockReset().mockResolvedValue(liveEvent);
         mocks.serverGet.mockReset().mockResolvedValue([]);
         mocks.serverGetOrNull.mockReset().mockResolvedValue(null);
-        mocks.serverPublicGetOrNull.mockReset().mockResolvedValue({ slug: 'wedding-first' });
+        mocks.serverPublicGetOrNull.mockReset().mockResolvedValue(standIn);
+        mocks.fetchUploadedFonts.mockReset().mockResolvedValue(uploadedFonts);
         mocks.fetchThemeCatalogue.mockReset().mockResolvedValue(catalogue);
         mocks.showsFeedEditor.mockReset().mockReturnValue(false);
         mocks.redirect.mockClear();
@@ -344,6 +351,38 @@ describe('ManagePage (server)', () => {
 
             expect(keys).toEqual(expect.arrayContaining(bannerKeys.slice(0, 2)));
             expect(keys).not.toEqual(expect.arrayContaining([bannerKeys[2]]));
+        });
+
+        it('seeds the uploaded fonts when the picture draws in the stand-in theme', async () => {
+            const element = await visit();
+            const { state } = element.props as { state: DehydratedState };
+            const fonts = state.queries.find((query) => query.queryKey.join('/') === adminInvitationThemeKeys.fonts.join('/'));
+
+            expect(fonts?.state.data).toEqual(uploadedFonts);
+        });
+
+        it('seeds the uploaded fonts when the layout has its own Save my date theme', async () => {
+            mocks.serverGetOrNull.mockImplementation((path: string) => Promise.resolve(path.endsWith('/feed-layout') ? ownThemeLayout : null));
+
+            expect(seededKeys(await visit())).toEqual(expect.arrayContaining([adminInvitationThemeKeys.fonts]));
+        });
+
+        it('skips the uploaded fonts when the picture draws in the wall look', async () => {
+            mocks.serverPublicGetOrNull.mockRejectedValue(new Error('Server fetch failed'));
+            await visit();
+            mocks.resolveServerEventDetail.mockResolvedValue({ ...bannerEvent, eventType: 'BIRTHDAY' });
+            await visit();
+
+            expect(mocks.fetchUploadedFonts).not.toHaveBeenCalled();
+        });
+
+        it('leaves the uploaded fonts to the client when none come back', async () => {
+            mocks.fetchUploadedFonts.mockResolvedValue([]);
+
+            const keys = seededKeys(await visit());
+
+            expect(keys).toEqual(expect.arrayContaining(bannerKeys));
+            expect(keys).not.toEqual(expect.arrayContaining([adminInvitationThemeKeys.fonts]));
         });
 
         it('seeds it for the main host of an event without Save my date, who may buy it', async () => {
