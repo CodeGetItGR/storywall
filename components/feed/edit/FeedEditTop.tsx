@@ -13,6 +13,7 @@ import { FeedBlockSheet } from '@/components/feed/edit/FeedBlockSheet';
 import { FeedEditBlock } from '@/components/feed/edit/FeedEditBlock';
 import { FeedEditInvitationSection } from '@/components/feed/edit/FeedEditInvitationSection';
 import { FeedEditPills } from '@/components/feed/edit/FeedEditPills';
+import { FeedThemeSheet } from '@/components/feed/edit/FeedThemeSheet';
 import { FeedLook, FeedNative } from '@/components/feed/layout/FeedLook';
 import { feedLookParts } from '@/components/feed/layout/FeedLookTop';
 import { FeedTopFrame, type FeedTopParts, type FeedTopProps, PLAIN_PARTS } from '@/components/feed/layout/FeedTopFrame';
@@ -25,13 +26,16 @@ import { useInvitationFonts } from '@/hooks/useAdminInvitationThemes';
 import { useFeedBlockActions } from '@/hooks/useFeedBlockActions';
 import type { FeedBlockToolActions } from '@/hooks/useFeedBlockHandlers';
 import { useFeedBlockSheet } from '@/hooks/useFeedBlockSheet';
+import { useFeedEditPanels } from '@/hooks/useFeedEditPanels';
 import { useFeedEditSession } from '@/hooks/useFeedEditSession';
+import { useFeedEditThemeGrid } from '@/hooks/useFeedEditThemeGrid';
 import { useEditPageTheme } from '@/hooks/useFeedPageTheme';
 import { useFeedSectionPreviews } from '@/hooks/useFeedSectionPreviews';
 import { useFeedTop } from '@/hooks/useFeedTop';
 import { useSectionDrag } from '@/hooks/useSectionDrag';
 import { useSettingsPreview } from '@/hooks/useSettingsPreview';
 import type { EventDetailResponseDto } from '@/lib/api/types';
+import { themePreviewTitle } from '@/lib/eventTheme';
 import { feedBlockControls } from '@/lib/feedEditing';
 import type { NewSectionType } from '@/lib/invitation/newSection';
 import type { FeedSectionType, InvitationSection, SectionType } from '@/lib/invitation/sections';
@@ -45,8 +49,8 @@ type FeedEditTopProps = Omit<FeedTopProps, 'view'> & { event: EventDetailRespons
 type FeedNameKey = `sectionNames.${NewSectionType | FeedSectionType}`;
 const nameKey = (type: SectionType) => `sectionNames.${type}` as FeedNameKey;
 
-// The top of the feed in edit mode: the same frame as the feed, every block with its tools,
-// Save my date text typed in place, and the Add section row closing the middle.
+// The top of the feed in edit mode: the same frame as the feed, every block with its tools, Save my date
+// text typed in place, the Add section row closing the middle, and the Theme sheet. All held until Save.
 export function FeedEditTop({ event, onDone, cancelRef, cover, details, stories, description, rsvp }: FeedEditTopProps) {
     const t = useTranslations('InvitationEditor');
     const session = useFeedEditSession(event, onDone);
@@ -65,6 +69,8 @@ export function FeedEditTop({ event, onDone, cancelRef, cover, details, stories,
     });
     const preview = useSettingsPreview(event, true, true);
     const sheet = useFeedBlockSheet(session.store, session.document, session.theme, session.media, fonts.data, preview.parts);
+    const panels = useFeedEditPanels(sheet.openFor, sheet.close);
+    const themeGrid = useFeedEditThemeGrid(event, session);
     const middleIds = view.frame.middle.map((section) => section.id);
     const drag = useSectionDrag(middleIds.length, actions.reorder);
 
@@ -72,10 +78,17 @@ export function FeedEditTop({ event, onDone, cancelRef, cover, details, stories,
         onToggleVisible: actions.toggleVisible,
         onMove: actions.move,
         onDelete: actions.askDelete,
-        onOpenSettings: sheet.openFor,
+        onOpenSettings: panels.openSettings,
     };
     const pills = (
-        <FeedEditPills saving={session.saving} failed={session.failed} onCancel={session.cancel} onSave={session.save} cancelRef={cancelRef} />
+        <FeedEditPills
+            saving={session.saving}
+            failed={session.failed}
+            onTheme={panels.openTheme}
+            onCancel={session.cancel}
+            onSave={session.save}
+            cancelRef={cancelRef}
+        />
     );
 
     const wrap = (section: InvitationSection, node: ReactNode) => (
@@ -171,6 +184,21 @@ export function FeedEditTop({ event, onDone, cancelRef, cover, details, stories,
                 isDesktop={false}
                 canUploadCover={preview.canUploadCover}
                 onCloseAction={preview.closeEditor}
+            />
+
+            {/* Theme */}
+            <FeedThemeSheet
+                open={panels.themeOpen}
+                isDesktop={preview.isDesktop}
+                options={themeGrid.options}
+                fontFaces={themeGrid.fontFaces}
+                hasInvitationThemes={themeGrid.hasInvitationThemes}
+                disabled={themeGrid.disabled}
+                previewTitle={themePreviewTitle(event.title)}
+                background={session.background}
+                onSelect={themeGrid.select}
+                onBackground={session.setBackground}
+                onClose={panels.closeTheme}
             />
 
             {/* Add section */}

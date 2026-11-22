@@ -3,17 +3,36 @@
 import { useTranslations } from 'next-intl';
 import type { Ref } from 'react';
 
-type FeedEditPillsProps = { saving: boolean; failed: boolean; onCancel: () => void; onSave: () => void; cancelRef?: Ref<HTMLButtonElement> };
+type FeedEditPillsProps = {
+    saving: boolean;
+    failed: boolean;
+    onTheme?: () => void;
+    onCancel: () => void;
+    onSave: () => void;
+    cancelRef?: Ref<HTMLButtonElement>;
+};
 
-// Cancel and Save on the cover while editing, with the save error under them.
-export function FeedEditPills({ saving, failed, onCancel, onSave, cancelRef }: FeedEditPillsProps) {
+// Theme, Cancel and Save on the cover while editing, with the save error under them.
+export function FeedEditPills({ saving, failed, onTheme, onCancel, onSave, cancelRef }: FeedEditPillsProps) {
     const t = useTranslations('InvitationEditor');
     const tFeed = useTranslations('FeedEditor');
+    const tManage = useTranslations('ManagePage.sections');
 
     return (
         <div className="flex flex-col items-end gap-2">
             {/* Actions */}
             <div className="flex gap-2">
+                {/* Theme: always in edit mode (the sheet holds at least the Background row); optional for the stories */}
+                {onTheme && (
+                    <button
+                        type="button"
+                        onClick={onTheme}
+                        disabled={saving}
+                        className="h-9 rounded-full bg-background/92 px-3.5 text-sm font-semibold text-ink shadow-[0_8px_22px_rgba(36,31,26,0.18)] disabled:opacity-60"
+                    >
+                        {tManage('theme')}
+                    </button>
+                )}
                 <button
                     ref={cancelRef}
                     type="button"

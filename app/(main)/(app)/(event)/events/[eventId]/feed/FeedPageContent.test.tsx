@@ -20,6 +20,11 @@ vi.mock('@/lib/api/client', async (importOriginal) => {
     const actual = await importOriginal<typeof import('@/lib/api/client')>();
     return { ...actual, api: { ...actual.api, put: api.put } };
 });
+// Edit mode's theme sheet reads the session for its wall presets; signed out, that list is never fetched.
+vi.mock('@/providers/AuthProvider', async (importOriginal) => ({
+    ...(await importOriginal<typeof import('@/providers/AuthProvider')>()),
+    useAuth: () => ({ isAuthenticated: false }),
+}));
 vi.mock('next/navigation', () => ({
     useRouter: () => ({ push: vi.fn() }),
     usePathname: () => '/events/e-1/feed',

@@ -6670,6 +6670,9 @@
         "invitation": "Invitation"
     },
     "FeedEditor": {
+        "background": {
+            "tooDark": "Too dark for the text. A lighter shade will be shown."
+        },
         "edit": "Edit",
         "saveFailed": "Couldn't save your changes. Please try again."
     },
