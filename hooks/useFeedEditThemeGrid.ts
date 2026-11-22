@@ -8,6 +8,7 @@ import { useInvitationThemeCards } from '@/hooks/useInvitationThemeCards';
 import { useThemePicker } from '@/hooks/useThemePicker';
 import { useWallThemeOptions } from '@/hooks/useWallThemeOptions';
 import type { EventDetailResponseDto } from '@/lib/api/types';
+import { themePreviewTitle } from '@/lib/eventTheme';
 import { presetAsEventTheme } from '@/lib/feedEditTheme';
 import { invitationThemeChoice, readThemeChoice } from '@/lib/feedThemes';
 import { isCatalogueEventType } from '@/lib/invitation/themeCatalogue';
@@ -60,6 +61,8 @@ export function useFeedEditThemeGrid(event: EventDetailResponseDto, session: The
     return {
         options,
         fontFaces: themeCards.fontFaces,
+        // The event's title, drawn in each card's font.
+        previewTitle: themePreviewTitle(event.title),
         hasInvitationThemes: invitationOptions.length > 0,
         // The session ignores picks while one loads or Save is on its way; the cards say so by being disabled.
         disabled: session.switching || session.saving || picker.isLoading,

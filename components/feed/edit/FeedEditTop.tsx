@@ -35,7 +35,6 @@ import { useFeedTop } from '@/hooks/useFeedTop';
 import { useSectionDrag } from '@/hooks/useSectionDrag';
 import { useSettingsPreview } from '@/hooks/useSettingsPreview';
 import type { EventDetailResponseDto } from '@/lib/api/types';
-import { themePreviewTitle } from '@/lib/eventTheme';
 import { feedBlockControls } from '@/lib/feedEditing';
 import type { NewSectionType } from '@/lib/invitation/newSection';
 import type { FeedSectionType, InvitationSection, SectionType } from '@/lib/invitation/sections';
@@ -69,7 +68,7 @@ export function FeedEditTop({ event, onDone, cancelRef, cover, details, stories,
     });
     const preview = useSettingsPreview(event, true, true);
     const sheet = useFeedBlockSheet(session.store, session.document, session.theme, session.media, fonts.data, preview.parts);
-    const panels = useFeedEditPanels(sheet.openFor, sheet.close);
+    const panels = useFeedEditPanels(sheet.openFor, sheet.close, actions.openAdd);
     const themeGrid = useFeedEditThemeGrid(event, session);
     const middleIds = view.frame.middle.map((section) => section.id);
     const drag = useSectionDrag(middleIds.length, actions.reorder);
@@ -134,7 +133,7 @@ export function FeedEditTop({ event, onDone, cancelRef, cover, details, stories,
             afterMiddle={
                 actions.showAdd && (
                     <FeedNative className="font-sans">
-                        <FeedAddSectionRow onAdd={actions.openAdd} />
+                        <FeedAddSectionRow onAdd={panels.openAdd} />
                     </FeedNative>
                 )
             }
@@ -194,7 +193,7 @@ export function FeedEditTop({ event, onDone, cancelRef, cover, details, stories,
                 fontFaces={themeGrid.fontFaces}
                 hasInvitationThemes={themeGrid.hasInvitationThemes}
                 disabled={themeGrid.disabled}
-                previewTitle={themePreviewTitle(event.title)}
+                previewTitle={themeGrid.previewTitle}
                 background={session.background}
                 onSelect={themeGrid.select}
                 onBackground={session.setBackground}

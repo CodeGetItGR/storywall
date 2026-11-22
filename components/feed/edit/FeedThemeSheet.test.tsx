@@ -32,7 +32,7 @@ const options: ThemeRadioOption[] = [
     },
 ];
 
-function renderSheet(background?: string, themes: ThemeRadioOption[] = options) {
+function renderSheet(background?: string, themes: ThemeRadioOption[] = options, disabled = false) {
     const props = { onSelect: vi.fn(), onBackground: vi.fn() };
     render(
         <FeedThemeSheet
@@ -41,7 +41,7 @@ function renderSheet(background?: string, themes: ThemeRadioOption[] = options) 
             options={themes}
             fontFaces=""
             hasInvitationThemes={false}
-            disabled={false}
+            disabled={disabled}
             previewTitle="Wedding"
             background={background}
             onSelect={props.onSelect}
@@ -75,10 +75,22 @@ describe('FeedThemeSheet', () => {
 
     it('warns while the colour is too dark for the text', () => {
         renderSheet('#000000');
-        expect(screen.getByText('tooDark')).toBeTruthy();
+        expect(screen.getByRole('status').textContent).toBe('tooDark');
         cleanup();
         renderSheet('#F5E6D3');
         expect(screen.queryByText('tooDark')).toBeNull();
+        // The status stays mounted, empty, so the warning is announced when it appears.
+        expect(screen.getByRole('status').textContent).toBe('');
+    });
+
+    it('holds the cards and the colour row while Save runs or a theme loads', () => {
+        const { onSelect } = renderSheet('#F5E6D3', options, true);
+        const rose = screen.getByRole('radio', { name: /Rose/ });
+        expect(rose.getAttribute('aria-disabled')).toBe('true');
+        fireEvent.click(rose);
+        expect(onSelect).not.toHaveBeenCalled();
+        expect((screen.getByLabelText('sectionSettings.background') as HTMLInputElement).disabled).toBe(true);
+        expect((screen.getByRole('button', { name: 'lineHeightDefault' }) as HTMLButtonElement).disabled).toBe(true);
     });
 
     it('holds just the Background row for an event with no themes to pick', () => {

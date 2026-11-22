@@ -23,7 +23,7 @@ type FeedThemeSheetProps = {
 };
 
 // Edit mode's Theme sheet: every theme the feed can wear (maybe none), then its one background colour.
-// Picks are held until Save.
+// Picks are held until Save; while Save runs or a theme loads, the cards and the colour wait.
 export function FeedThemeSheet({
     open,
     isDesktop,
@@ -59,7 +59,7 @@ export function FeedThemeSheet({
                 )}
 
                 {/* Background */}
-                <FeedBackgroundSetting value={background} onChange={onBackground} />
+                <FeedBackgroundSetting value={background} disabled={disabled} onChange={onBackground} />
             </div>
         </FeedEditSheetFrame>
     );
