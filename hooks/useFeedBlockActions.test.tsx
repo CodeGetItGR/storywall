@@ -5,6 +5,7 @@ import { useStore } from 'zustand';
 import { useFeedBlockActions } from '@/hooks/useFeedBlockActions';
 import type { EventDetailResponseDto } from '@/lib/api/types';
 import { defaultFeedLayout } from '@/lib/feedLayout';
+import { MAX_SECTIONS } from '@/lib/invitation/document';
 import { createInvitationEditorStore } from '@/lib/invitation/editorStore';
 import { SAMPLE_SECTIONS } from '@/lib/invitation/samples';
 import type { InvitationSection } from '@/lib/invitation/sections';
@@ -22,9 +23,9 @@ function eventWith(saveMyDate: boolean) {
     } as unknown as EventDetailResponseDto;
 }
 
-function setup(saveMyDate = true) {
+function setup(saveMyDate = true, extra: InvitationSection[] = [dressCode]) {
     const base = defaultFeedLayout();
-    const store = createInvitationEditorStore({ ...base, sections: [...base.sections, dressCode] });
+    const store = createInvitationEditorStore({ ...base, sections: [...base.sections, ...extra] });
     const leaveTo = vi.fn();
     const hook = renderHook(() => {
         const document = useStore(store, (state) => state.document);
@@ -74,9 +75,20 @@ describe('useFeedBlockActions', () => {
         expect(store.getState().document.sections.some((section) => section.type === type)).toBe(true);
     });
 
+    it('leaves out the Add section row at the section limit', () => {
+        expect(setup().result.current.showAdd).toBe(true);
+        const full = Array.from({ length: MAX_SECTIONS - defaultFeedLayout().sections.length }, (_, index) => ({ ...dressCode, id: `dress-${index}` }));
+        const { result } = setup(true, full);
+        expect(result.current.addable).toEqual([]);
+        expect(result.current.showAdd).toBe(false);
+        act(() => result.current.openAdd());
+        expect(result.current.adding).toBe(false);
+    });
+
     it('sends a host without Save my date to Billing', () => {
         const { leaveTo, result } = setup(false);
         expect(result.current.locked).toBe(true);
+        expect(result.current.showAdd).toBe(true);
         act(() => result.current.openAdd());
         expect(result.current.adding).toBe(false);
         expect(leaveTo).toHaveBeenCalledWith('/events/e-1/manage?tab=billing');

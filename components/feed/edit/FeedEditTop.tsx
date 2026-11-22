@@ -106,9 +106,11 @@ export function FeedEditTop({ event, onDone, cancelRef, cover, details, stories,
             description={description || <FeedBlockPlaceholder name={t('sectionNames.feedDescription')} />}
             rsvp={rsvp ?? <FeedBlockPlaceholder name={t('sectionNames.feedRsvp')} />}
             afterMiddle={
-                <FeedNative className="font-sans">
-                    <FeedAddSectionRow locked={actions.locked} canBuy={actions.canBuy} onAdd={actions.openAdd} />
-                </FeedNative>
+                actions.showAdd && (
+                    <FeedNative className="font-sans">
+                        <FeedAddSectionRow locked={actions.locked} canBuy={actions.canBuy} onAdd={actions.openAdd} />
+                    </FeedNative>
+                )
             }
         />
     );

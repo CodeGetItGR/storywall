@@ -32,6 +32,8 @@ export function useFeedBlockActions(
     const billingHref = usePlanUpgradeHref(event.id);
     const locked = !isModuleAvailable(event.modules, 'save_my_date');
     const addable = useMemo(() => addableFeedSectionTypes(document, event.eventType), [document, event.eventType]);
+    // With nothing left to add (the section limit), the Add section row isn't drawn. The lock always is.
+    const showAdd = locked || addable.length > 0;
     const [adding, setAdding] = useState(false);
 
     const find = useCallback((id: string) => document.sections.find((section) => section.id === id) ?? null, [document]);
@@ -53,9 +55,10 @@ export function useFeedBlockActions(
         [ask, find],
     );
     const openAdd = useCallback(() => {
-        if (!locked) setAdding(true);
-        else if (billingHref) leaveTo(billingHref);
-    }, [billingHref, leaveTo, locked]);
+        if (locked) {
+            if (billingHref) leaveTo(billingHref);
+        } else if (addable.length > 0) setAdding(true);
+    }, [addable.length, billingHref, leaveTo, locked]);
     const closeAdd = useCallback(() => setAdding(false), []);
     const add = useCallback(
         (type: NewSectionType) => {
@@ -65,7 +68,7 @@ export function useFeedBlockActions(
         [edit, event.eventType],
     );
 
-    return { toggleVisible, move, reorder, askDelete, remove, addable, adding, openAdd, closeAdd, add, locked, canBuy: billingHref !== null };
+    return { toggleVisible, move, reorder, askDelete, remove, addable, showAdd, adding, openAdd, closeAdd, add, locked, canBuy: billingHref !== null };
 }
 
 export type FeedBlockActions = ReturnType<typeof useFeedBlockActions>;
