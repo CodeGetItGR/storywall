@@ -2,6 +2,7 @@
 
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
+import type { ReactNode } from 'react';
 
 import { Banner } from '@/components/feed/Banner';
 import { EventSessionActionButtons } from '@/components/feed/EventSessionActionButtons';
@@ -10,15 +11,21 @@ import { useFeedCoverBlock } from '@/hooks/useFeedCoverBlock';
 import type { EventDetailResponseDto } from '@/lib/api/types';
 import { coverPhotoSettingsHref } from '@/lib/manageSectionTargets';
 
-type FeedCoverBlockProps = { event: EventDetailResponseDto; isHost: boolean; wishlist: boolean };
+type FeedCoverBlockProps = {
+    event: EventDetailResponseDto;
+    isHost: boolean;
+    wishlist: boolean;
+    // The top corner: the Edit pill for hosts.
+    corner?: ReactNode;
+};
 
 // The feed's cover + title block (feedCover): the banner with the session and gift buttons.
-export function FeedCoverBlock({ event, isHost, wishlist }: FeedCoverBlockProps) {
+export function FeedCoverBlock({ event, isHost, wishlist, corner }: FeedCoverBlockProps) {
     const t = useTranslations('FeedPage');
     const cover = useFeedCoverBlock(event, wishlist);
 
     return (
-        <section className={'mt-3'}>
+        <section className="relative mt-3">
             <Banner
                 image={event.coverMedia?.mediaUrl ?? null}
                 illustrationUrl={event.theme?.illustrationUrl ?? null}
@@ -42,6 +49,9 @@ export function FeedCoverBlock({ event, isHost, wishlist }: FeedCoverBlockProps)
                     </>
                 }
             />
+
+            {/* Edit */}
+            {corner && <div className="absolute top-3 right-3 z-20">{corner}</div>}
         </section>
     );
 }
