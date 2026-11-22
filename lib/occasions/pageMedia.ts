@@ -78,8 +78,8 @@ export const WEDDING_PAGE_MEDIA: OccasionPageMedia = {
 const BAPTISM_CHURCH = landing('baptism-ceremony-inside-the-church', 1448, 1086);
 const BAPTISM_TABLE = landing('baptism-celebration-at-the-table', 1448, 1086);
 const BAPTISM_OUTSIDE = landing('happy-baptism-celebration-outside-the-church-on-a-greek-island', 1536, 1024);
-// The draft's feed screenshot: a baptism on the Unicorn theme.
-const BAPTISM_FEED = { src: '/landing/baptism/baptism-feed-unicorn.webp', width: 978, height: 1764 };
+// The draft's feed screenshot: a baptism on the Unicorn theme, as tall as the hero phone's screen so the tab bar sits at its bottom.
+const BAPTISM_FEED = { src: '/landing/baptism/baptism-event-feed-unicorn-theme.webp', width: 978, height: 2011 };
 
 export const BAPTISM_PAGE_MEDIA: OccasionPageMedia = {
     hero: {

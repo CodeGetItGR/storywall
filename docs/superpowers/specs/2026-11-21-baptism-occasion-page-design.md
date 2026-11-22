@@ -67,7 +67,7 @@ type OccasionPageMedia = {
 
 Wedding keeps every picture it uses today. Baptism uses:
 
-- hero feed: `public/landing/baptism/baptism-feed-unicorn.webp` (978×1764, from the draft); posts: `baptism-ceremony-inside-the-church`, `baptism-celebration-at-the-table`
+- hero feed: `public/landing/baptism/baptism-event-feed-unicorn-theme.webp` (978×2011: the draft's 978×1764 screenshot with more plain background above the tab bar, so it fills the hero phone's screen and the tab bar sits at the bottom); posts: `baptism-ceremony-inside-the-church`, `baptism-celebration-at-the-table`
 - without: church, table, outside (the three baptism photos in `public/landing`)
 - QR photo: `/landing/guest-scanning-the-storywall-qr-code.webp`
 - guest photos: outside + avatar Anna, church + Giorgos, table + Eleni (order and avatars as the draft)

@@ -14,7 +14,7 @@ function props(overrides: Partial<ThemesViewProps> = {}): ThemesViewProps {
         heading: ['Pick the theme', 'for the baptism.'],
         kicker: 'BAPTISM THEMES',
         lead: 'Unicorn, Little Prince and more.',
-        phone: { alt: 'A baptism on the Unicorn theme', caption: 'This is a baptism on the Unicorn theme.', photo: { src: '/landing/baptism/baptism-feed-unicorn.webp', width: 978, height: 1764 } },
+        phone: { alt: 'A baptism on the Unicorn theme', caption: 'This is a baptism on the Unicorn theme.', photo: { src: '/landing/baptism/baptism-event-feed-unicorn-theme.webp', width: 978, height: 2011 } },
         tiles: THEMES,
         ...overrides,
     };

@@ -151,7 +151,7 @@ describe('HeroSection (baptism)', () => {
         render(await baptism());
         const visual = screen.getByTestId('visual');
         expect(within(visual).getByRole('img', { name: 'Η αρχική σελίδα μιας βάπτισης στο StoryWall με θέμα Μονόκερος' }).getAttribute('src')).toContain(
-            'baptism-feed-unicorn',
+            'baptism-event-feed-unicorn-theme',
         );
         expect(within(visual).getAllByRole('img', { name: 'Φωτογραφία καλεσμένου' })).toHaveLength(2);
     });

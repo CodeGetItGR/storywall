@@ -39,7 +39,7 @@ describe('page media', () => {
     });
 
     it("gives the baptism its feed screenshot, three guest photos and the wedding's RSVP pictures", () => {
-        expect(BAPTISM_PAGE_MEDIA.hero?.feed.src).toBe('/landing/baptism/baptism-feed-unicorn.webp');
+        expect(BAPTISM_PAGE_MEDIA.hero?.feed.src).toBe('/landing/baptism/baptism-event-feed-unicorn-theme.webp');
         expect(BAPTISM_PAGE_MEDIA.themesPhone).toBe(BAPTISM_PAGE_MEDIA.hero?.feed);
         expect(BAPTISM_PAGE_MEDIA.guestPhotos).toHaveLength(3);
         expect(BAPTISM_PAGE_MEDIA.rsvpPictures).toBe(WEDDING_PAGE_MEDIA.rsvpPictures);
