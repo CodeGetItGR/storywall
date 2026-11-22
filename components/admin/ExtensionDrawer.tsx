@@ -28,7 +28,6 @@ export function ExtensionDrawer({ drawer, plans }: { drawer: ExtensionDrawerStat
                     ? t('plans.durations.edit', { duration: t('plans.columns.months', { count: editing.option.months }) })
                     : t('paidServices.extensions.newTitle')
             }
-            subtitle={editing?.plan.name}
             footer={
                 <>
                     {/* Retire */}
