@@ -4,7 +4,7 @@ import { closestCenter, DndContext } from '@dnd-kit/core';
 import { restrictToVerticalAxis } from '@dnd-kit/modifiers';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { useTranslations } from 'next-intl';
-import type { ReactNode } from 'react';
+import type { ReactNode, Ref } from 'react';
 
 import { FeedAddSectionRow } from '@/components/feed/edit/FeedAddSectionRow';
 import { FeedBlockPlaceholder } from '@/components/feed/edit/FeedBlockPlaceholder';
@@ -36,7 +36,8 @@ import type { FeedSectionType, InvitationSection, SectionType } from '@/lib/invi
 
 const MODIFIERS = [restrictToVerticalAxis];
 
-type FeedEditTopProps = Omit<FeedTopProps, 'view'> & { event: EventDetailResponseDto; onDone: () => void };
+// cancelRef: the Cancel pill, which takes focus as edit mode opens.
+type FeedEditTopProps = Omit<FeedTopProps, 'view'> & { event: EventDetailResponseDto; onDone: () => void; cancelRef?: Ref<HTMLButtonElement> };
 
 // SectionType also holds the footer, which a feed never has.
 type FeedNameKey = `sectionNames.${NewSectionType | FeedSectionType}`;
@@ -44,7 +45,7 @@ const nameKey = (type: SectionType) => `sectionNames.${type}` as FeedNameKey;
 
 // The top of the feed in edit mode: the same frame as the feed, every block with its tools,
 // Save my date text typed in place, and the Add section row closing the middle.
-export function FeedEditTop({ event, onDone, cover, details, stories, description, rsvp }: FeedEditTopProps) {
+export function FeedEditTop({ event, onDone, cancelRef, cover, details, stories, description, rsvp }: FeedEditTopProps) {
     const t = useTranslations('InvitationEditor');
     const session = useFeedEditSession(event, onDone);
     const view = useFeedTop(event, session.document);
@@ -61,7 +62,9 @@ export function FeedEditTop({ event, onDone, cover, details, stories, descriptio
         onDelete: actions.askDelete,
         onOpenSettings: sheet.openFor,
     };
-    const pills = <FeedEditPills saving={session.saving} failed={session.failed} onCancel={session.cancel} onSave={session.save} />;
+    const pills = (
+        <FeedEditPills saving={session.saving} failed={session.failed} onCancel={session.cancel} onSave={session.save} cancelRef={cancelRef} />
+    );
 
     const wrap = (section: InvitationSection, node: ReactNode) => (
         <FeedEditBlock

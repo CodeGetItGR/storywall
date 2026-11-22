@@ -24,6 +24,7 @@ import { StoriesRow } from '@/components/feed/StoriesRow';
 import { InstallAppBanner } from '@/components/pwa/InstallAppBanner';
 import { StoryModal } from '@/components/story/StoryModal';
 import { VendorProfilePrompt } from '@/components/vendors/VendorProfilePrompt';
+import { useFeedEditFocus } from '@/hooks/useFeedEditFocus';
 import { useFeedEditMode } from '@/hooks/useFeedEditMode';
 import { useFeedItems } from '@/hooks/useFeedItems';
 import { useFeedTop } from '@/hooks/useFeedTop';
@@ -41,13 +42,14 @@ export function FeedPageContent() {
     const shouldShowRSVP = useRsvpPromptVisible({ eventId, isHost, rsvpAvailable: moduleFlags.rsvp, rsvpId: currentMemberRsvpId });
     const top = useFeedTop(event);
     const editMode = useFeedEditMode(event, isHost);
+    const { start: startEditing, finish: finishEditing, editPill, cancelPill } = useFeedEditFocus(editMode.start, editMode.finish);
     const topParts = {
         cover: (
             <FeedCoverBlock
                 event={event}
                 isHost={isHost}
                 wishlist={moduleFlags.wishlist}
-                corner={editMode.canEdit && !editMode.editing ? <FeedEditPill onClick={editMode.start} /> : undefined}
+                corner={editMode.canEdit && !editMode.editing ? <FeedEditPill ref={editPill} onClick={startEditing} /> : undefined}
             />
         ),
         details: <FeedDetailsBlock event={event} />,
@@ -59,6 +61,8 @@ export function FeedPageContent() {
         description: event.description && <EventDescription eventId={event.id} description={event.description} keepShown={top.folds || editMode.editing} />,
         rsvp: shouldShowRSVP ? <FeedRsvpBlock eventId={eventId} deadline={event.schedule.rsvpDeadline ?? null} /> : null,
     };
+
+    const feedTop = <FeedTop view={top} {...topParts} />;
 
     function openStoryModal(nextStoryId: string) {
         setStoryId(nextStoryId);
@@ -75,7 +79,11 @@ export function FeedPageContent() {
             {/* Install */}
             <InstallAppBanner />
             {/* Invitation blocks, stories and RSVP */}
-            {editMode.editing ? <LazyFeedEditTop event={event} onDone={editMode.finish} {...topParts} /> : <FeedTop view={top} {...topParts} />}
+            {editMode.editing ? (
+                <LazyFeedEditTop event={event} onDone={finishEditing} cancelRef={cancelPill} fallback={feedTop} {...topParts} />
+            ) : (
+                feedTop
+            )}
 
             {/* Posts */}
             <section id="posts">

@@ -1,11 +1,12 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
+import type { Ref } from 'react';
 
-type FeedEditPillsProps = { saving: boolean; failed: boolean; onCancel: () => void; onSave: () => void };
+type FeedEditPillsProps = { saving: boolean; failed: boolean; onCancel: () => void; onSave: () => void; cancelRef?: Ref<HTMLButtonElement> };
 
 // Cancel and Save on the cover while editing, with the save error under them.
-export function FeedEditPills({ saving, failed, onCancel, onSave }: FeedEditPillsProps) {
+export function FeedEditPills({ saving, failed, onCancel, onSave, cancelRef }: FeedEditPillsProps) {
     const t = useTranslations('InvitationEditor');
     const tFeed = useTranslations('FeedEditor');
 
@@ -14,6 +15,7 @@ export function FeedEditPills({ saving, failed, onCancel, onSave }: FeedEditPill
             {/* Actions */}
             <div className="flex gap-2">
                 <button
+                    ref={cancelRef}
                     type="button"
                     onClick={onCancel}
                     disabled={saving}

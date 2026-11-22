@@ -221,6 +221,24 @@ describe('FeedPageContent layout', { timeout: 15_000 }, () => {
 describe('FeedPageContent edit mode', { timeout: 15_000 }, () => {
     afterEach(() => api.put.mockReset());
 
+    // First in this block: once the edit code is in, later taps never wait for it.
+    it('keeps the feed top on screen while the edit code loads', async () => {
+        renderFeed(null, { flag: true, layout: savedLayout(), isHost: true });
+        fireEvent.click(await screen.findByRole('button', { name: 'edit' }));
+        expect(screen.getByTestId('banner')).toBeTruthy();
+        expect(await screen.findByRole('group', { name: 'sectionNames.feedCover' }, LAZY_LOOK)).toBeTruthy();
+    });
+
+    it('moves focus to Cancel in edit mode, and back to Edit after', async () => {
+        renderFeed(null, { flag: true, layout: savedLayout(), isHost: true });
+        fireEvent.click(await screen.findByRole('button', { name: 'edit' }));
+        const cancel = await screen.findByRole('button', { name: 'cancel' }, LAZY_LOOK);
+        expect(document.activeElement).toBe(cancel);
+        fireEvent.click(cancel);
+        const edit = await screen.findByRole('button', { name: 'edit' });
+        expect(document.activeElement).toBe(edit);
+    });
+
     it('shows Edit to a host only', async () => {
         renderFeed(null, { flag: true, layout: savedLayout(), isHost: true });
         expect(await screen.findByRole('button', { name: 'edit' })).toBeTruthy();
