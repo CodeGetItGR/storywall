@@ -45,16 +45,18 @@ function middleIds(sections: readonly Block[]): string[] {
     return sections.filter(isMiddleBlock).map((section) => section.id);
 }
 
+// A locked block keeps its place: it never moves, and nothing moves into it.
 export function canMoveFeedBlock(sections: readonly Block[], id: string, direction: MoveDirection): boolean {
-    const order = middleIds(sections);
-    const index = order.indexOf(id);
-    return index !== -1 && order[index + direction] !== undefined;
+    const middle = sections.filter(isMiddleBlock);
+    const index = middle.findIndex((section) => section.id === id);
+    const target = index === -1 ? undefined : middle[index + direction];
+    return index !== -1 && !middle[index].locked && target !== undefined && !target.locked;
 }
 
 export type FeedBlockControls = { canHide: boolean; canDelete: boolean; movable: boolean; canMoveUp: boolean; canMoveDown: boolean };
 
 export function feedBlockControls(sections: readonly Block[], section: Block): FeedBlockControls {
-    const movable = isMiddleBlock(section);
+    const movable = isMiddleBlock(section) && !section.locked;
     return {
         canHide: canHideFeedBlock(section),
         canDelete: canDeleteFeedBlock(section),
@@ -65,7 +67,7 @@ export function feedBlockControls(sections: readonly Block[], section: Block): F
 }
 
 // The dragged middle block takes the place of the one it was dropped on. The frame's blocks stay
-// where they are, so only the middle's own slots are rewritten.
+// where they are, so only the middle's own slots are rewritten. A drag that would shift a locked block does nothing.
 export function reorderFeedBlocks(activeId: string, overId: string) {
     return (draft: DocumentDraft) => {
         const slots = draft.sections.flatMap((section, index) => (isMiddleBlock(section) ? [index] : []));
@@ -75,6 +77,7 @@ export function reorderFeedBlocks(activeId: string, overId: string) {
         if (from === -1 || to === -1 || from === to) return;
         const [moved] = middle.splice(from, 1);
         middle.splice(to, 0, moved);
+        if (middle.some((section, place) => section.locked && draft.sections[slots[place]].id !== section.id)) return;
         slots.forEach((slot, place) => {
             draft.sections[slot] = middle[place];
         });

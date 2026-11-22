@@ -26,6 +26,7 @@ import type { InvitationSection } from '@/lib/invitation/sections';
 
 const dressCode = { ...(SAMPLE_SECTIONS.dressCode as InvitationSection), id: 'dress' };
 const faq = { ...(SAMPLE_SECTIONS.faq as InvitationSection), id: 'faq' };
+const lockedFaq = { ...faq, locked: true };
 
 // cover, details, description, rsvp, then the Save my date blocks the host added.
 function layout(...extra: InvitationSection[]): InvitationDocument {
@@ -72,6 +73,14 @@ describe('which block may do what', () => {
         expect(canMoveFeedBlock(sections, 'feed-feedRsvp', -1)).toBe(false);
     });
 
+    it('never moves a locked block, nor another block into its place', () => {
+        const sections = layout(dressCode, lockedFaq).sections;
+        expect(canMoveFeedBlock(sections, 'faq', -1)).toBe(false);
+        expect(canMoveFeedBlock(sections, 'dress', 1)).toBe(false);
+        expect(canMoveFeedBlock(sections, 'dress', -1)).toBe(true);
+        expect(feedBlockControls(sections, lockedFaq)).toEqual({ canHide: false, canDelete: false, movable: false, canMoveUp: false, canMoveDown: false });
+    });
+
     it('sums it up per block', () => {
         const sections = layout(dressCode).sections;
         expect(feedBlockControls(sections, cover)).toEqual({ canHide: false, canDelete: false, movable: false, canMoveUp: false, canMoveDown: false });
@@ -111,6 +120,15 @@ describe('edits', () => {
         expect(next.sections.filter(isMiddleBlock).map((section) => section.id)).toEqual(['faq', 'feed-feedDescription', 'dress']);
         expect(next.sections[0].id).toBe('feed-feedCover');
         expect(next.sections[1].id).toBe('feed-feedDetails');
+    });
+
+    it('keeps a locked block in its place when dragging', () => {
+        const start = layout(dressCode, lockedFaq);
+        expect(produce(start, reorderFeedBlocks('faq', 'dress'))).toBe(start);
+        expect(produce(start, reorderFeedBlocks('feed-feedDescription', 'faq'))).toBe(start);
+        expect(produce(start, moveFeedBlock('dress', 1))).toBe(start);
+        const next = produce(layout(dressCode, faq, { ...lockedFaq, id: 'lockedFaq' }), reorderFeedBlocks('faq', 'feed-feedDescription'));
+        expect(next.sections.filter(isMiddleBlock).map((section) => section.id)).toEqual(['faq', 'feed-feedDescription', 'dress', 'lockedFaq']);
     });
 
     it('ignores a drop on a block outside the middle', () => {
