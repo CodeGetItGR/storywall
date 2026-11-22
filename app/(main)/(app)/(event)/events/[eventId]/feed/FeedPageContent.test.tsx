@@ -287,6 +287,25 @@ describe('FeedPageContent edit mode', { timeout: 15_000 }, () => {
         expect(await screen.findByText('leaveTitle')).toBeTruthy();
     });
 
+    it("opens a block's settings when the block is tapped, and moves them to the next block tapped", async () => {
+        renderFeed(null, { flag: true, layout: savedLayout(dressCode), isHost: true });
+        fireEvent.click(await screen.findByRole('button', { name: 'edit' }));
+        const cover = await screen.findByRole('group', { name: 'sectionNames.feedCover' }, LAZY_LOOK);
+        fireEvent.click(cover);
+        expect(await screen.findByRole('dialog', { name: 'sectionNames.feedCover' })).toBeTruthy();
+        fireEvent.click(screen.getByRole('group', { name: `sectionNames.${dressCode.type}` }));
+        expect(await screen.findByRole('dialog', { name: `sectionNames.${dressCode.type}` })).toBeTruthy();
+        expect(screen.queryByRole('dialog', { name: 'sectionNames.feedCover' })).toBeNull();
+    });
+
+    it("keeps the tools from opening the block's settings", async () => {
+        renderFeed(null, { flag: true, layout: savedLayout(), isHost: true });
+        fireEvent.click(await screen.findByRole('button', { name: 'edit' }));
+        const rsvp = await screen.findByRole('group', { name: 'sectionNames.feedRsvp' }, LAZY_LOOK);
+        fireEvent.click(within(rsvp).getByRole('button', { name: 'hide' }));
+        expect(screen.queryByRole('dialog')).toBeNull();
+    });
+
     it('locks Add section without Save my date', async () => {
         renderFeed(null, { flag: true, layout: savedLayout(), isHost: true });
         fireEvent.click(await screen.findByRole('button', { name: 'edit' }));

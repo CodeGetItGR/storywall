@@ -28,7 +28,7 @@ export function FeedBlockTools({ section, controls, hasSettings, drag, actions }
 
     return (
         // transition-none keeps the tools instant, as in the old editor's toolbar (SectionToolbar).
-        <div className="pointer-events-none absolute inset-x-2.5 top-3 z-40 flex items-start justify-between transition-none">
+        <div data-feed-block-tools className="pointer-events-none absolute inset-x-2.5 top-3 z-40 flex items-start justify-between transition-none">
             {/* Visibility and settings */}
             <div className="pointer-events-auto flex gap-2">
                 {controls.canHide && (

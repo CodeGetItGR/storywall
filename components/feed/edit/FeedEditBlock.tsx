@@ -8,6 +8,7 @@ import type { ReactNode } from 'react';
 import { FeedBlockTools } from '@/components/feed/edit/FeedBlockTools';
 import { FeedNative } from '@/components/feed/layout/FeedLook';
 import type { FeedBlockToolActions } from '@/hooks/useFeedBlockHandlers';
+import { useFeedBlockTap } from '@/hooks/useFeedBlockTap';
 import { useSectionSortable } from '@/hooks/useSectionSortable';
 import { type FeedBlockControls, leavesRoomForTools } from '@/lib/feedEditing';
 import type { InvitationSection } from '@/lib/invitation/sections';
@@ -25,11 +26,13 @@ type FeedEditBlockProps = {
 };
 
 // One block of the feed while editing: dimmed with a badge when hidden, with its tools on top.
+// Tapping it opens its settings.
 // Only middle blocks drag; the rest pass locked to the sortable, so they stay put.
 export function FeedEditBlock({ section, name, controls, hasSettings, actions, corner, children }: FeedEditBlockProps) {
     const t = useTranslations('InvitationEditor.sections');
     const { setNodeRef, style, isDragging, drag } = useSectionSortable(section.id, name, !controls.movable);
     const roomForTools = leavesRoomForTools(section);
+    const onTap = useFeedBlockTap(section.id, hasSettings, actions.onOpenSettings);
 
     return (
         <div
@@ -40,6 +43,7 @@ export function FeedEditBlock({ section, name, controls, hasSettings, actions, c
             aria-label={name}
             // Not a tab stop, but takes focus after the block next to it is deleted.
             tabIndex={-1}
+            onClick={onTap}
             className={cn(
                 'smd-editor relative outline-offset-[-2px] focus-within:outline-2 focus-within:outline-(--smd-editor-accent) hover:outline-2 hover:outline-(--smd-editor-accent)',
                 isDragging && 'z-50 shadow-[0_10px_28px_rgba(0,0,0,0.35)]',
@@ -61,7 +65,11 @@ export function FeedEditBlock({ section, name, controls, hasSettings, actions, c
                 <FeedBlockTools section={section} controls={controls} hasSettings={hasSettings} drag={drag} actions={actions} />
 
                 {/* Save and cancel */}
-                {corner && <div className="absolute top-3 right-3 z-50">{corner}</div>}
+                {corner && (
+                    <div data-feed-block-tools className="absolute top-3 right-3 z-50">
+                        {corner}
+                    </div>
+                )}
             </FeedNative>
         </div>
     );
