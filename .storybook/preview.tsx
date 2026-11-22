@@ -7,6 +7,7 @@ import { setupWorker } from 'msw/browser';
 import { mswLoader } from 'msw-storybook-addon/csf3';
 import { NextIntlClientProvider } from 'next-intl';
 import { type ReactNode, useEffect, useState } from 'react';
+import { sb } from 'storybook/test';
 
 import { rootFontClassName } from '@/components/layout/rootFonts';
 import { defaultLocale, type Locale } from '@/i18n/config';
@@ -14,6 +15,10 @@ import el from '@/messages/el.json';
 import en from '@/messages/en.json';
 
 import { waitForAssets } from './waitForAssets';
+
+// A gift card's QR holds a link built from the page's origin, which differs
+// between Storybook runs. hooks/__mocks__/useGiftClaimUrl.ts fixes it.
+sb.mock('../hooks/useGiftClaimUrl.ts');
 
 const messages = { en, el } as const;
 
