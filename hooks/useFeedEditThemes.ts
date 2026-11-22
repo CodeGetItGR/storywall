@@ -83,6 +83,9 @@ export function useFeedEditThemes(
     const pickWall = useCallback(
         (presetId: string | null, wallTheme: EventThemeDto | null, applied: boolean) =>
             run(async () => {
+                // On the wall, the preset already on screen again changes nothing, so the background colour stays.
+                const onScreen = heldWall ? heldWall.presetId === presetId : applied;
+                if (!store.getState().themeSlug && onScreen) return;
                 if (store.getState().themeSlug) {
                     const oldIds = await leavingImageIds();
                     const look = wallThemeDesign(applied ? event.theme : wallTheme);
@@ -94,7 +97,7 @@ export function useFeedEditThemes(
                 }
                 setHeldWall(applied ? undefined : { presetId, theme: wallTheme });
             }),
-        [event.eventType, event.theme, leavingImageIds, run, store],
+        [event.eventType, event.theme, heldWall, leavingImageIds, run, store],
     );
 
     const wallTheme = heldWall ? heldWall.theme : event.theme;

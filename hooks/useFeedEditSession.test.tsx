@@ -319,4 +319,31 @@ describe('useFeedEditSession', () => {
         await act(() => result.current.pickInvitation('rose'));
         expect(result.current.background).toBeUndefined();
     });
+
+    it('clears the background colour on a pick of another wall preset', async () => {
+        const { result } = renderHook(() => useFeedEditSession(event, vi.fn()), { wrapper });
+        act(() => result.current.setBackground('#F5E6D3'));
+        await act(() => result.current.pickWall('p-1', dino, false));
+        expect(result.current.background).toBeUndefined();
+    });
+
+    it('keeps the background colour when the applied preset is picked again', async () => {
+        const { result } = renderHook(() => useFeedEditSession(event, vi.fn()), { wrapper });
+        act(() => result.current.setBackground('#F5E6D3'));
+        await act(() => result.current.pickWall(null, null, true));
+        expect(result.current.background).toBe('#F5E6D3');
+        expect(result.current.heldWall).toBeUndefined();
+        expect(result.current.dirty).toBe(true);
+        act(() => result.current.setBackground(undefined));
+        expect(result.current.dirty).toBe(false);
+    });
+
+    it('keeps the background colour when the held preset is picked again', async () => {
+        const { result } = renderHook(() => useFeedEditSession(event, vi.fn()), { wrapper });
+        await act(() => result.current.pickWall('p-1', dino, false));
+        act(() => result.current.setBackground('#F5E6D3'));
+        await act(() => result.current.pickWall('p-1', dino, false));
+        expect(result.current.background).toBe('#F5E6D3');
+        expect(result.current.heldWall).toEqual({ presetId: 'p-1', theme: dino });
+    });
 });
