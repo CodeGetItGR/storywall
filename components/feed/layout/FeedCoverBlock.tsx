@@ -50,8 +50,8 @@ export function FeedCoverBlock({ event, isHost, wishlist, corner }: FeedCoverBlo
                 }
             />
 
-            {/* Edit */}
-            {corner && <div className="absolute top-3 right-3 z-20">{corner}</div>}
+            {/* Edit: top-left, clear of the banner's session buttons on the right */}
+            {corner && <div className="absolute top-3 left-3 z-20">{corner}</div>}
         </section>
     );
 }
