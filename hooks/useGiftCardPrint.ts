@@ -1,21 +1,18 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { type ChangeEvent, useCallback, useState, useSyncExternalStore } from 'react';
+import { type ChangeEvent, useCallback, useState } from 'react';
 
 import { useEventGift, useIssuedGiftCard } from '@/hooks/useGift';
+import { useGiftClaimUrl } from '@/hooks/useGiftClaimUrl';
 import { useQrCardDesigner } from '@/hooks/useQrCardDesigner';
 import { useQrCardExport } from '@/hooks/useQrCardExport';
 import { useQrCardTemplates } from '@/hooks/useQrCardTemplates';
 import type { QrCardTemplateDto } from '@/lib/api/types';
-import { canPrintGiftCard, giftClaimUrl } from '@/lib/gift';
+import { canPrintGiftCard } from '@/lib/gift';
 import { giftQrCardLines } from '@/lib/qrCard';
 
 const NO_TEMPLATES: QrCardTemplateDto[] = [];
-
-function subscribeToNothing() {
-    return () => {};
-}
 
 /**
  * The printable claim card: the live card's QR, and its PIN when the card was
@@ -30,15 +27,10 @@ export function useGiftCardPrint(eventId: string) {
     const gift = useEventGift(eventId);
     const issued = useIssuedGiftCard(eventId);
     const templates = useQrCardTemplates(eventId);
-    // Read on the client only: the server has no origin to put in the QR.
-    const origin = useSyncExternalStore(
-        subscribeToNothing,
-        () => window.location.origin,
-        () => null,
-    );
     const [includePin, setIncludePin] = useState(true);
 
     const card = gift.data && canPrintGiftCard(gift.data) ? gift.data : null;
+    const claimUrl = useGiftClaimUrl(card?.token);
     // A PIN from before a reissue belongs to a dead card.
     const pin = card && issued.data?.token === card.token ? issued.data.pin : null;
     const showPin = Boolean(pin) && includePin;
@@ -58,7 +50,7 @@ export function useGiftCardPrint(eventId: string) {
     return {
         isLoading: gift.isLoading || templates.isLoading,
         card,
-        claimUrl: card?.token && origin ? giftClaimUrl(origin, card.token) : null,
+        claimUrl,
         pin,
         includePin: showPin,
         handleIncludePinChange,
