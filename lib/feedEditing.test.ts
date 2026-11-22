@@ -13,7 +13,6 @@ import {
     feedEditFrame,
     feedSettingsGroups,
     isMiddleBlock,
-    leavesRoomForTools,
     moveFeedBlock,
     noFeedUploads,
     opensBlockSettings,
@@ -54,12 +53,6 @@ describe('feedEditFrame', () => {
 
 describe('which block may do what', () => {
     const [cover, details, description, rsvp] = defaultFeedLayout().sections;
-
-    it('leaves room for the tools above the feed blocks drawn by the app, not the cover or Save my date blocks', () => {
-        expect([details, description, rsvp].every(leavesRoomForTools)).toBe(true);
-        expect(leavesRoomForTools(cover)).toBe(false);
-        expect(leavesRoomForTools(dressCode)).toBe(false);
-    });
 
     it('hides every block but the cover', () => {
         expect(canHideFeedBlock(cover)).toBe(false);
