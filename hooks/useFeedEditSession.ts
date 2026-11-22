@@ -2,7 +2,7 @@
 
 import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 
 import { useFeedLayout } from '@/hooks/useFeedLayout';
 import { useFeedLayoutSave } from '@/hooks/useFeedLayoutSave';
@@ -55,16 +55,21 @@ export function useFeedEditSession(event: Pick<EventDetailResponseDto, 'id' | 't
     }, [onLeave]);
     const stay = useCallback(() => setOnLeave(null), []);
 
-    // Phone Back works like Cancel. While a dialog is open, Back belongs to the dialog.
-    useOverlayHistory(onLeave === null && !conflict, cancel);
+    // Phone Back works like Cancel. While a dialog is open, Back belongs to the dialog. While saving there is
+    // nothing to ask (the save is already on its way), so the layer is closed cleanly and comes back if the save fails.
+    useOverlayHistory(onLeave === null && !conflict && !saving, cancel);
     useInAppLeaveGuard(dirty && onLeave === null && !conflict, leaveTo);
     useUnsavedChangesWarning(dirty);
 
+    // A second tap lands before isPending re-renders.
+    const inFlight = useRef(false);
     const save = useCallback(async () => {
+        if (inFlight.current) return;
         if (!dirty) {
             onDone();
             return;
         }
+        inFlight.current = true;
         setFailed(false);
         try {
             await mutateAsync({ revision: opened.revision, themeSlug: opened.themeSlug, document: store.getState().document });
@@ -72,6 +77,8 @@ export function useFeedEditSession(event: Pick<EventDetailResponseDto, 'id' | 't
         } catch (error) {
             if (isStaleRevision(error)) setConflict(true);
             else setFailed(true);
+        } finally {
+            inFlight.current = false;
         }
     }, [dirty, mutateAsync, onDone, opened, store]);
 

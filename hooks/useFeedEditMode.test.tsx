@@ -1,7 +1,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { act, renderHook } from '@testing-library/react';
+import { act, renderHook, waitFor } from '@testing-library/react';
 import type { ReactNode } from 'react';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { useFeedEditMode } from '@/hooks/useFeedEditMode';
 import type { EventDetailResponseDto } from '@/lib/api/types';
@@ -9,15 +9,19 @@ import { feedLayoutKeys } from '@/lib/feedLayout';
 import { FeedEditorFlagProvider } from '@/providers/FeedEditorFlagProvider';
 
 // A layout that never arrives, for "until the layout is in".
+const mocks = vi.hoisted(() => ({ get: vi.fn() }));
 vi.mock('@/lib/api/client', async (importOriginal) => {
     const actual = await importOriginal<typeof import('@/lib/api/client')>();
-    return { ...actual, api: { ...actual.api, get: () => new Promise(() => undefined) } };
+    return { ...actual, api: { ...actual.api, get: mocks.get } };
+});
+beforeEach(() => {
+    mocks.get.mockReset();
+    mocks.get.mockImplementation(() => new Promise(() => undefined));
 });
 
 const active = { id: 'e-1', theme: null, status: 'ACTIVE' } as unknown as EventDetailResponseDto;
 
-function wrap({ flag = true, loaded = true }: { flag?: boolean; loaded?: boolean } = {}) {
-    const client = new QueryClient({ defaultOptions: { queries: { retry: false, staleTime: Infinity } } });
+function wrap({ flag = true, loaded = true }: { flag?: boolean; loaded?: boolean } = {}, client = new QueryClient({ defaultOptions: { queries: { retry: false, staleTime: Infinity } } })) {
     if (loaded) client.setQueryData(feedLayoutKeys.detail('e-1'), null);
     return function Wrapper({ children }: { children: ReactNode }) {
         return (
@@ -45,4 +49,16 @@ describe('useFeedEditMode', () => {
         expect(renderHook(() => useFeedEditMode(readOnly, true), { wrapper: wrap() }).result.current.canEdit).toBe(false);
         expect(renderHook(() => useFeedEditMode(active, true), { wrapper: wrap({ loaded: false }) }).result.current.canEdit).toBe(false);
     });
+
+    it('stays in edit mode when a later refetch fails', async () => {
+        const client = new QueryClient({ defaultOptions: { queries: { retry: false, staleTime: Infinity } } });
+        const { result } = renderHook(() => useFeedEditMode(active, true), { wrapper: wrap({}, client) });
+        act(() => result.current.start());
+        mocks.get.mockRejectedValue(new Error('offline'));
+        await act(() => client.invalidateQueries({ queryKey: feedLayoutKeys.detail('e-1') }));
+        await waitFor(() => expect(client.getQueryState(feedLayoutKeys.detail('e-1'))?.status).toBe('error'));
+        expect(result.current.canEdit).toBe(true);
+        expect(result.current.editing).toBe(true);
+    });
 });
+

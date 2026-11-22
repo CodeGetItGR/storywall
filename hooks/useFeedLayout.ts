@@ -31,6 +31,6 @@ export function useFeedLayout(event: Pick<EventDetailResponseDto, 'id' | 'theme'
     // A disabled query still hands back cached data, so the flag decides here too.
     const saved = enabled ? (query.data ?? null) : null;
     const view = useMemo(() => readFeedLayout(saved, event.theme), [saved, event.theme]);
-    // isLoaded: the saved layout (or its 404) is in. Edit mode waits for it, so it never edits the stand-in.
-    return { ...view, isLoading: enabled && query.isLoading, isLoaded: enabled && query.isSuccess };
+    // isLoaded: the saved layout (or its 404) is in. A later failed refetch keeps it loaded. Edit mode waits for it, so it never edits the stand-in.
+    return { ...view, isLoading: enabled && query.isLoading, isLoaded: enabled && query.data !== undefined };
 }

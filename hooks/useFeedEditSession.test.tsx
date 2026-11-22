@@ -10,14 +10,24 @@ import type { EventDetailResponseDto, FeedLayoutDto } from '@/lib/api/types';
 import { setFeedBlockVisible } from '@/lib/feedEditing';
 import { defaultFeedLayout, feedLayoutKeys } from '@/lib/feedLayout';
 
-const mocks = vi.hoisted(() => ({ put: vi.fn(), push: vi.fn() }));
+const mocks = vi.hoisted(() => ({ put: vi.fn(), push: vi.fn(), overlay: vi.fn() }));
 
 vi.mock('@/lib/api/client', async (importOriginal) => {
     const actual = await importOriginal<typeof import('@/lib/api/client')>();
     return { ...actual, api: { ...actual.api, put: mocks.put } };
 });
 vi.mock('next/navigation', () => ({ useRouter: () => ({ push: mocks.push }) }));
-vi.mock('@/hooks/useOverlayHistory', () => ({ useOverlayHistory: () => ({ requestClose: () => undefined }) }));
+vi.mock('@/hooks/useOverlayHistory', () => ({
+    useOverlayHistory: (open: boolean, onClose: () => void) => {
+        mocks.overlay(open, onClose);
+        return { requestClose: () => undefined };
+    },
+}));
+
+function lastOverlay() {
+    const [open, onClose] = mocks.overlay.mock.calls.at(-1) as [boolean, () => void];
+    return { open, onClose };
+}
 
 const event = { id: 'e-1', theme: null } as unknown as EventDetailResponseDto;
 const saved: FeedLayoutDto = { themeSlug: null, revision: 3, document: defaultFeedLayout(), design: null, imageUrls: {}, updatedAt: '2026-11-22T10:00:00Z' };
@@ -32,6 +42,7 @@ beforeEach(() => {
     client.setQueryData(feedLayoutKeys.detail('e-1'), saved);
     mocks.put.mockReset();
     mocks.push.mockReset();
+    mocks.overlay.mockReset();
 });
 
 function hideRsvp(session: ReturnType<typeof useFeedEditSession>) {
@@ -83,6 +94,8 @@ describe('useFeedEditSession', () => {
         const onDone = vi.fn();
         const { result } = renderHook(() => useFeedEditSession(event, onDone), { wrapper });
         hideRsvp(result.current);
+        // The layout is refetched meanwhile; the save still names the revision edit mode opened on.
+        act(() => client.setQueryData(feedLayoutKeys.detail('e-1'), { ...saved, revision: 9 }));
         await act(() => result.current.save());
         expect(mocks.put).toHaveBeenCalledWith(endpoints.events.feedLayout('e-1'), {
             revision: 3,
@@ -122,5 +135,58 @@ describe('useFeedEditSession', () => {
         await act(() => result.current.save());
         await waitFor(() => expect(result.current.failed).toBe(true));
         expect(onDone).not.toHaveBeenCalled();
+    });
+
+    it('sends one save for a double tap', async () => {
+        mocks.put.mockResolvedValue({ revision: 4, updatedAt: '2026-11-22T10:05:00Z' });
+        const { result } = renderHook(() => useFeedEditSession(event, vi.fn()), { wrapper });
+        hideRsvp(result.current);
+        await act(async () => {
+            await Promise.all([result.current.save(), result.current.save()]);
+        });
+        expect(mocks.put).toHaveBeenCalledTimes(1);
+    });
+
+    it('phone Back asks only with changes, and the layer is closed while a dialog shows', () => {
+        const onDone = vi.fn();
+        const { result } = renderHook(() => useFeedEditSession(event, onDone), { wrapper });
+        expect(lastOverlay().open).toBe(true);
+        act(() => lastOverlay().onClose());
+        expect(onDone).toHaveBeenCalledOnce();
+        expect(result.current.leaving).toBe(false);
+
+        hideRsvp(result.current);
+        act(() => lastOverlay().onClose());
+        expect(result.current.leaving).toBe(true);
+        expect(onDone).toHaveBeenCalledOnce();
+        expect(lastOverlay().open).toBe(false);
+        act(() => result.current.stay());
+        expect(lastOverlay().open).toBe(true);
+    });
+
+    it('closes the Back layer while saving, and again if the save fails', async () => {
+        let fail: (error: unknown) => void = () => undefined;
+        mocks.put.mockReturnValueOnce(new Promise((_, reject) => (fail = reject)));
+        const { result } = renderHook(() => useFeedEditSession(event, vi.fn()), { wrapper });
+        hideRsvp(result.current);
+        let saving: Promise<void> = Promise.resolve();
+        act(() => {
+            saving = result.current.save();
+        });
+        await waitFor(() => expect(lastOverlay().open).toBe(false));
+        await act(async () => {
+            fail(new ApiError(500, { errorCode: 5004 }));
+            await saving;
+        });
+        expect(lastOverlay().open).toBe(true);
+    });
+
+    it('closes the Back layer while the conflict dialog shows', async () => {
+        mocks.put.mockRejectedValue(new ApiError(409, { errorCode: 5208 }));
+        const { result } = renderHook(() => useFeedEditSession(event, vi.fn()), { wrapper });
+        hideRsvp(result.current);
+        await act(() => result.current.save());
+        expect(result.current.conflict).toBe(true);
+        expect(lastOverlay().open).toBe(false);
     });
 });
