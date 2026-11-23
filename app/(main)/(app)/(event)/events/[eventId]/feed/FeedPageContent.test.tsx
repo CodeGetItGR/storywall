@@ -60,7 +60,6 @@ vi.mock('@/components/feed/ComposerCard', () => ({ ComposerCard: () => null }));
 vi.mock('@/components/feed/EventDescription', () => ({
     EventDescription: ({ keepShown }: { keepShown?: boolean }) => <div data-testid="description" data-keep-shown={String(Boolean(keepShown))} />,
 }));
-vi.mock('@/components/feed/EventInfoSection', () => ({ EventInfoSection: () => null }));
 vi.mock('@/components/feed/EventSessionActionButtons', () => ({ EventSessionActionButtons: () => null }));
 vi.mock('@/components/feed/FeedEmptyState', () => ({ FeedEmptyState: () => null }));
 vi.mock('@/components/feed/FeedPostRenderer', () => ({ FeedPostRenderer: () => null }));
@@ -278,11 +277,13 @@ describe('FeedPageContent edit mode', { timeout: 15_000 }, () => {
         renderFeed(null, { flag: true, layout: savedLayout(dressCode), isHost: true, modules: SMD });
         fireEvent.click(await screen.findByRole('button', { name: 'edit' }));
         await screen.findByRole('group', { name: 'sectionNames.feedCover' }, LAZY_LOOK);
-        for (const type of ['feedCover', 'feedDetails', 'feedDescription', dressCode.type, 'feedRsvp']) {
+        for (const type of ['feedCover', 'feedDescription', dressCode.type, 'feedRsvp']) {
             const group = screen.getByRole('group', { name: `sectionNames.${type}` });
             const tools = group.querySelector('[data-feed-block-tools]') as HTMLElement;
             expect(within(tools).getByText(`sectionNames.${type}`)).toHaveAttribute('aria-hidden', 'true');
         }
+        // The details block isn't drawn, so there is nothing to edit.
+        expect(screen.queryByRole('group', { name: 'sectionNames.feedDetails' })).toBeNull();
         fireEvent.click(screen.getByRole('button', { name: 'cancel' }));
         await screen.findByRole('button', { name: 'edit' });
         expect(document.querySelector('[data-feed-block-tools]')).toBeNull();

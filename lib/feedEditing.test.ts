@@ -45,7 +45,6 @@ describe('feedEditFrame', () => {
         });
         const frame = feedEditFrame(hidden);
         expect(frame.cover.type).toBe('feedCover');
-        expect(frame.details?.type).toBe('feedDetails');
         expect(frame.middle.map((section) => section.id)).toEqual(['feed-feedDescription', 'dress']);
         expect(frame.rsvp?.type).toBe('feedRsvp');
     });

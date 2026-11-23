@@ -65,7 +65,6 @@ function ThemedPage({ theme, children }: { theme: ThemeDesign; children?: ReactN
             <FeedLookTop
                 view={view}
                 cover={<Box label="Cover + title" />}
-                details={<Box label="Details + countdown" />}
                 stories={<Box label="Stories" />}
                 description={<Box label="Description" />}
                 rsvp={<Box label="RSVP" />}

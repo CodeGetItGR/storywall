@@ -12,7 +12,6 @@ import { GuestOfferCard } from '@/components/feed/guestOffer/GuestOfferCard';
 import { Header } from '@/components/feed/Header';
 import { HeOrShePromptCard } from '@/components/feed/HeOrShePromptCard';
 import { FeedCoverBlock } from '@/components/feed/layout/FeedCoverBlock';
-import { FeedDetailsBlock } from '@/components/feed/layout/FeedDetailsBlock';
 import { FeedRsvpBlock } from '@/components/feed/layout/FeedRsvpBlock';
 import { FeedTop } from '@/components/feed/layout/FeedTop';
 import { PartnerBrandingPromptModal } from '@/components/feed/partner/PartnerBrandingPromptModal';
@@ -57,7 +56,6 @@ export function FeedPageContent() {
                 corner={editMode.canEdit && !editMode.editing ? <FeedEditPill ref={editPill} onClick={startEditing} /> : undefined}
             />
         ),
-        details: <FeedDetailsBlock event={event} />,
         stories: moduleFlags.stories && (
             // On a Save my date theme the row sits on the page's own background: inside the scope that draws
             // the backdrop, so it follows a theme held in edit mode too.

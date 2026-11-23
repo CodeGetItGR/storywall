@@ -27,7 +27,6 @@ export function feedEditFrame(layout: InvitationDocument): FeedFrame {
     const find = (type: SectionType) => layout.sections.find((section) => section.type === type) ?? null;
     return {
         cover: feedFrame(layout, { ended: false }).cover,
-        details: find('feedDetails'),
         middle: layout.sections.filter(isMiddleBlock),
         rsvp: find('feedRsvp'),
     };

@@ -48,7 +48,6 @@ function TopStory({ extra, ended = false, styledDetails = false }: StoryArgs) {
         <Top
             view={view}
             cover={<Box label="Cover + title" />}
-            details={<Box label="Details + countdown" />}
             stories={<Box label="Stories" />}
             description={<Box label="Description" />}
             rsvp={<Box label="RSVP" />}
