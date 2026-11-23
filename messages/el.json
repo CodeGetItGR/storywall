@@ -6803,7 +6803,13 @@
         }
     },
     "FeedLayout": {
-        "invitation": "Πρόσκληση"
+        "invitation": "Πρόσκληση",
+        "socialFeed": "Social Feed",
+        "membersOnly": "Μόνο για μέλη",
+        "locked": {
+            "join": "Συνδεθείτε και μπείτε στην εκδήλωση",
+            "feed": "Φωτογραφίες και αναρτήσεις"
+        }
     },
     "FeedEditor": {
         "background": {
@@ -6816,7 +6822,8 @@
             "unlock": "Ξεκλείδωμα"
         },
         "edit": "Επεξεργασία",
-        "saveFailed": "Δεν ήταν δυνατή η αποθήκευση των αλλαγών. Δοκιμάστε ξανά."
+        "saveFailed": "Δεν ήταν δυνατή η αποθήκευση των αλλαγών. Δοκιμάστε ξανά.",
+        "themes": "Θέματα"
     },
     "FeedQuickActions": {
         "invitation": "Πρόσκληση",

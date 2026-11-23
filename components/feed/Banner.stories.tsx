@@ -3,6 +3,7 @@ import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 import { storyEvent } from '@/.storybook/fixtures';
 import { Banner } from '@/components/feed/Banner';
 import { EventSessionActionButtons } from '@/components/feed/EventSessionActionButtons';
+import { FeedModeSwitch } from '@/components/feed/layout/FeedModeSwitch';
 
 // Also shows BannerFallback (no cover), BannerOverlay (title and actions) and the LightRay glow.
 const meta = {
@@ -53,4 +54,28 @@ export const Illustration: Story = {
 
 export const LongTitle: Story = {
     args: { title: 'Alexandra Konstantinopoulou & Panagiotis Hatzigeorgiou celebrate their wedding' },
+};
+
+function noop() {}
+
+// On the feed the Invitation | Social Feed pill sits half over the cover's bottom edge, and the title moves up, clear of it.
+function WithPillBelow(args: Story['args']) {
+    return (
+        <>
+            <Banner {...meta.args} {...args} clearPill />
+            <div className="relative z-10 -mt-6 flex justify-center">
+                <FeedModeSwitch mode="invitation" onSelect={noop} />
+            </div>
+        </>
+    );
+}
+
+export const WithPill: Story = {
+    args: { title: 'Alexandra Konstantinopoulou & Panagiotis Hatzigeorgiou' },
+    render: WithPillBelow,
+};
+
+export const IllustrationWithPill: Story = {
+    args: { illustrationUrl: '/landing/decor-01.webp', title: 'Alexandra Konstantinopoulou & Panagiotis Hatzigeorgiou' },
+    render: WithPillBelow,
 };

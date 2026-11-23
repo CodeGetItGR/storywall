@@ -126,3 +126,20 @@ describe('the feed background colour', () => {
         }
     });
 });
+
+describe('members-only sections', () => {
+    const withFlag = (value: unknown) => ({
+        ...SAMPLE_DOCUMENT,
+        sections: SAMPLE_DOCUMENT.sections.map((section, index) => (index === 1 ? { ...section, membersOnly: value } : section)),
+    });
+
+    it('accepts the flag, and a section without it', () => {
+        expect(invitationDocumentSchema.safeParse(withFlag(true)).success).toBe(true);
+        expect(invitationDocumentSchema.safeParse(withFlag(false)).success).toBe(true);
+        expect(invitationDocumentSchema.safeParse(SAMPLE_DOCUMENT).success).toBe(true);
+    });
+
+    it('refuses anything but true or false', () => {
+        expect(invitationDocumentSchema.safeParse(withFlag('yes')).success).toBe(false);
+    });
+});

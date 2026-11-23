@@ -8,6 +8,7 @@ import {
     addableFeedSectionTypes,
     appendFeedSection,
     canDeleteFeedBlock,
+    type HostBlockOptions,
     moveFeedBlock,
     reorderFeedBlocks,
     setFeedBlockVisible,
@@ -18,7 +19,12 @@ import { createSection, type NewSectionType } from '@/lib/invitation/newSection'
 import type { MoveDirection, SectionEdit } from '@/lib/invitation/sectionActions';
 
 // What the tools on the feed's blocks do, and the Add section row. Edit mode only opens with Save my date.
-export function useFeedBlockActions(store: InvitationEditorStore, document: InvitationDocument, event: Pick<EventDetailResponseDto, 'eventType'>) {
+export function useFeedBlockActions(
+    store: InvitationEditorStore,
+    document: InvitationDocument,
+    event: Pick<EventDetailResponseDto, 'eventType'>,
+    options: HostBlockOptions,
+) {
     const edit = useCallback<SectionEdit>((recipe) => store.getState().edit(recipe), [store]);
     const remove = useDeleteSectionConfirm(edit, document);
     const addable = useMemo(() => addableFeedSectionTypes(document, event.eventType), [document, event.eventType]);
@@ -34,8 +40,8 @@ export function useFeedBlockActions(store: InvitationEditorStore, document: Invi
         },
         [edit, find],
     );
-    const move = useCallback((id: string, direction: MoveDirection) => edit(moveFeedBlock(id, direction)), [edit]);
-    const reorder = useCallback((activeId: string, overId: string) => edit(reorderFeedBlocks(activeId, overId)), [edit]);
+    const move = useCallback((id: string, direction: MoveDirection) => edit(moveFeedBlock(id, direction, options)), [edit, options]);
+    const reorder = useCallback((activeId: string, overId: string) => edit(reorderFeedBlocks(activeId, overId, options)), [edit, options]);
     const { ask } = remove;
     const askDelete = useCallback(
         (id: string) => {
@@ -50,10 +56,10 @@ export function useFeedBlockActions(store: InvitationEditorStore, document: Invi
     const closeAdd = useCallback(() => setAdding(false), []);
     const add = useCallback(
         (type: NewSectionType) => {
-            edit(appendFeedSection(createSection(type, event.eventType)));
+            edit(appendFeedSection(createSection(type, event.eventType), options));
             setAdding(false);
         },
-        [edit, event.eventType],
+        [edit, event.eventType, options],
     );
 
     return { toggleVisible, move, reorder, askDelete, remove, addable, showAdd, adding, openAdd, closeAdd, add };

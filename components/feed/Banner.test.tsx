@@ -94,4 +94,22 @@ describe('Banner', () => {
         render(<Banner image="https://media.example/cover.jpg" title="Baptism" glowVisible={false} />);
         expect(screen.getByRole('heading', { level: 1, name: 'Baptism' })).toHaveClass('text-white');
     });
+
+    describe('with the Invitation | Social Feed pill on its bottom edge', () => {
+        it('lifts the overlay title clear of the pill', () => {
+            const { rerender } = render(<Banner image="https://media.example/cover.jpg" title="Baptism" glowVisible={false} />);
+            const titleBox = () => screen.getByRole('heading', { level: 1, name: 'Baptism' }).parentElement?.parentElement;
+            expect(titleBox()).toHaveClass('pb-4');
+            rerender(<Banner image="https://media.example/cover.jpg" title="Baptism" glowVisible={false} clearPill />);
+            expect(titleBox()).toHaveClass('pb-10');
+            expect(titleBox()).not.toHaveClass('pb-4');
+        });
+
+        it('leaves room under the title below an illustration', () => {
+            const { rerender } = render(<Banner image={null} illustrationUrl="https://media.example/dino.webp" title="Baptism" glowVisible={false} />);
+            expect(screen.getByRole('heading', { level: 1, name: 'Baptism' })).not.toHaveClass('pb-9');
+            rerender(<Banner image={null} illustrationUrl="https://media.example/dino.webp" title="Baptism" glowVisible={false} clearPill />);
+            expect(screen.getByRole('heading', { level: 1, name: 'Baptism' })).toHaveClass('pb-9');
+        });
+    });
 });

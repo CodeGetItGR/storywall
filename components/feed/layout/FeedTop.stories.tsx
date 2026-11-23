@@ -1,11 +1,12 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
-import { useState } from 'react';
-import { expect, userEvent, within } from 'storybook/test';
 
+import { EventInfo } from '@/components/feed/EventInfo';
 import { FeedLookTop } from '@/components/feed/layout/FeedLookTop';
+import { FeedModeSwitch } from '@/components/feed/layout/FeedModeSwitch';
 import { FeedTop } from '@/components/feed/layout/FeedTop';
 import type { FeedTopView } from '@/hooks/useFeedTop';
-import { defaultFeedLayout, feedFrame, foldsMiddle, usesInvitationLook, wallThemeDesign } from '@/lib/feedLayout';
+import { defaultFeedLayout, feedFrame, usesInvitationLook, wallThemeDesign } from '@/lib/feedLayout';
+import type { FeedPageMode } from '@/lib/feedMode';
 import { INVITATION_LABELS } from '@/lib/invitation/labels';
 import { buildRenderContext } from '@/lib/invitation/render';
 import { SAMPLE_SECTIONS } from '@/lib/invitation/samples';
@@ -14,10 +15,9 @@ import type { InvitationSection } from '@/lib/invitation/sections';
 // Stand-ins for today's feed blocks; their own stories cover how they look.
 const Box = ({ label }: { label: string }) => <div className="mx-4 my-3 rounded-xl bg-surface-muted p-4 text-sm text-ink">{label}</div>;
 
-type StoryArgs = { extra: InvitationSection[]; ended?: boolean; styledDetails?: boolean };
+type StoryArgs = { extra: InvitationSection[]; ended?: boolean; styledDetails?: boolean; mode?: FeedPageMode };
 
-function TopStory({ extra, ended = false, styledDetails = false }: StoryArgs) {
-    const [open, setOpen] = useState(false);
+function TopStory({ extra, ended = false, styledDetails = false, mode = 'single' }: StoryArgs) {
     const base = defaultFeedLayout();
     const sections = base.sections.map((section) =>
         styledDetails && section.type === 'feedDetails'
@@ -35,10 +35,8 @@ function TopStory({ extra, ended = false, styledDetails = false }: StoryArgs) {
         themeId: document.themeId,
         sections: document.sections,
         frame,
-        folds: foldsMiddle(frame.middle.length),
-        open,
-        toggle: () => setOpen((current) => !current),
-        drawsMiddle: frame.middle.length > 0 && (!foldsMiddle(frame.middle.length) || open),
+        drawsMiddle: frame.middle.length > 0,
+        rsvpMoves: false,
         pageBackground: null,
         backdrop: null,
     };
@@ -47,6 +45,10 @@ function TopStory({ extra, ended = false, styledDetails = false }: StoryArgs) {
     return (
         <Top
             view={view}
+            mode={mode}
+            modeSwitch={mode === 'single' ? undefined : <FeedModeSwitch mode={mode} onSelect={noop} />}
+            // The pure row, with no calendar sheet; the frame draws it in Social Feed mode only.
+            dateRow={<EventInfo date={Date.UTC(2026, 11, 30)} place="Rhodes" className="mt-3 w-full px-4" />}
             cover={<Box label="Cover + title" />}
             stories={<Box label="Stories" />}
             description={<Box label="Description" />}
@@ -54,6 +56,8 @@ function TopStory({ extra, ended = false, styledDetails = false }: StoryArgs) {
         />
     );
 }
+
+const noop = () => undefined;
 
 const meta = {
     title: 'Feed/Layout/FeedTop',
@@ -68,19 +72,14 @@ type Story = StoryObj<typeof meta>;
 // Every event today: a lone description stays open.
 export const DefaultLayout: Story = {};
 
-export const Folded: Story = {
-    args: { extra: [SAMPLE_SECTIONS.dressCode as InvitationSection, SAMPLE_SECTIONS.faq as InvitationSection] },
-};
+// With Save my date, before the event day: the invitation, nothing folded.
+export const InvitationMode: Story = { args: { extra: [SAMPLE_SECTIONS.dressCode as InvitationSection, SAMPLE_SECTIONS.faq as InvitationSection], mode: 'invitation' } };
 
-export const Opened: Story = {
-    args: Folded.args,
-    play: async ({ canvasElement }) => {
-        const canvas = within(canvasElement);
-        await userEvent.click(canvas.getByRole('button', { expanded: false }));
-        await expect(canvas.getByText('Description')).toBeVisible();
-    },
-};
+// With Save my date, from the event day: stories under the switch (posts follow on the page).
+export const FeedMode: Story = { args: { extra: [SAMPLE_SECTIONS.dressCode as InvitationSection], mode: 'feed' } };
 
 export const StyledDetails: Story = { args: { styledDetails: true } };
 
-export const AfterTheEvent: Story = { args: { ...Folded.args, ended: true } };
+export const AfterTheEvent: Story = {
+    args: { extra: [SAMPLE_SECTIONS.dressCode as InvitationSection, SAMPLE_SECTIONS.faq as InvitationSection], ended: true },
+};

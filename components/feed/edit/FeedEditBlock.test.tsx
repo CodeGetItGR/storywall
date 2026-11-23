@@ -97,35 +97,17 @@ describe('FeedEditBlock name', () => {
         expect(screen.getByRole('group', { name: 'Dress code' })).toBeTruthy();
     });
 
-    it("shows the cover's name right after its pencil, in the same row as Cancel and Save", () => {
+    // Theme, Cancel and Save moved to a row under the cover (FeedEditRow), so the cover keeps its name on phones too.
+    it("shows the cover's name right after its pencil, on every screen", () => {
         const cover = defaultFeedLayout().sections.find((item) => item.type === 'feedCover') as InvitationSection;
         renderBlock({
             section: cover,
             name: 'Cover',
             controls: { canHide: false, canDelete: false, movable: false, canMoveUp: false, canMoveDown: false },
-            corner: <button type="button">Cancel</button>,
         });
         const label = screen.getByText('Cover');
         expect(label.previousElementSibling).toBe(pencil());
-        const row = label.closest('[data-feed-block-tools]') as HTMLElement;
-        expect(within(row).getByRole('button', { name: 'Cancel' })).toBeTruthy();
-    });
-
-    // On a phone Theme, Cancel and Save leave the cover's name no room.
-    it("hides the cover's name on phones only", () => {
-        const cover = defaultFeedLayout().sections.find((item) => item.type === 'feedCover') as InvitationSection;
-        renderBlock({
-            section: cover,
-            name: 'Cover',
-            controls: { canHide: false, canDelete: false, movable: false, canMoveUp: false, canMoveDown: false },
-            corner: <button type="button">Cancel</button>,
-        });
-        expect(screen.getByText('Cover')).toHaveClass('max-sm:hidden');
-    });
-
-    it('keeps the name of a block without a corner on phones', () => {
-        renderBlock();
-        expect(screen.getByText('Dress code')).not.toHaveClass('max-sm:hidden');
+        expect(label).not.toHaveClass('max-sm:hidden');
     });
 
     // The name is no button: a tap on it falls through to the block, which opens the settings.
@@ -165,5 +147,13 @@ describe('FeedEditBlock layout', () => {
         renderBlock({ section: { ...section, visible: false } });
         const tools = document.querySelector('[data-feed-block-tools]') as HTMLElement;
         expect(within(tools).getByText(en.InvitationEditor.sections.hidden)).toBeTruthy();
+    });
+});
+
+describe('FeedEditBlock members only', () => {
+    it('marks a members-only block in its tools', () => {
+        renderBlock({ section: { ...section, membersOnly: true } });
+        const tools = document.querySelector('[data-feed-block-tools]') as HTMLElement;
+        expect(within(tools).getByText(en.FeedLayout.membersOnly)).toBeTruthy();
     });
 });

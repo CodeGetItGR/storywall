@@ -12,7 +12,7 @@ import {
     feedBlockParts,
     feedEditFrame,
     feedSettingsGroups,
-    isMiddleBlock,
+    isHostBlock,
     moveFeedBlock,
     noFeedUploads,
     opensBlockSettings,
@@ -24,6 +24,9 @@ import type { InvitationDocument } from '@/lib/invitation/document';
 import { MAX_SECTIONS } from '@/lib/invitation/document';
 import { SAMPLE_SECTIONS } from '@/lib/invitation/samples';
 import type { InvitationSection } from '@/lib/invitation/sections';
+
+// Without Save my date: RSVP keeps its fixed place.
+const OFF = { rsvpMoves: false };
 
 const dressCode = { ...(SAMPLE_SECTIONS.dressCode as InvitationSection), id: 'dress' };
 const faq = { ...(SAMPLE_SECTIONS.faq as InvitationSection), id: 'faq' };
@@ -43,7 +46,7 @@ describe('feedEditFrame', () => {
             draft.sections[1].visible = false;
             draft.sections[4].visible = false;
         });
-        const frame = feedEditFrame(hidden);
+        const frame = feedEditFrame(hidden, OFF);
         expect(frame.cover.type).toBe('feedCover');
         expect(frame.middle.map((section) => section.id)).toEqual(['feed-feedDescription', 'dress']);
         expect(frame.rsvp?.type).toBe('feedRsvp');
@@ -65,46 +68,46 @@ describe('which block may do what', () => {
 
     it('moves only middle blocks, and only among themselves', () => {
         const sections = layout(dressCode).sections;
-        expect(isMiddleBlock(description)).toBe(true);
-        expect(isMiddleBlock(rsvp)).toBe(false);
-        expect(canMoveFeedBlock(sections, 'feed-feedDescription', -1)).toBe(false);
-        expect(canMoveFeedBlock(sections, 'feed-feedDescription', 1)).toBe(true);
-        expect(canMoveFeedBlock(sections, 'dress', 1)).toBe(false);
-        expect(canMoveFeedBlock(sections, 'feed-feedRsvp', -1)).toBe(false);
+        expect(isHostBlock(description, OFF)).toBe(true);
+        expect(isHostBlock(rsvp, OFF)).toBe(false);
+        expect(canMoveFeedBlock(sections, 'feed-feedDescription', -1, OFF)).toBe(false);
+        expect(canMoveFeedBlock(sections, 'feed-feedDescription', 1, OFF)).toBe(true);
+        expect(canMoveFeedBlock(sections, 'dress', 1, OFF)).toBe(false);
+        expect(canMoveFeedBlock(sections, 'feed-feedRsvp', -1, OFF)).toBe(false);
     });
 
     it('never moves a locked block, nor another block into its place', () => {
         const sections = layout(dressCode, lockedFaq).sections;
-        expect(canMoveFeedBlock(sections, 'faq', -1)).toBe(false);
-        expect(canMoveFeedBlock(sections, 'dress', 1)).toBe(false);
-        expect(canMoveFeedBlock(sections, 'dress', -1)).toBe(true);
-        expect(feedBlockControls(sections, lockedFaq)).toEqual({ canHide: false, canDelete: false, movable: false, canMoveUp: false, canMoveDown: false });
+        expect(canMoveFeedBlock(sections, 'faq', -1, OFF)).toBe(false);
+        expect(canMoveFeedBlock(sections, 'dress', 1, OFF)).toBe(false);
+        expect(canMoveFeedBlock(sections, 'dress', -1, OFF)).toBe(true);
+        expect(feedBlockControls(sections, lockedFaq, OFF)).toEqual({ canHide: false, canDelete: false, movable: false, canMoveUp: false, canMoveDown: false });
     });
 
     it('sums it up per block', () => {
         const sections = layout(dressCode).sections;
-        expect(feedBlockControls(sections, cover)).toEqual({ canHide: false, canDelete: false, movable: false, canMoveUp: false, canMoveDown: false });
-        expect(feedBlockControls(sections, dressCode)).toEqual({ canHide: true, canDelete: true, movable: true, canMoveUp: true, canMoveDown: false });
+        expect(feedBlockControls(sections, cover, OFF)).toEqual({ canHide: false, canDelete: false, movable: false, canMoveUp: false, canMoveDown: false });
+        expect(feedBlockControls(sections, dressCode, OFF)).toEqual({ canHide: true, canDelete: true, movable: true, canMoveUp: true, canMoveDown: false });
     });
 });
 
 describe('edits', () => {
     it('moves a middle block past its middle neighbour and leaves the frame in place', () => {
-        const next = produce(layout(dressCode, faq), moveFeedBlock('faq', -1));
+        const next = produce(layout(dressCode, faq), moveFeedBlock('faq', -1, OFF));
         expect(ids(next)).toEqual(['feed-feedCover', 'feed-feedDetails', 'feed-feedDescription', 'feed-feedRsvp', 'faq', 'dress']);
     });
 
     it('leaves the document alone when a block cannot move further', () => {
         const start = layout(dressCode, faq);
-        expect(produce(start, moveFeedBlock('feed-feedDescription', -1))).toBe(start);
-        expect(produce(start, moveFeedBlock('faq', 1))).toBe(start);
+        expect(produce(start, moveFeedBlock('feed-feedDescription', -1, OFF))).toBe(start);
+        expect(produce(start, moveFeedBlock('faq', 1, OFF))).toBe(start);
     });
 
     it('appends right before RSVP when there is no middle block', () => {
         const start = produce(layout(), (draft) => {
             draft.sections.splice(2, 1);
         });
-        const next = produce(start, appendFeedSection(faq));
+        const next = produce(start, appendFeedSection(faq, OFF));
         expect(ids(next)).toEqual(['feed-feedCover', 'feed-feedDetails', 'faq', 'feed-feedRsvp']);
     });
 
@@ -112,28 +115,28 @@ describe('edits', () => {
         const start = produce(layout(), (draft) => {
             while (draft.sections.length < MAX_SECTIONS) draft.sections.push({ ...faq, id: `x${draft.sections.length}` });
         });
-        expect(produce(start, appendFeedSection(faq))).toBe(start);
+        expect(produce(start, appendFeedSection(faq, OFF))).toBe(start);
     });
 
     it('drags among middle blocks only', () => {
-        const next = produce(layout(dressCode, faq), reorderFeedBlocks('faq', 'feed-feedDescription'));
-        expect(next.sections.filter(isMiddleBlock).map((section) => section.id)).toEqual(['faq', 'feed-feedDescription', 'dress']);
+        const next = produce(layout(dressCode, faq), reorderFeedBlocks('faq', 'feed-feedDescription', OFF));
+        expect(next.sections.filter((section) => isHostBlock(section, OFF)).map((section) => section.id)).toEqual(['faq', 'feed-feedDescription', 'dress']);
         expect(next.sections[0].id).toBe('feed-feedCover');
         expect(next.sections[1].id).toBe('feed-feedDetails');
     });
 
     it('keeps a locked block in its place when dragging', () => {
         const start = layout(dressCode, lockedFaq);
-        expect(produce(start, reorderFeedBlocks('faq', 'dress'))).toBe(start);
-        expect(produce(start, reorderFeedBlocks('feed-feedDescription', 'faq'))).toBe(start);
-        expect(produce(start, moveFeedBlock('dress', 1))).toBe(start);
-        const next = produce(layout(dressCode, faq, { ...lockedFaq, id: 'lockedFaq' }), reorderFeedBlocks('faq', 'feed-feedDescription'));
-        expect(next.sections.filter(isMiddleBlock).map((section) => section.id)).toEqual(['faq', 'feed-feedDescription', 'dress', 'lockedFaq']);
+        expect(produce(start, reorderFeedBlocks('faq', 'dress', OFF))).toBe(start);
+        expect(produce(start, reorderFeedBlocks('feed-feedDescription', 'faq', OFF))).toBe(start);
+        expect(produce(start, moveFeedBlock('dress', 1, OFF))).toBe(start);
+        const next = produce(layout(dressCode, faq, { ...lockedFaq, id: 'lockedFaq' }), reorderFeedBlocks('faq', 'feed-feedDescription', OFF));
+        expect(next.sections.filter((section) => isHostBlock(section, OFF)).map((section) => section.id)).toEqual(['faq', 'feed-feedDescription', 'dress', 'lockedFaq']);
     });
 
     it('ignores a drop on a block outside the middle', () => {
         const start = layout(dressCode);
-        expect(produce(start, reorderFeedBlocks('dress', 'feed-feedRsvp'))).toBe(start);
+        expect(produce(start, reorderFeedBlocks('dress', 'feed-feedRsvp', OFF))).toBe(start);
     });
 
     it('never hides the cover', () => {
@@ -154,7 +157,7 @@ describe('edits', () => {
             const [rsvp] = draft.sections.splice(3, 1);
             draft.sections.push(rsvp);
         });
-        const next = produce(start, appendFeedSection(faq));
+        const next = produce(start, appendFeedSection(faq, OFF));
         expect(ids(next)).toEqual(['feed-feedCover', 'feed-feedDetails', 'feed-feedDescription', 'dress', 'faq', 'feed-feedRsvp']);
     });
 });
@@ -243,5 +246,39 @@ describe('a tap on a block', () => {
         const node = outer.querySelector('#inner') as HTMLElement;
         expect(opensBlockSettings(node.querySelector('#text'), node)).toBe(true);
         outer.remove();
+    });
+});
+
+describe('RSVP as a host block', () => {
+    const dress = { ...(SAMPLE_SECTIONS.dressCode as InvitationSection), id: 'dress' };
+    const sections = [...defaultFeedLayout().sections, dress];
+
+    it('moves only with Save my date, and is never deleted here', () => {
+        const rsvp = sections.find((section) => section.type === 'feedRsvp')!;
+        expect(feedBlockControls(sections, rsvp, { rsvpMoves: false })).toMatchObject({ movable: false, canDelete: false, canHide: true });
+        expect(feedBlockControls(sections, rsvp, { rsvpMoves: true })).toMatchObject({ movable: true, canDelete: false, canHide: true, canMoveUp: true, canMoveDown: true });
+    });
+
+    it('reorders RSVP among the host blocks with Save my date', () => {
+        const document = { ...defaultFeedLayout(), sections };
+        const moved = produce(document, reorderFeedBlocks('feed-feedRsvp', 'feed-feedDescription', { rsvpMoves: true }));
+        expect(moved.sections.filter((section) => isHostBlock(section, { rsvpMoves: true })).map((section) => section.id)).toEqual([
+            'feed-feedRsvp',
+            'feed-feedDescription',
+            'dress',
+        ]);
+    });
+
+    it('leaves RSVP where it is without Save my date', () => {
+        const document = { ...defaultFeedLayout(), sections };
+        const moved = produce(document, reorderFeedBlocks('feed-feedRsvp', 'feed-feedDescription', { rsvpMoves: false }));
+        expect(moved).toEqual(document);
+    });
+
+    it('lists RSVP among the host blocks in edit mode with Save my date', () => {
+        const document = { ...defaultFeedLayout(), sections };
+        expect(feedEditFrame(document, { rsvpMoves: true }).middle.map((section) => section.id)).toEqual(['feed-feedDescription', 'feed-feedRsvp', 'dress']);
+        expect(feedEditFrame(document, { rsvpMoves: true }).rsvp).toBeNull();
+        expect(feedEditFrame(document, { rsvpMoves: false }).rsvp?.id).toBe('feed-feedRsvp');
     });
 });
