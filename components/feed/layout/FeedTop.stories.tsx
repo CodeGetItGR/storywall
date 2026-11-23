@@ -40,6 +40,7 @@ function TopStory({ extra, ended = false, styledDetails = false }: StoryArgs) {
         toggle: () => setOpen((current) => !current),
         drawsMiddle: frame.middle.length > 0 && (!foldsMiddle(frame.middle.length) || open),
         pageBackground: null,
+        backdrop: null,
     };
     // The look straight away, not through FeedTop's lazy load, so a snapshot never catches it loading.
     const Top = view.look ? FeedLookTop : FeedTop;
@@ -47,7 +48,6 @@ function TopStory({ extra, ended = false, styledDetails = false }: StoryArgs) {
         <Top
             view={view}
             cover={<Box label="Cover + title" />}
-            details={<Box label="Details + countdown" />}
             stories={<Box label="Stories" />}
             description={<Box label="Description" />}
             rsvp={<Box label="RSVP" />}

@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import type { EventThemeDto } from '@/lib/api/types';
+import type { FeedPageBackdrop } from '@/lib/feedPageBackdrop';
 import { feedPageTheme, feedPageThemeFor, feedPageThemeSnapshot, publishFeedPageTheme, subscribeFeedPageTheme } from '@/lib/feedPageTheme';
 
 const dino: EventThemeDto = {
@@ -55,5 +56,25 @@ describe('the published override', () => {
         publishFeedPageTheme('feed', { eventId: 'e-1', value: { theme: { ...dino } } });
         expect(listener).toHaveBeenCalledOnce();
         stop();
+    });
+});
+
+describe('feedPageTheme with a backdrop', () => {
+    const backdrop: FeedPageBackdrop = {
+        color: '#EFE7EC',
+        image: null,
+        size: '100% auto',
+        repeat: 'no-repeat',
+        position: 'center top',
+        cardColor: '#F9F5F7',
+    };
+    const wall = { presetKey: 'dino', backgroundColor: '#BFE6E2', illustrationUrl: 'https://media.example/dino.webp', titleColor: null, headingFont: null };
+
+    it('puts the page colour under the wall theme and carries the backdrop', () => {
+        expect(feedPageTheme(wall, null, backdrop)).toEqual({ theme: { ...wall, backgroundColor: '#EFE7EC' }, backdrop });
+    });
+
+    it("gives the host's background colour the page instead", () => {
+        expect(feedPageTheme(wall, '#F5E6D3', backdrop)).toEqual({ theme: { ...wall, backgroundColor: '#F5E6D3' } });
     });
 });

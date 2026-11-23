@@ -151,3 +151,19 @@ describe('FeedEditBlock while its settings are open', () => {
         expect(group).not.toHaveClass('outline-2');
     });
 });
+
+describe('FeedEditBlock layout', () => {
+    const [, details] = defaultFeedLayout().sections;
+
+    it('adds no strip above a feed block: the tools float over its top', () => {
+        renderBlock({ section: details, name: 'Details' });
+        const block = screen.getByText('Black tie').parentElement?.parentElement as HTMLElement;
+        expect(block.className).not.toContain('pt-14');
+    });
+
+    it('shows Hidden in the tools row, next to the name', () => {
+        renderBlock({ section: { ...section, visible: false } });
+        const tools = document.querySelector('[data-feed-block-tools]') as HTMLElement;
+        expect(within(tools).getByText(en.InvitationEditor.sections.hidden)).toBeTruthy();
+    });
+});

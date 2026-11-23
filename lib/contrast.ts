@@ -52,3 +52,9 @@ export function readableOnInk(hex: string): string {
     }
     return '#FFFFFF';
 }
+
+// A lighter tone of a colour: mixed toward white by `amount` (0–1), then lightened further only if ink or the
+// grey labels still can't be read on it. The feed's post cards on a Save my date theme use it.
+export function lightTone(hex: string, amount: number): string {
+    return readableOnInk(mixWithWhite(hex, amount));
+}

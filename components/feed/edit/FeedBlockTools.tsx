@@ -61,6 +61,12 @@ export function FeedBlockTools({ section, name, controls, hasSettings, drag, act
                 >
                     {name}
                 </span>
+                {/* Hidden from guests */}
+                {!section.visible && (
+                    <span className="pointer-events-none shrink-0 rounded-full border border-black/10 bg-white/95 px-2.5 py-1 text-[11px] text-[#555]">
+                        {t('hidden')}
+                    </span>
+                )}
             </div>
 
             {/* Move and menu */}

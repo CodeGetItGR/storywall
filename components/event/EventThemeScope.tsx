@@ -1,11 +1,15 @@
 'use client';
 
+import '@/components/event/feedBackdrop.css';
+
 import { usePathname } from 'next/navigation';
 import type { ReactNode } from 'react';
 
 import { ThemeFontFace } from '@/components/event/ThemeFontFace';
 import { useFeedPageThemeOverride } from '@/hooks/useFeedPageTheme';
 import { eventThemeStyle, isThemedEventPage, themeFontScopeProps } from '@/lib/eventTheme';
+import { feedBackdropStyle } from '@/lib/feedPageBackdrop';
+import { cn } from '@/lib/utils';
 import { useActiveEvent, useRouteEventId } from '@/providers/EventProvider';
 
 // The event app's root surface. On the guest-facing pages it puts the event's theme colour
@@ -21,7 +25,13 @@ export function EventThemeScope({ children }: { children: ReactNode }) {
     // The feed may draw another theme than the event's: its own background colour, or edit mode's held preset.
     const override = useFeedPageThemeOverride(themed ? routeEventId : null);
     const theme = themed && activeEvent ? (override ? override.theme : activeEvent.theme) : null;
-    const themeStyle = eventThemeStyle(theme?.backgroundColor, { titleColor: theme?.titleColor, headingFont: theme?.headingFont });
+    // A Save my date theme on the feed: its background runs behind the whole page, the post cards on its light tone.
+    const backdrop = themed ? (override?.backdrop ?? null) : null;
+    const themeStyle = eventThemeStyle(theme?.backgroundColor, {
+        titleColor: theme?.titleColor,
+        headingFont: theme?.headingFont,
+        cardColor: backdrop?.cardColor,
+    });
     // The font rides with the rest of the theme: a theme whose colour is unusable is no theme at all.
     const headingFont = themeStyle ? theme?.headingFont : null;
 
@@ -30,8 +40,11 @@ export function EventThemeScope({ children }: { children: ReactNode }) {
         // the shell's main reserves --tab-bar-h (plus --overview-fab-room for the floating Overview button) in
         // its own white; pulling the scope over that strip lets the theme colour reach the bottom of the viewport.
         <div
-            className="-mb-[calc(var(--tab-bar-h)+var(--overview-fab-room,0px))] bg-event pb-[calc(var(--tab-bar-h)+var(--overview-fab-room,0px))] md:mb-0 md:pb-0"
-            style={themeStyle}
+            className={cn(
+                '-mb-[calc(var(--tab-bar-h)+var(--overview-fab-room,0px))] bg-event pb-[calc(var(--tab-bar-h)+var(--overview-fab-room,0px))] md:mb-0 md:pb-0',
+                backdrop && 'feed-backdrop',
+            )}
+            style={{ ...themeStyle, ...feedBackdropStyle(backdrop) }}
             {...themeFontScopeProps(headingFont)}
         >
             <ThemeFontFace font={headingFont} />

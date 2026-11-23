@@ -1,9 +1,13 @@
+import '@/components/event/feedBackdrop.css';
+
 import { DndContext } from '@dnd-kit/core';
 import { SortableContext } from '@dnd-kit/sortable';
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
+import type { CSSProperties } from 'react';
 import { fn } from 'storybook/test';
 
 import { FeedEditBlock } from '@/components/feed/edit/FeedEditBlock';
+import { eventThemeStyle } from '@/lib/eventTheme';
 import { SAMPLE_SECTIONS } from '@/lib/invitation/samples';
 import type { InvitationSection } from '@/lib/invitation/sections';
 
@@ -39,3 +43,26 @@ export const Visible: Story = {};
 export const Hidden: Story = { args: { section: { ...section, visible: false } } };
 // Its settings are open.
 export const Active: Story = { args: { active: true } };
+
+// On a Save my date theme: no strip above the block, the tools float over it on the page.
+export const OnThemedPage: Story = {
+    decorators: [
+        (Story) => (
+            <div
+                className="feed-backdrop bg-event p-4"
+                style={
+                    {
+                        ...eventThemeStyle('#EFE7EC'),
+                        '--feed-backdrop-mobile': 'url("/storybook-assets/light-photo.jpg")',
+                        '--feed-backdrop-desktop': 'url("/storybook-assets/light-photo.jpg")',
+                        '--feed-backdrop-size': '100% auto',
+                        '--feed-backdrop-repeat': 'repeat-y',
+                        '--feed-backdrop-position': 'center top',
+                    } as CSSProperties
+                }
+            >
+                <Story />
+            </div>
+        ),
+    ],
+};

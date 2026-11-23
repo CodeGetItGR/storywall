@@ -31,6 +31,9 @@ export type RenderContext = {
     // The customizable feed's one background colour (overrides.backgroundColor), made readable for ink
     // text. Every section shows it instead of its own background.
     backgroundColor?: string;
+    // The customizable feed draws the theme's content background behind the whole page (lib/feedPageBackdrop.ts):
+    // sections left on the "auto" background show the page through.
+    pageBackdrop?: boolean;
     // A preset decides the font of text that has none of its own.
     presetMode: boolean;
     // A preset the host picked replaces every font on the page.
@@ -54,7 +57,7 @@ export type RenderContext = {
 };
 
 const DEFAULT_TEXT_COLOR = '#2f2b2d';
-const DEFAULT_SECONDARY = '#efe7ec';
+export const DEFAULT_SECONDARY = '#efe7ec';
 
 const HEX_COLOR = /^#[0-9a-fA-F]{6}$/;
 
@@ -143,11 +146,19 @@ export function themeAssetName(ref: ImageRef, ctx: RenderContext): string | unde
 
 type ThemeSlot = 'top' | 'content' | 'extra';
 
+// On a feed page that draws the theme's background itself, a section left on "auto" shows the page.
+function showsPage(section: InvitationSection, ctx: RenderContext): boolean {
+    const { background } = section.style;
+    return Boolean(ctx.pageBackdrop) && background.kind === 'theme' && background.slot === 'auto';
+}
+
 // The theme background a section uses: its own pick, or top/content
-// alternating by position. `index` counts hidden sections too.
-function themeSlot(section: InvitationSection, index: number): ThemeSlot {
+// alternating by position. `index` counts hidden sections too. On the feed's
+// themed page, an "auto" section sits on the page's content background.
+function themeSlot(section: InvitationSection, index: number, ctx: RenderContext): ThemeSlot {
     const { background } = section.style;
     if (background.kind === 'theme' && background.slot !== 'auto') return background.slot;
+    if (showsPage(section, ctx)) return 'content';
     if (section.type === 'top') return 'top';
     return index % 2 ? 'content' : 'top';
 }
@@ -173,7 +184,8 @@ export function sectionBackground(section: InvitationSection, index: number, ctx
             };
         }
     }
-    const slot = ctx.theme.backgrounds[themeSlot(section, index)];
+    if (showsPage(section, ctx)) return { style: { background: 'transparent' }, hasThemeImage: false };
+    const slot = ctx.theme.backgrounds[themeSlot(section, index, ctx)];
     const desktop = slot.desktop ? ctx.media(slot.desktop.mediaId) : undefined;
     const mobile = slot.mobile ? ctx.media(slot.mobile.mediaId) : undefined;
     const desktopSrc = desktop ?? mobile;
@@ -183,7 +195,7 @@ export function sectionBackground(section: InvitationSection, index: number, ctx
     return { style: { ...vars, ...themeBackgroundPresentation(slot) } as CSSProperties, hasThemeImage: true };
 }
 
-function themeBackgroundPresentation(slot: ThemeDesign['backgrounds']['top']): CSSProperties {
+export function themeBackgroundPresentation(slot: ThemeDesign['backgrounds']['top']): CSSProperties {
     if (slot.stableRepeat) return { backgroundSize: '100% auto', backgroundRepeat: 'repeat-y', backgroundPosition: 'center top' };
     if (slot.mode === 'repeat' || slot.mode === 'texture') {
         return { backgroundSize: 'var(--smd-bg-tile-size) auto', backgroundRepeat: 'repeat', backgroundPosition: 'center top' };
@@ -191,7 +203,7 @@ function themeBackgroundPresentation(slot: ThemeDesign['backgrounds']['top']): C
     return { backgroundSize: 'cover', backgroundRepeat: 'no-repeat', backgroundPosition: 'center' };
 }
 
-function cssUrl(url: string): string {
+export function cssUrl(url: string): string {
     return `url("${url.replace(/["\\\n\r]/g, (char) => encodeURIComponent(char))}")`;
 }
 
@@ -208,7 +220,7 @@ export function sectionBackgroundPhotos(section: InvitationSection, index: numbe
         const url = resolveImage(background.image, ctx);
         if (url) return { desktop: url, mobile: url };
     }
-    const slot = ctx.theme.backgrounds[themeSlot(section, index)];
+    const slot = ctx.theme.backgrounds[themeSlot(section, index, ctx)];
     const desktop = slot.desktop ? ctx.media(slot.desktop.mediaId) : undefined;
     const mobile = slot.mobile ? ctx.media(slot.mobile.mediaId) : undefined;
     const wide = desktop ?? mobile;
@@ -233,8 +245,9 @@ function solidBackgroundColor(section: InvitationSection, index: number, ctx: Re
     const { background } = section.style;
     if (background.kind === 'color') return background.color || ctx.theme.colors.secondary || DEFAULT_SECONDARY;
     if (background.kind === 'image') return '';
-    const slot = ctx.theme.backgrounds[themeSlot(section, index)];
+    const slot = ctx.theme.backgrounds[themeSlot(section, index, ctx)];
     if (slot.desktop || slot.mobile) return '';
+    if (showsPage(section, ctx)) return ctx.theme.colors.secondary || DEFAULT_SECONDARY;
     return alternatingColor(index, ctx);
 }
 

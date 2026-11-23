@@ -4,6 +4,7 @@ import {
     contrastRatio,
     INK_COLOR,
     INK_MUTED_COLOR,
+    lightTone,
     MIN_INK_CONTRAST,
     MIN_INK_MUTED_CONTRAST,
     readableOnInk,
@@ -71,5 +72,18 @@ describe('readableOnInk', () => {
             expect(contrastRatio(readable, INK_COLOR)).toBeGreaterThanOrEqual(MIN_INK_CONTRAST);
             expect(contrastRatio(readable, INK_MUTED_COLOR)).toBeGreaterThanOrEqual(MIN_INK_MUTED_CONTRAST);
         }
+    });
+});
+
+describe('lightTone', () => {
+    it('mixes a light colour toward white by the amount asked', () => {
+        expect(lightTone('#efe7ec', 0.6)).toBe('#F9F5F7');
+    });
+
+    it('keeps lightening a dark colour until ink and the grey labels read on it', () => {
+        const tone = lightTone('#2F2B2D', 0.6);
+        expect(tooDarkForInk('#ACAAAB')).toBe(true);
+        expect(tooDarkForInk(tone)).toBe(false);
+        expect(tone).not.toBe('#FFFFFF');
     });
 });

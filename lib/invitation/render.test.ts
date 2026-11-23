@@ -234,3 +234,42 @@ describe('the feed background colour', () => {
         });
     });
 });
+
+describe('a feed page that draws the theme background itself', () => {
+    const auto = {
+        ...(SAMPLE_SECTIONS.dressCode as InvitationSection),
+        style: { ...SAMPLE_SECTIONS.dressCode.style, background: { kind: 'theme', slot: 'auto' } },
+    } as InvitationSection;
+    const pickedTop = { ...auto, style: { ...auto.style, background: { kind: 'theme', slot: 'top' } } } as InvitationSection;
+    const coloured = { ...auto, style: { ...auto.style, background: { kind: 'color', color: '#112233' } } } as InvitationSection;
+    const page = { ...ctx, pageBackdrop: true };
+
+    it('draws a section left on auto transparent, at every position', () => {
+        const transparent = { style: { background: 'transparent' }, hasThemeImage: false };
+        expect(sectionBackground(auto, 1, page)).toEqual(transparent);
+        expect(sectionBackground(auto, 2, page)).toEqual(transparent);
+    });
+
+    it('keeps a picked theme slot and a picked colour', () => {
+        expect(sectionBackground(pickedTop, 1, page).hasThemeImage).toBe(true);
+        expect(sectionBackground(coloured, 1, page).style.background).toBe('#112233');
+    });
+
+    it("reads the photo tint off the page's content background", () => {
+        expect(sectionBackgroundPhotos(auto, 2, page)).toEqual({ desktop: media('m-content'), mobile: media('m-content') });
+    });
+
+    it('reads the automatic text contrast off the page colour when the content slot has no image', () => {
+        const plain = {
+            ...SAMPLE_THEME,
+            autoTextContrast: true,
+            backgrounds: { ...SAMPLE_THEME.backgrounds, content: { mode: 'cover', stableRepeat: false } },
+        } as ThemeDesign;
+        const darkPage = { ...buildRenderContext(SAMPLE_DOCUMENT, { ...plain, colors: { ...plain.colors, secondary: '#111111' } }, media), pageBackdrop: true };
+        expect(sectionTextContrast(auto, 2, darkPage)).toBe('light');
+    });
+
+    it('changes nothing without it', () => {
+        expect(sectionBackground(auto, 2, ctx).hasThemeImage).toBe(true);
+    });
+});

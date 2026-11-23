@@ -71,18 +71,18 @@ export function defaultFeedLayout(): InvitationDocument {
 export type FeedFrame = {
     // Always drawn: the cover can't be hidden.
     cover: InvitationSection;
-    details: InvitationSection | null;
     // The host-ordered blocks between stories and RSVP: the description and the Save my date blocks.
     middle: InvitationSection[];
     rsvp: InvitationSection | null;
 };
 
-// The layout split into the page's fixed places. After the event only the cover and details stay.
+// The layout split into the page's fixed places. After the event only the cover stays.
+// The details block isn't drawn: the date and place live in the header and the schedule. It stays in the
+// layout, shown, because the public view shares the event's date, sessions and place while it is.
 export function feedFrame(layout: InvitationDocument, { ended }: { ended: boolean }): FeedFrame {
     const shown = (type: FeedSectionType) => layout.sections.find((section) => section.type === type && section.visible) ?? null;
     return {
         cover: layout.sections.find((section) => section.type === 'feedCover') ?? feedBlock('feedCover'),
-        details: shown('feedDetails'),
         middle: ended ? [] : layout.sections.filter((section) => section.visible && (section.type === 'feedDescription' || !isFeedSectionType(section.type))),
         rsvp: ended ? null : shown('feedRsvp'),
     };

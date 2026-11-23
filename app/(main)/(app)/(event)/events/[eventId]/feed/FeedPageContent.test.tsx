@@ -6,7 +6,8 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { eventKeys } from '@/hooks/useEvent';
 import type { EventDetailResponseDto, FeedLayoutDto } from '@/lib/api/types';
 import { defaultFeedLayout, feedLayoutKeys } from '@/lib/feedLayout';
-import { SAMPLE_SECTIONS } from '@/lib/invitation/samples';
+import { feedPageThemeFor, feedPageThemeSnapshot, publishFeedPageTheme } from '@/lib/feedPageTheme';
+import { SAMPLE_SECTIONS, SAMPLE_THEME } from '@/lib/invitation/samples';
 import type { InvitationSection } from '@/lib/invitation/sections';
 import { FeedEditorFlagProvider } from '@/providers/FeedEditorFlagProvider';
 
@@ -59,7 +60,6 @@ vi.mock('@/components/feed/ComposerCard', () => ({ ComposerCard: () => null }));
 vi.mock('@/components/feed/EventDescription', () => ({
     EventDescription: ({ keepShown }: { keepShown?: boolean }) => <div data-testid="description" data-keep-shown={String(Boolean(keepShown))} />,
 }));
-vi.mock('@/components/feed/EventInfoSection', () => ({ EventInfoSection: () => null }));
 vi.mock('@/components/feed/EventSessionActionButtons', () => ({ EventSessionActionButtons: () => null }));
 vi.mock('@/components/feed/FeedEmptyState', () => ({ FeedEmptyState: () => null }));
 vi.mock('@/components/feed/FeedPostRenderer', () => ({ FeedPostRenderer: () => null }));
@@ -113,11 +113,12 @@ type FeedOptions = {
     flag?: boolean;
     isHost?: boolean;
     modules?: { moduleKey: string; isAvailable: boolean; isEnabled: boolean }[];
+    stories?: boolean;
 };
 
 function renderFeed(
     illustrationUrl: string | null,
-    { description = null, endAt = null, layout, flag = false, isHost = false, modules = [] }: FeedOptions = {},
+    { description = null, endAt = null, layout, flag = false, isHost = false, modules = [], stories = false }: FeedOptions = {},
 ) {
     // staleTime: the seeded layout counts as fresh, so nothing is fetched for real.
     const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false, staleTime: Infinity } } });
@@ -145,7 +146,7 @@ function renderFeed(
         isHost,
         loadMoreRef: { current: null },
         loadingMoreLabel: '',
-        moduleFlags: { rsvp: false, stories: false, posts: false, wishlist: false },
+        moduleFlags: { rsvp: false, stories, posts: false, wishlist: false },
         posts: [],
     } as unknown as Parameters<typeof FeedPageProvider>[0]['value'];
     const wrap = (children: ReactNode) => (
@@ -276,11 +277,13 @@ describe('FeedPageContent edit mode', { timeout: 15_000 }, () => {
         renderFeed(null, { flag: true, layout: savedLayout(dressCode), isHost: true, modules: SMD });
         fireEvent.click(await screen.findByRole('button', { name: 'edit' }));
         await screen.findByRole('group', { name: 'sectionNames.feedCover' }, LAZY_LOOK);
-        for (const type of ['feedCover', 'feedDetails', 'feedDescription', dressCode.type, 'feedRsvp']) {
+        for (const type of ['feedCover', 'feedDescription', dressCode.type, 'feedRsvp']) {
             const group = screen.getByRole('group', { name: `sectionNames.${type}` });
             const tools = group.querySelector('[data-feed-block-tools]') as HTMLElement;
             expect(within(tools).getByText(`sectionNames.${type}`)).toHaveAttribute('aria-hidden', 'true');
         }
+        // The details block isn't drawn, so there is nothing to edit.
+        expect(screen.queryByRole('group', { name: 'sectionNames.feedDetails' })).toBeNull();
         fireEvent.click(screen.getByRole('button', { name: 'cancel' }));
         await screen.findByRole('button', { name: 'edit' });
         expect(document.querySelector('[data-feed-block-tools]')).toBeNull();
@@ -335,5 +338,29 @@ describe('FeedPageContent edit mode', { timeout: 15_000 }, () => {
         const rsvp = await screen.findByRole('group', { name: 'sectionNames.feedRsvp' }, LAZY_LOOK);
         fireEvent.click(within(rsvp).getByRole('button', { name: 'hide' }));
         expect(screen.queryByRole('dialog')).toBeNull();
+    });
+});
+
+describe('FeedPageContent on a Save my date theme', { timeout: 15_000 }, () => {
+    afterEach(() => publishFeedPageTheme('feed', null));
+    const themed: FeedLayoutDto = {
+        ...savedLayout(),
+        themeSlug: 'olive',
+        document: { ...defaultFeedLayout(), themeId: 'olive' },
+        design: SAMPLE_THEME,
+        imageUrls: { 'm-content': 'https://media.test/content.jpg' },
+    };
+
+    it("puts the theme's background behind the whole page", () => {
+        renderFeed(null, { flag: true, layout: themed });
+        expect(feedPageThemeFor(feedPageThemeSnapshot(), 'e-1')?.backdrop?.image?.desktop).toBe('https://media.test/content.jpg');
+    });
+
+    it('draws the stories row on the page wherever the page draws a backdrop, and on its own colour elsewhere', () => {
+        const { container } = renderFeed(null, { flag: true, layout: themed, stories: true });
+        const row = container.querySelector('#stories')?.className ?? '';
+        expect(row).toContain('bg-event/90');
+        expect(row).toContain('[.feed-backdrop_&]:bg-transparent');
+        expect(row).toContain('[.feed-backdrop_&]:backdrop-blur-none');
     });
 });

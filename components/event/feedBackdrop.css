@@ -1,0 +1,16 @@
+/* The feed's Save my date theme behind the whole event page (lib/feedPageBackdrop.ts). The tile size and the
+   desktop / mobile switch match the invitation's own (.smd-invitation in invitation.css). */
+.feed-backdrop {
+    --smd-bg-tile-size: 390px;
+    background-image: var(--feed-backdrop-mobile);
+    background-size: var(--feed-backdrop-size);
+    background-repeat: var(--feed-backdrop-repeat);
+    background-position: var(--feed-backdrop-position);
+}
+
+@media (min-width: 760px) {
+    .feed-backdrop {
+        --smd-bg-tile-size: 720px;
+        background-image: var(--feed-backdrop-desktop);
+    }
+}

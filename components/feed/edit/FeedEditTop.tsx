@@ -50,11 +50,11 @@ const nameKey = (type: SectionType) => `sectionNames.${type}` as FeedNameKey;
 
 // The top of the feed in edit mode: the same frame as the feed, every block with its tools, Save my date
 // text typed in place, the Add section row closing the middle, and the Theme sheet. All held until Save.
-export function FeedEditTop({ event, onDone, cancelRef, cover, details, stories, description, rsvp }: FeedEditTopProps) {
+export function FeedEditTop({ event, onDone, cancelRef, cover, stories, description, rsvp }: FeedEditTopProps) {
     const t = useTranslations('InvitationEditor');
     const session = useFeedEditSession(event, onDone);
     const view = useFeedTop(event, { document: session.document, theme: session.theme, media: session.media });
-    useEditPageTheme(event.id, session.wallTheme, session.background);
+    useEditPageTheme(event.id, session.wallTheme, session.background, view.backdrop);
     const fonts = useInvitationFonts(true);
     const actions = useFeedBlockActions(session.store, session.document, event);
     const sectionPreviews = useFeedSectionPreviews({
@@ -126,7 +126,6 @@ export function FeedEditTop({ event, onDone, cancelRef, cover, details, stories,
             view={view}
             parts={parts}
             cover={cover}
-            details={details}
             stories={stories}
             description={description || <FeedBlockPlaceholder name={t('sectionNames.feedDescription')} />}
             rsvp={rsvp ?? <FeedBlockPlaceholder name={t('sectionNames.feedRsvp')} />}

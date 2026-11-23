@@ -7,7 +7,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { useFeedTop } from '@/hooks/useFeedTop';
 import type { EventDetailResponseDto, FeedLayoutDto } from '@/lib/api/types';
 import { defaultFeedLayout, feedLayoutKeys, wallThemeDesign } from '@/lib/feedLayout';
-import { SAMPLE_SECTIONS } from '@/lib/invitation/samples';
+import { SAMPLE_SECTIONS, SAMPLE_THEME } from '@/lib/invitation/samples';
 import type { InvitationSection } from '@/lib/invitation/sections';
 import { FeedEditorFlagProvider } from '@/providers/FeedEditorFlagProvider';
 
@@ -76,5 +76,34 @@ describe('useFeedTop on the feed', () => {
         const saved: FeedLayoutDto = { themeSlug: null, revision: 3, document, design: null, imageUrls: {}, updatedAt: '2026-11-22T10:00:00Z' };
         const { result } = renderHook(() => useFeedTop(event), { wrapper: wrapperWith(saved) });
         expect(result.current.pageBackground).toBe('#F5E6D3');
+    });
+});
+
+describe('useFeedTop on a Save my date theme', () => {
+    const themed = { ...defaultFeedLayout(), themeId: 'olive' };
+    const saved: FeedLayoutDto = {
+        themeSlug: 'olive',
+        revision: 2,
+        document: themed,
+        design: SAMPLE_THEME,
+        imageUrls: { 'm-content': 'https://media.test/content.jpg' },
+        updatedAt: '2026-11-22T10:00:00Z',
+    };
+
+    it("hands back the theme's backdrop and tells the renderer the page draws it", () => {
+        const { result } = renderHook(() => useFeedTop(event), { wrapper: wrapperWith(saved) });
+        expect(result.current.backdrop?.image?.desktop).toBe('https://media.test/content.jpg');
+        expect(result.current.ctx.pageBackdrop).toBe(true);
+    });
+
+    it('has none on the wall theme', () => {
+        const { result } = renderHook(() => useFeedTop(event), { wrapper });
+        expect(result.current.backdrop).toBeNull();
+        expect(result.current.ctx.pageBackdrop).toBe(false);
+    });
+
+    it('follows the theme held in edit mode', () => {
+        const { result } = renderHook(() => useFeedTop(event, { document: themed, theme: SAMPLE_THEME, media: (id) => `https://held.test/${id}` }), { wrapper });
+        expect(result.current.backdrop?.image?.desktop).toBe('https://held.test/m-content');
     });
 });

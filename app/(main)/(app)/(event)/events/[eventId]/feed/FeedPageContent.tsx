@@ -12,7 +12,6 @@ import { GuestOfferCard } from '@/components/feed/guestOffer/GuestOfferCard';
 import { Header } from '@/components/feed/Header';
 import { HeOrShePromptCard } from '@/components/feed/HeOrShePromptCard';
 import { FeedCoverBlock } from '@/components/feed/layout/FeedCoverBlock';
-import { FeedDetailsBlock } from '@/components/feed/layout/FeedDetailsBlock';
 import { FeedRsvpBlock } from '@/components/feed/layout/FeedRsvpBlock';
 import { FeedTop } from '@/components/feed/layout/FeedTop';
 import { PartnerBrandingPromptModal } from '@/components/feed/partner/PartnerBrandingPromptModal';
@@ -44,7 +43,7 @@ export function FeedPageContent() {
     const [storyId, setStoryId] = useState<string | null>(null);
     const shouldShowRSVP = useRsvpPromptVisible({ eventId, isHost, rsvpAvailable: moduleFlags.rsvp, rsvpId: currentMemberRsvpId });
     const top = useFeedTop(event);
-    const coverEvent = useFeedPageTheme(event, top.pageBackground);
+    const coverEvent = useFeedPageTheme(event, top.pageBackground, top.backdrop);
     const editMode = useFeedEditMode(event, isHost, isRoleLoading);
     const { start: startEditing, finish: finishEditing, editPill, cancelPill } = useFeedEditFocus(editMode.start, editMode.finish);
     useFeedEditTrigger({ settled: editMode.settled, canEdit: editMode.canEdit, start: startEditing });
@@ -57,9 +56,13 @@ export function FeedPageContent() {
                 corner={editMode.canEdit && !editMode.editing ? <FeedEditPill ref={editPill} onClick={startEditing} /> : undefined}
             />
         ),
-        details: <FeedDetailsBlock event={event} />,
         stories: moduleFlags.stories && (
-            <section id="stories" className={cn('top-0 bg-event/90 backdrop-blur-sm')}>
+            // On a Save my date theme the row sits on the page's own background: inside the scope that draws
+            // the backdrop, so it follows a theme held in edit mode too.
+            <section
+                id="stories"
+                className="top-0 bg-event/90 backdrop-blur-sm [.feed-backdrop_&]:bg-transparent [.feed-backdrop_&]:backdrop-blur-none"
+            >
                 <StoriesRow eventId={eventId} onOpenStoryAction={openStoryModal} />
             </section>
         ),

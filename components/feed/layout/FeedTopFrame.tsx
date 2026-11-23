@@ -9,7 +9,6 @@ const MIDDLE_ID = 'feed-invitation';
 export type FeedTopProps = {
     view: FeedTopView;
     cover: ReactNode;
-    details: ReactNode;
     stories: ReactNode;
     description: ReactNode;
     // null when today's rules don't ask this member to reply.
@@ -35,9 +34,9 @@ export const PLAIN_PARTS: FeedTopParts = {
     invitation: () => null,
 };
 
-// The top of the feed in its fixed frame: cover, details, stories, the host's middle blocks
+// The top of the feed in its fixed frame: cover, stories, the host's middle blocks
 // (folded for returning members once there are two or more), RSVP.
-export function FeedTopFrame({ view, cover, details, stories, description, rsvp, afterMiddle, parts }: FeedTopProps & { parts: FeedTopParts }) {
+export function FeedTopFrame({ view, cover, stories, description, rsvp, afterMiddle, parts }: FeedTopProps & { parts: FeedTopParts }) {
     const { frame } = view;
     const middle = frame.middle.map((section) =>
         section.type === 'feedDescription' ? parts.block(section, description) : parts.invitation(section),
@@ -47,9 +46,6 @@ export function FeedTopFrame({ view, cover, details, stories, description, rsvp,
         <>
             {/* Cover */}
             {parts.block(frame.cover, cover)}
-
-            {/* Details */}
-            {frame.details && parts.block(frame.details, details)}
 
             {/* Stories */}
             {stories && parts.native(stories)}

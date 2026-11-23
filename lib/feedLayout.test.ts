@@ -33,13 +33,13 @@ describe('defaultFeedLayout', () => {
 });
 
 describe('feedFrame', () => {
-    it('puts cover, details and RSVP in their places whatever the order', () => {
+    it('puts cover and RSVP in their places whatever the order, and draws no details block', () => {
         const base = defaultFeedLayout();
         const [cover, details, description, rsvp] = base.sections;
         const frame = feedFrame({ ...base, sections: [rsvp, dressCode, details, description, cover] }, { ended: false });
         expect(frame.cover.type).toBe('feedCover');
-        expect(frame.details?.type).toBe('feedDetails');
         expect(frame.rsvp?.type).toBe('feedRsvp');
+        expect(frame.middle.some((section) => section.type === 'feedDetails')).toBe(false);
         expect(frame.middle.map((section) => section.type)).toEqual(['dressCode', 'feedDescription']);
     });
 
@@ -48,14 +48,12 @@ describe('feedFrame', () => {
         const sections = base.sections.map((section) => ({ ...section, visible: false }));
         const frame = feedFrame({ ...base, sections: [...sections, { ...faq, visible: false }] }, { ended: false });
         expect(frame.cover.type).toBe('feedCover');
-        expect(frame.details).toBeNull();
         expect(frame.rsvp).toBeNull();
         expect(frame.middle).toEqual([]);
     });
 
-    it('keeps only cover and details once the event has ended', () => {
+    it('keeps only the cover once the event has ended', () => {
         const frame = feedFrame(layoutWith(dressCode), { ended: true });
-        expect(frame.details?.type).toBe('feedDetails');
         expect(frame.middle).toEqual([]);
         expect(frame.rsvp).toBeNull();
     });
