@@ -20,7 +20,7 @@
 ## Before you start
 
 - [ ] Bring the branch up to date: `git fetch origin && git merge origin/staging`.
-- [ ] Confirm the error codes the backend PR used (3135, 3136, 3137, 5228, unless the backend plan had to move them). Use the backend's numbers in Task 2.
+- [ ] Confirm the error codes the backend PR used (3135, 3136, 3137, 5230, unless the backend plan had to move them). Use the backend's numbers in Task 2.
 - [ ] Baseline: `npx tsc --noEmit`, `npx eslint .`, `npx vitest run`. Note anything already failing.
 
 ## File map
@@ -187,7 +187,7 @@ Under `me`, next to `businessMessages`:
 After `EMAIL_ALREADY_VERIFIED: 5227,`:
 
 ```ts
-    INQUIRY_ALREADY_SENT: 5228,
+    INQUIRY_ALREADY_SENT: 5230,
 ```
 
 In `lib/api/errorMessageKeys.ts`, after the `EMAIL_ALREADY_VERIFIED` line:
@@ -447,7 +447,7 @@ describe('useAskDates', () => {
     });
 
     it('shows the server error in the sheet', async () => {
-        post.mockRejectedValue(new ApiError(409, { status: 409, code: 5228, detail: 'already' }));
+        post.mockRejectedValue(new ApiError(409, { status: 409, code: 5230, detail: 'already' }));
         const { result } = renderHook(() => useAskDates('evt-1'), { wrapper });
         act(() => {
             result.current.openForVendor('v1', 'Lens & Light');

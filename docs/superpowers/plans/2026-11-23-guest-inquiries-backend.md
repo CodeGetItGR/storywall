@@ -35,9 +35,9 @@ git switch -c claude/kan-20-guest-inquiries origin/staging
 - [ ] Find the next free numbers, because other branches may have taken the ones below:
 
 ```bash
-git ls-tree --name-only origin/staging src/main/resources/db/migration/ | sort -V | tail -1   # expect V232 → use V233
+git ls-tree --name-only origin/staging src/main/resources/db/migration/ | sort -V | tail -1   # expect V232 → use V235
 grep -oE "\((3[0-9]{3})\)" src/main/java/event_social_media/exception/ErrorCode.java | sort | tail -1  # expect (3134) → use 3135..3137
-grep -oE "\((5[0-9]{3})\)" src/main/java/event_social_media/exception/ErrorCode.java | sort | tail -1  # expect (5227) → use 5228
+grep -oE "\((5[0-9]{3})\)" src/main/java/event_social_media/exception/ErrorCode.java | sort | tail -1  # expect (5227) → use 5230
 ```
 
 If any number is taken, use the next free one everywhere in this plan **and** in the frontend plan's `lib/api/errors.ts` task.
@@ -48,11 +48,11 @@ If any number is taken, use the next free one everywhere in this plan **and** in
 
 | File | Responsibility |
 |---|---|
-| `src/main/resources/db/migration/V233__guest_inquiries.sql` | Table, checks, indexes |
+| `src/main/resources/db/migration/V235__guest_inquiries.sql` | Table, checks, indexes |
 | `model/vendor/GuestInquiry.java`, `GuestInquiryStatus.java`, `GuestInquirySource.java` | Entity and enums |
 | `repository/vendor/GuestInquiryRepository.java` | Queries |
 | `dto/vendor/GuestInquiryRequestDto.java`, `GuestInquirySentDto.java`, `GuestInquiryDto.java`, `GuestInquiryPatchDto.java`, `InquiryStateDto.java` | API shapes |
-| `exception/ErrorCode.java` | 3135–3137, 5228 |
+| `exception/ErrorCode.java` | 3135–3137, 5230 |
 | `service/vendor/GuestInquiryState.java` | `inquiry` field for a caller |
 | `service/vendor/GuestInquiryService.java` | Send: checks, save, audit, mail |
 | `service/vendor/GuestInquiryInbox.java` | Partner's list and done flag |
@@ -73,7 +73,7 @@ All Java paths below are under `src/main/java/event_social_media/` or `src/test/
 ### Task 1: Migration and entity
 
 **Files:**
-- Create: `src/main/resources/db/migration/V233__guest_inquiries.sql`
+- Create: `src/main/resources/db/migration/V235__guest_inquiries.sql`
 - Create: `model/vendor/GuestInquiry.java`, `model/vendor/GuestInquiryStatus.java`, `model/vendor/GuestInquirySource.java`
 - Create: `repository/vendor/GuestInquiryRepository.java`
 - Test: `src/test/java/event_social_media/migration/GuestInquiriesMigrationTest.java`
@@ -108,7 +108,7 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-/** V233: guest_inquiries against real Postgres; ddl-auto=validate checks the entity against the table. */
+/** V235: guest_inquiries against real Postgres; ddl-auto=validate checks the entity against the table. */
 @SpringBootTest(properties = {
         "spring.flyway.enabled=true",
         "spring.jpa.hibernate.ddl-auto=validate",
@@ -178,7 +178,7 @@ Expected: compilation failure, `cannot find symbol GuestInquiry`.
 
 - [ ] **Step 3: Write the migration**
 
-`src/main/resources/db/migration/V233__guest_inquiries.sql`:
+`src/main/resources/db/migration/V235__guest_inquiries.sql`:
 
 ```sql
 -- A guest's question to a partner about a date (KAN-20). Belongs to the partner (collaborators),
@@ -365,7 +365,7 @@ Expected: 3 tests PASS. Docker must be running for Testcontainers; if it isn't, 
 - [ ] **Step 6: Commit**
 
 ```bash
-git add src/main/resources/db/migration/V233__guest_inquiries.sql src/main/java/event_social_media/model/vendor/GuestInquiry*.java src/main/java/event_social_media/repository/vendor/GuestInquiryRepository.java src/test/java/event_social_media/migration/GuestInquiriesMigrationTest.java
+git add src/main/resources/db/migration/V235__guest_inquiries.sql src/main/java/event_social_media/model/vendor/GuestInquiry*.java src/main/java/event_social_media/repository/vendor/GuestInquiryRepository.java src/test/java/event_social_media/migration/GuestInquiriesMigrationTest.java
 git commit -m "KAN-20: guest_inquiries table and entity"
 ```
 
@@ -397,8 +397,8 @@ At the end of the 3xxx block, right after `EVENT_START_BEFORE_PURCHASE(3134),`:
 At the end of the 5xxx block, right after `EMAIL_ALREADY_VERIFIED(5227),`:
 
 ```java
-    /** 5228 — This guest already asked this partner from this event. {@code 409}. */
-    INQUIRY_ALREADY_SENT(5228),
+    /** 5230 — This guest already asked this partner from this event. {@code 409}. */
+    INQUIRY_ALREADY_SENT(5230),
 ```
 
 - [ ] **Step 2: Write the DTOs**
@@ -687,7 +687,7 @@ class GuestInquiryControllerTest {
         ask(s.guest(), s.event(), s.vendor(), valid()).andExpect(status().isCreated());
         ask(s.guest(), s.event(), s.vendor(), valid())
                 .andExpect(status().isConflict())
-                .andExpect(jsonPath("$.errorCode").value(5228));
+                .andExpect(jsonPath("$.errorCode").value(5230));
     }
 
     @Test
