@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 
+import { withAppContext } from '@/.storybook/appContext';
 import { PartnerCardVariant, PartnerFeedCard } from '@/components/feed/partner/PartnerFeedCard';
 import { usePartnerCardLabels } from '@/hooks/usePartnerBrandingCard';
 import type { PartnerBrandingDto } from '@/lib/api/types';
@@ -22,7 +23,9 @@ const meta = {
     title: 'Feed/Partner/PartnerFeedCard',
     component: PartnerFeedCard,
     args: { branding, eventId: 'evt-demo' },
+    // The card's "Ask about my date" sheet reads the signed-in guest for their email.
     decorators: [
+        withAppContext,
         (Story) => (
             <div className="mx-auto max-w-2xl">
                 <Story />
