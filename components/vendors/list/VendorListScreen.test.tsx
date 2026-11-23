@@ -19,6 +19,10 @@ vi.mock('@/hooks/useVendors', () => ({
     useRecordVendorClick: () => recordClick,
 }));
 
+vi.mock('@/hooks/useAskDates', () => ({
+    useAskDates: () => ({ target: null, openForVendor: vi.fn() }),
+}));
+
 function row(overrides: Record<string, unknown> = {}) {
     return {
         id: 'v1',
