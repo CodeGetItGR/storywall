@@ -2,6 +2,8 @@ import type { Draft } from 'immer';
 
 import type { InvitationDocument } from '@/lib/invitation/document';
 import type { InvitationElement } from '@/lib/invitation/elements';
+import type { RenderContext } from '@/lib/invitation/render';
+import type { InvitationSection } from '@/lib/invitation/sections';
 import { MAX_ELEMENTS, writeSectionColor } from '@/lib/invitation/textEditing';
 
 // What the block buttons and the feed toolbar do to one Save my date block (spec items 6 and 9). Each is an Immer
@@ -49,4 +51,16 @@ export function removeFeedBlockElement(sectionId: string, elementId: string) {
         const section = draft.sections.find((item) => item.id === sectionId);
         if (section && !section.locked) section.elements = section.elements.filter((element) => element.id !== elementId);
     };
+}
+
+// The droplet's starting colour: the block's first styled text colour, else the invitation's text colour.
+export function blockTextColor(section: Pick<InvitationSection, 'textStyles' | 'elements'>, ctx: Pick<RenderContext, 'textColor'>): string {
+    const styled = Object.values(section.textStyles).find((style) => style?.color)?.color;
+    const element = section.elements.find((item) => item.kind === 'text' && item.style.color);
+    return styled ?? (element?.kind === 'text' ? element.style.color : undefined) ?? ctx.textColor;
+}
+
+// The section holding an element: element ids are unique in a document.
+export function elementSectionId(document: InvitationDocument, elementId: string): string | undefined {
+    return document.sections.find((section) => section.elements.some((element) => element.id === elementId))?.id;
 }
