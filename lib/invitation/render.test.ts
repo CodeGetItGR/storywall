@@ -242,21 +242,23 @@ describe('a feed page that draws the theme background itself', () => {
     } as InvitationSection;
     const pickedTop = { ...auto, style: { ...auto.style, background: { kind: 'theme', slot: 'top' } } } as InvitationSection;
     const coloured = { ...auto, style: { ...auto.style, background: { kind: 'color', color: '#112233' } } } as InvitationSection;
+    const photo = { ...auto, style: { ...auto.style, background: { kind: 'image', image: { source: 'media', mediaId: 'm-own' } } } } as InvitationSection;
     const page = { ...ctx, pageBackdrop: true };
+    const transparent = { style: { background: 'transparent' }, hasThemeImage: false };
 
     it('draws a section left on auto transparent, at every position', () => {
-        const transparent = { style: { background: 'transparent' }, hasThemeImage: false };
         expect(sectionBackground(auto, 1, page)).toEqual(transparent);
         expect(sectionBackground(auto, 2, page)).toEqual(transparent);
     });
 
-    it('keeps a picked theme slot and a picked colour', () => {
-        expect(sectionBackground(pickedTop, 1, page).hasThemeImage).toBe(true);
-        expect(sectionBackground(coloured, 1, page).style.background).toBe('#112233');
+    it('draws every section transparent, whatever background it has stored', () => {
+        for (const section of [pickedTop, coloured, photo]) expect(sectionBackground(section, 1, page)).toEqual(transparent);
     });
 
-    it("reads the photo tint off the page's content background", () => {
-        expect(sectionBackgroundPhotos(auto, 2, page)).toEqual({ desktop: media('m-content'), mobile: media('m-content') });
+    it("reads the photo tint off the page's content background, whatever the section stored", () => {
+        for (const section of [auto, pickedTop, coloured, photo]) {
+            expect(sectionBackgroundPhotos(section, 2, page)).toEqual({ desktop: media('m-content'), mobile: media('m-content') });
+        }
     });
 
     it('reads the automatic text contrast off the page colour when the content slot has no image', () => {
@@ -271,5 +273,7 @@ describe('a feed page that draws the theme background itself', () => {
 
     it('changes nothing without it', () => {
         expect(sectionBackground(auto, 2, ctx).hasThemeImage).toBe(true);
+        expect(sectionBackground(pickedTop, 1, ctx).hasThemeImage).toBe(true);
+        expect(sectionBackground(coloured, 1, ctx).style.background).toBe('#112233');
     });
 });

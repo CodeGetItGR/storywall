@@ -45,6 +45,7 @@ export function EventThemeScope({ children }: { children: ReactNode }) {
                 backdrop && 'feed-backdrop',
             )}
             style={{ ...themeStyle, ...feedBackdropStyle(backdrop) }}
+            data-event-scope=""
             {...themeFontScopeProps(headingFont)}
         >
             <ThemeFontFace font={headingFont} />

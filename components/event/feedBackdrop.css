@@ -8,9 +8,28 @@
     background-position: var(--feed-backdrop-position);
 }
 
+/* A strip that sits on the page and hides what scrolls under it (the sticky header): the page's own picture,
+   lined up with the page, so no edge shows. hooks/useFeedBackdropStrip.ts sets --feed-page-w (the page's width)
+   and --feed-strip-x / -y (where the strip sits on the page) on the strip itself, so the sums using them are
+   written here, on the strip, not in variables set on the page (those would resolve without them).
+   --feed-backdrop-tiled is 1 for tiles centred on the page, 0 for one picture as wide as the page. */
+.feed-backdrop .feed-backdrop-strip {
+    background-image: var(--feed-backdrop-mobile);
+    background-size: calc(var(--feed-backdrop-tiled) * var(--smd-bg-tile-size) + (1 - var(--feed-backdrop-tiled)) * var(--feed-page-w))
+        auto;
+    background-repeat: var(--feed-backdrop-repeat);
+    background-position:
+        calc(var(--feed-backdrop-tiled) * (var(--feed-page-w) - var(--smd-bg-tile-size)) / 2 - var(--feed-strip-x))
+        calc(0px - var(--feed-strip-y));
+}
+
 @media (min-width: 760px) {
     .feed-backdrop {
         --smd-bg-tile-size: 720px;
+        background-image: var(--feed-backdrop-desktop);
+    }
+
+    .feed-backdrop .feed-backdrop-strip {
         background-image: var(--feed-backdrop-desktop);
     }
 }

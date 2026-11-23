@@ -183,8 +183,8 @@ describe('the pencil sheet', () => {
         expect(feedBlockParts('dressCode', ['cover'])).toEqual([]);
     });
 
-    it('leaves out photo uploads and following the event', () => {
-        expect(feedSettingsGroups(['follow', 'gallery', 'background', 'dressCode'])).toEqual(['background', 'dressCode']);
+    it('leaves out photo uploads, following the event and a background of its own', () => {
+        expect(feedSettingsGroups(['follow', 'gallery', 'background', 'dressCode'])).toEqual(['dressCode']);
     });
 
     it('refuses uploads', async () => {

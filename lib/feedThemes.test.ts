@@ -13,10 +13,18 @@ import type { InvitationDocument } from '@/lib/invitation/document';
 import { createSection, type NewSectionType } from '@/lib/invitation/newSection';
 import { SAMPLE_THEME } from '@/lib/invitation/samples';
 import { FEED_SECTION_TYPES, type InvitationSection } from '@/lib/invitation/sections';
+import type { SectionStyle } from '@/lib/invitation/sectionStyle';
 
-function styled(type: NewSectionType, color: string): InvitationSection {
-    return { ...createSection(type, 'WEDDING'), style: { ...FEED_BLOCK_FALLBACK_STYLE, background: { kind: 'color', color } } } as InvitationSection;
+// A theme section with its own colour and padding, so a test can tell whose look a block took.
+function styled(type: NewSectionType, color: string, paddingY = 24): InvitationSection {
+    return { ...createSection(type, 'WEDDING'), style: { ...FEED_BLOCK_FALLBACK_STYLE, background: { kind: 'color', color }, paddingY } } as InvitationSection;
 }
+
+function withBackground(type: NewSectionType, background: SectionStyle['background']): InvitationSection {
+    return { ...createSection(type, 'WEDDING'), style: { ...FEED_BLOCK_FALLBACK_STYLE, background } } as InvitationSection;
+}
+
+const PAGE = { kind: 'theme', slot: 'auto' } as const;
 
 function themeDocument(sections: InvitationSection[]): InvitationDocument {
     return { ...defaultFeedLayout(), themeId: 'rose-garden', sections };
@@ -37,19 +45,42 @@ describe('planFeedThemeSwitch', () => {
     it("gives each feed block the look of the theme's matching section", () => {
         const next = planFeedThemeSwitch(
             defaultFeedLayout(),
-            target([styled('top', '#111111'), styled('date', '#222222'), styled('invitation', '#333333'), styled('rsvp', '#444444')]),
+            target([styled('top', '#111111', 10), styled('date', '#222222', 20), styled('invitation', '#333333', 30), styled('rsvp', '#444444', 40)]),
             new Set(),
         );
         expect(next.themeId).toBe('rose-garden');
-        expect(byType(next, 'feedCover').style.background).toEqual({ kind: 'color', color: '#111111' });
-        expect(byType(next, 'feedDetails').style.background).toEqual({ kind: 'color', color: '#222222' });
-        expect(byType(next, 'feedDescription').style.background).toEqual({ kind: 'color', color: '#333333' });
-        expect(byType(next, 'feedRsvp').style.background).toEqual({ kind: 'color', color: '#444444' });
+        expect(byType(next, 'feedCover').style.paddingY).toBe(10);
+        expect(byType(next, 'feedDetails').style.paddingY).toBe(20);
+        expect(byType(next, 'feedDescription').style.paddingY).toBe(30);
+        expect(byType(next, 'feedRsvp').style.paddingY).toBe(40);
     });
 
     it('takes the countdown for details when the theme has no date', () => {
-        const next = planFeedThemeSwitch(defaultFeedLayout(), target([styled('countdown', '#555555')]), new Set());
-        expect(byType(next, 'feedDetails').style.background).toEqual({ kind: 'color', color: '#555555' });
+        const next = planFeedThemeSwitch(defaultFeedLayout(), target([styled('countdown', '#555555', 50)]), new Set());
+        expect(byType(next, 'feedDetails').style.paddingY).toBe(50);
+    });
+
+    it("puts every block on the page's own background, whatever the theme's section had", () => {
+        const faq = createSection('faq', 'WEDDING');
+        const current = { ...defaultFeedLayout(), sections: [...defaultFeedLayout().sections, faq] };
+        const next = planFeedThemeSwitch(
+            current,
+            target([
+                withBackground('top', { kind: 'theme', slot: 'top' }),
+                withBackground('invitation', { kind: 'theme', slot: 'content' }),
+                withBackground('rsvp', { kind: 'color', color: '#444444' }),
+                withBackground('faq', { kind: 'image', image: { source: 'theme', assetId: 'a-faq' } }),
+            ]),
+            new Set(),
+        );
+        for (const section of next.sections) expect(section.style.background).toEqual(PAGE);
+    });
+
+    it('puts a block the theme hides on the page too, so showing it again draws no seam', () => {
+        const dressCode = withBackground('dressCode', { kind: 'theme', slot: 'top' });
+        const current = { ...defaultFeedLayout(), sections: [...defaultFeedLayout().sections, dressCode] };
+        const next = planFeedThemeSwitch(current, target([]), new Set());
+        expect(byType(next, 'dressCode')).toMatchObject({ visible: false, style: { background: PAGE } });
     });
 
     it("gives a block the theme's background when the theme has no match", () => {

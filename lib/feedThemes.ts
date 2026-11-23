@@ -32,8 +32,11 @@ export const FEED_BLOCK_LOOKS: Record<FeedSectionType, readonly SectionType[]> =
     feedRsvp: ['rsvp'],
 };
 
+// The background of a block that sits on the page: the theme's, as the page draws it ("auto").
+const PAGE_BACKGROUND: SectionStyle['background'] = { kind: 'theme', slot: 'auto' };
+
 // A feed block on a theme with no matching section: the theme's background, nothing else.
-export const FEED_BLOCK_FALLBACK_STYLE: SectionStyle = { ...PLAIN_FEED_STYLE, background: { kind: 'theme', slot: 'auto' } };
+export const FEED_BLOCK_FALLBACK_STYLE: SectionStyle = { ...PLAIN_FEED_STYLE, background: PAGE_BACKGROUND };
 
 function borrowedStyle(type: FeedSectionType, themeDocument: InvitationDocument): SectionStyle {
     for (const kind of FEED_BLOCK_LOOKS[type]) {
@@ -50,10 +53,14 @@ function withStyle(section: InvitationSection, style: SectionStyle): InvitationS
 // The layout on a Save my date theme. The theme's own invitation has no feed blocks, so they are
 // added to it with their borrowed looks; then the editor's switch restyles every block the host has,
 // and hides the Save my date blocks the theme has no kind for.
+// On the feed the theme's background covers the whole page, so every block then sits on it
+// ("auto"): the theme's own sections pick top or content images, which would draw seams between
+// blocks. Every block sits on the page's one background: the feed has no background choice per block.
 export function planFeedThemeSwitch(current: InvitationDocument, target: ThemeSwitchTarget, oldThemeImageIds: ReadonlySet<string>): InvitationDocument {
     const feedBlocks = defaultFeedLayout().sections.map((section) => withStyle(section, borrowedStyle(section.type as FeedSectionType, target.document)));
     const document = { ...target.document, sections: [...target.document.sections, ...feedBlocks] };
-    return planThemeSwitch(current, { ...target, document }, oldThemeImageIds).document;
+    const switched = planThemeSwitch(current, { ...target, document }, oldThemeImageIds).document;
+    return { ...switched, sections: switched.sections.map((section) => withStyle(section, { ...section.style, background: PAGE_BACKGROUND })) };
 }
 
 // The layout back on the event's wall theme: feed blocks in the plain style, Save my date blocks in a

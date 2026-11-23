@@ -19,18 +19,26 @@ describe('feedPageBackdrop', () => {
             size: '100% auto',
             repeat: 'repeat-y',
             position: 'center top',
+            tiled: false,
             cardColor: lightTone(readableOnInk('#efe7ec'), FEED_CARD_LIGHTEN),
         });
     });
 
     it('tiles a texture at the invitation tile size', () => {
         const texture = { ...SAMPLE_THEME, backgrounds: { ...SAMPLE_THEME.backgrounds, content: { desktop: { mediaId: 'm-t' }, mode: 'texture', stableRepeat: false } } } as ThemeDesign;
-        expect(feedPageBackdrop(themed, texture, media)).toMatchObject({ size: 'var(--smd-bg-tile-size) auto', repeat: 'repeat' });
+        expect(feedPageBackdrop(themed, texture, media)).toMatchObject({
+            size: 'var(--smd-bg-tile-size) auto',
+            repeat: 'repeat',
+            position: 'center top',
+            tiled: true,
+        });
+        const repeat = { ...texture, backgrounds: { ...texture.backgrounds, content: { ...texture.backgrounds.content, mode: 'repeat' } } } as ThemeDesign;
+        expect(feedPageBackdrop(themed, repeat, media)).toMatchObject({ size: 'var(--smd-bg-tile-size) auto', repeat: 'repeat' });
     });
 
-    it('draws a cover image once across the top', () => {
+    it('tiles a cover image down the page at full width, so the page never turns to flat colour', () => {
         const cover = { ...SAMPLE_THEME, backgrounds: { ...SAMPLE_THEME.backgrounds, content: { desktop: { mediaId: 'm-c' }, mode: 'cover', stableRepeat: false } } } as ThemeDesign;
-        expect(feedPageBackdrop(themed, cover, media)).toMatchObject({ size: '100% auto', repeat: 'no-repeat', position: 'center top' });
+        expect(feedPageBackdrop(themed, cover, media)).toMatchObject({ size: '100% auto', repeat: 'repeat-y', position: 'center top', tiled: false });
     });
 
     it('is the secondary colour alone when the slot has no image', () => {
@@ -61,6 +69,7 @@ describe('feedBackdropStyle', () => {
             '--feed-backdrop-size': '100% auto',
             '--feed-backdrop-repeat': 'repeat-y',
             '--feed-backdrop-position': 'center top',
+            '--feed-backdrop-tiled': 0,
         });
     });
 

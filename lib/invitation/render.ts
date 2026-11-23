@@ -146,19 +146,19 @@ export function themeAssetName(ref: ImageRef, ctx: RenderContext): string | unde
 
 type ThemeSlot = 'top' | 'content' | 'extra';
 
-// On a feed page that draws the theme's background itself, a section left on "auto" shows the page.
-function showsPage(section: InvitationSection, ctx: RenderContext): boolean {
-    const { background } = section.style;
-    return Boolean(ctx.pageBackdrop) && background.kind === 'theme' && background.slot === 'auto';
+// On a feed page that draws the theme's background itself, every section shows the page: the page has
+// one background, whatever background a section has stored.
+function showsPage(ctx: RenderContext): boolean {
+    return Boolean(ctx.pageBackdrop);
 }
 
 // The theme background a section uses: its own pick, or top/content
 // alternating by position. `index` counts hidden sections too. On the feed's
-// themed page, an "auto" section sits on the page's content background.
+// themed page, every section sits on the page's content background.
 function themeSlot(section: InvitationSection, index: number, ctx: RenderContext): ThemeSlot {
+    if (showsPage(ctx)) return 'content';
     const { background } = section.style;
     if (background.kind === 'theme' && background.slot !== 'auto') return background.slot;
-    if (showsPage(section, ctx)) return 'content';
     if (section.type === 'top') return 'top';
     return index % 2 ? 'content' : 'top';
 }
@@ -171,6 +171,7 @@ export type SectionBackground = { style: CSSProperties; hasThemeImage: boolean }
 
 export function sectionBackground(section: InvitationSection, index: number, ctx: RenderContext): SectionBackground {
     if (ctx.backgroundColor) return { style: { background: ctx.backgroundColor }, hasThemeImage: false };
+    if (showsPage(ctx)) return { style: { background: 'transparent' }, hasThemeImage: false };
     const { background } = section.style;
     if (background.kind === 'color') {
         return { style: { background: background.color || ctx.theme.colors.secondary }, hasThemeImage: false };
@@ -184,7 +185,6 @@ export function sectionBackground(section: InvitationSection, index: number, ctx
             };
         }
     }
-    if (showsPage(section, ctx)) return { style: { background: 'transparent' }, hasThemeImage: false };
     const slot = ctx.theme.backgrounds[themeSlot(section, index, ctx)];
     const desktop = slot.desktop ? ctx.media(slot.desktop.mediaId) : undefined;
     const mobile = slot.mobile ? ctx.media(slot.mobile.mediaId) : undefined;
@@ -215,8 +215,8 @@ export type SectionPhotos = { desktop: string; mobile: string };
 export function sectionBackgroundPhotos(section: InvitationSection, index: number, ctx: RenderContext): SectionPhotos | undefined {
     if (ctx.backgroundColor) return undefined;
     const { background } = section.style;
-    if (background.kind === 'color') return undefined;
-    if (background.kind === 'image') {
+    if (!showsPage(ctx) && background.kind === 'color') return undefined;
+    if (!showsPage(ctx) && background.kind === 'image') {
         const url = resolveImage(background.image, ctx);
         if (url) return { desktop: url, mobile: url };
     }
@@ -243,11 +243,11 @@ export function sectionPhotoTint(section: InvitationSection, index: number, ctx:
 function solidBackgroundColor(section: InvitationSection, index: number, ctx: RenderContext): string {
     if (ctx.backgroundColor) return ctx.backgroundColor;
     const { background } = section.style;
-    if (background.kind === 'color') return background.color || ctx.theme.colors.secondary || DEFAULT_SECONDARY;
-    if (background.kind === 'image') return '';
+    if (!showsPage(ctx) && background.kind === 'color') return background.color || ctx.theme.colors.secondary || DEFAULT_SECONDARY;
+    if (!showsPage(ctx) && background.kind === 'image') return '';
     const slot = ctx.theme.backgrounds[themeSlot(section, index, ctx)];
     if (slot.desktop || slot.mobile) return '';
-    if (showsPage(section, ctx)) return ctx.theme.colors.secondary || DEFAULT_SECONDARY;
+    if (showsPage(ctx)) return ctx.theme.colors.secondary || DEFAULT_SECONDARY;
     return alternatingColor(index, ctx);
 }
 

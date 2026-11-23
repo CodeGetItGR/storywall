@@ -70,6 +70,7 @@ describe('EventThemeScope', () => {
                     size: '100% auto',
                     repeat: 'repeat-y',
                     position: 'center top',
+                    tiled: false,
                     cardColor: '#F9F5F7',
                 },
             },

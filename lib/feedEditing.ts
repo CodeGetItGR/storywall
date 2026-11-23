@@ -135,8 +135,9 @@ export function feedBlockParts(type: SectionType, available: readonly SettingsPa
     return (FEED_BLOCK_PARTS[type] ?? []).filter((part) => available.includes(part));
 }
 
-// The feed takes no new photos yet, and a feed block never follows the event like an invitation cover.
-const LEFT_OUT: readonly SettingsGroup[] = ['gallery', 'follow'];
+// The feed takes no new photos yet, a feed block never follows the event like an invitation cover, and
+// on the feed every block sits on the page's one background, so none picks its own.
+const LEFT_OUT: readonly SettingsGroup[] = ['gallery', 'follow', 'background'];
 
 export function feedSettingsGroups(groups: readonly SettingsGroup[]): SettingsGroup[] {
     return groups.filter((group) => !LEFT_OUT.includes(group));
