@@ -32,19 +32,22 @@ import { useFeedEditBlockTools } from '@/hooks/useFeedEditBlockTools';
 import { useFeedEditPanels } from '@/hooks/useFeedEditPanels';
 import { useFeedEditSession } from '@/hooks/useFeedEditSession';
 import { useFeedEditThemeGrid } from '@/hooks/useFeedEditThemeGrid';
+import { useFeedModuleBlockPart } from '@/hooks/useFeedModuleBlockPart';
 import { useFeedModuleTiles } from '@/hooks/useFeedModuleTiles';
 import { useEditPageTheme } from '@/hooks/useFeedPageTheme';
 import { useFeedSectionPreviews } from '@/hooks/useFeedSectionPreviews';
 import { useFeedTextPresets } from '@/hooks/useFeedTextPresets';
 import { useFeedTop } from '@/hooks/useFeedTop';
 import { useFeedUploadedMedia } from '@/hooks/useFeedUploadedMedia';
+import { useModuleCopy } from '@/hooks/useModuleCopy';
 import { useSectionDrag } from '@/hooks/useSectionDrag';
 import { useSettingsPreview } from '@/hooks/useSettingsPreview';
 import type { EventDetailResponseDto } from '@/lib/api/types';
 import { blockTextColor } from '@/lib/feedBlockEdits';
-import { type FeedAddPlace, feedBlockControls } from '@/lib/feedEditing';
+import { type FeedAddPlace, feedBlockControls, isSaveMyDateBlock } from '@/lib/feedEditing';
+import { moduleOfBlock } from '@/lib/feedModuleBlocks';
 import { sectionNameKey } from '@/lib/invitation/sectionNames';
-import { type InvitationSection, isFeedSectionType, type SectionType } from '@/lib/invitation/sections';
+import type { InvitationSection, SectionType } from '@/lib/invitation/sections';
 
 const MODIFIERS = [restrictToVerticalAxis];
 
@@ -57,6 +60,13 @@ type FeedEditTopProps = Omit<FeedTopProps, 'view'> & { event: EventDetailRespons
 export function FeedEditTop({ event, onDone, cancelRef, mode, modeSwitch, dateRow, cover, stories, description, rsvp }: FeedEditTopProps) {
     const t = useTranslations('InvitationEditor');
     const name = (type: SectionType) => t(sectionNameKey(type, event.eventType));
+    const moduleCopy = useModuleCopy(event.eventType);
+    // A module block is named after its module.
+    const blockName = (section: InvitationSection) => {
+        const key = moduleOfBlock(section);
+        return key ? moduleCopy(key).name : name(section.type);
+    };
+    const moduleBlock = useFeedModuleBlockPart(event);
     const session = useFeedEditSession(event, onDone);
     // The saved layout's photos plus the ones the host uploads while editing.
     const uploads = useFeedUploadedMedia(session.media);
@@ -110,13 +120,14 @@ export function FeedEditTop({ event, onDone, cancelRef, mode, modeSwitch, dateRo
         <FeedEditBlock
             key={section.id}
             section={section}
-            name={name(section.type)}
+            name={blockName(section)}
             controls={feedBlockControls(session.document.sections, section, hostOptions)}
-            hasSettings={sheet.hasSettings(section)}
+            // A module block has nothing to set: its tool is set on its own page.
+            hasSettings={!moduleOfBlock(section) && sheet.hasSettings(section)}
             actions={tools}
             active={sheet.section?.id === section.id}
             buttons={
-                !isFeedSectionType(section.type) && (
+                isSaveMyDateBlock(section) && (
                     <FeedEditBlockButtons
                         sectionId={section.id}
                         color={blockTextColor(section, view.ctx)}
@@ -169,6 +180,7 @@ export function FeedEditTop({ event, onDone, cancelRef, mode, modeSwitch, dateRo
             stories={stories}
             description={description || <FeedBlockPlaceholder name={t('sectionNames.feedDescription')} />}
             rsvp={rsvp ?? <FeedBlockPlaceholder name={t('sectionNames.feedRsvp')} />}
+            moduleBlock={moduleBlock}
             // Feed mode's own list arrives with its sections (plan 8): the frame draws these in Invitation mode only.
             between={actions.showAdd ? addRow : undefined}
         />

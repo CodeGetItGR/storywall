@@ -138,6 +138,11 @@ export function insertFeedSection(section: InvitationSection, place: FeedAddPlac
     };
 }
 
+// An invitation section on the feed: not one of the feed's own blocks, not a module block.
+export function isSaveMyDateBlock(section: Pick<InvitationSection, 'type'>): boolean {
+    return !isFeedSectionType(section.type) && section.type !== 'feedModule';
+}
+
 // The feed's Add section list (lib/feedAddList): the event type's own list, minus what is on the page or covered by
 // a module the event has.
 export function addableFeedSectionTypes(document: InvitationDocument, eventType: string, modules: readonly EventModuleResponseDto[]): NewSectionType[] {

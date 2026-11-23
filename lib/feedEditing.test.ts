@@ -16,6 +16,7 @@ import {
     feedSettingsGroups,
     insertFeedSection,
     isHostBlock,
+    isSaveMyDateBlock,
     moveFeedBlock,
     noFeedUploads,
     opensBlockSettings,
@@ -23,6 +24,7 @@ import {
     setFeedBlockVisible,
 } from '@/lib/feedEditing';
 import { defaultFeedLayout } from '@/lib/feedLayout';
+import { feedModuleSection } from '@/lib/feedModuleBlocks';
 import type { InvitationDocument } from '@/lib/invitation/document';
 import { MAX_SECTIONS } from '@/lib/invitation/document';
 import { createSection } from '@/lib/invitation/newSection';
@@ -86,6 +88,11 @@ describe('which block may do what', () => {
         expect(canMoveFeedBlock(sections, 'dress', 1, OFF)).toBe(false);
         expect(canMoveFeedBlock(sections, 'dress', -1, OFF)).toBe(true);
         expect(feedBlockControls(sections, lockedFaq, OFF)).toEqual({ canHide: false, canDelete: false, movable: false, canMoveUp: false, canMoveDown: false });
+    });
+
+    it('tells a Save my date block from the feed blocks and module blocks', () => {
+        expect(isSaveMyDateBlock(dressCode)).toBe(true);
+        expect([cover, details, description, rsvp, feedModuleSection('playlist', () => 'm')].some(isSaveMyDateBlock)).toBe(false);
     });
 
     it('sums it up per block', () => {

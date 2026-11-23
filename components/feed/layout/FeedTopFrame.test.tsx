@@ -1,4 +1,5 @@
 import { cleanup, render, screen } from '@testing-library/react';
+import type { ReactNode } from 'react';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { FeedTopFrame, PLAIN_PARTS } from '@/components/feed/layout/FeedTopFrame';
@@ -13,6 +14,7 @@ afterEach(cleanup);
 
 const row = (place: FeedAddPlace) => <i>{place ? JSON.stringify(place) : 'end'}</i>;
 const addRow = (place: FeedAddPlace) => <span>{place ? JSON.stringify(place) : 'add'}</span>;
+const moduleOf = (section: InvitationSection) => <span>module {section.id}</span>;
 
 function renderFrame(mode: FeedPageMode) {
     const document = defaultFeedLayout();
@@ -120,6 +122,21 @@ describe('FeedTopFrame', () => {
             '{"after":"b"}',
             'rsvp',
         ]);
+    });
+
+    it('draws a module block with its part, and nothing without one', () => {
+        const document = defaultFeedLayout();
+        const block = { id: 'm', type: 'feedModule', visible: true, props: { module: 'playlist' } } as unknown as InvitationSection;
+        document.sections.splice(3, 0, block);
+        const frame = feedFrame(document, { ended: false });
+        const view = { frame, sections: document.sections } as unknown as FeedTopView;
+        const frameWith = (moduleBlock?: (section: InvitationSection) => ReactNode) => (
+            <FeedTopFrame view={view} mode="invitation" parts={PLAIN_PARTS} cover={<span>cover</span>} stories={null} description={null} rsvp={null} moduleBlock={moduleBlock} />
+        );
+        const { rerender } = render(frameWith(moduleOf));
+        expect(screen.getByText('module m')).toBeTruthy();
+        rerender(frameWith(undefined));
+        expect(screen.queryByText('module m')).toBeNull();
     });
 
     it('draws one row with no host blocks', () => {
