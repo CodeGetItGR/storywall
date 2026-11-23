@@ -40,6 +40,9 @@ export const endpoints = {
         byEventType: (eventType: string) => `/api/theme-presets?eventType=${encodeURIComponent(eventType)}`,
     },
 
+    // The feed text toolbar's Style menu (KAN-262).
+    textStylePresets: '/api/text-style-presets',
+
     auth: {
         register: '/api/auth/register',
         login: '/api/auth/login',
@@ -540,6 +543,10 @@ export const endpoints = {
             listIn: (library: ThemeFontLibrary) => (library === 'WALL' ? '/api/admin/theme-fonts' : `/api/admin/theme-fonts?library=${library}`),
             byId: (id: string) => `/api/admin/theme-fonts/${id}`,
             file: (id: string) => `/api/admin/theme-fonts/${id}/file`,
+        },
+        textStylePresets: {
+            list: '/api/admin/text-style-presets',
+            byId: (id: string) => `/api/admin/text-style-presets/${id}`,
         },
         memberRoles: {
             collection: '/api/admin/member-roles',

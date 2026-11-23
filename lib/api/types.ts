@@ -1212,6 +1212,23 @@ export interface FeedLayoutImageDto {
     byteSize: number;
 }
 
+// A feed Style preset (guestwall-be TextStylePresetDto): one text's look, the same for every event.
+export interface TextStylePresetDto {
+    id: string;
+    nameEn: string;
+    nameEl: string;
+    font: string;
+    size: number;
+    weight: 'NORMAL' | 'BOLD';
+    italic: boolean;
+    letterSpacing: number;
+    uppercase: boolean;
+    sortOrder: number;
+}
+
+// The drawer sends every field but the order; a drag PATCHes { sortOrder } alone.
+export type TextStylePresetRequestDto = Omit<TextStylePresetDto, 'id' | 'sortOrder'>;
+
 // PUT /api/events/{id}/feed-layout (KAN-243). revision: the one the host saw, 0 before the first save;
 // a newer one answers 409 with 5208. document.themeId must be the theme's own, or 'wall' with themeSlug null.
 export interface FeedLayoutSaveRequestDto {
