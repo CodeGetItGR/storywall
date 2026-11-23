@@ -4,7 +4,6 @@ import type { EventModuleResponseDto } from '@/lib/api/types';
 import { feedAddList } from '@/lib/feedAddList';
 import { type FeedFrame, feedFrame } from '@/lib/feedLayout';
 import { type InvitationDocument, MAX_SECTIONS } from '@/lib/invitation/document';
-import type { ImageUploader } from '@/lib/invitation/editorUploads';
 import type { NewSectionType } from '@/lib/invitation/newSection';
 import { deleteSection, type MoveDirection, setSectionVisible } from '@/lib/invitation/sectionActions';
 import { type InvitationSection, isFeedSectionType, type SectionType } from '@/lib/invitation/sections';
@@ -163,15 +162,12 @@ export function feedBlockParts(type: SectionType, available: readonly SettingsPa
     return (FEED_BLOCK_PARTS[type] ?? []).filter((part) => available.includes(part));
 }
 
-// The feed takes no new photos yet, a feed block never follows the event like an invitation cover, and
-// on the feed every block sits on the page's one background, so none picks its own.
-const LEFT_OUT: readonly SettingsGroup[] = ['gallery', 'follow', 'background'];
+// The feed has one page background, and no theme to follow. Photos come from the feed's uploads (plan 7b).
+const LEFT_OUT: readonly SettingsGroup[] = ['follow', 'background'];
 
 export function feedSettingsGroups(groups: readonly SettingsGroup[]): SettingsGroup[] {
     return groups.filter((group) => !LEFT_OUT.includes(group));
 }
-
-export const noFeedUploads: ImageUploader = () => Promise.reject(new Error('The feed takes no photo uploads yet.'));
 
 // What keeps its own job when tapped inside a block: anything the host presses or types in,
 // the Save my date text typed in place, and the block's tools (data-feed-block-tools, the cover's Cancel and Save too).

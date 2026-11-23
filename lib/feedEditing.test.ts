@@ -18,7 +18,6 @@ import {
     isHostBlock,
     isSaveMyDateBlock,
     moveFeedBlock,
-    noFeedUploads,
     opensBlockSettings,
     reorderFeedBlocks,
     setFeedBlockVisible,
@@ -190,12 +189,8 @@ describe('the pencil sheet', () => {
         expect(feedBlockParts('dressCode', ['cover'])).toEqual([]);
     });
 
-    it('leaves out photo uploads, following the event and a background of its own', () => {
-        expect(feedSettingsGroups(['follow', 'gallery', 'background', 'dressCode'])).toEqual(['dressCode']);
-    });
-
-    it('refuses uploads', async () => {
-        await expect(noFeedUploads(new Blob())).rejects.toThrow();
+    it('keeps the gallery settings on the feed now that it takes photos', () => {
+        expect(feedSettingsGroups(['gallery', 'follow', 'background', 'buttons'])).toEqual(['gallery', 'buttons']);
     });
 });
 

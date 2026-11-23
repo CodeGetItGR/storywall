@@ -46,6 +46,7 @@ import type { EventDetailResponseDto } from '@/lib/api/types';
 import { blockTextColor } from '@/lib/feedBlockEdits';
 import { type FeedAddPlace, feedBlockControls, isSaveMyDateBlock } from '@/lib/feedEditing';
 import { moduleOfBlock } from '@/lib/feedModuleBlocks';
+import { feedImageUploader } from '@/lib/invitation/editorUploads';
 import { sectionNameKey } from '@/lib/invitation/sectionNames';
 import type { InvitationSection, SectionType } from '@/lib/invitation/sections';
 
@@ -70,6 +71,7 @@ export function FeedEditTop({ event, onDone, cancelRef, mode, modeSwitch, dateRo
     const session = useFeedEditSession(event, onDone);
     // The saved layout's photos plus the ones the host uploads while editing.
     const uploads = useFeedUploadedMedia(session.media);
+    const sheetUploads = useMemo(() => ({ uploadImage: feedImageUploader(event.id), remember: uploads.remember }), [event.id, uploads.remember]);
     const view = useFeedTop(event, { document: session.document, theme: session.theme, media: uploads.media });
     useEditPageTheme(event.id, session.wallTheme, session.background, view.backdrop);
     const fonts = useInvitationFonts(true);
@@ -87,7 +89,7 @@ export function FeedEditTop({ event, onDone, cancelRef, mode, modeSwitch, dateRo
     });
     const tiles = useFeedModuleTiles(session.document, event, actions.adding);
     const preview = useSettingsPreview(event, true, true);
-    const sheet = useFeedBlockSheet(session.store, session.document, session.theme, uploads.media, fonts.data, preview.parts);
+    const sheet = useFeedBlockSheet(session.store, session.document, session.theme, uploads.media, fonts.data, preview.parts, sheetUploads);
     const panels = useFeedEditPanels(sheet.openFor, sheet.close, actions.openAdd);
     const themeGrid = useFeedEditThemeGrid(event, session);
     const middleIds = view.frame.middle.map((section) => section.id);
