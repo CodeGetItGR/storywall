@@ -24,6 +24,7 @@ const meta = {
     component: FeedAddSectionSheet,
     args: {
         open: true,
+        eventType: 'WEDDING',
         previews: previews(['coupleNames', 'dressCode', 'faq']),
         onAdd: fn(),
         onClose: fn(),

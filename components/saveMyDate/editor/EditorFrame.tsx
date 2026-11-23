@@ -49,6 +49,8 @@ type EditorFrameProps = {
     joinUrl?: string;
     // The canvas's photo slots, which reach the canvas and the section settings alike. A theme has none.
     photoSlots?: PhotoUploadSlots | null;
+    // The draft's event type, which names the schedule (sectionNameKey). A theme has none.
+    eventType?: string | null;
     // Sheets and dialogs of its own, like the host's publishing and tour.
     children?: ReactNode;
 };
@@ -73,6 +75,7 @@ export function EditorFrame({
     fieldLinks = null,
     joinUrl,
     photoSlots = null,
+    eventType,
     children,
 }: EditorFrameProps) {
     const t = useTranslations('InvitationEditor');
@@ -80,85 +83,90 @@ export function EditorFrame({
 
     return (
         <PhotoUploadsContext.Provider value={photoSlots}>
-        <div className="smd-editor flex h-full flex-col bg-(--smd-editor-panel)">
-            {/* Top bar */}
-            <EditorTopBar
-                status={editor.status}
-                canUndo={editor.canUndo}
-                canRedo={editor.canRedo}
-                isBusy={isBusy}
-                onBack={leave.back}
-                onUndo={editor.undo}
-                onRedo={editor.redo}
-                onPreview={editor.openPreview}
-                primary={primary}
-                onTour={onTour}
-            />
+            <div className="smd-editor flex h-full flex-col bg-(--smd-editor-panel)">
+                {/* Top bar */}
+                <EditorTopBar
+                    status={editor.status}
+                    canUndo={editor.canUndo}
+                    canRedo={editor.canRedo}
+                    isBusy={isBusy}
+                    onBack={leave.back}
+                    onUndo={editor.undo}
+                    onRedo={editor.redo}
+                    onPreview={editor.openPreview}
+                    primary={primary}
+                    onTour={onTour}
+                />
 
-            {/* Save problem */}
-            {editor.status === 'error' && <EditorNotice tone="error" message={t('notSaved')} actionLabel={t('retry')} onAction={editor.retrySave} />}
+                {/* Save problem */}
+                {editor.status === 'error' && (
+                    <EditorNotice tone="error" message={t('notSaved')} actionLabel={t('retry')} onAction={editor.retrySave} />
+                )}
 
-            {/* Notes */}
-            {notice}
+                {/* Notes */}
+                {notice}
 
-            {/* Workspace */}
-            <div className="flex min-h-0 flex-1">
-                <EditorDockedPanel title={t('themeAssets')}>{assets}</EditorDockedPanel>
-                <InlineTextEditing
-                    store={editor.store}
+                {/* Workspace */}
+                <div className="flex min-h-0 flex-1">
+                    <EditorDockedPanel title={t('themeAssets')}>{assets}</EditorDockedPanel>
+                    <InlineTextEditing
+                        store={editor.store}
+                        document={editor.document}
+                        theme={editor.theme}
+                        uploadedFonts={uploadedFonts}
+                        event={event}
+                        fieldLinks={fieldLinks}
+                    >
+                        <CanvasHandles store={editor.store} frames={editor.theme.frames}>
+                            <EditorCanvas
+                                document={editor.document}
+                                theme={editor.theme}
+                                media={editor.media}
+                                uploadedFonts={uploadedFonts}
+                                sections={editor.sections}
+                                sectionSettings={sectionSettings.opener}
+                                eventType={eventType}
+                            />
+                        </CanvasHandles>
+                    </InlineTextEditing>
+                    {sectionSettings.isDocked && sectionSettings.panel ? (
+                        <SectionSettings panel={sectionSettings.panel} isDocked eventType={eventType} onClose={sectionSettings.close} />
+                    ) : (
+                        <EditorDockedPanel title={t('settings')}>{settings}</EditorDockedPanel>
+                    )}
+                </div>
+
+                {/* Panels on small screens */}
+                <EditorPanelBar onOpen={editor.setOpenPanel} />
+                <EditorPanelSheet open={editor.openPanel === 'assets'} title={t('themeAssets')} onClose={editor.closePanel}>
+                    {assets}
+                </EditorPanelSheet>
+                <EditorPanelSheet open={editor.openPanel === 'settings'} title={t('settings')} onClose={editor.closePanel}>
+                    {settings}
+                </EditorPanelSheet>
+
+                {/* Section settings on small screens */}
+                {!sectionSettings.isDocked && (
+                    <SectionSettings panel={sectionSettings.panel} isDocked={false} eventType={eventType} onClose={sectionSettings.close} />
+                )}
+
+                {/* Preview */}
+                <EditorPreview
+                    open={editor.isPreviewOpen}
+                    onClose={editor.closePreview}
                     document={editor.document}
                     theme={editor.theme}
+                    media={editor.media}
                     uploadedFonts={uploadedFonts}
-                    event={event}
-                    fieldLinks={fieldLinks}
-                >
-                    <CanvasHandles store={editor.store} frames={editor.theme.frames}>
-                        <EditorCanvas
-                            document={editor.document}
-                            theme={editor.theme}
-                            media={editor.media}
-                            uploadedFonts={uploadedFonts}
-                            sections={editor.sections}
-                            sectionSettings={sectionSettings.opener}
-                        />
-                    </CanvasHandles>
-                </InlineTextEditing>
-                {sectionSettings.isDocked && sectionSettings.panel ? (
-                    <SectionSettings panel={sectionSettings.panel} isDocked onClose={sectionSettings.close} />
-                ) : (
-                    <EditorDockedPanel title={t('settings')}>{settings}</EditorDockedPanel>
-                )}
+                    joinUrl={joinUrl}
+                />
+
+                {children}
+
+                {/* Dialogs */}
+                <EditorConflictDialog open={editor.status === 'conflict'} isReloading={isReloading} onReload={onReload} subject={subject} />
+                <EditorLeaveDialog open={leave.isConfirming} onLeave={leave.leave} onStay={leave.stay} />
             </div>
-
-            {/* Panels on small screens */}
-            <EditorPanelBar onOpen={editor.setOpenPanel} />
-            <EditorPanelSheet open={editor.openPanel === 'assets'} title={t('themeAssets')} onClose={editor.closePanel}>
-                {assets}
-            </EditorPanelSheet>
-            <EditorPanelSheet open={editor.openPanel === 'settings'} title={t('settings')} onClose={editor.closePanel}>
-                {settings}
-            </EditorPanelSheet>
-
-            {/* Section settings on small screens */}
-            {!sectionSettings.isDocked && <SectionSettings panel={sectionSettings.panel} isDocked={false} onClose={sectionSettings.close} />}
-
-            {/* Preview */}
-            <EditorPreview
-                open={editor.isPreviewOpen}
-                onClose={editor.closePreview}
-                document={editor.document}
-                theme={editor.theme}
-                media={editor.media}
-                uploadedFonts={uploadedFonts}
-                joinUrl={joinUrl}
-            />
-
-            {children}
-
-            {/* Dialogs */}
-            <EditorConflictDialog open={editor.status === 'conflict'} isReloading={isReloading} onReload={onReload} subject={subject} />
-            <EditorLeaveDialog open={leave.isConfirming} onLeave={leave.leave} onStay={leave.stay} />
-        </div>
         </PhotoUploadsContext.Provider>
     );
 }

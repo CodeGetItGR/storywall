@@ -129,8 +129,8 @@ describe('Invitation editor: section settings', { timeout: EDITOR_FLOW_TIMEOUT_M
 
     it('adds a moment to the schedule and edits it on its own', async () => {
         await openEditor();
-        openSettings('Event schedule');
-        const settings = panel('Event schedule');
+        openSettings('Wedding schedule');
+        const settings = panel('Wedding schedule');
 
         fireEvent.click(within(settings).getByRole('button', { name: 'Add moment' }));
         const title = within(settings).getByLabelText('Text');
@@ -146,14 +146,17 @@ describe('Invitation editor: section settings', { timeout: EDITOR_FLOW_TIMEOUT_M
 
     it('moves a moment with the keyboard, and Undo puts it back', async () => {
         await openEditor();
-        openSettings('Event schedule');
-        const settings = panel('Event schedule');
+        openSettings('Wedding schedule');
+        const settings = panel('Wedding schedule');
         fireEvent.click(within(settings).getByRole('button', { name: 'Add moment' }));
         const title = within(settings).getByLabelText('Text');
         fireEvent.change(title, { target: { value: 'Δείπνο' } });
         fireEvent.blur(title);
         fireEvent.click(within(within(settings).getByRole('group', { name: 'Moment' })).getByRole('button', { name: 'Done' }));
-        const labels = () => within(settings).getAllByRole('listitem').map((row) => row.textContent);
+        const labels = () =>
+            within(settings)
+                .getAllByRole('listitem')
+                .map((row) => row.textContent);
 
         layOut(within(settings).getAllByRole('listitem'));
         await keyboardDrag(within(settings).getAllByRole('button', { name: 'Drag to reorder' })[0], ['ArrowDown']);
@@ -204,7 +207,8 @@ describe('Invitation editor: section settings', { timeout: EDITOR_FLOW_TIMEOUT_M
 
         fireEvent.click(screen.getByRole('button', { name: 'Redo' }));
         expect(within(settings).getByRole('button', { name: 'Untitled' })).toBeInTheDocument();
-        expect(within(settings).queryByRole('group', { name: 'Untitled' })).not.toBeInTheDocument();        await save();
+        expect(within(settings).queryByRole('group', { name: 'Untitled' })).not.toBeInTheDocument();
+        await save();
         const faq = storedSection('s-faq');
         expect(faq.type === 'faq' && faq.data.items).toHaveLength(3);
     });

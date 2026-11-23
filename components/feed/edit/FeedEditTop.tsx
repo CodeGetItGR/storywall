@@ -41,23 +41,20 @@ import { useSettingsPreview } from '@/hooks/useSettingsPreview';
 import type { EventDetailResponseDto } from '@/lib/api/types';
 import { blockTextColor } from '@/lib/feedBlockEdits';
 import { feedBlockControls } from '@/lib/feedEditing';
-import type { NewSectionType } from '@/lib/invitation/newSection';
-import { type FeedSectionType, type InvitationSection, isFeedSectionType, type SectionType } from '@/lib/invitation/sections';
+import { sectionNameKey } from '@/lib/invitation/sectionNames';
+import { type InvitationSection, isFeedSectionType, type SectionType } from '@/lib/invitation/sections';
 
 const MODIFIERS = [restrictToVerticalAxis];
 
 // cancelRef: the Cancel pill, which takes focus as edit mode opens.
 type FeedEditTopProps = Omit<FeedTopProps, 'view'> & { event: EventDetailResponseDto; onDone: () => void; cancelRef?: Ref<HTMLButtonElement> };
 
-// SectionType also holds the footer, which a feed never has.
-type FeedNameKey = `sectionNames.${NewSectionType | FeedSectionType}`;
-const nameKey = (type: SectionType) => `sectionNames.${type}` as FeedNameKey;
-
 // The top of the feed in edit mode: the same frame as the feed, Theme / Cancel / Save under the cover, every block
 // with its tools, Save my date text typed in place, the Add section row closing the middle, and the Theme sheet. All
 // held until Save.
 export function FeedEditTop({ event, onDone, cancelRef, mode, modeSwitch, dateRow, cover, stories, description, rsvp }: FeedEditTopProps) {
     const t = useTranslations('InvitationEditor');
+    const name = (type: SectionType) => t(sectionNameKey(type, event.eventType));
     const session = useFeedEditSession(event, onDone);
     // The saved layout's photos plus the ones the host uploads while editing.
     const uploads = useFeedUploadedMedia(session.media);
@@ -110,7 +107,7 @@ export function FeedEditTop({ event, onDone, cancelRef, mode, modeSwitch, dateRo
         <FeedEditBlock
             key={section.id}
             section={section}
-            name={t(nameKey(section.type))}
+            name={name(section.type)}
             controls={feedBlockControls(session.document.sections, section, hostOptions)}
             hasSettings={sheet.hasSettings(section)}
             actions={tools}
@@ -208,7 +205,7 @@ export function FeedEditTop({ event, onDone, cancelRef, mode, modeSwitch, dateRo
 
             {/* Block settings */}
             <FeedBlockSheet
-                title={sheet.section ? t(nameKey(sheet.section.type)) : ''}
+                title={sheet.section ? name(sheet.section.type) : ''}
                 open={sheet.section !== null}
                 scope={sheet.scope}
                 groups={sheet.groups}
@@ -245,12 +242,18 @@ export function FeedEditTop({ event, onDone, cancelRef, mode, modeSwitch, dateRo
             />
 
             {/* Add section */}
-            <FeedAddSectionSheet open={actions.adding} previews={sectionPreviews} onAdd={actions.add} onClose={actions.closeAdd} />
+            <FeedAddSectionSheet
+                open={actions.adding}
+                eventType={event.eventType}
+                previews={sectionPreviews}
+                onAdd={actions.add}
+                onClose={actions.closeAdd}
+            />
 
             {/* Delete */}
             <DeleteSectionDialog
                 open={actions.remove.isOpen}
-                sectionName={actions.remove.sectionType ? t(nameKey(actions.remove.sectionType)) : ''}
+                sectionName={actions.remove.sectionType ? name(actions.remove.sectionType) : ''}
                 onDelete={actions.remove.confirm}
                 onCancel={actions.remove.cancel}
                 finalFocus={actions.remove.finalFocus}

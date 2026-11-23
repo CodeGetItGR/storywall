@@ -27,27 +27,27 @@ const previews = (types: NewSectionType[]) =>
 describe('FeedAddSectionSheet', () => {
     it('shows each block as a card named after it, and adds the one tapped', () => {
         const onAdd = vi.fn();
-        render(<FeedAddSectionSheet open previews={previews(['dressCode', 'faq'])} onAdd={onAdd} onClose={vi.fn()} />);
+        render(<FeedAddSectionSheet open eventType="WEDDING" previews={previews(['dressCode', 'faq'])} onAdd={onAdd} onClose={vi.fn()} />);
         fireEvent.click(screen.getByRole('button', { name: 'sectionNames.faq' }));
         expect(onAdd).toHaveBeenCalledWith('faq');
         expect(screen.getByRole('button', { name: 'sectionNames.dressCode' })).toBeTruthy();
     });
 
     it("keeps a block's own buttons out of the card's button", () => {
-        render(<FeedAddSectionSheet open previews={previews(['faq'])} onAdd={vi.fn()} onClose={vi.fn()} />);
+        render(<FeedAddSectionSheet open eventType="WEDDING" previews={previews(['faq'])} onAdd={vi.fn()} onClose={vi.fn()} />);
         const card = screen.getByRole('button', { name: 'sectionNames.faq' }).closest('li');
         expect(card?.querySelector('.faq-q')).toBeTruthy();
         expect(card?.querySelector('button button')).toBeNull();
     });
 
     it('says when there is nothing left to add', () => {
-        render(<FeedAddSectionSheet open previews={previews([])} onAdd={vi.fn()} onClose={vi.fn()} />);
+        render(<FeedAddSectionSheet open eventType="WEDDING" previews={previews([])} onAdd={vi.fn()} onClose={vi.fn()} />);
         expect(screen.getByText('sections.nothingToAdd')).toBeTruthy();
     });
 
     it('draws empty tiles for a gallery with no photos, and the card still adds it', () => {
         const onAdd = vi.fn();
-        render(<FeedAddSectionSheet open previews={previews(['gallery', 'faq'])} onAdd={onAdd} onClose={vi.fn()} />);
+        render(<FeedAddSectionSheet open eventType="WEDDING" previews={previews(['gallery', 'faq'])} onAdd={onAdd} onClose={vi.fn()} />);
         const card = screen.getByRole('button', { name: 'sectionNames.gallery' });
         expect(card.closest('li')?.querySelector('[data-testid="feed-gallery-placeholder"]')).toBeTruthy();
         expect(screen.getAllByTestId('feed-gallery-placeholder')).toHaveLength(1);

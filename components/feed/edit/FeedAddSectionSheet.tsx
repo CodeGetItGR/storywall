@@ -6,11 +6,18 @@ import { FeedSectionCard } from '@/components/feed/edit/FeedSectionCard';
 import { Modal } from '@/components/ui/modal';
 import type { FeedSectionPreviews } from '@/lib/feedSectionPreview';
 import type { NewSectionType } from '@/lib/invitation/newSection';
+import { sectionNameKey } from '@/lib/invitation/sectionNames';
 
-type FeedAddSectionSheetProps = { open: boolean; previews: FeedSectionPreviews | null; onAdd: (type: NewSectionType) => void; onClose: () => void };
+type FeedAddSectionSheetProps = {
+    open: boolean;
+    eventType: string;
+    previews: FeedSectionPreviews | null;
+    onAdd: (type: NewSectionType) => void;
+    onClose: () => void;
+};
 
 // The feed's Add section picker: the blocks the host may add, as cards. One column on phones, two on desktop.
-export function FeedAddSectionSheet({ open, previews, onAdd, onClose }: FeedAddSectionSheetProps) {
+export function FeedAddSectionSheet({ open, eventType, previews, onAdd, onClose }: FeedAddSectionSheetProps) {
     const t = useTranslations('InvitationEditor');
     const items = previews?.items ?? [];
 
@@ -30,7 +37,7 @@ export function FeedAddSectionSheet({ open, previews, onAdd, onClose }: FeedAddS
                             <li key={preview.type}>
                                 <FeedSectionCard
                                     preview={preview}
-                                    name={t(`sectionNames.${preview.type}`)}
+                                    name={t(sectionNameKey(preview.type, eventType))}
                                     ctx={previews.ctx}
                                     lang={previews.lang}
                                     onAdd={onAdd}
