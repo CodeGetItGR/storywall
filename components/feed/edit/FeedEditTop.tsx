@@ -276,7 +276,7 @@ export function FeedEditTop({ event, onDone, cancelRef, mode, modeSwitch, dateRo
             {/* Delete */}
             <DeleteSectionDialog
                 open={actions.remove.isOpen}
-                sectionName={actions.remove.sectionType ? name(actions.remove.sectionType) : ''}
+                sectionName={actions.remove.section ? blockName(actions.remove.section) : ''}
                 onDelete={actions.remove.confirm}
                 onCancel={actions.remove.cancel}
                 finalFocus={actions.remove.finalFocus}

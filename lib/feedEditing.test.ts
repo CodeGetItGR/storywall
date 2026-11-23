@@ -67,9 +67,9 @@ describe('which block may do what', () => {
         expect([details, description, rsvp, dressCode].every(canHideFeedBlock)).toBe(true);
     });
 
-    it('deletes only Save my date blocks', () => {
-        expect([cover, details, description, rsvp].some(canDeleteFeedBlock)).toBe(false);
-        expect(canDeleteFeedBlock(dressCode)).toBe(true);
+    it('deletes only Save my date blocks without Save my date', () => {
+        expect([cover, details, description, rsvp].some((section) => canDeleteFeedBlock(section, OFF))).toBe(false);
+        expect(canDeleteFeedBlock(dressCode, OFF)).toBe(true);
     });
 
     it('moves only middle blocks, and only among themselves', () => {
@@ -158,8 +158,8 @@ describe('edits', () => {
 
     it('never deletes a feed block', () => {
         const start = layout(dressCode);
-        expect(produce(start, deleteFeedBlock('feed-feedDescription'))).toBe(start);
-        expect(ids(produce(start, deleteFeedBlock('dress')))).not.toContain('dress');
+        expect(produce(start, deleteFeedBlock('feed-feedDescription', OFF))).toBe(start);
+        expect(ids(produce(start, deleteFeedBlock('dress', OFF)))).not.toContain('dress');
     });
 
     it('appends after the last middle block', () => {
@@ -257,10 +257,10 @@ describe('RSVP as a host block', () => {
     const dress = { ...(SAMPLE_SECTIONS.dressCode as InvitationSection), id: 'dress' };
     const sections = [...defaultFeedLayout().sections, dress];
 
-    it('moves only with Save my date, and is never deleted here', () => {
+    it('moves and deletes only with Save my date', () => {
         const rsvp = sections.find((section) => section.type === 'feedRsvp')!;
         expect(feedBlockControls(sections, rsvp, { rsvpMoves: false })).toMatchObject({ movable: false, canDelete: false, canHide: true });
-        expect(feedBlockControls(sections, rsvp, { rsvpMoves: true })).toMatchObject({ movable: true, canDelete: false, canHide: true, canMoveUp: true, canMoveDown: true });
+        expect(feedBlockControls(sections, rsvp, { rsvpMoves: true })).toMatchObject({ movable: true, canDelete: true, canHide: true, canMoveUp: true, canMoveDown: true });
     });
 
     it('reorders RSVP among the host blocks with Save my date', () => {
@@ -284,6 +284,26 @@ describe('RSVP as a host block', () => {
         expect(feedEditFrame(document, { rsvpMoves: true }).middle.map((section) => section.id)).toEqual(['feed-feedDescription', 'feed-feedRsvp', 'dress']);
         expect(feedEditFrame(document, { rsvpMoves: true }).rsvp).toBeNull();
         expect(feedEditFrame(document, { rsvpMoves: false }).rsvp?.id).toBe('feed-feedRsvp');
+    });
+});
+
+describe("RSVP's ✕", () => {
+    const rsvp = defaultFeedLayout().sections.find((section) => section.type === 'feedRsvp')!;
+
+    it('shows on Save my date events only', () => {
+        expect(canDeleteFeedBlock(rsvp, { rsvpMoves: true })).toBe(true);
+        expect(canDeleteFeedBlock(rsvp, { rsvpMoves: false })).toBe(false);
+    });
+
+    it('never on the cover, details or description', () => {
+        for (const section of defaultFeedLayout().sections.filter((item) => item.type !== 'feedRsvp')) {
+            expect(canDeleteFeedBlock(section, { rsvpMoves: true })).toBe(false);
+        }
+    });
+
+    it('deletes RSVP when it moves', () => {
+        const next = produce(defaultFeedLayout(), deleteFeedBlock(rsvp.id, { rsvpMoves: true }));
+        expect(next.sections.some((section) => section.type === 'feedRsvp')).toBe(false);
     });
 });
 

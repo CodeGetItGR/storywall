@@ -12,7 +12,7 @@ import type { SettingsGroup } from '@/lib/invitation/sectionSettings';
 import type { SettingsPart } from '@/lib/settingsPreview';
 
 // Edit mode on the feed (KAN-245). The cover and details keep their places, RSVP too without Save my date; the host
-// orders, hides and deletes the rest (RSVP's ✕ arrives with its tile in plan 7c).
+// orders, hides and deletes the rest.
 // Every edit is an Immer recipe for the old editor's store.
 
 type DocumentDraft = Draft<InvitationDocument>;
@@ -40,8 +40,11 @@ export function canHideFeedBlock(section: Block): boolean {
     return section.type !== 'feedCover' && !section.locked;
 }
 
-export function canDeleteFeedBlock(section: Block): boolean {
-    return !isFeedSectionType(section.type) && !section.locked;
+// A Save my date or module block, and RSVP when it moves (spec item 17). Never the cover, details or description.
+export function canDeleteFeedBlock(section: Block, { rsvpMoves }: HostBlockOptions): boolean {
+    if (section.locked) return false;
+    if (section.type === 'feedRsvp') return rsvpMoves;
+    return !isFeedSectionType(section.type);
 }
 
 function middleIds(sections: readonly Block[], options: HostBlockOptions): string[] {
@@ -62,7 +65,7 @@ export function feedBlockControls(sections: readonly Block[], section: Block, op
     const movable = isHostBlock(section, options) && !section.locked;
     return {
         canHide: canHideFeedBlock(section),
-        canDelete: canDeleteFeedBlock(section),
+        canDelete: canDeleteFeedBlock(section, options),
         movable,
         canMoveUp: movable && canMoveFeedBlock(sections, section.id, -1, options),
         canMoveDown: movable && canMoveFeedBlock(sections, section.id, 1, options),
@@ -103,10 +106,10 @@ export function setFeedBlockVisible(id: string, visible: boolean) {
     };
 }
 
-export function deleteFeedBlock(id: string) {
+export function deleteFeedBlock(id: string, options: HostBlockOptions) {
     return (draft: DocumentDraft) => {
         const section = draft.sections.find((item) => item.id === id);
-        if (section && canDeleteFeedBlock(section)) deleteSection(id)(draft);
+        if (section && canDeleteFeedBlock(section, options)) deleteSection(id)(draft);
     };
 }
 

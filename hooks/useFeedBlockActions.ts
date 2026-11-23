@@ -54,9 +54,9 @@ export function useFeedBlockActions(
     const askDelete = useCallback(
         (id: string) => {
             const section = find(id);
-            if (section && canDeleteFeedBlock(section)) ask(id);
+            if (section && canDeleteFeedBlock(section, options)) ask(id);
         },
-        [ask, find],
+        [ask, find, options],
     );
     const openAdd = useCallback(
         (at: FeedAddPlace = null) => {
