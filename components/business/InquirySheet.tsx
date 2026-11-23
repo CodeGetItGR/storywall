@@ -73,7 +73,7 @@ export function InquirySheet({
                                 </a>
                             )}
                             {inquiry.email && (
-                                <a href={`mailto:${inquiry.email}`} className={REPLY_LINK}>
+                                <a href={`mailto:${encodeURIComponent(inquiry.email)}`} className={REPLY_LINK}>
                                     <Mail aria-hidden="true" />
                                     <span className="truncate">
                                         {t('writeEmail')} {inquiry.email}
