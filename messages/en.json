@@ -6674,7 +6674,13 @@
         }
     },
     "FeedLayout": {
-        "invitation": "Invitation"
+        "invitation": "Invitation",
+        "posts": "Posts",
+        "membersOnly": "Members only",
+        "locked": {
+            "join": "Sign in and join the event",
+            "feed": "Photos and posts"
+        }
     },
     "FeedEditor": {
         "background": {
@@ -9592,7 +9598,8 @@
             "removeNamed": "Remove {name}",
             "seats": "{used} / {max}",
             "full": "This event has reached its vendor limit.",
-            "fullWithUpgrade": "This event has reached its vendor limit. Upgrade to {plan} for {count, plural, one {# vendor} other {# vendors}}.",
+            "fullWithUpgrade": "This event has reached its vendor limit. Upgrade to {plan} for {count, plural, one {# vendor} other {# vendors}}."
+,
             "seatsSpoken": "{used} of {max} vendor seats used",
             "sceneAlt": "Vendors at an event: {types}",
             "can": {
