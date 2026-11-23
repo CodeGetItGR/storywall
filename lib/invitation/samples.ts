@@ -179,6 +179,7 @@ export const SAMPLE_SECTIONS: { [T in SectionType]: SectionOf<T> } = {
     feedDetails: section('feedDetails', {}),
     feedDescription: section('feedDescription', {}),
     feedRsvp: section('feedRsvp', {}),
+    feedModule: section('feedModule', { module: 'playlist' }),
 };
 
 export const SAMPLE_THEME: ThemeDesign = {
@@ -203,5 +204,5 @@ export const SAMPLE_DOCUMENT: InvitationDocument = {
     themeId: 'theme-1',
     overrides: {},
     // The feed's own blocks belong to a feed layout, not to an invitation.
-    sections: Object.values(SAMPLE_SECTIONS).filter((section) => !isFeedSectionType(section.type)),
+    sections: Object.values(SAMPLE_SECTIONS).filter((section) => !isFeedSectionType(section.type) && section.type !== 'feedModule'),
 };

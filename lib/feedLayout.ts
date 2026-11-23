@@ -58,7 +58,7 @@ export function isPlainFeedStyle(style: SectionStyle): boolean {
     );
 }
 
-function feedBlock(type: FeedSectionType): InvitationSection {
+export function newFeedBlock(type: FeedSectionType): InvitationSection {
     return {
         id: `feed-${type}`,
         type,
@@ -75,7 +75,7 @@ function feedBlock(type: FeedSectionType): InvitationSection {
 // What an event with no saved layout draws: today's feed. Each block draws only when it has
 // something to show (a description, an RSVP to ask for).
 export function defaultFeedLayout(): InvitationDocument {
-    return { schemaVersion: INVITATION_SCHEMA_VERSION, themeId: WALL_THEME_ID, overrides: {}, sections: FEED_SECTION_TYPES.map(feedBlock) };
+    return { schemaVersion: INVITATION_SCHEMA_VERSION, themeId: WALL_THEME_ID, overrides: {}, sections: FEED_SECTION_TYPES.map(newFeedBlock) };
 }
 
 export type FeedFrame = {
@@ -99,7 +99,7 @@ export function feedFrame(layout: InvitationDocument, { ended, rsvpMoves = false
     const isMiddle = (section: InvitationSection) =>
         section.type === 'feedDescription' || !isFeedSectionType(section.type) || (rsvpMoves && section.type === 'feedRsvp');
     return {
-        cover: layout.sections.find((section) => section.type === 'feedCover') ?? feedBlock('feedCover'),
+        cover: layout.sections.find((section) => section.type === 'feedCover') ?? newFeedBlock('feedCover'),
         middle: ended ? [] : layout.sections.filter((section) => section.visible && isMiddle(section)),
         rsvp: ended || rsvpMoves ? null : shown('feedRsvp'),
     };
