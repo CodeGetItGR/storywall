@@ -85,6 +85,8 @@ export const endpoints = {
         business: '/api/me/business',
         businessEvents: (page: number, size: number) => `/api/me/business/events?page=${page}&size=${size}`,
         businessMessages: '/api/me/business/messages',
+        businessInquiries: (page: number, size: number) => `/api/me/business/inquiries?page=${page}&size=${size}`,
+        businessInquiry: (id: string) => `/api/me/business/inquiries/${id}`,
     },
 
     contentNotices: { submit: '/api/content-notices' },
@@ -236,6 +238,8 @@ export const endpoints = {
         vendorLinks: (eventId: string) => `/api/events/${eventId}/vendors/links`,
         vendorLinkReset: (eventId: string, vendorType: string) => `/api/events/${eventId}/vendors/links/${encodeURIComponent(vendorType)}/reset`,
         vendorMe: (eventId: string) => `/api/events/${eventId}/vendors/me`,
+        vendorInquiries: (eventId: string, vendorId: string) => `/api/events/${eventId}/vendors/${vendorId}/inquiries`,
+        partnerBrandingInquiries: (eventId: string) => `/api/events/${eventId}/partner-branding/inquiries`,
         printPicks: (eventId: string) => `/api/events/${eventId}/print-picks`,
         hostPrintList: (eventId: string, vendorId: string) => `/api/events/${eventId}/print-lists/host?vendorId=${encodeURIComponent(vendorId)}`,
         hostPrintItems: (eventId: string) => `/api/events/${eventId}/print-lists/host/items`,

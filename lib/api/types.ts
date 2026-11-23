@@ -1372,6 +1372,8 @@ export interface PartnerBrandingDto {
     linkUrl: string | null;
     // Null in a card preview.
     placement: PartnerBrandingPlacementDto | null;
+    // KAN-20: only on an approved partner's card, never on the partner's own. Absent or null: no "Ask about my date".
+    inquiry?: InquiryStateDto | null;
 }
 
 // --- Vendors in the event ---
@@ -1387,6 +1389,42 @@ export type VendorToolsOff = 'MODULE_OFF' | 'TYPE_NOT_ALLOWED' | 'ACCESS_ENDED';
 export interface VendorLinkDto {
     vendorType: PartnerRole;
     inviteToken: string;
+}
+
+// --- Guest inquiries (KAN-20) ---
+
+// Present on a partner's card for anyone but that partner. canAsk is false once sentAt is set.
+export interface InquiryStateDto {
+    canAsk: boolean;
+    sentAt: string | null;
+}
+
+// POST …/vendors/{vendorId}/inquiries and …/partner-branding/inquiries. eventDate is YYYY-MM-DD.
+export interface GuestInquiryRequestDto {
+    eventDate: string;
+    phone?: string;
+    email?: string;
+    note?: string;
+    consent: boolean;
+}
+
+export interface GuestInquirySentDto {
+    sentAt: string;
+}
+
+export type GuestInquiryStatus = 'NEW' | 'DONE';
+
+// GET /api/me/business/inquiries — one row of the partner's list.
+export interface GuestInquiryDto {
+    id: string;
+    guestName: string;
+    eventTitle: string;
+    eventDate: string; // YYYY-MM-DD
+    phone: string | null;
+    email: string | null;
+    note: string | null;
+    status: GuestInquiryStatus;
+    createdAt: string;
 }
 
 // GET /api/events/{eventId}/vendors — any member. The two flags come only for hosts and for the vendor's own row.
@@ -1413,6 +1451,8 @@ export interface VendorRowDto {
     joinedAt: string;
     hiddenByHost?: boolean;
     optedOut?: boolean;
+    // KAN-20: only on an approved partner's card, never on the partner's own. Absent or null: no "Ask about my date".
+    inquiry?: InquiryStateDto | null;
 }
 
 // GET /api/events/{eventId}/vendors/me — 404 when the caller is not a vendor of the event.

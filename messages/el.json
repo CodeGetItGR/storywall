@@ -7359,7 +7359,11 @@
         "moderationMemberIsHost": "Οι διοργανωτές δεν αφαιρούνται από την εκδήλωσή τους. Αναστείλετε τον λογαριασμό.",
         "moderationTargetProtected": "Οι λογαριασμοί διαχειριστών δεν μπορούν να ανασταλούν εδώ.",
         "collaboratorBrandingIncomplete": "Η κάρτα του συνεργάτη δεν είναι πλήρης.",
-        "partnerBrandingNoticeOutdated": "Η ενημέρωση για τον συνεργάτη άλλαξε. Δείτε την ξανά."
+        "partnerBrandingNoticeOutdated": "Η ενημέρωση για τον συνεργάτη άλλαξε. Δείτε την ξανά.",
+        "inquiryDateOutOfRange": "Διάλεξε ημερομηνία από σήμερα έως τρία χρόνια μετά.",
+        "inquiryContactRequired": "Πρόσθεσε τηλέφωνο ή email.",
+        "inquiryConsentRequired": "Τσέκαρε το κουτί για να στείλεις.",
+        "inquiryAlreadySent": "Έχεις ήδη ρωτήσει."
     },
     "LiteHome": {
         "actionsTitle": "Γρήγορες ενέργειες",
@@ -9853,6 +9857,22 @@
             "title": "Επαγγελματίες",
             "empty": "Κανένας επαγγελματίας.",
             "joined": "Μπήκε {date}"
+        },
+        "inquiry": {
+            "ask": "Ρώτα για την ημερομηνία μου",
+            "alreadySent": "Έχει σταλεί",
+            "sheetTitle": "Ερώτηση προς {name}",
+            "date": "Η ημερομηνία της εκδήλωσής σου",
+            "phone": "Τηλέφωνο",
+            "email": "Email",
+            "note": "Μήνυμα (προαιρετικό)",
+            "consent": "Να δοθούν το όνομα και τα στοιχεία επικοινωνίας μου σε: {name}.",
+            "dateRequired": "Διάλεξε ημερομηνία.",
+            "contactRequired": "Πρόσθεσε τηλέφωνο ή email.",
+            "send": "Αποστολή",
+            "sending": "Αποστολή…",
+            "sent": "Στάλθηκε. Θα επικοινωνήσουν μαζί σου από {name}.",
+            "close": "Κλείσιμο"
         }
     },
     "ImageAlt": {
@@ -9880,7 +9900,8 @@
         "guestPhoto": "Φωτογραφία καλεσμένου",
         "photoBy": "Φωτογραφία από {name}",
         "qrUploadSent": "Οι φωτογραφίες στάλθηκαν",
-        "qrWishSent": "Η ευχή στάλθηκε"
+        "qrWishSent": "Η ευχή στάλθηκε",
+        "inquirySent": "Η ερώτηση στάλθηκε"
     },
     "VendorPages": {
         "breadcrumb": "Για επαγγελματίες",
@@ -10409,6 +10430,21 @@
             "close": "Κλείσιμο",
             "topicRequired": "Επιλέξτε θέμα.",
             "messageRequired": "Γράψτε ένα μήνυμα."
+        },
+        "inquiries": {
+            "title": "Ερωτήσεις καλεσμένων",
+            "emptyTitle": "Καμία ερώτηση ακόμα",
+            "emptyBody": "Οι καλεσμένοι ρωτούν για τις ημερομηνίες σας μέσα από τις εκδηλώσεις σας.",
+            "loadFailed": "Δεν φορτώθηκαν οι ερωτήσεις.",
+            "new": "Νέα",
+            "date": "Ημερομηνία",
+            "event": "Εκδήλωση",
+            "call": "Κλήση",
+            "writeEmail": "Email",
+            "note": "Μήνυμα",
+            "markDone": "Ολοκληρώθηκε",
+            "markNew": "Σήμανση ως νέα",
+            "close": "Κλείσιμο"
         }
     },
     "InvitationRenderer": {
