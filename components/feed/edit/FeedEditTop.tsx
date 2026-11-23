@@ -4,7 +4,7 @@ import { closestCenter, DndContext } from '@dnd-kit/core';
 import { restrictToVerticalAxis } from '@dnd-kit/modifiers';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { useTranslations } from 'next-intl';
-import type { ReactNode, Ref } from 'react';
+import { type ReactNode, type Ref, useMemo } from 'react';
 
 import { FeedAddSectionRow } from '@/components/feed/edit/FeedAddSectionRow';
 import { FeedAddSectionSheet } from '@/components/feed/edit/FeedAddSectionSheet';
@@ -57,7 +57,8 @@ export function FeedEditTop({ event, onDone, cancelRef, mode, modeSwitch, dateRo
     const view = useFeedTop(event, { document: session.document, theme: session.theme, media: session.media });
     useEditPageTheme(event.id, session.wallTheme, session.background, view.backdrop);
     const fonts = useInvitationFonts(true);
-    const actions = useFeedBlockActions(session.store, session.document, event);
+    const hostOptions = useMemo(() => ({ rsvpMoves: view.rsvpMoves }), [view.rsvpMoves]);
+    const actions = useFeedBlockActions(session.store, session.document, event, hostOptions);
     const sectionPreviews = useFeedSectionPreviews({
         types: actions.addable,
         themeSlug: session.themeSlug,
@@ -96,7 +97,7 @@ export function FeedEditTop({ event, onDone, cancelRef, mode, modeSwitch, dateRo
             key={section.id}
             section={section}
             name={t(nameKey(section.type))}
-            controls={feedBlockControls(session.document.sections, section)}
+            controls={feedBlockControls(session.document.sections, section, hostOptions)}
             hasSettings={sheet.hasSettings(section)}
             actions={tools}
             active={sheet.section?.id === section.id}

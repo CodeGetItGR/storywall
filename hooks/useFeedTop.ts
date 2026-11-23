@@ -6,7 +6,7 @@ import { useMemo } from 'react';
 import { useInvitationFonts } from '@/hooks/useAdminInvitationThemes';
 import { useFeedLayout } from '@/hooks/useFeedLayout';
 import type { EventDetailResponseDto } from '@/lib/api/types';
-import { isEventEnded } from '@/lib/eventLifecycle';
+import { isEventEnded, isModuleAvailable } from '@/lib/eventLifecycle';
 import { feedEditFrame } from '@/lib/feedEditing';
 import { type FeedFrame, feedFrame, usesInvitationLook } from '@/lib/feedLayout';
 import { type FeedPageBackdrop, feedPageBackdrop } from '@/lib/feedPageBackdrop';
@@ -17,6 +17,7 @@ import { buildRenderContext, type MediaResolver, type RenderContext } from '@/li
 import type { InvitationSection } from '@/lib/invitation/sections';
 import type { ThemeDesign } from '@/lib/invitation/theme';
 import { uploadedFontFaceCss } from '@/lib/invitation/uploadedFonts';
+import { SAVE_MY_DATE_MODULE_KEY } from '@/lib/saveMyDateRelease';
 import { useFeedEditorEnabled } from '@/providers/FeedEditorFlagProvider';
 
 export type FeedTopView = {
@@ -32,6 +33,8 @@ export type FeedTopView = {
     frame: FeedFrame;
     // Something shows between the cover and RSVP.
     drawsMiddle: boolean;
+    // With Save my date, RSVP is one of the host's blocks (spec item 17).
+    rsvpMoves: boolean;
     // The feed's own background colour (overrides.backgroundColor), as picked; null without one.
     pageBackground: string | null;
     // A Save my date theme's background, drawn behind the whole page (null on the wall theme, or under the
@@ -56,6 +59,8 @@ export function useFeedTop(event: EventDetailResponseDto, editing?: FeedTopEditi
     // The font files list is public (the published invitation reads it too).
     const fonts = useInvitationFonts(enabled && look);
     const ended = isEventEnded(event);
+    // With Save my date, RSVP is one of the host's blocks (spec item 17). Read as useFeedMode does, flag included.
+    const rsvpMoves = enabled && isModuleAvailable(event.modules, SAVE_MY_DATE_MODULE_KEY);
 
     const backdrop = useMemo(() => feedPageBackdrop(document, theme, media), [document, theme, media]);
 
@@ -69,12 +74,12 @@ export function useFeedTop(event: EventDetailResponseDto, editing?: FeedTopEditi
     );
 
     const frame = useMemo(() => {
-        if (editingDocument) return feedEditFrame(editingDocument);
-        const split = feedFrame(document, { ended });
+        if (editingDocument) return feedEditFrame(editingDocument, { rsvpMoves });
+        const split = feedFrame(document, { ended, rsvpMoves });
         const draws = (section: InvitationSection) =>
-            section.type === 'feedDescription' ? Boolean(event.description) : !isEmptyForGuests(section, ctx);
+            section.type === 'feedDescription' ? Boolean(event.description) : section.type === 'feedRsvp' || !isEmptyForGuests(section, ctx);
         return { ...split, middle: split.middle.filter(draws) };
-    }, [editingDocument, document, ended, event.description, ctx]);
+    }, [editingDocument, document, ended, rsvpMoves, event.description, ctx]);
 
     return {
         look,
@@ -85,6 +90,7 @@ export function useFeedTop(event: EventDetailResponseDto, editing?: FeedTopEditi
         sections: document.sections,
         frame,
         drawsMiddle: frame.middle.length > 0,
+        rsvpMoves,
         pageBackground: document.overrides.backgroundColor ?? null,
         backdrop,
     };

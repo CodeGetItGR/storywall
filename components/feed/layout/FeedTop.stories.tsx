@@ -36,6 +36,7 @@ function TopStory({ extra, ended = false, styledDetails = false, mode = 'single'
         sections: document.sections,
         frame,
         drawsMiddle: frame.middle.length > 0,
+        rsvpMoves: false,
         pageBackground: null,
         backdrop: null,
     };

@@ -102,6 +102,7 @@ function FeedColumn({ theme, document = AUTO_LAYOUT, children }: PageProps) {
         sections: document.sections,
         frame: feedFrame(document, { ended: false }),
         drawsMiddle: true,
+        rsvpMoves: false,
         pageBackground: null,
         backdrop,
     };

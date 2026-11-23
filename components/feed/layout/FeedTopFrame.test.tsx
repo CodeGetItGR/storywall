@@ -42,4 +42,30 @@ describe('FeedTopFrame', () => {
     it("draws one page without the switch or the date row, in today's order, nothing folded", () => {
         expect(renderFrame('single')).toEqual(['cover', 'edit row', 'stories', 'description', 'add', 'rsvp']);
     });
+
+    it('draws RSVP where the host put it on Save my date, in Invitation mode only', () => {
+        const document = defaultFeedLayout();
+        const [cover, details, description, rsvp] = document.sections;
+        const moved = { ...document, sections: [cover, details, rsvp, description] };
+        const frame = feedFrame(moved, { ended: false, rsvpMoves: true });
+        const view = { frame, sections: moved.sections } as unknown as FeedTopView;
+        const draw = (mode: FeedPageMode) => {
+            render(
+                <FeedTopFrame
+                    view={view}
+                    mode={mode}
+                    parts={PLAIN_PARTS}
+                    cover={<span>cover</span>}
+                    stories={<span>stories</span>}
+                    description={<span>description</span>}
+                    rsvp={<span>rsvp</span>}
+                />,
+            );
+            const order = ['cover', 'stories', 'rsvp', 'description'].filter((text) => screen.queryByText(text));
+            cleanup();
+            return order;
+        };
+        expect(draw('invitation')).toEqual(['cover', 'rsvp', 'description']);
+        expect(draw('feed')).toEqual(['cover', 'stories']);
+    });
 });

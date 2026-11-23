@@ -58,9 +58,12 @@ export function FeedTopFrame({
 }: FeedTopProps & { parts: FeedTopParts }) {
     const { frame } = view;
     const invitation = mode !== 'feed';
-    const middle = frame.middle.map((section) =>
-        section.type === 'feedDescription' ? parts.block(section, description) : parts.invitation(section),
-    );
+    // RSVP is in the middle on Save my date (lib/feedLayout feedFrame); it draws only while today's rules ask.
+    const middle = frame.middle.map((section) => {
+        if (section.type === 'feedDescription') return parts.block(section, description);
+        if (section.type === 'feedRsvp') return rsvp ? parts.block(section, rsvp) : null;
+        return parts.invitation(section);
+    });
 
     return (
         <>

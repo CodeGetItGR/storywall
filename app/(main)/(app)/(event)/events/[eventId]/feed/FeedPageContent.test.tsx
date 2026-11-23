@@ -1,5 +1,6 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import type { ReactNode } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
@@ -107,6 +108,17 @@ function savedLayout(...extra: InvitationSection[]): FeedLayoutDto {
 }
 
 const dressCode = SAMPLE_SECTIONS.dressCode as InvitationSection;
+
+// A layout whose host put RSVP above the description.
+function rsvpFirstLayout(): FeedLayoutDto {
+    const saved = savedLayout(dressCode);
+    const [cover, details, description, rsvp, ...rest] = saved.document.sections;
+    return { ...saved, document: { ...saved.document, sections: [cover, details, rsvp, description, ...rest] } };
+}
+
+function follows(first: HTMLElement, second: HTMLElement): boolean {
+    return Boolean(first.compareDocumentPosition(second) & Node.DOCUMENT_POSITION_FOLLOWING);
+}
 const SMD = [{ moduleKey: 'save_my_date', isAvailable: true, isEnabled: true }];
 
 type FeedOptions = {
@@ -277,7 +289,35 @@ describe('FeedPageContent layout', { timeout: 15_000 }, () => {
 });
 
 // The edit code loads lazily, so the first lookup after tapping Edit waits for it.
+describe('FeedPageContent RSVP place', { timeout: 15_000 }, () => {
+    it('draws RSVP where the host put it on a Save my date event', async () => {
+        rsvpVisible.value = true;
+        renderFeed(null, { description: 'Hello', flag: true, layout: rsvpFirstLayout(), modules: SMD, startAt: '2099-06-01T15:00:00Z' });
+        const description = await screen.findByTestId('description', {}, LAZY_LOOK);
+        expect(follows(screen.getByTestId('rsvp'), description)).toBe(true);
+    });
+
+    it('keeps RSVP last without Save my date', async () => {
+        rsvpVisible.value = true;
+        renderFeed(null, { description: 'Hello', flag: true, layout: rsvpFirstLayout() });
+        const description = await screen.findByTestId('description', {}, LAZY_LOOK);
+        expect(follows(description, screen.getByTestId('rsvp'))).toBe(true);
+    });
+});
+
 describe('FeedPageContent edit mode', { timeout: 15_000 }, () => {
+    it('lets the host drag RSVP on a Save my date event, with no delete', async () => {
+        const user = userEvent.setup();
+        renderFeed(null, { flag: true, layout: savedLayout(dressCode), isHost: true, modules: SMD, startAt: '2099-06-01T15:00:00Z' });
+        fireEvent.click(await screen.findByRole('button', { name: 'edit' }));
+        const rsvp = await screen.findByRole('group', { name: 'sectionNames.feedRsvp' }, LAZY_LOOK);
+        const tools = rsvp.querySelector('[data-feed-block-tools]') as HTMLElement;
+        expect(within(tools).getByRole('button', { name: 'drag' })).toBeTruthy();
+        await user.click(within(tools).getByRole('button', { name: 'options' }));
+        expect(await screen.findByRole('menuitem', { name: 'moveUp' })).toBeTruthy();
+        expect(screen.queryByRole('menuitem', { name: 'delete' })).toBeNull();
+    });
+
     it('keeps the pill while editing, with Theme, Cancel and Save under it', async () => {
         renderFeed(null, { flag: true, layout: savedLayout(dressCode), isHost: true, modules: SMD, startAt: '2099-06-01T15:00:00Z' });
         fireEvent.click(await screen.findByRole('button', { name: 'edit' }, LAZY_LOOK));
