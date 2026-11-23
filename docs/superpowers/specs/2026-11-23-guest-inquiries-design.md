@@ -2,198 +2,166 @@
 
 Ticket: KAN-20 (epic KAN-17). Repos: guestwall-be first, then storywall.
 Later users: the vendor demo (`/demo/wedding?vendor=…`, own spec) and the public partner pages (KAN-26).
+Plans:
+- `docs/superpowers/plans/2026-11-23-guest-inquiries-backend.md`
+- `docs/superpowers/plans/2026-11-23-guest-inquiries-frontend.md`
 
 ## Goal
 
 A guest at an event sees a partner vendor (photographer, planner…) and asks them about a date for their own event.
-The partner gets an email and a list on their vendor page, and contacts the guest themselves. There is no chat.
+The partner gets an email and a list on their My business page, and contacts the guest themselves. There is no chat.
 
 ## Decisions
 
 | Topic | Decision |
 |---|---|
 | Who receives | Approved partners only. Non-partner vendors keep their link-out buttons. |
-| Who asks | A signed-in member of the event who is not that vendor. Hosts may ask too. |
+| Who asks | A signed-in member of the event who is not that partner. Hosts may ask too. |
 | Where | The vendor's card on the Vendors page, and the `FEATURE_CARD` style of the feed partner card. The `COMPACT_ROW` and `CREDIT` styles stay a single link. |
-| Reply path | Email to the partner and an inbox on the vendor page. The partner replies by phone or email outside Storywall. |
-| Form | Event date (required), phone or email (at least one, prefilled from the account), optional note (≤ 500 characters). The name comes from the guest's profile. |
+| Reply path | Email to the partner, and a list on My business (`/business`). The partner replies by phone or email outside Storywall. |
+| Form | Event date (required), phone or email (at least one; the email is prefilled from the account), optional note (≤ 500 characters). The name comes from the guest's account. |
 | Consent | A required, unticked checkbox. Send stays disabled until it is ticked. The time of consent is stored. |
+| After sending | The sheet shows a short confirmation in place of the form, like "Write to us" on My business. |
+| Repeat | One inquiry per guest, per partner, per event, ever. The button then shows "Already sent". |
 | Host | Never sees inquiries. |
-| Retention | Deleted 12 months after sending, or with the event, partner or guest account. |
+| Retention | Deleted 12 months after sending. Deleted at once with the event (purge) or with the guest's account. A soft-deleted or suspended partner stops seeing them, and the 12-month clean-up removes them. |
 | Admin console | Nothing new. |
 
-## Who the request belongs to
+## Who the inquiry belongs to
 
 The two entry points lead to different records:
 
 - **Feed card:** an `EventPartnerBranding` row links an event to a `Collaborator` (partner). The partner may have no Storywall account.
 - **Vendors page:** an `EventVendor` with a `VendorProfile` (a user account). The account is a partner when its verified email matches an active `Collaborator` (`ApprovedPartners`).
 
-So a request belongs to the **`Collaborator`**:
+So an inquiry belongs to the **`Collaborator`**:
 
 - The email goes to `Collaborator.contactEmail`, which works with or without an account.
-- The inbox shows for the account that `ApprovedPartners.collaborator(user)` resolves to that partner.
+- The list shows for the account that `ApprovedPartners.collaborator(user)` resolves to that partner. A partner without an account can sign up with that email to see it.
 - A vendor row is askable only when its account resolves to an active partner.
-- The feed card is askable only while `PartnerBrandingService#activeFor` shows it.
+- The feed card is askable only while `EventPartnerBrandingRepository.findShowing` returns it.
 
 ## Backend (guestwall-be)
 
-### Table — `V232__availability_requests.sql` (next free number at build time)
-
-`availability_requests`:
+### Table — `guest_inquiries` (next free migration number)
 
 - `id` UUID PK
 - `event_id` → `events`, `ON DELETE CASCADE`
 - `collaborator_id` → `collaborators`, `ON DELETE CASCADE`
 - `guest_user_id` → `users`, `ON DELETE CASCADE`
-- `source` `VARCHAR(16)`: `VENDOR_LIST` | `FEED_CARD`. Reserved for KAN-26: `PARTNER_PAGE`, with a nullable `event_id`, added then.
+- `source`: `VENDOR_LIST` | `FEED_CARD`. KAN-26 will add `PARTNER_PAGE` with a nullable `event_id`.
 - `event_date` `DATE NOT NULL`
 - `phone` `VARCHAR(40)` NULL, `email` `VARCHAR(254)` NULL, with a check that at least one is set
 - `note` `VARCHAR(500)` NULL
 - `consent_at` `TIMESTAMPTZ NOT NULL`
-- `status` `VARCHAR(8)`: `NEW` | `DONE`, default `NEW`
+- `status` `NEW` | `DONE`, default `NEW`
 - `done_at` `TIMESTAMPTZ` NULL
 - `created_at` `TIMESTAMPTZ NOT NULL`
 
-Indexes:
+Constraints and indexes:
 
-- unique `(event_id, collaborator_id, guest_user_id)`: one request per guest, partner and event
-- `(collaborator_id, created_at DESC)` for the inbox
+- unique `(event_id, collaborator_id, guest_user_id)`
+- `(collaborator_id, created_at DESC, id DESC)` for the list
 - `(created_at)` for clean-up
-- `guest_user_id`, for user deletes
+- `(guest_user_id)` for account deletion
 
 ### Telling the client what it may do
 
-Both `VendorRowDto` and the feed card's `PartnerBrandingDto` gain:
+`VendorRowDto` and `PartnerBrandingDto` gain:
 
 ```
-inquiry: { canAsk: boolean; sentAt: string | null } | null
+inquiry: { canAsk: boolean; sentAt: string | null }   // absent when not askable
 ```
 
-- It is null when the vendor is not a partner, or for the vendor's own view.
+- It is absent for a non-partner, for the partner's own account, on admin reads and in card previews.
 - `canAsk` is false once `sentAt` is set.
 
 ### Endpoints
 
-| Method | Path | Who | Body / result |
+| Method | Path | Who | Body → result |
 |---|---|---|---|
-| POST | `/api/events/{eventId}/vendors/{vendorId}/availability-requests` | event member | `{ eventDate, phone?, email?, note?, consent: true }` → 201 `{ sentAt }` |
-| POST | `/api/events/{eventId}/partner-branding/availability-requests` | event member | same |
-| GET | `/api/vendors/me/availability-requests?page=` | the partner's account | newest first, 20 per page: `{ id, guestName, eventName, eventDate, phone, email, note, status, createdAt }` |
-| PATCH | `/api/vendors/me/availability-requests/{id}` | the partner's account | `{ done: boolean }` → the row |
+| POST | `/api/events/{eventId}/vendors/{vendorId}/inquiries` | event member | `{ eventDate, phone?, email?, note?, consent }` → 201 `{ sentAt }` |
+| POST | `/api/events/{eventId}/partner-branding/inquiries` | event member | same |
+| GET | `/api/me/business/inquiries?page=&size=` | the partner's account | `Page<{ id, guestName, eventTitle, eventDate, phone, email, note, status, createdAt }>`, newest first, ≤ 50 per page |
+| PATCH | `/api/me/business/inquiries/{id}` | the partner's account | `{ done }` → the row |
 
-Errors (ProblemDetail, mapped in `lib/api/errorMessageKeys.ts`):
+Errors (`ProblemDetail` with a `code`):
 
-- **404:** not a member; vendor or card not found; not askable (not a partner, card not active, or the guest is that vendor).
-- **409:** this guest has already asked this partner on this event.
-- **429:** over a limit, through `@RateLimit`:
-  - 10 per guest per day
-  - 50 per partner per day, spam protection
+- **404:**
+  - not a member
+  - vendor or card not found, or not askable: not a partner, the card isn't showing, or the caller is that partner
+  - not a partner (list); inquiry not theirs (PATCH)
+- **409 `INQUIRY_ALREADY_SENT`:** this guest already asked this partner on this event.
+- **429:**
+  - more than 10 a day per guest (`@RateLimit`)
+  - 50 a day per partner (`RATE_LIMITED`)
 - **400:**
-  - `eventDate` before today, or more than 3 years ahead
-  - neither phone nor email
-  - bad phone or email (the same patterns as `VendorProfile`)
-  - `note` over 500 characters
-  - `consent` not true
+  - `INQUIRY_DATE_OUT_OF_RANGE`: a date before today (Athens) or more than 3 years ahead
+  - `INQUIRY_CONTACT_REQUIRED`: neither phone nor email
+  - `INQUIRY_CONSENT_REQUIRED`: consent not true
+  - `VALIDATION_FAILED`: a bad phone or email, or a note over 500 characters
 
 ### Email
 
-- `TransactionalMailService`, in Greek like the other partner emails, sent after the commit.
+- `TransactionalMailService.sendGuestInquiry`, in Greek, delivered after commit; a failure is logged.
 - Contents:
-  - the guest's name, the event's name and the date asked about
-  - `tel:` / `mailto:` links and the note
-  - a link to the vendor page inbox when the partner has an account
-- A failed send is logged. The request stays in the inbox.
+  - Heading and body: the guest's name, the event's title and the date asked about.
+  - Info lines: date, phone, email and note, each only when present.
+  - CTA: "My business" (`/business`).
 
 ### Audit
 
-One `AuditLog` entry per send. It holds the event, partner and source, and no name, phone, email or note.
+`VendorAuditWriter`: action `GUEST_INQUIRY_SENT`, with `collaboratorId` and `source` only.
 
 ### Clean-up
 
-`AvailabilityRequestCleanupJob` (`@Scheduled`, nightly, like `CampaignVisitCleanupJob`) deletes rows older than 12 months.
-
-### Tests
-
-- **Service:**
-  - send from each entry point
-  - not a partner; card inactive; the vendor asking themself
-  - duplicate (409); both limits (429); each validation (400)
-  - consent stored; email sent after commit; failed email keeps the row
-  - audit entry has no personal data
-- **Inbox:**
-  - only the partner's own rows, paged
-  - done / undone
-  - another account gets 404
-- **Deletes:** cascades on event, partner and user delete; clean-up job age limit.
-- **Controller:** routes, auth, error shapes.
-- **DTOs:** `inquiry` on vendor rows and the branding card, for a guest, a host, the vendor themself and a non-partner.
+`GuestInquiryCleanupJob` runs nightly and deletes rows older than 12 months. `UserAnonymizer` deletes the guest's rows.
 
 ## Frontend (storywall)
 
 ### Guest side — `components/vendors/inquiries/`
 
-- `AskDatesButton`: shown when `inquiry?.canAsk`. When `sentAt` is set it shows a disabled "Already sent" state instead.
-- `AskDatesSheet`: a bottom sheet on mobile and a dialog on desktop, with the date, phone, email, note, consent checkbox and Send.
+- `AskDatesButton`: shown when `inquiry` is present. A disabled "Already sent" state when `sentAt` is set.
+- `AskDatesSheet` (`Modal variant="sheet"`): the date (`<input type="date">`, min today), phone, email, note, consent checkbox and Send. After sending, a confirmation replaces the form.
 - `hooks/useAskDates.ts`:
-  - form state and prefill from the account
-  - validation and the send mutation
-  - error mapping
-  - patches the vendor list and feed caches with `sentAt` on success
+  - form state, with the email prefilled from the account
+  - checks before sending
+  - the send
+  - error mapping (`useApiErrorMessage`)
+  - on success, writes `sentAt` into the vendor list cache or the event detail cache
 - Placement:
-  - `VendorListRow`: next to the call / email buttons.
-  - `PartnerFeatureCard`: a button under the card, outside `PartnerCardLink`, so a tap on it does not open the website.
-- After sending: the sheet closes and a toast confirms.
+  - `VendorListRow`: under the link buttons.
+  - `PartnerFeatureCard`: through a new optional `action` slot rendered under the link. `PartnerFeedCard` fills it, and admin previews never do.
 
-### Vendor side — vendor page
+### Partner side — My business
 
-- `GuestInquiriesSection` on `VendorMeScreen`.
-  - **Partners:** compact read-only rows (`InquiryRow`): guest name, date asked about, event, when it arrived, a New badge, and call/email buttons.
-  - **Non-partners:** `LockedPreview`, like the other partner benefits.
-- `InquirySheet`: the note in full, and Mark done / Mark as new.
-- `hooks/useGuestInquiries.ts`: an infinite query on `/api/vendors/me/availability-requests` and the done mutation. It exports its query key factory and page size.
-- `lib/vendors.ts`: `inquiries` moves from `COMING_PARTNER_BENEFITS` to the current benefits. Its wording stays as it is.
-- Data loading follows CLAUDE.md: the vendor page's server prefetch seeds the first inbox page with the hook's exact key, when the page already prefetches.
+- `GuestInquiriesSection` sits in the main column, under Events:
+  - **Partners:** compact read-only rows (`InquiryRow`): guest name, date asked about, event, a New badge. Tapping a row opens `InquirySheet`.
+  - **Non-partners:** `LockedPreview` with sample rows. `canApply={false}`, because the page's one partner prompt is in Insights.
+- `InquirySheet`: the date, event, phone and email as call/email buttons, the note, and Mark done / Mark as new.
+- `hooks/useGuestInquiries.ts`: an infinite query (`businessKeys.inquiries`) and the done mutation.
+- `lib/vendors.ts`: `inquiries` moves from `COMING_PARTNER_BENEFITS` to `PARTNER_BENEFITS`. Its existing wording stays.
 
 ### Tests
 
-- Vitest:
-  - `useAskDates`: validation, prefill, error mapping, cache patch
-  - `AskDatesSheet`: Send disabled until consent and a contact are filled
-  - `AskDatesButton`: three states
-  - `GuestInquiriesSection`: partner, locked and empty states
-  - `useGuestInquiries`: done toggle
-- Storybook stories for `AskDatesSheet`, `AskDatesButton`, `InquiryRow`, `InquirySheet`, `GuestInquiriesSection` and the feature card with its button. They feed the visual check.
+- Vitest for the hooks, the sheet, the button and the section.
+- Storybook stories for the new components. They feed the visual check.
 - `tsc --noEmit`, `eslint .`, `vitest run`, `next build`.
 
 ## Copy — needs the owner's yes before it is added
 
-New strings only. Nothing existing changes. Wording to be proposed in a popup during implementation (EN and EL), for:
+New strings only. Nothing existing changes. The plans list the proposed wording (EN and EL). Each set is approved in a popup before it is added. Greek uses επαγγελματίας for the vendor and διοργανωτής for the host.
 
-- the button
-- "Already sent"
-- the sheet title
-- the field labels: date, phone, email, note
-- the consent checkbox, which names the vendor
-- Send
-- the success toast
-- each error
-- the inbox section title, its empty state, the New badge, Mark done / Mark as new
-- the email subject and body
-- the image alt text in the email
-
-Greek uses επαγγελματίας for the vendor and διοργανωτής for the host.
-
-Privacy policy / terms lines that cover sharing a guest's contact with a vendor are needed too (KAN-20). They also need the owner's wording.
+Privacy policy lines that cover sharing a guest's contact with a partner are needed too (KAN-20). They follow the legal pages' own versioning and are approved separately by the owner.
 
 ## Out of scope
 
 - Chat or in-app replies.
-- Showing guests their own sent requests.
+- Showing guests their own sent inquiries.
 - Admin console views.
 - The demo (vendor demo spec).
 - The public partner page entry point (KAN-26).
 
 ## Release
 
-guestwall-be first (migration, endpoints, DTO fields), then storywall. The DTO fields are additive, so an older frontend ignores them.
+guestwall-be first (migration, endpoints, DTO fields), then storywall. The new DTO fields are additive.
