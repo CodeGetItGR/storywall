@@ -8,6 +8,7 @@ import { useAskDates } from '@/hooks/useAskDates';
 import { eventKeys } from '@/hooks/useEvent';
 import { vendorKeys } from '@/hooks/useVendors';
 import { ApiError } from '@/lib/api/client';
+import { ERROR_CODES } from '@/lib/api/errors';
 import type { VendorRowDto } from '@/lib/api/types';
 import { inquiryDateBounds } from '@/lib/inquiries';
 import messages from '@/messages/en.json';
@@ -107,7 +108,7 @@ describe('useAskDates', () => {
     });
 
     it('shows the server error in the sheet', async () => {
-        post.mockRejectedValue(new ApiError(409, { status: 409, errorCode: 5228, detail: 'already' }));
+        post.mockRejectedValue(new ApiError(409, { status: 409, errorCode: ERROR_CODES.INQUIRY_ALREADY_SENT, detail: 'already' }));
         const { result } = renderHook(() => useAskDates('evt-1'), { wrapper });
         act(() => {
             result.current.openForVendor('v1', 'Lens & Light');
@@ -160,7 +161,7 @@ describe('useAskDates', () => {
     });
 
     it('refreshes both surfaces when the partner was already asked', async () => {
-        post.mockRejectedValue(new ApiError(409, { status: 409, errorCode: 5228, detail: 'already' }));
+        post.mockRejectedValue(new ApiError(409, { status: 409, errorCode: ERROR_CODES.INQUIRY_ALREADY_SENT, detail: 'already' }));
         const invalidate = seedOther();
         const { result } = renderHook(() => useAskDates('evt-1'), { wrapper });
         fill(result, 'vendor');
