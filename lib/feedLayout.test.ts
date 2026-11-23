@@ -135,3 +135,26 @@ describe('readFeedLayout', () => {
         expect(view.theme).toEqual(wallThemeDesign(null));
     });
 });
+
+describe('feedFrame with a movable RSVP', () => {
+    const dress = { ...(SAMPLE_SECTIONS.dressCode as InvitationSection), id: 'dress' };
+    const [cover, details, description, rsvp] = defaultFeedLayout().sections;
+    const layout = { ...defaultFeedLayout(), sections: [cover, details, rsvp, description, dress] };
+
+    it('keeps RSVP in its fixed place without Save my date', () => {
+        const frame = feedFrame(layout, { ended: false, rsvpMoves: false });
+        expect(frame.middle.map((section) => section.id)).toEqual(['feed-feedDescription', 'dress']);
+        expect(frame.rsvp?.id).toBe('feed-feedRsvp');
+    });
+
+    it('draws RSVP where the host put it with Save my date', () => {
+        const frame = feedFrame(layout, { ended: false, rsvpMoves: true });
+        expect(frame.middle.map((section) => section.id)).toEqual(['feed-feedRsvp', 'feed-feedDescription', 'dress']);
+        expect(frame.rsvp).toBeNull();
+    });
+
+    it('leaves a hidden RSVP out either way', () => {
+        const hidden = { ...layout, sections: layout.sections.map((section) => (section.type === 'feedRsvp' ? { ...section, visible: false } : section)) };
+        expect(feedFrame(hidden, { ended: false, rsvpMoves: true }).middle.some((section) => section.type === 'feedRsvp')).toBe(false);
+    });
+});

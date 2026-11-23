@@ -7,8 +7,8 @@ import type { SectionStyle } from '@/lib/invitation/sectionStyle';
 import { type ThemeDesign, themeDesignSchema } from '@/lib/invitation/theme';
 
 // The customizable feed (KAN-242). The top of the feed is an invitation document: the feed's own
-// blocks (cover, details, description, RSVP) and Save my date blocks, each with its style. Cover,
-// details and RSVP keep fixed places; the host's order places only the middle blocks.
+// blocks (cover, details, description, RSVP) and Save my date blocks, each with its style. Cover and details keep
+// fixed places, and RSVP too without Save my date; the host's order places the rest.
 
 // document.themeId for a layout on the event's own wall theme.
 export const WALL_THEME_ID = 'wall';
@@ -71,20 +71,27 @@ export function defaultFeedLayout(): InvitationDocument {
 export type FeedFrame = {
     // Always drawn: the cover can't be hidden.
     cover: InvitationSection;
-    // The host-ordered blocks between stories and RSVP: the description and the Save my date blocks.
+    // The host-ordered blocks between stories and the end: the description, the Save my date blocks, and RSVP on an
+    // event with Save my date.
     middle: InvitationSection[];
+    // RSVP's fixed place, last; null when it is one of the middle blocks.
     rsvp: InvitationSection | null;
 };
+
+// rsvpMoves: the event has Save my date, so RSVP is one of the host's blocks (spec item 17).
+export type FeedFrameOptions = { ended: boolean; rsvpMoves?: boolean };
 
 // The layout split into the page's fixed places. After the event only the cover stays.
 // The details block isn't drawn: the date and place live in the header and the schedule. It stays in the
 // layout, shown, because the public view shares the event's date, sessions and place while it is.
-export function feedFrame(layout: InvitationDocument, { ended }: { ended: boolean }): FeedFrame {
+export function feedFrame(layout: InvitationDocument, { ended, rsvpMoves = false }: FeedFrameOptions): FeedFrame {
     const shown = (type: FeedSectionType) => layout.sections.find((section) => section.type === type && section.visible) ?? null;
+    const isMiddle = (section: InvitationSection) =>
+        section.type === 'feedDescription' || !isFeedSectionType(section.type) || (rsvpMoves && section.type === 'feedRsvp');
     return {
         cover: layout.sections.find((section) => section.type === 'feedCover') ?? feedBlock('feedCover'),
-        middle: ended ? [] : layout.sections.filter((section) => section.visible && (section.type === 'feedDescription' || !isFeedSectionType(section.type))),
-        rsvp: ended ? null : shown('feedRsvp'),
+        middle: ended ? [] : layout.sections.filter((section) => section.visible && isMiddle(section)),
+        rsvp: ended || rsvpMoves ? null : shown('feedRsvp'),
     };
 }
 
