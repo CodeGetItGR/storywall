@@ -12,6 +12,8 @@ import type { FeedTopView } from '@/hooks/useFeedTop';
 import { eventThemeStyle } from '@/lib/eventTheme';
 import { defaultFeedLayout, feedFrame } from '@/lib/feedLayout';
 import { feedBackdropStyle, feedPageBackdrop } from '@/lib/feedPageBackdrop';
+import { planFeedThemeSwitch } from '@/lib/feedThemes';
+import type { InvitationDocument } from '@/lib/invitation/document';
 import { INVITATION_LABELS } from '@/lib/invitation/labels';
 import { buildRenderContext } from '@/lib/invitation/render';
 import { SAMPLE_SECTIONS } from '@/lib/invitation/samples';
@@ -30,6 +32,15 @@ const TEXTURE: ThemeDesign = {
     colors: { ...STORY_THEME.colors, secondary: '#dfe9e4' },
     backgrounds: { ...STORY_THEME.backgrounds, content: { desktop: { mediaId: 'page-dark' }, mode: 'texture', stableRepeat: false } },
 };
+// Different top and content images: a block that drew its own would show a seam against the page.
+const TWO_IMAGES: ThemeDesign = {
+    ...STORY_THEME,
+    backgrounds: {
+        ...STORY_THEME.backgrounds,
+        top: { desktop: { mediaId: 'page-dark' }, mode: 'cover', stableRepeat: false },
+        content: { desktop: { mediaId: 'page-light' }, mode: 'repeat', stableRepeat: true },
+    },
+};
 const PAGE_IMAGES: Record<string, string> = { 'page-light': '/storybook-assets/light-photo.jpg', 'page-dark': '/storybook-assets/dark-photo.jpg' };
 const media = (id: string) => PAGE_IMAGES[id];
 
@@ -39,9 +50,33 @@ const autoDressCode = {
     style: { ...SAMPLE_SECTIONS.dressCode.style, background: { kind: 'theme', slot: 'auto' } },
 } as InvitationSection;
 
-function ThemedPage({ theme, children }: { theme: ThemeDesign; children?: ReactNode }) {
-    const base = defaultFeedLayout();
-    const document = { ...base, themeId: 'story-theme', sections: [...base.sections, autoDressCode] };
+const base = defaultFeedLayout();
+const AUTO_LAYOUT: InvitationDocument = { ...base, themeId: 'story-theme', sections: [...base.sections, autoDressCode] };
+
+// The layout right after the host picks a theme whose own sections name the top or content image.
+const withSlot = (section: InvitationSection, slot: 'top' | 'content') =>
+    ({ ...section, style: { ...section.style, background: { kind: 'theme', slot } } }) as InvitationSection;
+const faq = { ...(SAMPLE_SECTIONS.faq as InvitationSection), id: 'faq' } as InvitationSection;
+const PICKED_LAYOUT = planFeedThemeSwitch(
+    { ...base, sections: [...base.sections, faq] },
+    {
+        document: {
+            ...base,
+            themeId: 'story-theme',
+            sections: [
+                withSlot(SAMPLE_SECTIONS.top as InvitationSection, 'top'),
+                withSlot(SAMPLE_SECTIONS.invitation as InvitationSection, 'content'),
+                withSlot(SAMPLE_SECTIONS.faq as InvitationSection, 'top'),
+                withSlot(SAMPLE_SECTIONS.rsvp as InvitationSection, 'top'),
+            ],
+        },
+        theme: TWO_IMAGES,
+        imageIds: new Set(),
+    },
+    new Set(),
+);
+
+function ThemedPage({ theme, document = AUTO_LAYOUT, children }: { theme: ThemeDesign; document?: InvitationDocument; children?: ReactNode }) {
     const backdrop = feedPageBackdrop(document, theme, media);
     const ctx = { ...buildRenderContext(document, theme, media), labels: INVITATION_LABELS.en, pageBackdrop: true };
     const view: FeedTopView = {
@@ -92,6 +127,13 @@ type Story = StoryObj<typeof meta>;
 
 // One image repeating down the page; the dress code section on "auto" shows the page through.
 export const RepeatingImage: Story = {};
+
+// Right after picking a theme with different top and content images: Description, FAQ and RSVP
+// sit on the page, with no seams between them.
+export const AfterThemePick: Story = { args: { theme: TWO_IMAGES, document: PICKED_LAYOUT } };
+
+// The same at mobile width.
+export const AfterThemePickMobile: Story = { ...AfterThemePick, globals: { viewport: { value: 'mobile' } } };
 
 // A texture tiled at the invitation's tile size, with posts on a different light tone.
 export const Texture: Story = { args: { theme: TEXTURE } };
