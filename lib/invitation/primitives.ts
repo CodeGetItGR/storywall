@@ -66,6 +66,9 @@ export const textStyleSchema = z
         align: alignSchema.optional(),
         bold: z.boolean().optional(),
         italic: z.boolean().optional(),
+        // Style presets (KAN-262): pixels between letters, and capitals.
+        letterSpacing: z.number().min(-5).max(50).optional(),
+        uppercase: z.boolean().optional(),
         lineHeight: z.number().min(0.5).max(4).optional(),
         marginTop: z.number().min(-500).max(1000).optional(),
         marginBottom: z.number().min(-500).max(1000).optional(),

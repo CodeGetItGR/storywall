@@ -3,6 +3,7 @@
 import { useCallback, useMemo, useRef, useState } from 'react';
 
 import { useTextToolbarFocus } from '@/hooks/useTextToolbarFocus';
+import { addFeedBlockLink } from '@/lib/feedBlockEdits';
 import type { InvitationDocument } from '@/lib/invitation/document';
 import type { InvitationEditorState, InvitationEditorStore } from '@/lib/invitation/editorStore';
 import { editedTextLock, type InvitationEventData } from '@/lib/invitation/eventLinks';
@@ -123,6 +124,15 @@ export function useInlineTextEdit(store: InvitationEditorStore, document: Invita
         [activate, active, document, edit, sectionId],
     );
 
+    // The feed's + menu: an empty link after the text being edited (lib/feedBlockEdits). Answers the section it went
+    // into, so edit mode can open that block's settings, where the link's text and address are typed.
+    const addLink = useCallback((): string | null => {
+        if (!active || !sectionId) return null;
+        const after = active.kind === 'element' ? active.elementId : undefined;
+        edit(addFeedBlockLink(sectionId, `link-${crypto.randomUUID()}`, after));
+        return sectionId;
+    }, [active, edit, sectionId]);
+
     // An added text goes at once; a section's own text asks first.
     const requestDelete = useCallback(() => {
         if (!active || lock) return;
@@ -155,6 +165,9 @@ export function useInlineTextEdit(store: InvitationEditorStore, document: Invita
         };
     }, []);
 
+    // The text fields a section shows, for the block's droplet (lib/feedBlockEdits).
+    const fieldPathsOf = useCallback((id: string) => [...(fieldPaths.current.get(id)?.keys() ?? [])], []);
+
     const toolbarFocus = useTextToolbarFocus(active ? element : null);
 
     const undo = useCallback(() => store.getState().undo(), [store]);
@@ -177,10 +190,12 @@ export function useInlineTextEdit(store: InvitationEditorStore, document: Invita
             setStyle,
             applyColor,
             addText,
+            addLink,
             requestDelete,
             confirmDelete,
             cancelDelete,
             registerField,
+            fieldPathsOf,
             undo,
             redo,
             ...toolbarFocus,
@@ -201,10 +216,12 @@ export function useInlineTextEdit(store: InvitationEditorStore, document: Invita
             setStyle,
             applyColor,
             addText,
+            addLink,
             requestDelete,
             confirmDelete,
             cancelDelete,
             registerField,
+            fieldPathsOf,
             undo,
             redo,
             toolbarFocus,

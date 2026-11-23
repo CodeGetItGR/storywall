@@ -38,3 +38,6 @@ export function withUniqueListItemIds(document: InvitationDocument): InvitationD
     const sections = document.sections.map(uniqueListItemIds);
     return sections.every((section, index) => section === document.sections[index]) ? document : { ...document, sections };
 }
+
+// A new element's id, as newSectionId (lib/invitation/newSection.ts).
+export const newElementId = () => crypto.randomUUID();

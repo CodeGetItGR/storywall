@@ -34,6 +34,8 @@ export type RenderContext = {
     // The customizable feed draws the theme's content background behind the whole page (lib/feedPageBackdrop.ts):
     // sections left on the "auto" background show the page through.
     pageBackdrop?: boolean;
+    // The customizable feed draws every text centred: its toolbar has no alignment (spec item 9).
+    centerText?: boolean;
     // A preset decides the font of text that has none of its own.
     presetMode: boolean;
     // A preset the host picked replaces every font on the page.
@@ -399,7 +401,7 @@ type TextCssOptions = {
 };
 
 export function textStyleCss(style: TextStyle, options: TextCssOptions, ctx: RenderContext): CSSProperties {
-    const align = style.align ?? 'center';
+    const align = ctx.centerText ? 'center' : (style.align ?? 'center');
     const marginTop = style.marginTop ?? options.defaultMarginTop;
     const css: CSSProperties = {
         fontFamily: resolveFont(style.font, options.role, ctx),
@@ -417,6 +419,8 @@ export function textStyleCss(style: TextStyle, options: TextCssOptions, ctx: Ren
     if (style.bold) css.fontWeight = 700;
     // Some fields are italic by default, so a host who turns italic off needs `normal`, not nothing.
     if (style.italic !== undefined) css.fontStyle = style.italic ? 'italic' : 'normal';
+    if (style.letterSpacing !== undefined) css.letterSpacing = `${style.letterSpacing}px`;
+    if (style.uppercase !== undefined) css.textTransform = style.uppercase ? 'uppercase' : 'none';
     return css;
 }
 

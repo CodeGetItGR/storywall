@@ -7,22 +7,28 @@ import { useCallback } from 'react';
 
 import { keepTextFocus, TEXT_TOOL_CLASS } from '@/components/saveMyDate/editor/text/TextToolbarButton';
 import type { TextRole } from '@/lib/invitation/textEditing';
+import { cn } from '@/lib/utils';
 
 type TextAddMenuProps = {
     disabled: boolean;
     onAdd: (role: TextRole) => void;
+    // The feed: an empty link after the text (its text and address are typed in the block's settings).
+    onAddLink?: () => void;
+    // The trigger's size, for the docked feed toolbar.
+    className?: string;
 };
 
 const SAMPLE_SIZE: Record<TextRole, string> = { title: 'text-[22px]', subtitle: 'text-[18px]', paragraph: 'text-[15px]' };
 
 // Adds a title, subtitle or paragraph to the section of the text being edited.
-export function TextAddMenu({ disabled, onAdd }: TextAddMenuProps) {
+export function TextAddMenu({ disabled, onAdd, onAddLink, className }: TextAddMenuProps) {
     const t = useTranslations('InvitationEditor');
+    const tSettings = useTranslations('InvitationEditor.sectionSettings');
 
     return (
         <Popover.Root>
             {/* Trigger */}
-            <Popover.Trigger aria-label={t('addText')} title={t('addText')} disabled={disabled} onMouseDown={keepTextFocus} className={TEXT_TOOL_CLASS}>
+            <Popover.Trigger aria-label={t('addText')} title={t('addText')} disabled={disabled} onMouseDown={keepTextFocus} className={cn(TEXT_TOOL_CLASS, className)}>
                 <Plus aria-hidden="true" />
             </Popover.Trigger>
 
@@ -33,6 +39,15 @@ export function TextAddMenu({ disabled, onAdd }: TextAddMenuProps) {
                         <AddChoice role="title" label={t('addTitle')} onAdd={onAdd} />
                         <AddChoice role="subtitle" label={t('addSubtitle')} onAdd={onAdd} />
                         <AddChoice role="paragraph" label={t('addParagraph')} onAdd={onAdd} />
+                        {/* A link: the feed only (its text and address are typed in the block's settings) */}
+                        {onAddLink && (
+                            <Popover.Close
+                                onClick={onAddLink}
+                                className="flex min-h-11 w-full items-center rounded-[10px] px-3 text-left text-[15px] underline underline-offset-4 hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+                            >
+                                {tSettings('link')}
+                            </Popover.Close>
+                        )}
                     </Popover.Popup>
                 </Popover.Positioner>
             </Popover.Portal>

@@ -277,3 +277,16 @@ describe('a feed page that draws the theme background itself', () => {
         expect(sectionBackground(coloured, 1, ctx).style.background).toBe('#112233');
     });
 });
+
+describe('feed text', () => {
+    it('is centred on the feed whatever its own alignment', () => {
+        expect(textStyleCss({ align: 'left' }, { role: 'body', contrast: 'normal' }, { ...ctx, centerText: true }).textAlign).toBe('center');
+        expect(textStyleCss({ align: 'left' }, { role: 'body', contrast: 'normal' }, ctx).textAlign).toBe('left');
+    });
+
+    it('draws letter spacing and capitals', () => {
+        const css = textStyleCss({ letterSpacing: 2, uppercase: true }, { role: 'title', contrast: 'normal' }, ctx);
+        expect(css.letterSpacing).toBe('2px');
+        expect(css.textTransform).toBe('uppercase');
+    });
+});

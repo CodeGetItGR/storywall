@@ -30,6 +30,7 @@ function toolbarState(overrides: Partial<TextToolbarState> = {}): TextToolbarSta
         setAlign: vi.fn(),
         pickColor: vi.fn(),
         add: vi.fn(),
+        applyPreset: vi.fn(),
         lock: null,
         lockHref: undefined,
         ...overrides,
