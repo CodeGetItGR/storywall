@@ -19,10 +19,12 @@ type FeedCoverBlockProps = {
     corner?: ReactNode;
     // Drawn as a small picture (the Overview's feed banner): the banner image isn't preloaded.
     thumbnail?: boolean;
+    // The Invitation | Social Feed pill sits on the cover's bottom edge: the title keeps clear of it.
+    clearPill?: boolean;
 };
 
 // The feed's cover + title block (feedCover): the banner with the session and gift buttons.
-export function FeedCoverBlock({ event, isHost, wishlist, corner, thumbnail }: FeedCoverBlockProps) {
+export function FeedCoverBlock({ event, isHost, wishlist, corner, thumbnail, clearPill }: FeedCoverBlockProps) {
     const t = useTranslations('FeedPage');
     const cover = useFeedCoverBlock(event, wishlist);
 
@@ -37,6 +39,7 @@ export function FeedCoverBlock({ event, isHost, wishlist, corner, thumbnail }: F
                 fallbackActionHref={isHost ? coverPhotoSettingsHref(event.id) : undefined}
                 fallbackActionLabel={isHost ? t('addCoverPhoto') : undefined}
                 thumbnail={thumbnail}
+                clearPill={clearPill}
                 actions={
                     <>
                         <EventSessionActionButtons event={event} />

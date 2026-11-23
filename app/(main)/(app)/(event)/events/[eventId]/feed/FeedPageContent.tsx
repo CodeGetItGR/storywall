@@ -75,6 +75,7 @@ export function FeedPageContent() {
                 event={coverEvent}
                 isHost={isHost}
                 wishlist={moduleFlags.wishlist}
+                clearPill={Boolean(modeSwitch)}
                 corner={editMode.canEdit && !editMode.editing ? <FeedEditPill ref={editPill} onClick={startEditing} /> : undefined}
             />
         ),

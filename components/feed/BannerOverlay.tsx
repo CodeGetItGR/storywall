@@ -1,8 +1,20 @@
 import type { ReactNode } from 'react';
 
 import { LightRay } from '@/components/feed/LightRay';
+import { cn } from '@/lib/utils';
 
-export function BannerOverlay({ title, actions, glowVisible }: { title: string; actions?: ReactNode; glowVisible: boolean }) {
+export function BannerOverlay({
+    title,
+    actions,
+    glowVisible,
+    clearPill = false,
+}: {
+    title: string;
+    actions?: ReactNode;
+    glowVisible: boolean;
+    // The feed's Invitation | Social Feed pill covers the cover's bottom 24 px: the title sits above it.
+    clearPill?: boolean;
+}) {
     return (
         <div className="@container absolute inset-0 overflow-hidden rounded-[1.5rem]">
             {/* Image frame */}
@@ -24,7 +36,7 @@ export function BannerOverlay({ title, actions, glowVisible }: { title: string; 
                 <div className="flex h-full flex-col items-end justify-between gap-2">{actions}</div>
             </div>
             {/* Title */}
-            <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 px-4 pt-16 pb-4">
+            <div className={cn('pointer-events-none absolute inset-x-0 bottom-0 z-10 px-4 pt-16', clearPill ? 'pb-10' : 'pb-4')}>
                 <div className="inline-flex max-w-[calc(100%-4rem)] px-1">
                     <h1 className="alegreya-light text-2xl text-white drop-shadow-[0_1px_10px_rgba(0,0,0,0.32)]">{title}</h1>
                 </div>
