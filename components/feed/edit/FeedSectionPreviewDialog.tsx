@@ -21,7 +21,8 @@ export function FeedSectionPreviewDialog({ preview, name, ctx, lang, onClose }: 
 
                 {/* Preview */}
                 {preview && (
-                    <div className="max-h-[60vh] overflow-hidden rounded-xl bg-surface-muted">
+                    // As tall as the section, up to 60% of the screen; a taller one scrolls.
+                    <div className="max-h-[60vh] overflow-y-auto overscroll-contain rounded-xl bg-surface-muted">
                         <FeedSectionPreviewPicture preview={preview} ctx={ctx} lang={lang} />
                     </div>
                 )}

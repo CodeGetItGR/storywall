@@ -15,8 +15,10 @@ import { cn } from '@/lib/utils';
 
 type FeedPremiumTilesProps = { tiles: PremiumTile[]; eventId: string; eventType: EventTypeConvention; onAdd: (module: TileModuleKey) => void };
 
+// On a phone a tile is about 70 px wide: the label is a size smaller with little side padding, so names like "Λογαριασμός"
+// fit whole. A longer name wraps inside the tile, hyphenated where the browser can.
 const TILE =
-    'flex min-h-20 w-full flex-col items-center justify-center gap-1.5 rounded-xl bg-surface-muted px-1 text-center text-[12px] leading-tight text-ink hover:bg-border focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none';
+    'flex min-h-20 w-full flex-col items-center justify-center gap-1.5 rounded-xl bg-surface-muted px-0.5 text-center text-[10.5px] leading-tight text-ink hyphens-auto [overflow-wrap:anywhere] hover:bg-border focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none sm:px-1 sm:text-[12px]';
 
 // The Add section sheet's Premium tiles (spec item 15): one row of four, the down arrow shows the rest. A tile adds
 // its module's block, or opens the add-on's purchase.
@@ -31,7 +33,7 @@ export function FeedPremiumTiles({ tiles, eventId, eventType, onAdd }: FeedPremi
     return (
         <div className="flex flex-col items-center gap-2">
             {/* Tiles */}
-            <ul className="grid w-full grid-cols-4 gap-2">
+            <ul className="grid w-full grid-cols-4 gap-1.5 sm:gap-2">
                 {shown.map((tile) => (
                     <li key={tile.module}>
                         <PremiumTileButton tile={tile} name={copy(tile.module).name} eventId={eventId} onAdd={onAdd} />
