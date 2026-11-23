@@ -356,6 +356,9 @@ function sectionSchemaFor<T extends SectionType>(type: T) {
             // theme that has one shows it again; showing it by hand clears the mark.
             hiddenByTheme: z.literal(true).optional(),
             locked: z.boolean(),
+            // The customizable feed: signed-out visitors see a lock in its place, and the public read sends a stub
+            // (guestwall-be FeedLayoutRules.forPublic). Never on the feed's cover, details or RSVP.
+            membersOnly: z.boolean().optional(),
             data: SECTION_DATA_SCHEMAS[type],
             textStyles: z.record(z.string().max(200), textStyleSchema),
             elements: z.array(elementSchema).max(100),
