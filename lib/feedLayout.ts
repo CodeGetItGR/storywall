@@ -88,13 +88,6 @@ export function feedFrame(layout: InvitationDocument, { ended }: { ended: boolea
     };
 }
 
-// The middle folds into one Invitation row once it holds this many blocks that draw something.
-export const FOLD_MIN_BLOCKS = 2;
-
-export function foldsMiddle(drawnBlocks: number): boolean {
-    return drawnBlocks >= FOLD_MIN_BLOCKS;
-}
-
 // A feed block draws inside the invitation section shell (background, effect, transition) on a
 // Save my date theme, or once the host styled it.
 export function shellsFeedBlock(themeId: string, section: InvitationSection): boolean {

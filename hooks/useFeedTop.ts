@@ -5,11 +5,10 @@ import { useMemo } from 'react';
 
 import { useInvitationFonts } from '@/hooks/useAdminInvitationThemes';
 import { useFeedLayout } from '@/hooks/useFeedLayout';
-import { useInvitationFold } from '@/hooks/useInvitationFold';
 import type { EventDetailResponseDto } from '@/lib/api/types';
 import { isEventEnded } from '@/lib/eventLifecycle';
 import { feedEditFrame } from '@/lib/feedEditing';
-import { type FeedFrame, feedFrame, foldsMiddle, usesInvitationLook } from '@/lib/feedLayout';
+import { type FeedFrame, feedFrame, usesInvitationLook } from '@/lib/feedLayout';
 import { type FeedPageBackdrop, feedPageBackdrop } from '@/lib/feedPageBackdrop';
 import type { InvitationDocument } from '@/lib/invitation/document';
 import { isEmptyForGuests } from '@/lib/invitation/gallery';
@@ -31,10 +30,7 @@ export type FeedTopView = {
     sections: InvitationSection[];
     // The middle holds only blocks that draw something.
     frame: FeedFrame;
-    folds: boolean;
-    open: boolean;
-    toggle: () => void;
-    // Something shows between stories and RSVP besides a closed Invitation row.
+    // Something shows between the cover and RSVP.
     drawsMiddle: boolean;
     // The feed's own background colour (overrides.backgroundColor), as picked; null without one.
     pageBackground: string | null;
@@ -47,7 +43,7 @@ export type FeedTopView = {
 export type FeedTopEditing = { document: InvitationDocument; theme: ThemeDesign; media: MediaResolver };
 
 // Everything the top of the feed draws, from the saved layout or the default one. While editing,
-// it draws the edit session: every block, hidden ones too, never folded, in the held theme.
+// it draws the edit session: every block, hidden ones too, in the held theme.
 export function useFeedTop(event: EventDetailResponseDto, editing?: FeedTopEditing): FeedTopView {
     const enabled = useFeedEditorEnabled();
     const locale = useLocale();
@@ -59,7 +55,6 @@ export function useFeedTop(event: EventDetailResponseDto, editing?: FeedTopEditi
     const look = usesInvitationLook(document);
     // The font files list is public (the published invitation reads it too).
     const fonts = useInvitationFonts(enabled && look);
-    const fold = useInvitationFold();
     const ended = isEventEnded(event);
 
     const backdrop = useMemo(() => feedPageBackdrop(document, theme, media), [document, theme, media]);
@@ -81,8 +76,6 @@ export function useFeedTop(event: EventDetailResponseDto, editing?: FeedTopEditi
         return { ...split, middle: split.middle.filter(draws) };
     }, [editingDocument, document, ended, event.description, ctx]);
 
-    const folds = !editingDocument && foldsMiddle(frame.middle.length);
-
     return {
         look,
         lang: locale,
@@ -91,10 +84,7 @@ export function useFeedTop(event: EventDetailResponseDto, editing?: FeedTopEditi
         themeId: document.themeId,
         sections: document.sections,
         frame,
-        folds,
-        open: fold.open,
-        toggle: fold.toggle,
-        drawsMiddle: frame.middle.length > 0 && (!folds || fold.open),
+        drawsMiddle: frame.middle.length > 0,
         pageBackground: document.overrides.backgroundColor ?? null,
         backdrop,
     };

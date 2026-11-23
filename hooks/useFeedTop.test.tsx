@@ -45,7 +45,6 @@ describe('useFeedTop while editing', () => {
         const { result } = renderHook(() => useFeedTop(event, { document: editing, theme, media }), { wrapper });
         expect(result.current.frame.middle.map((section) => section.id)).toEqual(['feed-feedDescription', 'dress']);
         expect(result.current.frame.rsvp?.type).toBe('feedRsvp');
-        expect(result.current.folds).toBe(false);
         expect(result.current.look).toBe(true);
         expect(result.current.sections).toBe(editing.sections);
     });

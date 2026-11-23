@@ -4,7 +4,6 @@ import type { FeedLayoutDto } from '@/lib/api/types';
 import {
     defaultFeedLayout,
     feedFrame,
-    foldsMiddle,
     readFeedLayout,
     shellsFeedBlock,
     usesInvitationLook,
@@ -56,14 +55,6 @@ describe('feedFrame', () => {
         const frame = feedFrame(layoutWith(dressCode), { ended: true });
         expect(frame.middle).toEqual([]);
         expect(frame.rsvp).toBeNull();
-    });
-});
-
-describe('foldsMiddle', () => {
-    it('folds two or more blocks, never a lone one', () => {
-        expect(foldsMiddle(0)).toBe(false);
-        expect(foldsMiddle(1)).toBe(false);
-        expect(foldsMiddle(2)).toBe(true);
     });
 });
 

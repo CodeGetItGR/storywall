@@ -1,13 +1,15 @@
 import { Fragment, type ReactNode } from 'react';
 
-import { InvitationFoldRow } from '@/components/feed/layout/InvitationFoldRow';
 import type { FeedTopView } from '@/hooks/useFeedTop';
+import type { FeedPageMode } from '@/lib/feedMode';
 import type { InvitationSection } from '@/lib/invitation/sections';
-
-const MIDDLE_ID = 'feed-invitation';
 
 export type FeedTopProps = {
     view: FeedTopView;
+    // Which mode is on screen; 'single' (no Save my date) is the one page with everything.
+    mode?: FeedPageMode;
+    // The Invitation | Feed pill, under the cover.
+    modeSwitch?: ReactNode;
     cover: ReactNode;
     stories: ReactNode;
     description: ReactNode;
@@ -21,7 +23,7 @@ export type FeedTopProps = {
 export type FeedTopParts = {
     // One of the feed's own blocks.
     block: (section: InvitationSection, content: ReactNode) => ReactNode;
-    // Today's markup that is not a block: stories and the Invitation row.
+    // Today's markup that is not a block: stories and the switch.
     native: (content: ReactNode) => ReactNode;
     // A Save my date block.
     invitation: (section: InvitationSection) => ReactNode;
@@ -34,10 +36,11 @@ export const PLAIN_PARTS: FeedTopParts = {
     invitation: () => null,
 };
 
-// The top of the feed in its fixed frame: cover, stories, the host's middle blocks
-// (folded for returning members once there are two or more), RSVP.
-export function FeedTopFrame({ view, cover, stories, description, rsvp, afterMiddle, parts }: FeedTopProps & { parts: FeedTopParts }) {
+// The top of the feed in its fixed frame. Invitation: cover, switch, the host's middle blocks, RSVP.
+// Feed: cover, switch, stories (posts follow on the page). One page: everything, nothing folded.
+export function FeedTopFrame({ view, mode = 'single', modeSwitch, cover, stories, description, rsvp, afterMiddle, parts }: FeedTopProps & { parts: FeedTopParts }) {
     const { frame } = view;
+    const invitation = mode !== 'feed';
     const middle = frame.middle.map((section) =>
         section.type === 'feedDescription' ? parts.block(section, description) : parts.invitation(section),
     );
@@ -47,17 +50,18 @@ export function FeedTopFrame({ view, cover, stories, description, rsvp, afterMid
             {/* Cover */}
             {parts.block(frame.cover, cover)}
 
-            {/* Stories */}
-            {stories && parts.native(stories)}
+            {/* Invitation | Feed switch */}
+            {modeSwitch && parts.native(modeSwitch)}
 
-            {/* Invitation */}
-            {view.folds && parts.native(<InvitationFoldRow open={view.open} onToggle={view.toggle} controls={MIDDLE_ID} />)}
-            {view.folds && view.open && <div id={MIDDLE_ID}>{middle}</div>}
-            {!view.folds && middle}
-            {afterMiddle}
+            {/* Stories */}
+            {mode !== 'invitation' && stories && parts.native(stories)}
+
+            {/* Invitation sections */}
+            {invitation && middle}
+            {invitation && afterMiddle}
 
             {/* RSVP */}
-            {frame.rsvp && rsvp && parts.block(frame.rsvp, rsvp)}
+            {invitation && frame.rsvp && rsvp && parts.block(frame.rsvp, rsvp)}
         </>
     );
 }
