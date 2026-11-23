@@ -4,6 +4,7 @@ import { type ChangeEvent, useCallback, useMemo } from 'react';
 
 import type { InlineTextEdit } from '@/hooks/useInlineTextEdit';
 import { useShownTextStyle } from '@/hooks/useShownTextStyle';
+import type { TextStylePresetDto } from '@/lib/api/types';
 import type { InvitationDocument } from '@/lib/invitation/document';
 import type { EventFieldLinks } from '@/lib/invitation/eventData';
 import type { TextStyle } from '@/lib/invitation/primitives';
@@ -18,6 +19,7 @@ import {
 } from '@/lib/invitation/textEditing';
 import type { ThemeDesign } from '@/lib/invitation/theme';
 import type { InvitationFontDto } from '@/lib/invitation/uploadedFonts';
+import { presetStyle } from '@/lib/textStylePresets';
 
 type Align = NonNullable<TextStyle['align']>;
 
@@ -53,6 +55,8 @@ export function useTextToolbar(
     const setAlign = useCallback((align: Align) => setStyle({ align }), [setStyle]);
     const pickColor = useCallback((color: string, scope: ColorScope) => applyColor(color, scope), [applyColor]);
     const add = useCallback((role: TextRole) => addText(role), [addText]);
+    // A Style preset restyles the text being edited; its colour stays (lib/textStylePresets).
+    const applyPreset = useCallback((preset: TextStylePresetDto) => setStyle(presetStyle(preset)), [setStyle]);
     // The event fills the text's words (KAN-84): the toolbar says where to change them.
     const lockHref = lock ? fieldLinks?.[lock] : undefined;
 
@@ -76,6 +80,7 @@ export function useTextToolbar(
         setAlign,
         pickColor,
         add,
+        applyPreset,
         lock,
         lockHref,
     };

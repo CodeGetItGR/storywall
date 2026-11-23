@@ -33,6 +33,7 @@ import { useFeedEditSession } from '@/hooks/useFeedEditSession';
 import { useFeedEditThemeGrid } from '@/hooks/useFeedEditThemeGrid';
 import { useEditPageTheme } from '@/hooks/useFeedPageTheme';
 import { useFeedSectionPreviews } from '@/hooks/useFeedSectionPreviews';
+import { useFeedTextPresets } from '@/hooks/useFeedTextPresets';
 import { useFeedTop } from '@/hooks/useFeedTop';
 import { useFeedUploadedMedia } from '@/hooks/useFeedUploadedMedia';
 import { useSectionDrag } from '@/hooks/useSectionDrag';
@@ -63,6 +64,7 @@ export function FeedEditTop({ event, onDone, cancelRef, mode, modeSwitch, dateRo
     const view = useFeedTop(event, { document: session.document, theme: session.theme, media: uploads.media });
     useEditPageTheme(event.id, session.wallTheme, session.background, view.backdrop);
     const fonts = useInvitationFonts(true);
+    const textPresets = useFeedTextPresets(fonts.data);
     const hostOptions = useMemo(() => ({ rsvpMoves: view.rsvpMoves }), [view.rsvpMoves]);
     const actions = useFeedBlockActions(session.store, session.document, event, hostOptions);
     const sectionPreviews = useFeedSectionPreviews({
@@ -170,7 +172,18 @@ export function FeedEditTop({ event, onDone, cancelRef, mode, modeSwitch, dateRo
     );
 
     return (
-        <InlineTextEditing store={session.store} document={session.document} theme={session.theme} uploadedFonts={fonts.data}>
+        <InlineTextEditing
+            store={session.store}
+            document={session.document}
+            theme={session.theme}
+            uploadedFonts={fonts.data}
+            variant="feed"
+            presets={textPresets.presets}
+            onLinkAdded={panels.openSettings}
+        >
+            {/* The uploaded fonts the Style presets name */}
+            {textPresets.fontFaces && <style>{textPresets.fontFaces}</style>}
+
             {/* Blocks */}
             <DndContext
                 sensors={drag.sensors}
