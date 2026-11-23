@@ -8,8 +8,12 @@ export type FeedTopProps = {
     view: FeedTopView;
     // Which mode is on screen; 'single' (no Save my date) is the one page with everything.
     mode?: FeedPageMode;
-    // The Invitation | Feed pill, under the cover.
+    // The Invitation | Social Feed pill, under the cover.
     modeSwitch?: ReactNode;
+    // Edit mode's Theme, Cancel and Save, under the cover (and under the pill when it shows).
+    editRow?: ReactNode;
+    // Social Feed mode's date + place row, under the pill.
+    dateRow?: ReactNode;
     cover: ReactNode;
     stories: ReactNode;
     description: ReactNode;
@@ -36,9 +40,22 @@ export const PLAIN_PARTS: FeedTopParts = {
     invitation: () => null,
 };
 
-// The top of the feed in its fixed frame. Invitation: cover, switch, the host's middle blocks, RSVP.
-// Feed: cover, switch, stories (posts follow on the page). One page: everything, nothing folded.
-export function FeedTopFrame({ view, mode = 'single', modeSwitch, cover, stories, description, rsvp, afterMiddle, parts }: FeedTopProps & { parts: FeedTopParts }) {
+// The top of the feed in its fixed frame. Invitation: cover, switch, the host's blocks (RSVP among them on Save my
+// date), RSVP last otherwise. Social Feed: cover, switch, the date row, stories (posts follow on the page). One page:
+// everything, nothing folded. Edit mode's row sits under the switch, or under the cover without one.
+export function FeedTopFrame({
+    view,
+    mode = 'single',
+    modeSwitch,
+    editRow,
+    dateRow,
+    cover,
+    stories,
+    description,
+    rsvp,
+    afterMiddle,
+    parts,
+}: FeedTopProps & { parts: FeedTopParts }) {
     const { frame } = view;
     const invitation = mode !== 'feed';
     const middle = frame.middle.map((section) =>
@@ -50,8 +67,14 @@ export function FeedTopFrame({ view, mode = 'single', modeSwitch, cover, stories
             {/* Cover */}
             {parts.block(frame.cover, cover)}
 
-            {/* Invitation | Feed switch */}
+            {/* Invitation | Social Feed switch */}
             {modeSwitch && parts.native(modeSwitch)}
+
+            {/* Theme, Cancel and Save */}
+            {editRow && parts.native(editRow)}
+
+            {/* Date and place */}
+            {mode === 'feed' && dateRow && parts.native(dateRow)}
 
             {/* Stories */}
             {mode !== 'invitation' && stories && parts.native(stories)}

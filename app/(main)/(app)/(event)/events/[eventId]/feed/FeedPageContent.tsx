@@ -6,6 +6,7 @@ import { ComposerCard } from '@/components/feed/ComposerCard';
 import { FeedEditPill } from '@/components/feed/edit/FeedEditPill';
 import { LazyFeedEditTop } from '@/components/feed/edit/LazyFeedEditTop';
 import { EventDescription } from '@/components/feed/EventDescription';
+import { EventInfoSection } from '@/components/feed/EventInfoSection';
 import { FeedEmptyState } from '@/components/feed/FeedEmptyState';
 import { FeedPageSkeleton } from '@/components/feed/FeedPageSkeleton';
 import { FeedPostRenderer } from '@/components/feed/FeedPostRenderer';
@@ -35,7 +36,7 @@ import { useFeedPageTheme } from '@/hooks/useFeedPageTheme';
 import { useFeedTop } from '@/hooks/useFeedTop';
 import { useHideMobileTabBarOnScroll } from '@/hooks/useHideMobileTabBarOnScroll';
 import { useRsvpPromptVisible } from '@/hooks/useRsvpPromptVisible';
-import type { FeedPageMode } from '@/lib/feedMode';
+import { feedPlaceHref, type FeedPageMode } from '@/lib/feedMode';
 import { cn } from '@/lib/utils';
 
 import { useFeedPage } from './FeedPageContext';
@@ -77,6 +78,8 @@ export function FeedPageContent() {
                 corner={editMode.canEdit && !editMode.editing ? <FeedEditPill ref={editPill} onClick={startEditing} /> : undefined}
             />
         ),
+        // Social Feed mode only (FeedTopFrame); signed-out visitors get it under the cover (KAN-246).
+        dateRow: <EventInfoSection event={event} placeHref={feedPlaceHref(event)} className="mt-3 w-full px-4" />,
         stories: moduleFlags.stories && (
             // On a Save my date theme the row sits on the page's own background: inside the scope that draws
             // the backdrop, so it follows a theme held in edit mode too.

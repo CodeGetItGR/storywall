@@ -62,6 +62,7 @@ vi.mock('@/components/feed/EventDescription', () => ({
 }));
 vi.mock('@/components/feed/EventSessionActionButtons', () => ({ EventSessionActionButtons: () => null }));
 vi.mock('@/components/feed/FeedEmptyState', () => ({ FeedEmptyState: () => null }));
+vi.mock('@/components/feed/EventInfoSection', () => ({ EventInfoSection: () => <div data-testid="date-row" /> }));
 vi.mock('@/components/feed/FeedPageSkeleton', () => ({ FeedPageSkeleton: () => <div data-testid="skeleton" /> }));
 vi.mock('@/components/feed/FeedPostRenderer', () => ({ FeedPostRenderer: () => null }));
 vi.mock('@/components/feed/Header', () => ({ Header: () => null }));
@@ -236,6 +237,19 @@ describe('FeedPageContent layout', { timeout: 15_000 }, () => {
         fireEvent.click(await screen.findByRole('button', { name: 'socialFeed' }, LAZY_LOOK));
         expect(screen.getByRole('button', { name: 'socialFeed' }).getAttribute('aria-pressed')).toBe('true');
         expect(window.localStorage.getItem('storywall.feedMode.e-1')).toContain('"mode":"feed"');
+    });
+
+    it('shows the date row in Social Feed mode only', async () => {
+        renderFeed(null, { flag: true, layout: savedLayout(dressCode), modules: SMD, startAt: '2020-06-01T15:00:00Z' });
+        expect(await screen.findByTestId('date-row', {}, LAZY_LOOK)).toBeTruthy();
+        fireEvent.click(screen.getByRole('button', { name: 'invitation' }));
+        expect(screen.queryByTestId('date-row')).toBeNull();
+    });
+
+    it('has no date row on the one page', () => {
+        renderFeed(null, { description: 'Hello', flag: true, layout: savedLayout(dressCode), stories: true });
+        expect(document.querySelector('#stories')).toBeTruthy();
+        expect(screen.queryByTestId('date-row')).toBeNull();
     });
 
     it('draws one page without Save my date: no switch, nothing folded', () => {

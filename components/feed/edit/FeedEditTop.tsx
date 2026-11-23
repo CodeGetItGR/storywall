@@ -50,7 +50,7 @@ const nameKey = (type: SectionType) => `sectionNames.${type}` as FeedNameKey;
 
 // The top of the feed in edit mode: the same frame as the feed, every block with its tools, Save my date
 // text typed in place, the Add section row closing the middle, and the Theme sheet. All held until Save.
-export function FeedEditTop({ event, onDone, cancelRef, mode, modeSwitch, cover, stories, description, rsvp }: FeedEditTopProps) {
+export function FeedEditTop({ event, onDone, cancelRef, mode, modeSwitch, dateRow, cover, stories, description, rsvp }: FeedEditTopProps) {
     const t = useTranslations('InvitationEditor');
     const session = useFeedEditSession(event, onDone);
     const view = useFeedTop(event, { document: session.document, theme: session.theme, media: session.media });
@@ -126,6 +126,7 @@ export function FeedEditTop({ event, onDone, cancelRef, mode, modeSwitch, cover,
             view={view}
             mode={mode}
             modeSwitch={modeSwitch}
+            dateRow={dateRow}
             parts={parts}
             cover={cover}
             stories={stories}

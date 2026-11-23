@@ -23,21 +23,23 @@ function renderFrame(mode: FeedPageMode) {
             description={<span>description</span>}
             rsvp={<span>rsvp</span>}
             afterMiddle={<span>add</span>}
+            editRow={<span>edit row</span>}
+            dateRow={<span>date</span>}
         />,
     );
-    return ['cover', 'pill', 'stories', 'description', 'add', 'rsvp'].filter((text) => screen.queryByText(text));
+    return ['cover', 'pill', 'edit row', 'date', 'stories', 'description', 'add', 'rsvp'].filter((text) => screen.queryByText(text));
 }
 
 describe('FeedTopFrame', () => {
-    it('draws the invitation: cover, switch, the middle and RSVP, without stories', () => {
-        expect(renderFrame('invitation')).toEqual(['cover', 'pill', 'description', 'add', 'rsvp']);
+    it('draws the invitation: cover, switch, edit row, the middle and RSVP, without stories or the date row', () => {
+        expect(renderFrame('invitation')).toEqual(['cover', 'pill', 'edit row', 'description', 'add', 'rsvp']);
     });
 
-    it('draws the feed: cover, switch and stories', () => {
-        expect(renderFrame('feed')).toEqual(['cover', 'pill', 'stories']);
+    it('draws the feed: cover, switch, edit row, the date row and stories', () => {
+        expect(renderFrame('feed')).toEqual(['cover', 'pill', 'edit row', 'date', 'stories']);
     });
 
-    it("draws one page without the switch, in today's order, nothing folded", () => {
-        expect(renderFrame('single')).toEqual(['cover', 'stories', 'description', 'add', 'rsvp']);
+    it("draws one page without the switch or the date row, in today's order, nothing folded", () => {
+        expect(renderFrame('single')).toEqual(['cover', 'edit row', 'stories', 'description', 'add', 'rsvp']);
     });
 });

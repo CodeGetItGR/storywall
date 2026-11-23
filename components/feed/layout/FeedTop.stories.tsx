@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 
+import { EventInfo } from '@/components/feed/EventInfo';
 import { FeedLookTop } from '@/components/feed/layout/FeedLookTop';
 import { FeedModeSwitch } from '@/components/feed/layout/FeedModeSwitch';
 import { FeedTop } from '@/components/feed/layout/FeedTop';
@@ -45,6 +46,8 @@ function TopStory({ extra, ended = false, styledDetails = false, mode = 'single'
             view={view}
             mode={mode}
             modeSwitch={mode === 'single' ? undefined : <FeedModeSwitch mode={mode} onSelect={() => undefined} />}
+            // The pure row, with no calendar sheet; the frame draws it in Social Feed mode only.
+            dateRow={<EventInfo date={Date.UTC(2026, 11, 30)} place="Rhodes" className="mt-3 w-full px-4" />}
             cover={<Box label="Cover + title" />}
             stories={<Box label="Stories" />}
             description={<Box label="Description" />}
