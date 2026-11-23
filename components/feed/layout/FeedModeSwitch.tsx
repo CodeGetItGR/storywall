@@ -9,13 +9,13 @@ import { cn } from '@/lib/utils';
 
 type FeedModeSwitchProps = { mode: FeedMode; onSelect: (mode: FeedMode) => void; className?: string };
 
-// label: the half's FeedLayout key. Feed mode's half reads Posts.
-const HALVES: readonly { mode: FeedMode; label: 'invitation' | 'posts'; Icon: LucideIcon }[] = [
+// label: the half's FeedLayout key. Feed mode's half reads Social Feed; the mode stays 'feed'.
+const HALVES: readonly { mode: FeedMode; label: 'invitation' | 'socialFeed'; Icon: LucideIcon }[] = [
     { mode: 'invitation', label: 'invitation', Icon: Mail },
-    { mode: 'feed', label: 'posts', Icon: Images },
+    { mode: 'feed', label: 'socialFeed', Icon: Images },
 ];
 
-// The Invitation | Posts pill (look A1): two halves with an icon each, a coral thumb under the chosen one.
+// The Invitation | Social Feed pill (look A1): two halves with an icon each, a coral thumb under the chosen one.
 export function FeedModeSwitch({ mode, onSelect, className }: FeedModeSwitchProps) {
     return (
         <div className={cn('relative inline-grid grid-cols-2 rounded-full bg-white p-1 font-sans shadow-[0_6px_20px_rgba(0,0,0,0.14)]', className)}>
@@ -37,7 +37,7 @@ export function FeedModeSwitch({ mode, onSelect, className }: FeedModeSwitchProp
     );
 }
 
-type FeedModeHalfProps = { mode: FeedMode; label: 'invitation' | 'posts'; Icon: LucideIcon; pressed: boolean; onSelect: (mode: FeedMode) => void };
+type FeedModeHalfProps = { mode: FeedMode; label: 'invitation' | 'socialFeed'; Icon: LucideIcon; pressed: boolean; onSelect: (mode: FeedMode) => void };
 
 function FeedModeHalf({ mode, label, Icon, pressed, onSelect }: FeedModeHalfProps) {
     const t = useTranslations('FeedLayout');

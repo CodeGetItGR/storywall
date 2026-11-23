@@ -6675,7 +6675,7 @@
     },
     "FeedLayout": {
         "invitation": "Invitation",
-        "posts": "Posts",
+        "socialFeed": "Social Feed",
         "membersOnly": "Members only",
         "locked": {
             "join": "Sign in and join the event",
@@ -6693,7 +6693,8 @@
             "unlock": "Unlock"
         },
         "edit": "Edit",
-        "saveFailed": "Couldn't save your changes. Please try again."
+        "saveFailed": "Couldn't save your changes. Please try again.",
+        "themes": "Themes"
     },
     "FeedQuickActions": {
         "invitation": "Invitation",

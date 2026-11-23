@@ -223,8 +223,8 @@ describe('FeedPageContent layout', { timeout: 15_000 }, () => {
             startAt: '2020-06-01T15:00:00Z',
             stories: true,
         });
-        expect(await screen.findByRole('button', { name: 'posts' }, LAZY_LOOK)).toBeTruthy();
-        expect(screen.getByRole('button', { name: 'posts' }).getAttribute('aria-pressed')).toBe('true');
+        expect(await screen.findByRole('button', { name: 'socialFeed' }, LAZY_LOOK)).toBeTruthy();
+        expect(screen.getByRole('button', { name: 'socialFeed' }).getAttribute('aria-pressed')).toBe('true');
         expect(document.querySelector('#stories')).toBeTruthy();
         expect(document.querySelector('#posts')).toBeTruthy();
         expect(screen.queryByTestId('description')).toBeNull();
@@ -233,8 +233,8 @@ describe('FeedPageContent layout', { timeout: 15_000 }, () => {
 
     it('switches modes from the pill and remembers the pick', async () => {
         renderFeed(null, { description: 'Hello', flag: true, layout: savedLayout(dressCode), modules: SMD, startAt: '2099-06-01T15:00:00Z' });
-        fireEvent.click(await screen.findByRole('button', { name: 'posts' }, LAZY_LOOK));
-        expect(screen.getByRole('button', { name: 'posts' }).getAttribute('aria-pressed')).toBe('true');
+        fireEvent.click(await screen.findByRole('button', { name: 'socialFeed' }, LAZY_LOOK));
+        expect(screen.getByRole('button', { name: 'socialFeed' }).getAttribute('aria-pressed')).toBe('true');
         expect(window.localStorage.getItem('storywall.feedMode.e-1')).toContain('"mode":"feed"');
     });
 
@@ -279,7 +279,7 @@ describe('FeedPageContent edit mode', { timeout: 15_000 }, () => {
         fireEvent.click(await screen.findByRole('button', { name: 'edit' }, LAZY_LOOK));
         const rsvp = await screen.findByRole('group', { name: 'sectionNames.feedRsvp' }, LAZY_LOOK);
         fireEvent.click(within(rsvp).getByRole('button', { name: 'hide' }));
-        fireEvent.click(screen.getAllByRole('button', { name: 'posts' })[0]);
+        fireEvent.click(screen.getAllByRole('button', { name: 'socialFeed' })[0]);
         expect(screen.queryByRole('group', { name: 'sectionNames.feedRsvp' })).toBeNull();
         fireEvent.click(screen.getAllByRole('button', { name: 'invitation' })[0]);
         expect(within(await screen.findByRole('group', { name: 'sectionNames.feedRsvp' })).getByRole('button', { name: 'show' })).toBeTruthy();

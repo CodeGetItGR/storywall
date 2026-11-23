@@ -26,13 +26,13 @@ type Story = StoryObj<typeof meta>;
 
 export const Invitation: Story = {};
 
-export const Posts: Story = { args: { start: 'feed' } };
+export const SocialFeed: Story = { args: { start: 'feed' } };
 
 // The thumb slides to the tapped half.
 export const Switching: Story = {
     play: async ({ canvasElement, globals }) => {
         const canvas = within(canvasElement);
-        const feed = canvas.getByRole('button', { name: copyFor(globals).FeedLayout.posts });
+        const feed = canvas.getByRole('button', { name: copyFor(globals).FeedLayout.socialFeed });
         await userEvent.click(feed);
         await expect(feed).toHaveAttribute('aria-pressed', 'true');
     },

@@ -4,6 +4,7 @@ import { NextIntlClientProvider } from 'next-intl';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { FeedModeSwitch } from '@/components/feed/layout/FeedModeSwitch';
+import el from '@/messages/el.json';
 import en from '@/messages/en.json';
 
 afterEach(cleanup);
@@ -21,13 +22,21 @@ describe('FeedModeSwitch', () => {
     it('shows both halves, the chosen one pressed, with the thumb under it', () => {
         renderSwitch('feed');
         expect(screen.getByRole('button', { name: en.FeedLayout.invitation }).getAttribute('aria-pressed')).toBe('false');
-        expect(screen.getByRole('button', { name: en.FeedLayout.posts }).getAttribute('aria-pressed')).toBe('true');
+        expect(screen.getByRole('button', { name: en.FeedLayout.socialFeed }).getAttribute('aria-pressed')).toBe('true');
         expect(document.querySelector('[data-feed-mode-thumb]')?.className).toContain('translate-x-full');
     });
 
     it('picks a mode', async () => {
         const onSelect = renderSwitch('invitation');
-        await userEvent.click(screen.getByRole('button', { name: en.FeedLayout.posts }));
+        await userEvent.click(screen.getByRole('button', { name: en.FeedLayout.socialFeed }));
         expect(onSelect).toHaveBeenCalledExactlyOnceWith('feed');
+    });
+
+    it('names the second half Social Feed, in both languages', () => {
+        expect(en.FeedLayout.socialFeed).toBe('Social Feed');
+        expect(el.FeedLayout.socialFeed).toBe('Social Feed');
+        expect('posts' in en.FeedLayout).toBe(false);
+        expect(en.FeedEditor.themes).toBe('Themes');
+        expect(el.FeedEditor.themes).toBe('Θέματα');
     });
 });
