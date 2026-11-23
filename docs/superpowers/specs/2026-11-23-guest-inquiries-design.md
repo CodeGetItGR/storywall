@@ -87,8 +87,8 @@ inquiry: { canAsk: boolean; sentAt: string | null }   // absent when not askable
 
 Errors (`ProblemDetail` with a `code`):
 
+- **403 `NOT_EVENT_MEMBER`:** not a member of the event, the same answer as the vendor list.
 - **404:**
-  - not a member
   - vendor or card not found, or not askable: not a partner, the card isn't showing, or the caller is that partner
   - not a partner (list); inquiry not theirs (PATCH)
 - **409 `INQUIRY_ALREADY_SENT`:** this guest already asked this partner on this event.

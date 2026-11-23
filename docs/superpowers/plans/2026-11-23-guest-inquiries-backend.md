@@ -35,7 +35,7 @@ git switch -c claude/kan-20-guest-inquiries origin/staging
 - [ ] Find the next free numbers, because other branches may have taken the ones below:
 
 ```bash
-git ls-tree --name-only origin/staging src/main/resources/db/migration/ | sort -V | tail -1   # expect V231 → use V232
+git ls-tree --name-only origin/staging src/main/resources/db/migration/ | sort -V | tail -1   # expect V232 → use V233
 grep -oE "\((3[0-9]{3})\)" src/main/java/event_social_media/exception/ErrorCode.java | sort | tail -1  # expect (3134) → use 3135..3137
 grep -oE "\((5[0-9]{3})\)" src/main/java/event_social_media/exception/ErrorCode.java | sort | tail -1  # expect (5227) → use 5228
 ```
@@ -48,7 +48,7 @@ If any number is taken, use the next free one everywhere in this plan **and** in
 
 | File | Responsibility |
 |---|---|
-| `src/main/resources/db/migration/V232__guest_inquiries.sql` | Table, checks, indexes |
+| `src/main/resources/db/migration/V233__guest_inquiries.sql` | Table, checks, indexes |
 | `model/vendor/GuestInquiry.java`, `GuestInquiryStatus.java`, `GuestInquirySource.java` | Entity and enums |
 | `repository/vendor/GuestInquiryRepository.java` | Queries |
 | `dto/vendor/GuestInquiryRequestDto.java`, `GuestInquirySentDto.java`, `GuestInquiryDto.java`, `GuestInquiryPatchDto.java`, `InquiryStateDto.java` | API shapes |
@@ -73,7 +73,7 @@ All Java paths below are under `src/main/java/event_social_media/` or `src/test/
 ### Task 1: Migration and entity
 
 **Files:**
-- Create: `src/main/resources/db/migration/V232__guest_inquiries.sql`
+- Create: `src/main/resources/db/migration/V233__guest_inquiries.sql`
 - Create: `model/vendor/GuestInquiry.java`, `model/vendor/GuestInquiryStatus.java`, `model/vendor/GuestInquirySource.java`
 - Create: `repository/vendor/GuestInquiryRepository.java`
 - Test: `src/test/java/event_social_media/migration/GuestInquiriesMigrationTest.java`
@@ -108,7 +108,7 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-/** V232: guest_inquiries against real Postgres; ddl-auto=validate checks the entity against the table. */
+/** V233: guest_inquiries against real Postgres; ddl-auto=validate checks the entity against the table. */
 @SpringBootTest(properties = {
         "spring.flyway.enabled=true",
         "spring.jpa.hibernate.ddl-auto=validate",
@@ -178,7 +178,7 @@ Expected: compilation failure, `cannot find symbol GuestInquiry`.
 
 - [ ] **Step 3: Write the migration**
 
-`src/main/resources/db/migration/V232__guest_inquiries.sql`:
+`src/main/resources/db/migration/V233__guest_inquiries.sql`:
 
 ```sql
 -- A guest's question to a partner about a date (KAN-20). Belongs to the partner (collaborators),
@@ -365,7 +365,7 @@ Expected: 3 tests PASS. Docker must be running for Testcontainers; if it isn't, 
 - [ ] **Step 6: Commit**
 
 ```bash
-git add src/main/resources/db/migration/V232__guest_inquiries.sql src/main/java/event_social_media/model/vendor/GuestInquiry*.java src/main/java/event_social_media/repository/vendor/GuestInquiryRepository.java src/test/java/event_social_media/migration/GuestInquiriesMigrationTest.java
+git add src/main/resources/db/migration/V233__guest_inquiries.sql src/main/java/event_social_media/model/vendor/GuestInquiry*.java src/main/java/event_social_media/repository/vendor/GuestInquiryRepository.java src/test/java/event_social_media/migration/GuestInquiriesMigrationTest.java
 git commit -m "KAN-20: guest_inquiries table and entity"
 ```
 
@@ -408,6 +408,7 @@ At the end of the 5xxx block, right after `EMAIL_ALREADY_VERIFIED(5227),`:
 ```java
 package event_social_media.dto.vendor;
 
+import event_social_media.dto.collaboration.PartnerApplicationRequestDto;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
@@ -421,7 +422,7 @@ import java.time.LocalDate;
  */
 public record GuestInquiryRequestDto(
         @NotNull LocalDate eventDate,
-        @Size(max = 40) @Pattern(regexp = "^\\+?[0-9 ()-]{6,40}$") String phone,
+        @Size(max = 40) @Pattern(regexp = PartnerApplicationRequestDto.PHONE_PATTERN) String phone,
         @Size(max = 254) @Email String email,
         @Size(max = 500) String note,
         Boolean consent) {
@@ -686,7 +687,7 @@ class GuestInquiryControllerTest {
         ask(s.guest(), s.event(), s.vendor(), valid()).andExpect(status().isCreated());
         ask(s.guest(), s.event(), s.vendor(), valid())
                 .andExpect(status().isConflict())
-                .andExpect(jsonPath("$.code").value(5228));
+                .andExpect(jsonPath("$.errorCode").value(5228));
     }
 
     @Test
@@ -695,9 +696,9 @@ class GuestInquiryControllerTest {
         makePartner(s.vendor());
         LocalDate today = LocalDate.now(ZoneId.of("Europe/Athens"));
         ask(s.guest(), s.event(), s.vendor(), body(today.minusDays(1), null, "a@b.gr", null, true))
-                .andExpect(status().isBadRequest()).andExpect(jsonPath("$.code").value(3135));
+                .andExpect(status().isBadRequest()).andExpect(jsonPath("$.errorCode").value(3135));
         ask(s.guest(), s.event(), s.vendor(), body(today.plusYears(3).plusDays(1), null, "a@b.gr", null, true))
-                .andExpect(status().isBadRequest()).andExpect(jsonPath("$.code").value(3135));
+                .andExpect(status().isBadRequest()).andExpect(jsonPath("$.errorCode").value(3135));
     }
 
     @Test
@@ -705,9 +706,9 @@ class GuestInquiryControllerTest {
         Setup s = setup();
         makePartner(s.vendor());
         ask(s.guest(), s.event(), s.vendor(), body(SOON, null, null, null, true))
-                .andExpect(status().isBadRequest()).andExpect(jsonPath("$.code").value(3136));
+                .andExpect(status().isBadRequest()).andExpect(jsonPath("$.errorCode").value(3136));
         ask(s.guest(), s.event(), s.vendor(), body(SOON, "  ", "", null, true))
-                .andExpect(status().isBadRequest()).andExpect(jsonPath("$.code").value(3136));
+                .andExpect(status().isBadRequest()).andExpect(jsonPath("$.errorCode").value(3136));
     }
 
     @Test
@@ -715,9 +716,9 @@ class GuestInquiryControllerTest {
         Setup s = setup();
         makePartner(s.vendor());
         ask(s.guest(), s.event(), s.vendor(), body(SOON, null, "a@b.gr", null, false))
-                .andExpect(status().isBadRequest()).andExpect(jsonPath("$.code").value(3137));
+                .andExpect(status().isBadRequest()).andExpect(jsonPath("$.errorCode").value(3137));
         ask(s.guest(), s.event(), s.vendor(), body(SOON, null, "a@b.gr", null, null))
-                .andExpect(status().isBadRequest()).andExpect(jsonPath("$.code").value(3137));
+                .andExpect(status().isBadRequest()).andExpect(jsonPath("$.errorCode").value(3137));
     }
 
     @Test
