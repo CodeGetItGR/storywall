@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 import { expect, fn, userEvent, within } from 'storybook/test';
 
+import { copyFor } from '@/.storybook/copy';
 import { FeedPremiumTiles } from '@/components/feed/edit/FeedPremiumTiles';
 import { PREMIUM_TILE_MODULES, type PremiumTile } from '@/lib/feedModuleTiles';
 
@@ -27,9 +28,9 @@ export const EightTiles: Story = { args: { tiles: adds } };
 
 export const Expanded: Story = {
     args: { tiles: adds },
-    play: async ({ canvasElement }) => {
+    play: async ({ canvasElement, globals }) => {
         const canvas = within(canvasElement);
-        await userEvent.click(canvas.getByRole('button', { name: 'Show more' }));
+        await userEvent.click(canvas.getByRole('button', { name: copyFor(globals).FeedEditor.premiumMore }));
         await expect(canvas.getAllByRole('listitem')).toHaveLength(8);
     },
 };

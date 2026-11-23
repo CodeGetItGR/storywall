@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
-import { expect, fn, userEvent, within } from 'storybook/test';
+import { expect, fn, userEvent, waitFor, within } from 'storybook/test';
 
+import { copyFor } from '@/.storybook/copy';
 import { FeedAddSectionSheet } from '@/components/feed/edit/FeedAddSectionSheet';
 import { feedAddList } from '@/lib/feedAddList';
 import { defaultFeedLayout, wallThemeDesign } from '@/lib/feedLayout';
@@ -44,9 +45,13 @@ export const NothingLeft: Story = { args: { previews: previews([]) } };
 // The eye opens the section's preview in a small window.
 export const PreviewOpen: Story = {
     args: { previews: previews(['faq', 'dressCode']) },
-    play: async () => {
+    play: async ({ globals }) => {
+        const copy = copyFor(globals).InvitationEditor;
+        const faq = copy.sectionNames.faq;
         const page = within(document.body);
-        await userEvent.click(await page.findByRole('button', { name: 'Preview: FAQ' }));
-        await expect(await page.findByRole('dialog', { name: 'FAQ' })).toBeVisible();
+        await userEvent.click(await page.findByRole('button', { name: `${copy.preview}: ${faq}` }));
+        const dialog = await page.findByRole('dialog', { name: faq }, { timeout: 10_000 });
+        // The popup fades and scales in.
+        await waitFor(() => expect(dialog).toBeVisible(), { timeout: 10_000 });
     },
 };
