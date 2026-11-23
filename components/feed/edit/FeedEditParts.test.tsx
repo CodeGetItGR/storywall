@@ -28,6 +28,8 @@ function renderSheet(props: { isDesktop: boolean; onOpenPart?: (part: SettingsPa
             parts={['cover', 'title']}
             partLabels={LABELS}
             isDesktop={props.isDesktop}
+            membersOnly={null}
+            onMembersOnly={vi.fn()}
             onOpenPart={props.onOpenPart ?? vi.fn()}
             onClose={props.onClose ?? vi.fn()}
         />,

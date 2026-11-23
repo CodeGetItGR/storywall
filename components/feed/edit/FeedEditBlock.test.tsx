@@ -167,3 +167,11 @@ describe('FeedEditBlock layout', () => {
         expect(within(tools).getByText(en.InvitationEditor.sections.hidden)).toBeTruthy();
     });
 });
+
+describe('FeedEditBlock members only', () => {
+    it('marks a members-only block in its tools', () => {
+        renderBlock({ section: { ...section, membersOnly: true } });
+        const tools = document.querySelector('[data-feed-block-tools]') as HTMLElement;
+        expect(within(tools).getByText(en.FeedLayout.membersOnly)).toBeTruthy();
+    });
+});

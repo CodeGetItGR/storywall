@@ -176,6 +176,8 @@ export function FeedEditTop({ event, onDone, cancelRef, mode, modeSwitch, cover,
                 parts={sheet.parts}
                 partLabels={preview.labels}
                 isDesktop={preview.isDesktop}
+                membersOnly={sheet.membersOnly}
+                onMembersOnly={sheet.setMembersOnly}
                 onOpenPart={preview.openEditor}
                 onClose={sheet.close}
             />

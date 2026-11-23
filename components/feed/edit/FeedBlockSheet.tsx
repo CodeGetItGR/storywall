@@ -1,10 +1,12 @@
 'use client';
 
 import { ChevronRight } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useCallback } from 'react';
 
 import { FeedEditSheetFrame } from '@/components/feed/edit/FeedEditSheetFrame';
 import { SectionSettingsPanel } from '@/components/saveMyDate/editor/settings/SectionSettingsPanel';
+import { SettingsToggle } from '@/components/saveMyDate/editor/settings/SettingsControls';
 import type { SettingsScope } from '@/hooks/useSectionSettingsPanel';
 import type { SettingsGroup } from '@/lib/invitation/sectionSettings';
 import type { SettingsPart } from '@/lib/settingsPreview';
@@ -17,13 +19,29 @@ type FeedBlockSheetProps = {
     parts: SettingsPart[];
     partLabels: Record<SettingsPart, string>;
     isDesktop: boolean;
+    // null: the block can't be members only (the cover, details and RSVP).
+    membersOnly: boolean | null;
+    onMembersOnly: (membersOnly: boolean) => void;
     onOpenPart: (part: SettingsPart) => void;
     onClose: () => void;
 };
 
-// The pencil's sheet: the event fields the block shows, then its style. A panel at the right on
+// The pencil's sheet: the event fields the block shows, who sees it, then its style. A panel at the right on
 // desktop, a sheet over the lower screen on phones; the feed above stays live either way.
-export function FeedBlockSheet({ title, open, scope, groups, parts, partLabels, isDesktop, onOpenPart, onClose }: FeedBlockSheetProps) {
+export function FeedBlockSheet({
+    title,
+    open,
+    scope,
+    groups,
+    parts,
+    partLabels,
+    isDesktop,
+    membersOnly,
+    onMembersOnly,
+    onOpenPart,
+    onClose,
+}: FeedBlockSheetProps) {
+    const t = useTranslations('FeedLayout');
     const body = (
         <div className="flex flex-col gap-5">
             {/* Event details */}
@@ -34,6 +52,9 @@ export function FeedBlockSheet({ title, open, scope, groups, parts, partLabels, 
                     ))}
                 </div>
             )}
+
+            {/* Who sees it */}
+            {membersOnly !== null && <SettingsToggle label={t('membersOnly')} checked={membersOnly} onChange={onMembersOnly} />}
 
             {/* Style */}
             {scope && groups.length > 0 && <SectionSettingsPanel scope={scope} groups={groups} />}
