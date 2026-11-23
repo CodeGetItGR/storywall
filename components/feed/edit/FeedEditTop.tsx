@@ -4,9 +4,9 @@ import { closestCenter, DndContext } from '@dnd-kit/core';
 import { restrictToVerticalAxis } from '@dnd-kit/modifiers';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { useTranslations } from 'next-intl';
-import { type ReactNode, type Ref, useMemo } from 'react';
+import { type ReactNode, type Ref, useCallback, useMemo } from 'react';
 
-import { FeedAddSectionRow } from '@/components/feed/edit/FeedAddSectionRow';
+import { FeedEditAddBetween } from '@/components/feed/edit/FeedAddBetween';
 import { FeedAddSectionSheet } from '@/components/feed/edit/FeedAddSectionSheet';
 import { FeedBlockPlaceholder } from '@/components/feed/edit/FeedBlockPlaceholder';
 import { FeedBlockSheet } from '@/components/feed/edit/FeedBlockSheet';
@@ -40,7 +40,7 @@ import { useSectionDrag } from '@/hooks/useSectionDrag';
 import { useSettingsPreview } from '@/hooks/useSettingsPreview';
 import type { EventDetailResponseDto } from '@/lib/api/types';
 import { blockTextColor } from '@/lib/feedBlockEdits';
-import { feedBlockControls } from '@/lib/feedEditing';
+import { type FeedAddPlace, feedBlockControls } from '@/lib/feedEditing';
 import { sectionNameKey } from '@/lib/invitation/sectionNames';
 import { type InvitationSection, isFeedSectionType, type SectionType } from '@/lib/invitation/sections';
 
@@ -50,7 +50,7 @@ const MODIFIERS = [restrictToVerticalAxis];
 type FeedEditTopProps = Omit<FeedTopProps, 'view'> & { event: EventDetailResponseDto; onDone: () => void; cancelRef?: Ref<HTMLButtonElement> };
 
 // The top of the feed in edit mode: the same frame as the feed, Theme / Cancel / Save under the cover, every block
-// with its tools, Save my date text typed in place, the Add section row closing the middle, and the Theme sheet. All
+// with its tools, Save my date text typed in place, the Add section rows around the host's blocks, and the Theme sheet. All
 // held until Save.
 export function FeedEditTop({ event, onDone, cancelRef, mode, modeSwitch, dateRow, cover, stories, description, rsvp }: FeedEditTopProps) {
     const t = useTranslations('InvitationEditor');
@@ -127,6 +127,16 @@ export function FeedEditTop({ event, onDone, cancelRef, mode, modeSwitch, dateRo
             {node}
         </FeedEditBlock>
     );
+    // "+ Add section" above, between and after the host's blocks; none at the section limit.
+    const { openAdd } = panels;
+    const addRow = useCallback(
+        (place: FeedAddPlace) => (
+            <FeedNative className="font-sans">
+                <FeedEditAddBetween place={place} onOpen={openAdd} />
+            </FeedNative>
+        ),
+        [openAdd],
+    );
     const base = view.look ? feedLookParts(view) : PLAIN_PARTS;
     const parts: FeedTopParts = {
         // The feed's own blocks are set on the event, not typed here: their content takes no taps.
@@ -156,15 +166,8 @@ export function FeedEditTop({ event, onDone, cancelRef, mode, modeSwitch, dateRo
             stories={stories}
             description={description || <FeedBlockPlaceholder name={t('sectionNames.feedDescription')} />}
             rsvp={rsvp ?? <FeedBlockPlaceholder name={t('sectionNames.feedRsvp')} />}
-            afterMiddle={
-                // Feed mode's own list arrives with its sections (plan 8).
-                actions.showAdd &&
-                mode !== 'feed' && (
-                    <FeedNative className="font-sans">
-                        <FeedAddSectionRow onAdd={panels.openAdd} />
-                    </FeedNative>
-                )
-            }
+            // Feed mode's own list arrives with its sections (plan 8): the frame draws these in Invitation mode only.
+            between={actions.showAdd ? addRow : undefined}
         />
     );
 

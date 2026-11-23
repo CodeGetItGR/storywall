@@ -14,6 +14,7 @@ import {
     feedBlockParts,
     feedEditFrame,
     feedSettingsGroups,
+    insertFeedSection,
     isHostBlock,
     moveFeedBlock,
     noFeedUploads,
@@ -24,6 +25,7 @@ import {
 import { defaultFeedLayout } from '@/lib/feedLayout';
 import type { InvitationDocument } from '@/lib/invitation/document';
 import { MAX_SECTIONS } from '@/lib/invitation/document';
+import { createSection } from '@/lib/invitation/newSection';
 import { SAMPLE_SECTIONS } from '@/lib/invitation/samples';
 import type { InvitationSection } from '@/lib/invitation/sections';
 
@@ -275,5 +277,38 @@ describe('RSVP as a host block', () => {
         expect(feedEditFrame(document, { rsvpMoves: true }).middle.map((section) => section.id)).toEqual(['feed-feedDescription', 'feed-feedRsvp', 'dress']);
         expect(feedEditFrame(document, { rsvpMoves: true }).rsvp).toBeNull();
         expect(feedEditFrame(document, { rsvpMoves: false }).rsvp?.id).toBe('feed-feedRsvp');
+    });
+});
+
+describe('insertFeedSection', () => {
+    const options = { rsvpMoves: true };
+    const dress = { ...(SAMPLE_SECTIONS.dressCode as InvitationSection), id: 'dress' };
+    const faq = { ...(SAMPLE_SECTIONS.faq as InvitationSection), id: 'faq' };
+    const layout: InvitationDocument = { ...defaultFeedLayout(), sections: [...defaultFeedLayout().sections, dress, faq] };
+    const firstHostId = (document: InvitationDocument) => document.sections.find((section) => isHostBlock(section, options))?.id;
+    const contact = () => createSection('contact', 'WEDDING', () => 'new');
+
+    it('puts the new block right after the one it was asked from', () => {
+        const next = produce(layout, insertFeedSection(contact(), { after: 'dress' }, options));
+        const ids = next.sections.map((section) => section.id);
+        expect(ids.indexOf('new')).toBe(ids.indexOf('dress') + 1);
+    });
+
+    it('puts the new block before the first host block from the row above it', () => {
+        const first = firstHostId(layout)!;
+        const next = produce(layout, insertFeedSection(contact(), { before: first }, options));
+        expect(firstHostId(next)).toBe('new');
+        const ids = next.sections.map((section) => section.id);
+        expect(ids.indexOf(first)).toBe(ids.indexOf('new') + 1);
+    });
+
+    it('appends when asked from nowhere', () => {
+        const next = produce(layout, insertFeedSection(contact(), null, options));
+        expect(next).toEqual(produce(layout, appendFeedSection(contact(), options)));
+    });
+
+    it('appends when the block it was asked from is gone', () => {
+        const next = produce(layout, insertFeedSection(contact(), { after: 'missing' }, options));
+        expect(next).toEqual(produce(layout, appendFeedSection(contact(), options)));
     });
 });

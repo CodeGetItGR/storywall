@@ -121,6 +121,23 @@ export function appendFeedSection(section: InvitationSection, options: HostBlock
     };
 }
 
+// Where a "+ Add section" row puts its block: after a host block, before the first one (the row above the first), or
+// null (no host blocks yet), which is where appendFeedSection puts it.
+export type FeedAddPlace = { after: string } | { before: string } | null;
+
+// A new block goes at the row it was asked from (spec item 8; owner 2026-11-23: also above the first). A place whose
+// block was deleted meanwhile falls back to appendFeedSection.
+export function insertFeedSection(section: InvitationSection, place: FeedAddPlace, options: HostBlockOptions) {
+    return (draft: DocumentDraft) => {
+        if (draft.sections.length >= MAX_SECTIONS) return;
+        const anchorId = place ? ('after' in place ? place.after : place.before) : null;
+        const anchor = anchorId ? draft.sections.findIndex((item) => item.id === anchorId && isHostBlock(item, options)) : -1;
+        if (anchor === -1) return appendFeedSection(section, options)(draft);
+        const at = place && 'after' in place ? anchor + 1 : anchor;
+        draft.sections.splice(at, 0, section as Draft<InvitationSection>);
+    };
+}
+
 // The feed's Add section list (lib/feedAddList): the event type's own list, minus what is on the page or covered by
 // a module the event has.
 export function addableFeedSectionTypes(document: InvitationDocument, eventType: string, modules: readonly EventModuleResponseDto[]): NewSectionType[] {

@@ -55,6 +55,14 @@ describe('useFeedBlockActions', () => {
         expect(store.getState().document.sections.some((section) => section.type === type)).toBe(true);
     });
 
+    it('puts what was picked at the row the list was opened from', () => {
+        const { store, result } = setup();
+        act(() => result.current.openAdd({ before: 'feed-feedDescription' }));
+        act(() => result.current.add('faq'));
+        const types = store.getState().document.sections.map((section) => section.type);
+        expect(types.indexOf('faq')).toBe(types.indexOf('feedDescription') - 1);
+    });
+
     it('leaves out the Add section row at the section limit', () => {
         expect(setup().result.current.showAdd).toBe(true);
         const full = Array.from({ length: MAX_SECTIONS - defaultFeedLayout().sections.length }, (_, index) => ({
