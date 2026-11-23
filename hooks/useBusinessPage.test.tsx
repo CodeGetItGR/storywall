@@ -9,10 +9,12 @@ import type { BusinessOverviewDto } from '@/lib/api/types';
 const overviewQuery = vi.hoisted(() => vi.fn());
 const portalQuery = vi.hoisted(() => vi.fn());
 const eventsQuery = vi.hoisted(() => vi.fn());
+const inquiriesQuery = vi.hoisted(() => vi.fn());
 
 vi.mock('@/hooks/useBusinessOverview', () => ({ useBusinessOverview: overviewQuery }));
 vi.mock('@/hooks/usePartnerPortal', () => ({ usePartnerPortal: portalQuery }));
 vi.mock('@/hooks/useBusinessEvents', () => ({ useBusinessEvents: eventsQuery }));
+vi.mock('@/hooks/useGuestInquiries', () => ({ useGuestInquiries: inquiriesQuery }));
 const profileQuery = vi.hoisted(() => vi.fn());
 vi.mock('@/hooks/useVendorProfile', () => ({ useVendorProfile: profileQuery }));
 vi.mock('@/hooks/useBusinessSectionTarget', () => ({ useBusinessSectionTarget: () => undefined }));
@@ -37,6 +39,7 @@ describe('useBusinessPage', () => {
         portalQuery.mockReturnValue({ data: undefined, error: null, isLoading: false, refetch: vi.fn() });
         profileQuery.mockReturnValue({ data: null, isSuccess: true, isError: false, fetchStatus: 'idle', refetch: vi.fn() });
         eventsQuery.mockReturnValue({ events: [] });
+        inquiriesQuery.mockReturnValue({ inquiries: [] });
     });
 
     it('reports a 403 for a non-vendor as notVendor, not as a failed load', () => {
@@ -68,6 +71,16 @@ describe('useBusinessPage', () => {
         withOverview({ data: { ...overview, partner: true } });
         renderHook(() => useBusinessPage());
         expect(portalQuery).toHaveBeenLastCalledWith(true);
+    });
+
+    it('reads guest inquiries only for partners', () => {
+        withOverview({ data: overview });
+        renderHook(() => useBusinessPage());
+        expect(inquiriesQuery).toHaveBeenLastCalledWith(false);
+
+        withOverview({ data: { ...overview, partner: true } });
+        renderHook(() => useBusinessPage());
+        expect(inquiriesQuery).toHaveBeenLastCalledWith(true);
     });
 
     it('retries by refetching the overview', () => {

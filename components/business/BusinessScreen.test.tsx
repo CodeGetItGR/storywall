@@ -78,6 +78,21 @@ const ready = {
         loadMore: vi.fn(),
         retry: vi.fn(),
     },
+    inquiries: {
+        inquiries: [] as Record<string, unknown>[],
+        isLoading: false,
+        loadFailed: false,
+        hasMore: false,
+        isLoadingMore: false,
+        selected: null,
+        isSaving: false,
+        saveError: null,
+        open: vi.fn(),
+        close: vi.fn(),
+        setDone: vi.fn(),
+        loadMore: vi.fn(),
+        retry: vi.fn(),
+    },
     services,
     contact,
     becomePartner: { sheetOpen: false, openSheet: vi.fn(), closeSheet: vi.fn(), defaults: {}, search: '' },
@@ -186,6 +201,39 @@ describe('BusinessScreen', () => {
         };
         renderScreen();
         expect(screen.queryByRole('button', { name: 'Become a partner' })).not.toBeInTheDocument();
+    });
+
+    it('shows a partner their guest inquiries', () => {
+        page.value = {
+            ...ready,
+            overview: { ...ready.overview, partner: true },
+            inquiries: {
+                ...ready.inquiries,
+                inquiries: [
+                    {
+                        id: 'i1',
+                        guestName: 'Eleni T.',
+                        eventTitle: 'Wedding',
+                        eventDate: '2027-06-12',
+                        phone: null,
+                        email: null,
+                        note: null,
+                        status: 'NEW',
+                        createdAt: '2026-11-20T10:00:00Z',
+                    },
+                ],
+            },
+        };
+        renderScreen();
+        expect(screen.getByRole('heading', { name: 'Guest inquiries' })).toBeInTheDocument();
+        expect(screen.getByText('Eleni T.')).toBeInTheDocument();
+    });
+
+    it('shows a non-partner the locked sample of guest inquiries', () => {
+        page.value = ready;
+        renderScreen();
+        expect(screen.getByRole('heading', { name: 'Guest inquiries' })).toBeInTheDocument();
+        expect(screen.getByText('Nikos K.')).toBeInTheDocument();
     });
 
     it('keeps Edit off while the profile loads, and shows no setup card yet', () => {
