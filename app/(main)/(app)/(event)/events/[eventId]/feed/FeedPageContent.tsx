@@ -1,17 +1,19 @@
 'use client';
 
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 
 import { ComposerCard } from '@/components/feed/ComposerCard';
 import { FeedEditPill } from '@/components/feed/edit/FeedEditPill';
 import { LazyFeedEditTop } from '@/components/feed/edit/LazyFeedEditTop';
 import { EventDescription } from '@/components/feed/EventDescription';
 import { FeedEmptyState } from '@/components/feed/FeedEmptyState';
+import { FeedPageSkeleton } from '@/components/feed/FeedPageSkeleton';
 import { FeedPostRenderer } from '@/components/feed/FeedPostRenderer';
 import { GuestOfferCard } from '@/components/feed/guestOffer/GuestOfferCard';
 import { Header } from '@/components/feed/Header';
 import { HeOrShePromptCard } from '@/components/feed/HeOrShePromptCard';
 import { FeedCoverBlock } from '@/components/feed/layout/FeedCoverBlock';
+import { FeedModeSwitch } from '@/components/feed/layout/FeedModeSwitch';
 import { FeedRsvpBlock } from '@/components/feed/layout/FeedRsvpBlock';
 import { FeedTop } from '@/components/feed/layout/FeedTop';
 import { PartnerBrandingPromptModal } from '@/components/feed/partner/PartnerBrandingPromptModal';
@@ -27,10 +29,13 @@ import { useFeedEditFocus } from '@/hooks/useFeedEditFocus';
 import { useFeedEditMode } from '@/hooks/useFeedEditMode';
 import { useFeedEditTrigger } from '@/hooks/useFeedEditTrigger';
 import { useFeedItems } from '@/hooks/useFeedItems';
+import { useFeedMode } from '@/hooks/useFeedMode';
+import { useFeedModeSwitchPin } from '@/hooks/useFeedModeSwitchPin';
 import { useFeedPageTheme } from '@/hooks/useFeedPageTheme';
 import { useFeedTop } from '@/hooks/useFeedTop';
 import { useHideMobileTabBarOnScroll } from '@/hooks/useHideMobileTabBarOnScroll';
 import { useRsvpPromptVisible } from '@/hooks/useRsvpPromptVisible';
+import type { FeedPageMode } from '@/lib/feedMode';
 import { cn } from '@/lib/utils';
 
 import { useFeedPage } from './FeedPageContext';
@@ -46,7 +51,23 @@ export function FeedPageContent() {
     const coverEvent = useFeedPageTheme(event, top.pageBackground, top.backdrop);
     const editMode = useFeedEditMode(event, isHost, isRoleLoading);
     const { start: startEditing, finish: finishEditing, editPill, cancelPill } = useFeedEditFocus(editMode.start, editMode.finish);
-    useFeedEditTrigger({ settled: editMode.settled, canEdit: editMode.canEdit, start: startEditing });
+    const feedMode = useFeedMode(event);
+    // null while the mode isn't known yet: the page keeps its loading state.
+    const pageMode: FeedPageMode | null = feedMode.available ? feedMode.mode : 'single';
+    const pin = useFeedModeSwitchPin(pageMode !== null && pageMode !== 'single');
+    // The Overview's Start editing (?edit=blocks) opens the invitation.
+    const startFromLink = useCallback(() => {
+        if (feedMode.available) feedMode.select('invitation');
+        startEditing();
+    }, [feedMode, startEditing]);
+    useFeedEditTrigger({ settled: editMode.settled, canEdit: editMode.canEdit, start: startFromLink });
+    const pill = feedMode.mode && <FeedModeSwitch mode={feedMode.mode} onSelect={feedMode.select} />;
+    const modeSwitch = pill && (
+        // Centred on the cover's bottom edge, half over it. While a copy is pinned under the header, it keeps its space.
+        <div ref={pin.ref} className={cn('relative z-10 -mt-6 flex justify-center', pin.pinned && 'invisible')}>
+            {pill}
+        </div>
+    );
     const topParts = {
         cover: (
             <FeedCoverBlock
@@ -67,12 +88,12 @@ export function FeedPageContent() {
             </section>
         ),
         description: event.description && (
-            <EventDescription eventId={event.id} description={event.description} keepShown={top.folds || editMode.editing} />
+            <EventDescription eventId={event.id} description={event.description} keepShown={pageMode === 'invitation' || editMode.editing} />
         ),
         rsvp: shouldShowRSVP ? <FeedRsvpBlock eventId={eventId} deadline={event.schedule.rsvpDeadline ?? null} /> : null,
     };
 
-    const feedTop = <FeedTop view={top} {...topParts} />;
+    const feedTop = <FeedTop view={top} mode={pageMode ?? 'single'} modeSwitch={modeSwitch} {...topParts} />;
 
     function openStoryModal(nextStoryId: string) {
         setStoryId(nextStoryId);
@@ -82,60 +103,79 @@ export function FeedPageContent() {
         setStoryId(null);
     }
 
+    // The mode lives on this device: until it's known the page keeps its loading state, so it never flashes the wrong mode.
+    if (pageMode === null) return <FeedPageSkeleton />;
+
     return (
         <div className="mx-auto flex w-full flex-col lg:max-w-2xl">
             {/* Header */}
-            <Header countdownTime={event.schedule.startAt ? new Date(event.schedule.startAt).getTime() : 0} eventId={eventId} />
+            <Header
+                countdownTime={event.schedule.startAt ? new Date(event.schedule.startAt).getTime() : 0}
+                eventId={eventId}
+                pinned={pin.pinned ? pill : undefined}
+            />
             {/* Install */}
             <InstallAppBanner />
             {/* Invitation blocks, stories and RSVP */}
             {editMode.editing ? (
-                <LazyFeedEditTop event={event} onDone={finishEditing} cancelRef={cancelPill} fallback={feedTop} {...topParts} />
+                <LazyFeedEditTop
+                    event={event}
+                    onDone={finishEditing}
+                    cancelRef={cancelPill}
+                    fallback={feedTop}
+                    mode={pageMode}
+                    modeSwitch={modeSwitch}
+                    {...topParts}
+                />
             ) : (
                 feedTop
             )}
 
-            {/* Posts */}
-            <section id="posts">
-                {moduleFlags.posts && (
-                    <div
-                        className={cn('flex flex-col px-0 pb-24 md:pb-10', {
-                            'mt-4': (!moduleFlags.stories || !top.drawsMiddle) && !(shouldShowRSVP && top.frame.rsvp),
-                        })}
-                    >
-                        <ComposerCard />
-                        {/* Quick actions, with a vendor's own tools first */}
-                        <FeedQuickActions event={event} isHost={isHost} />
-                        <PublishQueueCards />
-                        {/* Guest offer */}
-                        <GuestOfferCard eventId={eventId} isHost={isHost} />
-                        {/* Boy or Girl? prompt */}
-                        <HeOrShePromptCard eventId={eventId} eventType={event.eventType} enabled={moduleFlags.he_or_she} />
-                        <div className="flex flex-col">
-                            {posts.length === 0 ? (
-                                <FeedEmptyState />
-                            ) : (
-                                feedItems.map((item) =>
-                                    item.kind === 'post' ? (
-                                        <FeedPostRenderer key={item.post.id} post={item.post} isLcpCandidate={item.index === 0} />
-                                    ) : (
-                                        /* Partner card */
-                                        event.partnerBranding && <PartnerFeedCard key={item.key} branding={event.partnerBranding} />
-                                    ),
-                                )
-                            )}
-                            <div ref={loadMoreRef} className="h-1" />
-                            {isFetchingNextPage && <p className="py-2 text-center text-sm text-ink-muted">{loadingMoreLabel}</p>}
+            {/* Posts: Feed mode and the one page */}
+            {pageMode !== 'invitation' && (
+                <section id="posts">
+                    {moduleFlags.posts && (
+                        <div
+                            className={cn('flex flex-col px-0 pb-24 md:pb-10', {
+                                'mt-4':
+                                    (!moduleFlags.stories || !top.drawsMiddle || pageMode === 'feed') &&
+                                    !(shouldShowRSVP && top.frame.rsvp && pageMode !== 'feed'),
+                            })}
+                        >
+                            <ComposerCard />
+                            {/* Quick actions, with a vendor's own tools first */}
+                            <FeedQuickActions event={event} isHost={isHost} />
+                            <PublishQueueCards />
+                            {/* Guest offer */}
+                            <GuestOfferCard eventId={eventId} isHost={isHost} />
+                            {/* Boy or Girl? prompt */}
+                            <HeOrShePromptCard eventId={eventId} eventType={event.eventType} enabled={moduleFlags.he_or_she} />
+                            <div className="flex flex-col">
+                                {posts.length === 0 ? (
+                                    <FeedEmptyState />
+                                ) : (
+                                    feedItems.map((item) =>
+                                        item.kind === 'post' ? (
+                                            <FeedPostRenderer key={item.post.id} post={item.post} isLcpCandidate={item.index === 0} />
+                                        ) : (
+                                            /* Partner card */
+                                            event.partnerBranding && <PartnerFeedCard key={item.key} branding={event.partnerBranding} />
+                                        ),
+                                    )
+                                )}
+                                <div ref={loadMoreRef} className="h-1" />
+                                {isFetchingNextPage && <p className="py-2 text-center text-sm text-ink-muted">{loadingMoreLabel}</p>}
+                            </div>
                         </div>
-                    </div>
-                )}
-                {/* Quick actions and vendor tools, when the plan has no posts */}
-                {!moduleFlags.posts && (
-                    <div className="pb-24 md:pb-10">
-                        <FeedQuickActions event={event} isHost={isHost} />
-                    </div>
-                )}
-            </section>
+                    )}
+                    {/* Quick actions and vendor tools, when the plan has no posts */}
+                    {!moduleFlags.posts && (
+                        <div className="pb-24 md:pb-10">
+                            <FeedQuickActions event={event} isHost={isHost} />
+                        </div>
+                    )}
+                </section>
+            )}
 
             <PostModal />
 

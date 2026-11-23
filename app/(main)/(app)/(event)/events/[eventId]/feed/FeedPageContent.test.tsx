@@ -62,6 +62,7 @@ vi.mock('@/components/feed/EventDescription', () => ({
 }));
 vi.mock('@/components/feed/EventSessionActionButtons', () => ({ EventSessionActionButtons: () => null }));
 vi.mock('@/components/feed/FeedEmptyState', () => ({ FeedEmptyState: () => null }));
+vi.mock('@/components/feed/FeedPageSkeleton', () => ({ FeedPageSkeleton: () => <div data-testid="skeleton" /> }));
 vi.mock('@/components/feed/FeedPostRenderer', () => ({ FeedPostRenderer: () => null }));
 vi.mock('@/components/feed/Header', () => ({ Header: () => null }));
 vi.mock('@/components/feed/PostModal', () => ({ PostModal: () => null }));
@@ -89,6 +90,7 @@ window.matchMedia = ((query: string) => ({
 afterEach(cleanup);
 afterEach(() => {
     rsvpVisible.value = false;
+    window.localStorage.clear();
 });
 
 function savedLayout(...extra: InvitationSection[]): FeedLayoutDto {
@@ -114,11 +116,12 @@ type FeedOptions = {
     isHost?: boolean;
     modules?: { moduleKey: string; isAvailable: boolean; isEnabled: boolean }[];
     stories?: boolean;
+    startAt?: string | null;
 };
 
 function renderFeed(
     illustrationUrl: string | null,
-    { description = null, endAt = null, layout, flag = false, isHost = false, modules = [], stories = false }: FeedOptions = {},
+    { description = null, endAt = null, layout, flag = false, isHost = false, modules = [], stories = false, startAt = null }: FeedOptions = {},
 ) {
     // staleTime: the seeded layout counts as fresh, so nothing is fetched for real.
     const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false, staleTime: Infinity } } });
@@ -135,7 +138,8 @@ function renderFeed(
         coverMedia: null,
         description,
         theme: illustrationUrl ? { presetKey: 'dino', backgroundColor: '#aabbcc', illustrationUrl } : null,
-        schedule: { startAt: null, endAt, rsvpDeadline: null },
+        schedule: { startAt, endAt, rsvpDeadline: null, timezone: 'Europe/Athens' },
+        sessions: [],
         location: { name: null, address: null },
     } as unknown as EventDetailResponseDto;
     const value = {
@@ -191,22 +195,54 @@ describe('FeedPageContent layout', { timeout: 15_000 }, () => {
         expect(screen.queryByRole('button', { name: 'invitation' })).toBeNull();
     });
 
-    it('folds two or more blocks into the Invitation row, which opens in place', async () => {
-        renderFeed(null, { description: 'Hello', flag: true, layout: savedLayout(dressCode) });
-        const row = await screen.findByRole('button', { name: 'invitation' }, LAZY_LOOK);
-        expect(screen.queryByTestId('description')).toBeNull();
-        expect(row.getAttribute('aria-expanded')).toBe('false');
-        fireEvent.click(row);
-        // Inside the fold it always shows: the fold keeps it out of the way instead.
+    it('opens a Save my date event on Invitation before its day: every block, the description always shown', async () => {
+        rsvpVisible.value = true;
+        renderFeed(null, {
+            description: 'Hello',
+            flag: true,
+            layout: savedLayout(dressCode),
+            modules: SMD,
+            startAt: '2099-06-01T15:00:00Z',
+            stories: true,
+        });
+        expect(await screen.findByTestId('description', {}, LAZY_LOOK)).toBeTruthy();
         expect(screen.getByTestId('description').dataset.keepShown).toBe('true');
-        expect(row.getAttribute('aria-expanded')).toBe('true');
+        expect(screen.getByTestId('rsvp')).toBeTruthy();
+        expect(screen.getByRole('button', { name: 'invitation' }).getAttribute('aria-pressed')).toBe('true');
+        expect(document.querySelector('#stories')).toBeNull();
+        expect(document.querySelector('#posts')).toBeNull();
     });
 
-    it('keeps RSVP outside the fold', async () => {
+    it('opens on Feed from the event day: stories and posts, no details or RSVP', async () => {
         rsvpVisible.value = true;
-        renderFeed(null, { description: 'Hello', flag: true, layout: savedLayout(dressCode) });
-        expect(await screen.findByTestId('rsvp', {}, LAZY_LOOK)).toBeTruthy();
+        renderFeed(null, {
+            description: 'Hello',
+            flag: true,
+            layout: savedLayout(dressCode),
+            modules: SMD,
+            startAt: '2020-06-01T15:00:00Z',
+            stories: true,
+        });
+        expect(await screen.findByRole('button', { name: 'posts' }, LAZY_LOOK)).toBeTruthy();
+        expect(screen.getByRole('button', { name: 'posts' }).getAttribute('aria-pressed')).toBe('true');
+        expect(document.querySelector('#stories')).toBeTruthy();
+        expect(document.querySelector('#posts')).toBeTruthy();
         expect(screen.queryByTestId('description')).toBeNull();
+        expect(screen.queryByTestId('rsvp')).toBeNull();
+    });
+
+    it('switches modes from the pill and remembers the pick', async () => {
+        renderFeed(null, { description: 'Hello', flag: true, layout: savedLayout(dressCode), modules: SMD, startAt: '2099-06-01T15:00:00Z' });
+        fireEvent.click(await screen.findByRole('button', { name: 'posts' }, LAZY_LOOK));
+        expect(screen.getByRole('button', { name: 'posts' }).getAttribute('aria-pressed')).toBe('true');
+        expect(window.localStorage.getItem('storywall.feedMode.e-1')).toContain('"mode":"feed"');
+    });
+
+    it('draws one page without Save my date: no switch, nothing folded', () => {
+        renderFeed(null, { description: 'Hello', flag: true, layout: savedLayout(dressCode), stories: true });
+        expect(screen.queryByRole('button', { name: 'invitation' })).toBeNull();
+        expect(screen.getByTestId('description')).toBeTruthy();
+        expect(document.querySelector('#stories')).toBeTruthy();
     });
 
     it('draws only the cover and details after the event', async () => {
@@ -236,6 +272,17 @@ describe('FeedPageContent edit mode', { timeout: 15_000 }, () => {
         fireEvent.click(await screen.findByRole('button', { name: 'edit' }));
         expect(screen.getByTestId('banner')).toBeTruthy();
         expect(await screen.findByRole('group', { name: 'sectionNames.feedCover' }, LAZY_LOOK)).toBeTruthy();
+    });
+
+    it('keeps edit mode and its changes when switching modes', async () => {
+        renderFeed(null, { flag: true, isHost: true, layout: savedLayout(), modules: SMD, startAt: '2099-06-01T15:00:00Z' });
+        fireEvent.click(await screen.findByRole('button', { name: 'edit' }, LAZY_LOOK));
+        const rsvp = await screen.findByRole('group', { name: 'sectionNames.feedRsvp' }, LAZY_LOOK);
+        fireEvent.click(within(rsvp).getByRole('button', { name: 'hide' }));
+        fireEvent.click(screen.getAllByRole('button', { name: 'posts' })[0]);
+        expect(screen.queryByRole('group', { name: 'sectionNames.feedRsvp' })).toBeNull();
+        fireEvent.click(screen.getAllByRole('button', { name: 'invitation' })[0]);
+        expect(within(await screen.findByRole('group', { name: 'sectionNames.feedRsvp' })).getByRole('button', { name: 'show' })).toBeTruthy();
     });
 
     it('moves focus to Cancel in edit mode, and back to Edit after', async () => {
