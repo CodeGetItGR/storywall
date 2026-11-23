@@ -47,6 +47,8 @@
 
 ### Task 1: Copy approval (gate)
 
+**Done 2026-11-23.** The owner approved all three tables below as written. They also asked for an animated flying envelope above the `sent` line (the line stays). Its alt text was approved too: `ImageAlt.inquirySent` = "Inquiry sent" / "Η ερώτηση στάλθηκε".
+
 CLAUDE.md: no text is added without the owner's explicit yes, in a popup. Nothing existing changes. Ask in **one AskUserQuestion per group** (guest sheet, errors, My business), showing each table. Options: "Use as written (Recommended)" / "I'll edit it". If they edit, use their wording exactly in Task 2.
 
 Greek: the guest side speaks to the guest in the singular (σου), like the feed. The business side speaks to the partner in the plural (σας), like the rest of My business. Vendor = επαγγελματίας, host = διοργανωτής.
@@ -201,6 +203,7 @@ In `lib/api/errorMessageKeys.ts`, after the `EMAIL_ALREADY_VERIFIED` line:
   - `Vendors.inquiry`: a new object in `Vendors`
   - `ApiErrors`: 4 keys
   - `BusinessPage.inquiries`: a new object in `BusinessPage`
+  - `ImageAlt.inquirySent`: "Inquiry sent" / "Η ερώτηση στάλθηκε", next to `qrWishSent`
 
 Do this in both `messages/en.json` and `messages/el.json`, at the same place in each, and keep both files' key order the same.
 
@@ -860,6 +863,7 @@ export function AskDatesSheet({
                 {sent ? (
                     /* Sent */
                     <div className="mt-4 flex flex-col gap-4">
+                        <InquirySentArt />
                         <p role="status" className="text-sm text-ink">
                             {t('sent', { name })}
                         </p>
@@ -960,6 +964,14 @@ export function AskDatesSheet({
     );
 }
 ```
+
+- [ ] **Step 4b: The sent illustration (owner's request).** Create `components/vendors/inquiries/InquirySentArt.tsx` and `InquirySentArt.test.tsx`. Render it above the `sent` line, as shown in the sheet above.
+  - Draw an inline SVG of an envelope, about 160px wide and centred. Use the brand coral and warm gradient from `public/icons` (read two of those SVGs for the colours). Don't use a 3D emoji or hearts.
+  - Animate it with `framer-motion` (`import { motion, useReducedMotion } from 'framer-motion'`, as in `QrWeddingFinalCtaButton`). Once, on mount, over about 1.2s: the envelope closes its flap, lifts and tilts, then flies up and to the right while a soft dashed trail draws behind it. It then settles back into place, small and floating gently. It shouldn't vanish, so the screen never looks empty.
+  - With `useReducedMotion()` true, show the final still envelope with no motion.
+  - Accessibility: on the `<svg>`, set `role="img"` and `aria-label={tAlt('inquirySent')}`, with `tAlt = useTranslations('ImageAlt')`. Never leave it empty.
+  - Test: it renders `getByRole('img', { name: 'Inquiry sent' })`, and the sheet test's `Sent` case also finds that image.
+  - The `Sent` story shows it. The visual check runs with reduced motion or a settled frame. Check how other framer-motion stories avoid flaky shots, and make sure the final frame is what gets captured.
 
 - [ ] **Step 5: Run and confirm they pass.** Run `npx vitest run components/vendors/inquiries`.
 
