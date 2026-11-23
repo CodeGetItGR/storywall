@@ -435,6 +435,26 @@ describe('useFeedEditSession', () => {
         expect(result.current.heldWall).toBeUndefined();
     });
 
+    it("saves the wall layout on 'No theme' without wall themes, keeping the event's own theme", async () => {
+        client.setQueryData(feedLayoutKeys.detail('e-1'), { ...saved, themeSlug: 'rose', design: SAMPLE_THEME, document: SAMPLE_DOCUMENT });
+        mocks.put.mockResolvedValue({ revision: 4, updatedAt: '2026-11-22T11:00:00Z' });
+        const onDone = vi.fn();
+        const themed = { ...event, theme: dino } as EventDetailResponseDto;
+        const { result } = renderHook(() => useFeedEditSession(themed, onDone), { wrapper });
+        expect(result.current.themeSlug).toBe('rose');
+        await act(() => result.current.pickWall(null, dino, true));
+        expect(result.current.themeSlug).toBe('');
+        expect(result.current.heldWall).toBeUndefined();
+        expect(result.current.wallTheme).toEqual(dino);
+        await act(() => result.current.save());
+        expect(mocks.put).toHaveBeenCalledOnce();
+        const [path, body] = mocks.put.mock.calls[0];
+        expect(path).toBe(endpoints.events.feedLayout('e-1'));
+        expect(body.themeSlug).toBeNull();
+        expect(body.document.themeId).toBe(WALL_THEME_ID);
+        expect(onDone).toHaveBeenCalledOnce();
+    });
+
     it('adds no undo step for a wall pick when no colour is set', async () => {
         const { result } = renderHook(() => useFeedEditSession(event, vi.fn()), { wrapper });
         await act(() => result.current.pickWall('p-1', dino, false));

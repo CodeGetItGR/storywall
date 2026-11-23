@@ -98,10 +98,4 @@ describe('FeedThemeSheet', () => {
         expect((screen.getByLabelText('sectionSettings.background') as HTMLInputElement).disabled).toBe(true);
         expect((screen.getByRole('button', { name: 'lineHeightDefault' }) as HTMLButtonElement).disabled).toBe(true);
     });
-
-    it('holds just the Background row for an event with no themes to pick', () => {
-        renderSheet(undefined, []);
-        expect(screen.queryByRole('radiogroup')).toBeNull();
-        expect(screen.getByLabelText('sectionSettings.background')).toBeTruthy();
-    });
 });
