@@ -18,14 +18,11 @@ export type FeedPageBackdrop = {
     size: string;
     repeat: string;
     position: string;
-    // The same picture on a strip that sits on the page (the sticky header), lined up with the page. The strip
-    // sets --feed-page-w (the page's width) and --feed-strip-x / -y (where it sits on the page) itself.
-    stripSize: string;
-    stripPosition: string;
+    // Tiles at the invitation's tile size rather than one picture as wide as the page. A strip on the page
+    // (the sticky header) needs it to line its picture up with the page's (components/event/feedBackdrop.css).
+    tiled: boolean;
     cardColor: string;
 };
-
-const STRIP_Y = 'calc(0px - var(--feed-strip-y))';
 
 // A picture as wide as the page, repeating down it: a stable repeat, and a cover picture too, so the page never
 // runs out of picture into a band of flat colour.
@@ -33,8 +30,7 @@ const FULL_WIDTH = {
     size: '100% auto',
     repeat: 'repeat-y',
     position: 'center top',
-    stripSize: 'var(--feed-page-w) auto',
-    stripPosition: `calc(0px - var(--feed-strip-x)) ${STRIP_Y}`,
+    tiled: false,
 };
 
 // Tiles at the invitation's tile size, centred on the page.
@@ -42,8 +38,7 @@ const TILES = {
     size: 'var(--smd-bg-tile-size) auto',
     repeat: 'repeat',
     position: 'center top',
-    stripSize: 'var(--smd-bg-tile-size) auto',
-    stripPosition: `calc((var(--feed-page-w) - var(--smd-bg-tile-size)) / 2 - var(--feed-strip-x)) ${STRIP_Y}`,
+    tiled: true,
 };
 
 // null on the wall theme, and when the host picked the feed's own background colour (that colour wins).
@@ -73,7 +68,6 @@ export function feedBackdropStyle(backdrop: FeedPageBackdrop | null): CSSPropert
         '--feed-backdrop-size': backdrop.size,
         '--feed-backdrop-repeat': backdrop.repeat,
         '--feed-backdrop-position': backdrop.position,
-        '--feed-backdrop-strip-size': backdrop.stripSize,
-        '--feed-backdrop-strip-position': backdrop.stripPosition,
+        '--feed-backdrop-tiled': backdrop.tiled ? 1 : 0,
     } as CSSProperties;
 }

@@ -2,12 +2,15 @@ import '@/components/event/feedBackdrop.css';
 
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 import type { CSSProperties, ReactNode } from 'react';
+import { within } from 'storybook/test';
 
 import { withAppContext } from '@/.storybook/appContext';
 import { storyPhotos, storyPost } from '@/.storybook/fixtures';
 import { STORY_THEME } from '@/.storybook/invitation';
+import { Header } from '@/components/feed/Header';
 import { FeedLookTop } from '@/components/feed/layout/FeedLookTop';
 import { PostCard } from '@/components/feed/PostCard';
+import { RightContextPanel } from '@/components/layout/RightContextPanel';
 import type { FeedTopView } from '@/hooks/useFeedTop';
 import { eventThemeStyle } from '@/lib/eventTheme';
 import { defaultFeedLayout, feedFrame } from '@/lib/feedLayout';
@@ -39,6 +42,15 @@ const TWO_IMAGES: ThemeDesign = {
         ...STORY_THEME.backgrounds,
         top: { desktop: { mediaId: 'page-dark' }, mode: 'cover', stableRepeat: false },
         content: { desktop: { mediaId: 'page-light' }, mode: 'repeat', stableRepeat: true },
+    },
+};
+// A content picture that doesn't repeat (like Γάμος 001): it still runs down the whole page, at full width.
+const COVER: ThemeDesign = {
+    ...STORY_THEME,
+    backgrounds: {
+        ...STORY_THEME.backgrounds,
+        top: { desktop: { mediaId: 'page-dark' }, mode: 'cover', stableRepeat: false },
+        content: { desktop: { mediaId: 'page-light' }, mode: 'cover', stableRepeat: false },
     },
 };
 const PAGE_IMAGES: Record<string, string> = { 'page-light': '/storybook-assets/light-photo.jpg', 'page-dark': '/storybook-assets/dark-photo.jpg' };
@@ -76,7 +88,9 @@ const PICKED_LAYOUT = planFeedThemeSwitch(
     new Set(),
 );
 
-function ThemedPage({ theme, document = AUTO_LAYOUT, children }: { theme: ThemeDesign; document?: InvitationDocument; children?: ReactNode }) {
+type PageProps = { theme: ThemeDesign; document?: InvitationDocument; children?: ReactNode; whole?: boolean };
+
+function FeedColumn({ theme, document = AUTO_LAYOUT, children }: PageProps) {
     const backdrop = feedPageBackdrop(document, theme, media);
     const ctx = { ...buildRenderContext(document, theme, media), labels: INVITATION_LABELS.en, pageBackdrop: true };
     const view: FeedTopView = {
@@ -94,9 +108,8 @@ function ThemedPage({ theme, document = AUTO_LAYOUT, children }: { theme: ThemeD
         pageBackground: null,
         backdrop,
     };
-    const style = { ...eventThemeStyle(backdrop?.color, { cardColor: backdrop?.cardColor }), ...feedBackdropStyle(backdrop) } as CSSProperties;
     return (
-        <div className="feed-backdrop mx-auto min-h-screen max-w-2xl bg-event pb-8" style={style}>
+        <>
             <FeedLookTop
                 view={view}
                 cover={<Box label="Cover + title" />}
@@ -110,8 +123,47 @@ function ThemedPage({ theme, document = AUTO_LAYOUT, children }: { theme: ThemeD
                     <PostCard post={storyPost({ id: 'post-text', type: 'TEXT', media: [], content: 'What a day!' })} />
                 </>
             )}
+        </>
+    );
+}
+
+// `whole` draws the page as the app does: the sticky header and, on desktop, the side panel, in a
+// scrolling page, so the header strip and the panel can be checked against the page behind them.
+function ThemedPage({ whole = false, ...props }: PageProps) {
+    const backdrop = feedPageBackdrop(props.document ?? AUTO_LAYOUT, props.theme, media);
+    const style = { ...eventThemeStyle(backdrop?.color, { cardColor: backdrop?.cardColor }), ...feedBackdropStyle(backdrop) } as CSSProperties;
+    if (!whole) {
+        return (
+            <div className="feed-backdrop mx-auto min-h-screen max-w-2xl bg-event pb-8" style={style}>
+                <FeedColumn {...props} />
+            </div>
+        );
+    }
+    return (
+        <div data-testid="page" className="no-scrollbar h-screen overflow-y-auto">
+            <div data-event-scope="" className="feed-backdrop bg-event" style={style}>
+                <div className="flex">
+                    {/* Feed */}
+                    <div className="min-w-0 flex-1">
+                        <div className="mx-auto flex w-full flex-col pb-8 lg:max-w-2xl">
+                            <Header countdownTime={Date.parse('2026-07-04T15:00:00Z')} eventId="evt-story" />
+                            <FeedColumn {...props} />
+                        </div>
+                    </div>
+                    {/* Right panel */}
+                    <RightContextPanel />
+                </div>
+            </div>
         </div>
     );
+}
+
+// Scrolls the page part way, so the header strip sits over the page's middle, and waits for it to line up.
+async function scrollPage({ canvasElement }: { canvasElement: HTMLElement }) {
+    const page = await within(canvasElement).findByTestId('page');
+    page.scrollTop = 420;
+    page.dispatchEvent(new Event('scroll'));
+    await new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)));
 }
 
 const meta = {
@@ -140,3 +192,13 @@ export const Texture: Story = { args: { theme: TEXTURE } };
 
 // Mobile width: the tile size drops to 390px.
 export const TextureMobile: Story = { args: { theme: TEXTURE }, globals: { viewport: { value: 'mobile' } } };
+
+// The whole page on a content picture that doesn't repeat, scrolled: the picture runs down the page at
+// full width, and the header strip and the side panel show the same picture with no edge.
+export const WholePageCover: Story = { args: { theme: COVER, document: PICKED_LAYOUT, whole: true }, play: scrollPage };
+
+// The same at mobile width (no side panel).
+export const WholePageCoverMobile: Story = { ...WholePageCover, globals: { viewport: { value: 'mobile' } } };
+
+// The whole page on a repeating picture, scrolled.
+export const WholePageRepeating: Story = { args: { theme: LIGHT, whole: true }, play: scrollPage };

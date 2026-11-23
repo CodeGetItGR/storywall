@@ -50,7 +50,7 @@ describe('useFeedPageTheme', () => {
 
 describe('useFeedPageTheme with a Save my date theme', () => {
     it('publishes the backdrop of a Save my date theme, and the edit slot wins', () => {
-        const saved = { color: '#EFE7EC', image: null, size: '100% auto', repeat: 'repeat-y', position: 'center top', stripSize: 'var(--feed-page-w) auto', stripPosition: 'calc(0px - var(--feed-strip-x)) calc(0px - var(--feed-strip-y))', cardColor: '#F9F5F7' };
+        const saved = { color: '#EFE7EC', image: null, size: '100% auto', repeat: 'repeat-y', position: 'center top', tiled: false, cardColor: '#F9F5F7' };
         const edited = { ...saved, color: '#E1F0EC', cardColor: '#F3F9F7' };
         renderHook(() => useFeedPageTheme(event, null, saved));
         expect(feedPageThemeFor(feedPageThemeSnapshot(), 'e-1')?.backdrop).toEqual(saved);
