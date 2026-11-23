@@ -2,7 +2,7 @@ import { produce } from 'immer';
 import { describe, expect, it } from 'vitest';
 
 import { defaultFeedLayout } from '@/lib/feedLayout';
-import { canBeMembersOnly, setFeedBlockMembersOnly } from '@/lib/feedMembersOnly';
+import { canBeMembersOnly, setFeedBlockMembersOnly, splitMembersOnly } from '@/lib/feedMembersOnly';
 import { SAMPLE_SECTIONS } from '@/lib/invitation/samples';
 import type { InvitationSection } from '@/lib/invitation/sections';
 
@@ -23,5 +23,44 @@ describe('members-only blocks', () => {
         expect('membersOnly' in cleared.sections[4]).toBe(false);
         const cover = produce(layout, setFeedBlockMembersOnly('feed-feedCover', true));
         expect(cover.sections[0].membersOnly).toBeUndefined();
+    });
+});
+
+describe('splitMembersOnly', () => {
+    it('takes the stubs out of the public document and says where each one was', () => {
+        const raw = {
+            ...layout,
+            sections: [
+                ...layout.sections.slice(0, 2),
+                { id: 'feed-feedDescription', type: 'feedDescription', name: 'feedDescription', visible: true, membersOnly: true },
+                ...layout.sections.slice(3),
+            ],
+        };
+        const { document, locked } = splitMembersOnly(raw);
+        expect((document as { sections: { id: string }[] }).sections.map((section) => section.id)).toEqual([
+            'feed-feedCover',
+            'feed-feedDetails',
+            'feed-feedRsvp',
+            'dress',
+        ]);
+        expect(locked).toEqual([{ id: 'feed-feedDescription', type: 'feedDescription', name: 'feedDescription', at: 2 }]);
+    });
+
+    it('leaves out a hidden stub, and a member copy with its content is not a stub', () => {
+        const raw = {
+            ...layout,
+            sections: [
+                ...layout.sections,
+                { id: 'gone', type: 'faq', name: 'faq', visible: false, membersOnly: true },
+                { ...dressCode, id: 'open', membersOnly: true },
+            ],
+        };
+        const { document, locked } = splitMembersOnly(raw);
+        expect(locked).toEqual([]);
+        expect((document as { sections: { id: string }[] }).sections.map((section) => section.id)).toContain('open');
+    });
+
+    it('hands back anything that is not a document as it is', () => {
+        expect(splitMembersOnly(null)).toEqual({ document: null, locked: [] });
     });
 });
