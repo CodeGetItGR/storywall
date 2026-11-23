@@ -1,0 +1,17 @@
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">
+<g stroke-width="1.500">
+<path d="M10.2 8.6C10.2 4.4 13.8 4.4 13.8 8.6" stroke="url(#g-sections-baby)"/>
+<ellipse cx="12" cy="11.5" rx="7.5" ry="3.2" stroke="url(#g-sections-baby)"/>
+<circle cx="12" cy="11.5" r="1.1" fill="url(#g-sections-baby)" stroke="none"/>
+<circle cx="12" cy="17.6" r="2.6" stroke="url(#g-sections-baby)"/>
+</g>
+<defs>
+<linearGradient id="g-sections-baby" x1="-0.30" y1="-0.30" x2="20.00" y2="20.00" gradientUnits="userSpaceOnUse">
+<stop offset="0.2" stop-color="#C777B1"/>
+<stop offset="0.43" stop-color="#E48279"/>
+<stop offset="0.54" stop-color="#F2885C"/>
+<stop offset="0.99" stop-color="#FEC463"/>
+</linearGradient>
+
+</defs>
+</svg>
