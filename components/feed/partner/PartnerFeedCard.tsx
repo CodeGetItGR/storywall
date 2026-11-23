@@ -6,7 +6,7 @@ import { PartnerCompactRow } from '@/components/feed/partner/PartnerCompactRow';
 import { PartnerCredit } from '@/components/feed/partner/PartnerCredit';
 import { PartnerFeatureCard } from '@/components/feed/partner/PartnerFeatureCard';
 import { AskDatesButton } from '@/components/vendors/inquiries/AskDatesButton';
-import { AskDatesSheet } from '@/components/vendors/inquiries/AskDatesSheet';
+import { AskDatesSheetFor } from '@/components/vendors/inquiries/AskDatesSheetFor';
 import { useAskDates } from '@/hooks/useAskDates';
 import { type PartnerBrandingCardContent, usePartnerBrandingCard } from '@/hooks/usePartnerBrandingCard';
 import type { BrandingVariant, PartnerBrandingDto } from '@/lib/api/types';
@@ -44,30 +44,7 @@ export function PartnerFeedCard({ branding, eventId }: { branding: PartnerBrandi
             <PartnerCardVariant variant={branding.variant} content={content} action={action} />
 
             {/* Ask sheet */}
-            {ask.target && (
-                <AskDatesSheet
-                    name={ask.target.name}
-                    date={ask.date}
-                    phone={ask.phone}
-                    email={ask.email}
-                    note={ask.note}
-                    consent={ask.consent}
-                    dateBounds={ask.dateBounds}
-                    dateError={ask.dateError}
-                    contactError={ask.contactError}
-                    sendError={ask.sendError}
-                    sent={ask.sent}
-                    isSending={ask.isSending}
-                    canSend={ask.canSend}
-                    onDateChangeAction={ask.setDate}
-                    onPhoneChangeAction={ask.setPhone}
-                    onEmailChangeAction={ask.setEmail}
-                    onNoteChangeAction={ask.setNote}
-                    onConsentChangeAction={ask.setConsent}
-                    onSubmitAction={ask.submit}
-                    onCloseAction={ask.close}
-                />
-            )}
+            <AskDatesSheetFor ask={ask} />
         </>
     );
 }
