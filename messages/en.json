@@ -6718,6 +6718,7 @@
         }
     },
     "FeedEditor": {
+        "addIntro": "Add any section you like to your digital invitation",
         "addPhoto": "Add photo",
         "background": {
             "tooDark": "Too dark for the text. A lighter shade will be shown."
@@ -6729,6 +6730,10 @@
             "unlock": "Unlock"
         },
         "edit": "Edit",
+        "moduleOpen": "Open",
+        "premium": "Premium",
+        "premiumLess": "Show less",
+        "premiumMore": "Show more",
         "saveFailed": "Couldn't save your changes. Please try again.",
         "style": "Style",
         "themes": "Themes"

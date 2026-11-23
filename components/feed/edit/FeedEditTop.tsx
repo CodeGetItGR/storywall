@@ -249,6 +249,7 @@ export function FeedEditTop({ event, onDone, cancelRef, mode, modeSwitch, dateRo
                 open={actions.adding}
                 eventType={event.eventType}
                 previews={sectionPreviews}
+                tiles={null}
                 onAdd={actions.add}
                 onClose={actions.closeAdd}
             />
