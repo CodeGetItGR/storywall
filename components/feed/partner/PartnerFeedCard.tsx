@@ -1,32 +1,13 @@
 'use client';
 
-import { type ReactNode, useCallback } from 'react';
+import { useCallback } from 'react';
 
-import { PartnerCompactRow } from '@/components/feed/partner/PartnerCompactRow';
-import { PartnerCredit } from '@/components/feed/partner/PartnerCredit';
-import { PartnerFeatureCard } from '@/components/feed/partner/PartnerFeatureCard';
+import { PartnerCardVariant } from '@/components/feed/partner/PartnerCardVariant';
 import { AskDatesButton } from '@/components/vendors/inquiries/AskDatesButton';
 import { AskDatesSheetFor } from '@/components/vendors/inquiries/AskDatesSheetFor';
 import { useAskDates } from '@/hooks/useAskDates';
-import { type PartnerBrandingCardContent, usePartnerBrandingCard } from '@/hooks/usePartnerBrandingCard';
-import type { BrandingVariant, PartnerBrandingDto } from '@/lib/api/types';
-
-// One variant from ready content; the admin preview renders all three this way.
-export function PartnerCardVariant({
-    variant,
-    content,
-    coverSizes,
-    action,
-}: {
-    variant: BrandingVariant;
-    content: PartnerBrandingCardContent;
-    coverSizes?: string;
-    action?: ReactNode;
-}) {
-    if (variant === 'FEATURE_CARD') return <PartnerFeatureCard content={content} coverSizes={coverSizes} action={action} />;
-    if (variant === 'COMPACT_ROW') return <PartnerCompactRow content={content} />;
-    return <PartnerCredit content={content} />;
-}
+import { usePartnerBrandingCard } from '@/hooks/usePartnerBrandingCard';
+import type { PartnerBrandingDto } from '@/lib/api/types';
 
 // No reactions, comments, reporting or menu. A tap opens the click redirect in a new tab. On the feature card, a guest
 // can also ask the partner about a date.

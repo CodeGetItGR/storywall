@@ -2,7 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 
-import { PartnerCardVariant } from '@/components/feed/partner/PartnerFeedCard';
+import { PartnerCardVariant } from '@/components/feed/partner/PartnerCardVariant';
 import { usePartnerBrandingCard } from '@/hooks/usePartnerBrandingCard';
 import type { BrandingVariant, PartnerBrandingDto } from '@/lib/api/types';
 

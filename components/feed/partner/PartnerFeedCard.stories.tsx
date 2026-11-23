@@ -1,7 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 
 import { withAppContext } from '@/.storybook/appContext';
-import { PartnerCardVariant, PartnerFeedCard } from '@/components/feed/partner/PartnerFeedCard';
+import { PartnerCardVariant } from '@/components/feed/partner/PartnerCardVariant';
+import { PartnerFeedCard } from '@/components/feed/partner/PartnerFeedCard';
 import { usePartnerCardLabels } from '@/hooks/usePartnerBrandingCard';
 import type { PartnerBrandingDto } from '@/lib/api/types';
 
