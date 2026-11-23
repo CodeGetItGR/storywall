@@ -10,25 +10,28 @@ import { type InvitationSection, isFeedSectionType, type SectionType } from '@/l
 import type { SettingsGroup } from '@/lib/invitation/sectionSettings';
 import type { SettingsPart } from '@/lib/settingsPreview';
 
-// Edit mode on the feed (KAN-245). The four feed blocks keep their places and can only be hidden
-// (the cover not even that); the host orders, hides and deletes the middle's Save my date blocks.
+// Edit mode on the feed (KAN-245). The cover and details keep their places, RSVP too without Save my date; the host
+// orders, hides and deletes the rest (RSVP's ✕ arrives with its tile in plan 7c).
 // Every edit is an Immer recipe for the old editor's store.
 
 type DocumentDraft = Draft<InvitationDocument>;
 type Block = Pick<InvitationSection, 'id' | 'type' | 'locked'>;
 
-// The description and every Save my date block: what the host orders.
-export function isMiddleBlock(section: Pick<InvitationSection, 'type'>): boolean {
-    return section.type === 'feedDescription' || !isFeedSectionType(section.type);
+// rsvpMoves: the event has Save my date, so RSVP is one of the host's blocks.
+export type HostBlockOptions = { rsvpMoves: boolean };
+
+// The description, every Save my date block, and RSVP with Save my date: what the host orders.
+export function isHostBlock(section: Pick<InvitationSection, 'type'>, { rsvpMoves }: HostBlockOptions): boolean {
+    return section.type === 'feedDescription' || !isFeedSectionType(section.type) || (rsvpMoves && section.type === 'feedRsvp');
 }
 
 // Edit mode lists every block, hidden ones too, and the middle is never dropped after the event.
-export function feedEditFrame(layout: InvitationDocument): FeedFrame {
+export function feedEditFrame(layout: InvitationDocument, options: HostBlockOptions): FeedFrame {
     const find = (type: SectionType) => layout.sections.find((section) => section.type === type) ?? null;
     return {
         cover: feedFrame(layout, { ended: false }).cover,
-        middle: layout.sections.filter(isMiddleBlock),
-        rsvp: find('feedRsvp'),
+        middle: layout.sections.filter((section) => isHostBlock(section, options)),
+        rsvp: options.rsvpMoves ? null : find('feedRsvp'),
     };
 }
 
@@ -40,13 +43,13 @@ export function canDeleteFeedBlock(section: Block): boolean {
     return !isFeedSectionType(section.type) && !section.locked;
 }
 
-function middleIds(sections: readonly Block[]): string[] {
-    return sections.filter(isMiddleBlock).map((section) => section.id);
+function middleIds(sections: readonly Block[], options: HostBlockOptions): string[] {
+    return sections.filter((section) => isHostBlock(section, options)).map((section) => section.id);
 }
 
 // A locked block keeps its place: it never moves, and nothing moves into it.
-export function canMoveFeedBlock(sections: readonly Block[], id: string, direction: MoveDirection): boolean {
-    const middle = sections.filter(isMiddleBlock);
+export function canMoveFeedBlock(sections: readonly Block[], id: string, direction: MoveDirection, options: HostBlockOptions): boolean {
+    const middle = sections.filter((section) => isHostBlock(section, options));
     const index = middle.findIndex((section) => section.id === id);
     const target = index === -1 ? undefined : middle[index + direction];
     return index !== -1 && !middle[index].locked && target !== undefined && !target.locked;
@@ -54,22 +57,22 @@ export function canMoveFeedBlock(sections: readonly Block[], id: string, directi
 
 export type FeedBlockControls = { canHide: boolean; canDelete: boolean; movable: boolean; canMoveUp: boolean; canMoveDown: boolean };
 
-export function feedBlockControls(sections: readonly Block[], section: Block): FeedBlockControls {
-    const movable = isMiddleBlock(section) && !section.locked;
+export function feedBlockControls(sections: readonly Block[], section: Block, options: HostBlockOptions): FeedBlockControls {
+    const movable = isHostBlock(section, options) && !section.locked;
     return {
         canHide: canHideFeedBlock(section),
         canDelete: canDeleteFeedBlock(section),
         movable,
-        canMoveUp: movable && canMoveFeedBlock(sections, section.id, -1),
-        canMoveDown: movable && canMoveFeedBlock(sections, section.id, 1),
+        canMoveUp: movable && canMoveFeedBlock(sections, section.id, -1, options),
+        canMoveDown: movable && canMoveFeedBlock(sections, section.id, 1, options),
     };
 }
 
-// The dragged middle block takes the place of the one it was dropped on. The frame's blocks stay
-// where they are, so only the middle's own slots are rewritten. A drag that would shift a locked block does nothing.
-export function reorderFeedBlocks(activeId: string, overId: string) {
+// The dragged block takes the place of the one it was dropped on. The frame's fixed blocks stay where they are, so
+// only the host blocks' own slots are rewritten. A drag that would shift a locked block does nothing.
+export function reorderFeedBlocks(activeId: string, overId: string, options: HostBlockOptions) {
     return (draft: DocumentDraft) => {
-        const slots = draft.sections.flatMap((section, index) => (isMiddleBlock(section) ? [index] : []));
+        const slots = draft.sections.flatMap((section, index) => (isHostBlock(section, options) ? [index] : []));
         const middle = slots.map((slot) => draft.sections[slot]);
         const from = middle.findIndex((section) => section.id === activeId);
         const to = middle.findIndex((section) => section.id === overId);
@@ -83,12 +86,12 @@ export function reorderFeedBlocks(activeId: string, overId: string) {
     };
 }
 
-export function moveFeedBlock(id: string, direction: MoveDirection) {
+export function moveFeedBlock(id: string, direction: MoveDirection, options: HostBlockOptions) {
     return (draft: DocumentDraft) => {
-        const order = middleIds(draft.sections);
+        const order = middleIds(draft.sections, options);
         const index = order.indexOf(id);
         const target = index === -1 ? undefined : order[index + direction];
-        if (target !== undefined) reorderFeedBlocks(id, target)(draft);
+        if (target !== undefined) reorderFeedBlocks(id, target, options)(draft);
     };
 }
 
@@ -106,11 +109,11 @@ export function deleteFeedBlock(id: string) {
     };
 }
 
-// A new block goes to the end of the middle.
-export function appendFeedSection(section: InvitationSection) {
+// A new block goes after the last host block: before RSVP when RSVP keeps its fixed place, after it when it moves.
+export function appendFeedSection(section: InvitationSection, options: HostBlockOptions) {
     return (draft: DocumentDraft) => {
         if (draft.sections.length >= MAX_SECTIONS) return;
-        const lastMiddle = draft.sections.map(isMiddleBlock).lastIndexOf(true);
+        const lastMiddle = draft.sections.map((item) => isHostBlock(item, options)).lastIndexOf(true);
         const rsvp = draft.sections.findIndex((item) => item.type === 'feedRsvp');
         const index = lastMiddle !== -1 ? lastMiddle + 1 : rsvp !== -1 ? rsvp : draft.sections.length;
         draft.sections.splice(index, 0, section as Draft<InvitationSection>);

@@ -21,15 +21,13 @@ type FeedEditBlockProps = {
     actions: FeedBlockToolActions;
     // Its settings are open: the outline stays on.
     active?: boolean;
-    // The cover's top corner: Theme, Cancel and Save.
-    corner?: ReactNode;
     children: ReactNode;
 };
 
 // One block of the feed while editing: dimmed when hidden, with its tools floating over its top.
 // Tapping it opens its settings; while they are open it keeps its outline.
 // Only middle blocks drag; the rest pass locked to the sortable, so they stay put.
-export function FeedEditBlock({ section, name, controls, hasSettings, actions, active = false, corner, children }: FeedEditBlockProps) {
+export function FeedEditBlock({ section, name, controls, hasSettings, actions, active = false, children }: FeedEditBlockProps) {
     const { setNodeRef, style, isDragging, drag } = useSectionSortable(section.id, name, !controls.movable);
     const onTap = useFeedBlockTap(section.id, hasSettings, actions.onOpenSettings);
 
@@ -55,7 +53,7 @@ export function FeedEditBlock({ section, name, controls, hasSettings, actions, a
 
             {/* Editing tools: the app's own look, not the theme's (FeedNative undoes the invitation's element styles) */}
             <FeedNative className="contents font-sans">
-                {/* Tools, with Theme, Cancel and Save on the cover */}
+                {/* Tools */}
                 <FeedBlockTools
                     section={section}
                     name={name}
@@ -63,7 +61,6 @@ export function FeedEditBlock({ section, name, controls, hasSettings, actions, a
                     hasSettings={hasSettings}
                     drag={drag}
                     actions={actions}
-                    corner={corner}
                 />
             </FeedNative>
         </div>

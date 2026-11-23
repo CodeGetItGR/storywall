@@ -101,10 +101,8 @@ function FeedColumn({ theme, document = AUTO_LAYOUT, children }: PageProps) {
         themeId: document.themeId,
         sections: document.sections,
         frame: feedFrame(document, { ended: false }),
-        folds: false,
-        open: true,
-        toggle: () => undefined,
         drawsMiddle: true,
+        rsvpMoves: false,
         pageBackground: null,
         backdrop,
     };

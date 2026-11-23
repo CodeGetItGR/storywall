@@ -4,7 +4,6 @@ import type { FeedLayoutDto } from '@/lib/api/types';
 import {
     defaultFeedLayout,
     feedFrame,
-    foldsMiddle,
     readFeedLayout,
     shellsFeedBlock,
     usesInvitationLook,
@@ -56,14 +55,6 @@ describe('feedFrame', () => {
         const frame = feedFrame(layoutWith(dressCode), { ended: true });
         expect(frame.middle).toEqual([]);
         expect(frame.rsvp).toBeNull();
-    });
-});
-
-describe('foldsMiddle', () => {
-    it('folds two or more blocks, never a lone one', () => {
-        expect(foldsMiddle(0)).toBe(false);
-        expect(foldsMiddle(1)).toBe(false);
-        expect(foldsMiddle(2)).toBe(true);
     });
 });
 
@@ -142,5 +133,28 @@ describe('readFeedLayout', () => {
         const view = readFeedLayout(dto({ themeSlug: 'olive-garden', document, design: { broken: true } }), null);
         expect(view.document.themeId).toBe(WALL_THEME_ID);
         expect(view.theme).toEqual(wallThemeDesign(null));
+    });
+});
+
+describe('feedFrame with a movable RSVP', () => {
+    const dress = { ...(SAMPLE_SECTIONS.dressCode as InvitationSection), id: 'dress' };
+    const [cover, details, description, rsvp] = defaultFeedLayout().sections;
+    const layout = { ...defaultFeedLayout(), sections: [cover, details, rsvp, description, dress] };
+
+    it('keeps RSVP in its fixed place without Save my date', () => {
+        const frame = feedFrame(layout, { ended: false, rsvpMoves: false });
+        expect(frame.middle.map((section) => section.id)).toEqual(['feed-feedDescription', 'dress']);
+        expect(frame.rsvp?.id).toBe('feed-feedRsvp');
+    });
+
+    it('draws RSVP where the host put it with Save my date', () => {
+        const frame = feedFrame(layout, { ended: false, rsvpMoves: true });
+        expect(frame.middle.map((section) => section.id)).toEqual(['feed-feedRsvp', 'feed-feedDescription', 'dress']);
+        expect(frame.rsvp).toBeNull();
+    });
+
+    it('leaves a hidden RSVP out either way', () => {
+        const hidden = { ...layout, sections: layout.sections.map((section) => (section.type === 'feedRsvp' ? { ...section, visible: false } : section)) };
+        expect(feedFrame(hidden, { ended: false, rsvpMoves: true }).middle.some((section) => section.type === 'feedRsvp')).toBe(false);
     });
 });

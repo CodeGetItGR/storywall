@@ -4,7 +4,7 @@ import { closestCenter, DndContext } from '@dnd-kit/core';
 import { restrictToVerticalAxis } from '@dnd-kit/modifiers';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { useTranslations } from 'next-intl';
-import type { ReactNode, Ref } from 'react';
+import { type ReactNode, type Ref, useMemo } from 'react';
 
 import { FeedAddSectionRow } from '@/components/feed/edit/FeedAddSectionRow';
 import { FeedAddSectionSheet } from '@/components/feed/edit/FeedAddSectionSheet';
@@ -12,7 +12,7 @@ import { FeedBlockPlaceholder } from '@/components/feed/edit/FeedBlockPlaceholde
 import { FeedBlockSheet } from '@/components/feed/edit/FeedBlockSheet';
 import { FeedEditBlock } from '@/components/feed/edit/FeedEditBlock';
 import { FeedEditInvitationSection } from '@/components/feed/edit/FeedEditInvitationSection';
-import { FeedEditPills } from '@/components/feed/edit/FeedEditPills';
+import { FeedEditRow } from '@/components/feed/edit/FeedEditRow';
 import { FeedThemeSheet } from '@/components/feed/edit/FeedThemeSheet';
 import { FeedLook, FeedNative } from '@/components/feed/layout/FeedLook';
 import { feedLookParts } from '@/components/feed/layout/FeedLookTop';
@@ -48,15 +48,17 @@ type FeedEditTopProps = Omit<FeedTopProps, 'view'> & { event: EventDetailRespons
 type FeedNameKey = `sectionNames.${NewSectionType | FeedSectionType}`;
 const nameKey = (type: SectionType) => `sectionNames.${type}` as FeedNameKey;
 
-// The top of the feed in edit mode: the same frame as the feed, every block with its tools, Save my date
-// text typed in place, the Add section row closing the middle, and the Theme sheet. All held until Save.
-export function FeedEditTop({ event, onDone, cancelRef, cover, stories, description, rsvp }: FeedEditTopProps) {
+// The top of the feed in edit mode: the same frame as the feed, Theme / Cancel / Save under the cover, every block
+// with its tools, Save my date text typed in place, the Add section row closing the middle, and the Theme sheet. All
+// held until Save.
+export function FeedEditTop({ event, onDone, cancelRef, mode, modeSwitch, dateRow, cover, stories, description, rsvp }: FeedEditTopProps) {
     const t = useTranslations('InvitationEditor');
     const session = useFeedEditSession(event, onDone);
     const view = useFeedTop(event, { document: session.document, theme: session.theme, media: session.media });
     useEditPageTheme(event.id, session.wallTheme, session.background, view.backdrop);
     const fonts = useInvitationFonts(true);
-    const actions = useFeedBlockActions(session.store, session.document, event);
+    const hostOptions = useMemo(() => ({ rsvpMoves: view.rsvpMoves }), [view.rsvpMoves]);
+    const actions = useFeedBlockActions(session.store, session.document, event, hostOptions);
     const sectionPreviews = useFeedSectionPreviews({
         types: actions.addable,
         themeSlug: session.themeSlug,
@@ -79,8 +81,8 @@ export function FeedEditTop({ event, onDone, cancelRef, cover, stories, descript
         onDelete: actions.askDelete,
         onOpenSettings: panels.openSettings,
     };
-    const pills = (
-        <FeedEditPills
+    const editRow = (
+        <FeedEditRow
             saving={session.saving}
             failed={session.failed}
             onTheme={panels.openTheme}
@@ -95,11 +97,10 @@ export function FeedEditTop({ event, onDone, cancelRef, cover, stories, descript
             key={section.id}
             section={section}
             name={t(nameKey(section.type))}
-            controls={feedBlockControls(session.document.sections, section)}
+            controls={feedBlockControls(session.document.sections, section, hostOptions)}
             hasSettings={sheet.hasSettings(section)}
             actions={tools}
             active={sheet.section?.id === section.id}
-            corner={section.type === 'feedCover' ? pills : undefined}
         >
             {node}
         </FeedEditBlock>
@@ -124,13 +125,19 @@ export function FeedEditTop({ event, onDone, cancelRef, cover, stories, descript
     const frame = (
         <FeedTopFrame
             view={view}
+            mode={mode}
+            modeSwitch={modeSwitch}
+            editRow={editRow}
+            dateRow={dateRow}
             parts={parts}
             cover={cover}
             stories={stories}
             description={description || <FeedBlockPlaceholder name={t('sectionNames.feedDescription')} />}
             rsvp={rsvp ?? <FeedBlockPlaceholder name={t('sectionNames.feedRsvp')} />}
             afterMiddle={
-                actions.showAdd && (
+                // Feed mode's own list arrives with its sections (plan 8).
+                actions.showAdd &&
+                mode !== 'feed' && (
                     <FeedNative className="font-sans">
                         <FeedAddSectionRow onAdd={panels.openAdd} />
                     </FeedNative>
@@ -172,6 +179,8 @@ export function FeedEditTop({ event, onDone, cancelRef, cover, stories, descript
                 parts={sheet.parts}
                 partLabels={preview.labels}
                 isDesktop={preview.isDesktop}
+                membersOnly={sheet.membersOnly}
+                onMembersOnly={sheet.setMembersOnly}
                 onOpenPart={preview.openEditor}
                 onClose={sheet.close}
             />

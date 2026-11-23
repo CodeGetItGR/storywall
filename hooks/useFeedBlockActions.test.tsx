@@ -13,13 +13,15 @@ import type { InvitationSection } from '@/lib/invitation/sections';
 const dressCode = { ...(SAMPLE_SECTIONS.dressCode as InvitationSection), id: 'dress' };
 
 const event = { id: 'e-1', eventType: 'WEDDING' } as unknown as EventDetailResponseDto;
+// Without Save my date: RSVP keeps its fixed place.
+const OFF = { rsvpMoves: false };
 
 function setup(extra: InvitationSection[] = [dressCode]) {
     const base = defaultFeedLayout();
     const store = createInvitationEditorStore({ ...base, sections: [...base.sections, ...extra] });
     const hook = renderHook(() => {
         const document = useStore(store, (state) => state.document);
-        return useFeedBlockActions(store, document, event);
+        return useFeedBlockActions(store, document, event, OFF);
     });
     return { store, ...hook };
 }

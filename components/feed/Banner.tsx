@@ -4,6 +4,7 @@ import { ProtectedImage } from '@/components/common/ProtectedImage';
 import { BannerFallback } from '@/components/feed/BannerFallback';
 import { BannerOverlay } from '@/components/feed/BannerOverlay';
 import { BANNER_IMAGE_SIZES, BANNER_THUMBNAIL_SIZES } from '@/lib/feed/bannerImage';
+import { cn } from '@/lib/utils';
 
 export function Banner({
     image,
@@ -15,6 +16,7 @@ export function Banner({
     fallbackActionHref,
     fallbackActionLabel,
     thumbnail = false,
+    clearPill = false,
 }: {
     image: string | null;
     // A theme's illustration. Takes the cover's place, and so also the "add cover photo" prompt's.
@@ -28,6 +30,8 @@ export function Banner({
     fallbackActionLabel?: string;
     // Drawn as a small picture: the image isn't preloaded and is fetched at the picture's size.
     thumbnail?: boolean;
+    // The feed's Invitation | Social Feed pill sits half over the cover's bottom edge: the title moves up, clear of it.
+    clearPill?: boolean;
 }) {
     const sizes = thumbnail ? BANNER_THUMBNAIL_SIZES : BANNER_IMAGE_SIZES;
     // Illustration mode: the art sits clean on the theme colour and the title goes below it in
@@ -51,7 +55,14 @@ export function Banner({
                         <div className="flex h-full flex-col items-end justify-between gap-2">{actions}</div>
                     </div>
                 </div>
-                <h1 className="event-heading px-5 pt-3 text-center alegreya-light text-4xl leading-tight text-balance text-event-title">{title}</h1>
+                <h1
+                    className={cn(
+                        'event-heading px-5 pt-3 text-center alegreya-light text-4xl leading-tight text-balance text-event-title',
+                        clearPill && 'pb-9',
+                    )}
+                >
+                    {title}
+                </h1>
             </div>
         );
     }
@@ -67,7 +78,7 @@ export function Banner({
                         <BannerFallback actionHref={fallbackActionHref} actionLabel={fallbackActionLabel} />
                     )}
                 </div>
-                <BannerOverlay title={title} actions={actions} glowVisible={glowVisible} />
+                <BannerOverlay title={title} actions={actions} glowVisible={glowVisible} clearPill={clearPill} />
             </div>
         </div>
     );

@@ -1,8 +1,7 @@
 'use client';
 
-import { Eye, EyeOff, GripVertical } from 'lucide-react';
+import { Eye, EyeOff, GripVertical, Lock } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import type { ReactNode } from 'react';
 
 import { SectionMenu } from '@/components/saveMyDate/editor/sections/SectionMenu';
 import { SectionSettingsButton } from '@/components/saveMyDate/editor/sections/SectionSettingsButton';
@@ -11,7 +10,6 @@ import { type FeedBlockToolActions, useFeedBlockHandlers } from '@/hooks/useFeed
 import type { SectionDragHandle } from '@/hooks/useSectionSortable';
 import type { FeedBlockControls } from '@/lib/feedEditing';
 import type { InvitationSection } from '@/lib/invitation/sections';
-import { cn } from '@/lib/utils';
 
 type FeedBlockToolsProps = {
     section: InvitationSection;
@@ -20,15 +18,12 @@ type FeedBlockToolsProps = {
     hasSettings: boolean;
     drag: SectionDragHandle;
     actions: FeedBlockToolActions;
-    // The cover's top corner: Theme, Cancel and Save.
-    corner?: ReactNode;
 };
 
 // One block's tools: eye, pencil and the block's name on the left, drag and menu on the right (middle blocks only).
-// The cover's right corner holds Theme, Cancel and Save instead. The name gives way to them, cut short when it is long,
-// and on phones the cover drops its name: the three leave it no room.
-export function FeedBlockTools({ section, name, controls, hasSettings, drag, actions, corner }: FeedBlockToolsProps) {
+export function FeedBlockTools({ section, name, controls, hasSettings, drag, actions }: FeedBlockToolsProps) {
     const t = useTranslations('InvitationEditor.sections');
+    const tLayout = useTranslations('FeedLayout');
     const on = useFeedBlockHandlers(section.id, actions);
     const { activator, attributes, listeners } = drag;
 
@@ -54,10 +49,7 @@ export function FeedBlockTools({ section, name, controls, hasSettings, drag, act
                 {/* The block's group already carries its name for screen readers. */}
                 <span
                     aria-hidden="true"
-                    className={cn(
-                        'pointer-events-none min-w-0 truncate rounded-full bg-white/95 px-2.5 py-1 text-[12px] text-[#555] shadow-[0_4px_14px_rgba(0,0,0,0.16)]',
-                        corner && 'max-sm:hidden',
-                    )}
+                    className="pointer-events-none min-w-0 truncate rounded-full bg-white/95 px-2.5 py-1 text-[12px] text-[#555] shadow-[0_4px_14px_rgba(0,0,0,0.16)]"
                 >
                     {name}
                 </span>
@@ -65,6 +57,13 @@ export function FeedBlockTools({ section, name, controls, hasSettings, drag, act
                 {!section.visible && (
                     <span className="pointer-events-none shrink-0 rounded-full border border-black/10 bg-white/95 px-2.5 py-1 text-[11px] text-[#555]">
                         {t('hidden')}
+                    </span>
+                )}
+                {/* Members only */}
+                {section.membersOnly && (
+                    <span className="pointer-events-none flex shrink-0 items-center gap-1 rounded-full border border-black/10 bg-white/95 px-2.5 py-1 text-[11px] text-[#555]">
+                        <Lock className="h-3 w-3" aria-hidden="true" />
+                        {tLayout('membersOnly')}
                     </span>
                 )}
             </div>
@@ -91,8 +90,6 @@ export function FeedBlockTools({ section, name, controls, hasSettings, drag, act
                 </div>
             )}
 
-            {/* Theme, Cancel and Save */}
-            {corner && <div className="pointer-events-auto mr-0.5 shrink-0">{corner}</div>}
         </div>
     );
 }
