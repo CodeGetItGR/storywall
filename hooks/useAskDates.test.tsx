@@ -119,4 +119,78 @@ describe('useAskDates', () => {
         expect(result.current.sent).toBe(false);
         expect(result.current.sendError).toBe('You already asked them.');
     });
+
+    function fill(result: { current: ReturnType<typeof useAskDates> }, kind: 'vendor' | 'card') {
+        act(() => {
+            if (kind === 'vendor') result.current.openForVendor('v1', 'Lens & Light');
+            else result.current.openForCard('Aegean Weddings');
+            result.current.setDate(min);
+            result.current.setConsent(true);
+        });
+    }
+
+    function seedOther() {
+        client.setQueryData(['events', 'evt-1', 'posts'], []);
+        const invalidate = vi.spyOn(client, 'invalidateQueries');
+        return invalidate;
+    }
+
+    it('refreshes the feed card after a send from a vendor row', async () => {
+        post.mockResolvedValue({ sentAt: '2026-11-23T10:00:00Z' });
+        const invalidate = seedOther();
+        const { result } = renderHook(() => useAskDates('evt-1'), { wrapper });
+        fill(result, 'vendor');
+        await act(() => result.current.submit());
+
+        expect(invalidate).toHaveBeenCalledWith({ queryKey: eventKeys.detail('evt-1'), exact: true });
+        expect(invalidate).not.toHaveBeenCalledWith({ queryKey: vendorKeys.list('evt-1') });
+        expect(client.getQueryState(['events', 'evt-1', 'posts'])?.isInvalidated).toBe(false);
+    });
+
+    it('refreshes the vendor list after a send from the feed card', async () => {
+        client.setQueryData(eventKeys.detail('evt-1'), { partnerBranding: { inquiry: { canAsk: true, sentAt: null } } });
+        post.mockResolvedValue({ sentAt: '2026-11-23T10:00:00Z' });
+        const invalidate = seedOther();
+        const { result } = renderHook(() => useAskDates('evt-1'), { wrapper });
+        fill(result, 'card');
+        await act(() => result.current.submit());
+
+        expect(invalidate).toHaveBeenCalledWith({ queryKey: vendorKeys.list('evt-1') });
+        expect(invalidate).not.toHaveBeenCalledWith({ queryKey: eventKeys.detail('evt-1'), exact: true });
+    });
+
+    it('refreshes both surfaces when the partner was already asked', async () => {
+        post.mockRejectedValue(new ApiError(409, { status: 409, errorCode: 5228, detail: 'already' }));
+        const invalidate = seedOther();
+        const { result } = renderHook(() => useAskDates('evt-1'), { wrapper });
+        fill(result, 'vendor');
+        await act(() => result.current.submit());
+
+        expect(result.current.sendError).toBe('You already asked them.');
+        expect(invalidate).toHaveBeenCalledWith({ queryKey: vendorKeys.list('evt-1') });
+        expect(invalidate).toHaveBeenCalledWith({ queryKey: eventKeys.detail('evt-1'), exact: true });
+        expect(client.getQueryState(['events', 'evt-1', 'posts'])?.isInvalidated).toBe(false);
+    });
+
+    it('refreshes both surfaces when the partner is gone', async () => {
+        post.mockRejectedValue(new ApiError(404, { status: 404, detail: 'gone' }));
+        const invalidate = seedOther();
+        const { result } = renderHook(() => useAskDates('evt-1'), { wrapper });
+        fill(result, 'card');
+        await act(() => result.current.submit());
+
+        expect(result.current.sendError).not.toBeNull();
+        expect(invalidate).toHaveBeenCalledWith({ queryKey: vendorKeys.list('evt-1') });
+        expect(invalidate).toHaveBeenCalledWith({ queryKey: eventKeys.detail('evt-1'), exact: true });
+    });
+
+    it('leaves the caches alone on other errors', async () => {
+        post.mockRejectedValue(new ApiError(500, { status: 500, detail: 'boom' }));
+        const invalidate = seedOther();
+        const { result } = renderHook(() => useAskDates('evt-1'), { wrapper });
+        fill(result, 'vendor');
+        await act(() => result.current.submit());
+
+        expect(invalidate).not.toHaveBeenCalled();
+    });
 });

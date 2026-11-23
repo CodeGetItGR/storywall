@@ -10,6 +10,7 @@ import { eventKeys } from '@/hooks/useEvent';
 import { vendorKeys } from '@/hooks/useVendors';
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
+import { ERROR_CODES, getErrorCode, isNotFoundError } from '@/lib/api/errors';
 import type { EventDetailResponseDto, GuestInquiryRequestDto, GuestInquirySentDto, VendorRowDto } from '@/lib/api/types';
 import { inquiryDateBounds, markCardInquirySent, markVendorInquirySent } from '@/lib/inquiries';
 
@@ -73,15 +74,25 @@ export function useAskDates(eventId: string) {
         setContactError(null);
     }, []);
 
+    // exact: the event detail key is the prefix of posts, media, members and billing.
+    const refreshVendors = useCallback(() => queryClient.invalidateQueries({ queryKey: vendorKeys.list(eventId) }), [eventId, queryClient]);
+    const refreshEvent = useCallback(
+        () => queryClient.invalidateQueries({ queryKey: eventKeys.detail(eventId), exact: true }),
+        [eventId, queryClient],
+    );
+
+    // The feed card partner is often a vendor row too, so the other surface refetches its own state.
     const markSent = useCallback(
         (to: AskDatesTarget, sentAt: string) => {
             if (to.kind === 'vendor') {
                 queryClient.setQueryData<VendorRowDto[]>(vendorKeys.list(eventId), (rows) => markVendorInquirySent(rows, to.vendorId, sentAt));
+                void refreshEvent();
             } else {
                 queryClient.setQueryData<EventDetailResponseDto>(eventKeys.detail(eventId), (event) => markCardInquirySent(event, sentAt));
+                void refreshVendors();
             }
         },
-        [eventId, queryClient],
+        [eventId, queryClient, refreshEvent, refreshVendors],
     );
 
     const submit = useCallback(async () => {
@@ -108,8 +119,13 @@ export function useAskDates(eventId: string) {
             setSent(true);
         } catch (error) {
             setSendError(toErrorMessage(error));
+            // Already asked, or the partner is no longer shown: both surfaces pick up the server's state.
+            if (getErrorCode(error) === ERROR_CODES.INQUIRY_ALREADY_SENT || isNotFoundError(error)) {
+                void refreshVendors();
+                void refreshEvent();
+            }
         }
-    }, [consent, date, email, markSent, note, phone, send, t, target, toErrorMessage]);
+    }, [consent, date, email, markSent, note, phone, refreshEvent, refreshVendors, send, t, target, toErrorMessage]);
 
     return {
         target,
