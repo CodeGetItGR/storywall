@@ -27,6 +27,7 @@ const toolbar: TextToolbarState = {
     setAlign: fn(),
     pickColor: fn(),
     add: fn(),
+    applyPreset: fn(),
     lock: null,
     lockHref: undefined,
 };

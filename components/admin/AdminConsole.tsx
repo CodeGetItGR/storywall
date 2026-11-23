@@ -32,6 +32,7 @@ import { PlatformMetricsPanel } from '@/components/admin/PlatformMetricsPanel';
 import { QrCardTemplatesPanel } from '@/components/admin/qrCards/QrCardTemplatesPanel';
 import { ReactionTypesCatalogPanel } from '@/components/admin/ReactionTypesCatalogPanel';
 import { SiteNoticesPanel } from '@/components/admin/siteNotices/SiteNoticesPanel';
+import { TextStylesPanel } from '@/components/admin/textStyles/TextStylesPanel';
 import { ThemeFontsPanel } from '@/components/admin/themeFonts/ThemeFontsPanel';
 import { ThemePresetsPanel } from '@/components/admin/themePresets/ThemePresetsPanel';
 import { VendorMessagesPanel } from '@/components/admin/vendorMessages/VendorMessagesPanel';
@@ -61,6 +62,7 @@ export function AdminConsole() {
     if (tab === 'reactionTypes') return <ReactionTypesCatalogPanel />;
     if (tab === 'themePresets') return <ThemePresetsPanel />;
     if (tab === 'themeFonts') return <ThemeFontsPanel />;
+    if (tab === 'textStyles') return <TextStylesPanel />;
     if (tab === 'qrCards') return <QrCardTemplatesPanel />;
     if (tab === 'demoEvents') return <DemoEventsSection />;
     if (tab === 'withdrawals') return <WithdrawalsSection />;

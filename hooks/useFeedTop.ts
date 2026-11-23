@@ -69,6 +69,7 @@ export function useFeedTop(event: EventDetailResponseDto, editing?: FeedTopEditi
             ...buildRenderContext(document, theme, media),
             labels: INVITATION_LABELS[locale === 'en' ? 'en' : 'el'],
             pageBackdrop: backdrop !== null,
+            centerText: true,
         }),
         [document, theme, media, locale, backdrop],
     );

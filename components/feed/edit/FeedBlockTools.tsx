@@ -1,9 +1,8 @@
 'use client';
 
-import { Eye, EyeOff, GripVertical, Lock } from 'lucide-react';
+import { Eye, EyeOff, GripVertical, Lock, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
-import { SectionMenu } from '@/components/saveMyDate/editor/sections/SectionMenu';
 import { SectionSettingsButton } from '@/components/saveMyDate/editor/sections/SectionSettingsButton';
 import { SectionToolButton } from '@/components/saveMyDate/editor/sections/SectionToolButton';
 import { type FeedBlockToolActions, useFeedBlockHandlers } from '@/hooks/useFeedBlockHandlers';
@@ -20,7 +19,8 @@ type FeedBlockToolsProps = {
     actions: FeedBlockToolActions;
 };
 
-// One block's tools: eye, pencil and the block's name on the left, drag and menu on the right (middle blocks only).
+// One block's tools (mockup 2026-11-23): the eye and the block's name on the left; delete, drag and settings stacked on
+// the right. Blocks move only by dragging (keyboard too: Space, arrows, Space).
 export function FeedBlockTools({ section, name, controls, hasSettings, drag, actions }: FeedBlockToolsProps) {
     const t = useTranslations('InvitationEditor.sections');
     const tLayout = useTranslations('FeedLayout');
@@ -33,7 +33,7 @@ export function FeedBlockTools({ section, name, controls, hasSettings, drag, act
             data-feed-block-tools
             className="pointer-events-none absolute inset-x-2.5 top-3 z-40 flex items-start justify-between gap-2 transition-none"
         >
-            {/* Visibility, settings and name */}
+            {/* Visibility and name */}
             <div className="flex min-w-0 items-center gap-2">
                 {controls.canHide && (
                     <SectionToolButton
@@ -45,12 +45,8 @@ export function FeedBlockTools({ section, name, controls, hasSettings, drag, act
                         {section.visible ? <Eye aria-hidden="true" /> : <EyeOff aria-hidden="true" />}
                     </SectionToolButton>
                 )}
-                {hasSettings && <SectionSettingsButton onClick={on.openSettings} className="pointer-events-auto" />}
                 {/* The block's group already carries its name for screen readers. */}
-                <span
-                    aria-hidden="true"
-                    className="pointer-events-none min-w-0 truncate rounded-full bg-white/95 px-2.5 py-1 text-[12px] text-[#555] shadow-[0_4px_14px_rgba(0,0,0,0.16)]"
-                >
+                <span aria-hidden="true" className="pointer-events-none min-w-0 truncate text-[13px] text-ink">
                     {name}
                 </span>
                 {/* Hidden from guests */}
@@ -68,9 +64,14 @@ export function FeedBlockTools({ section, name, controls, hasSettings, drag, act
                 )}
             </div>
 
-            {/* Move and menu */}
-            {controls.movable && (
-                <div className="pointer-events-auto flex shrink-0 gap-2">
+            {/* Delete, drag and settings, stacked */}
+            <div data-feed-block-tools-right className="pointer-events-auto flex shrink-0 flex-col gap-2">
+                {controls.canDelete && (
+                    <SectionToolButton label={t('delete')} onClick={on.remove}>
+                        <X aria-hidden="true" />
+                    </SectionToolButton>
+                )}
+                {controls.movable && (
                     <SectionToolButton
                         ref={activator}
                         label={t('drag')}
@@ -80,16 +81,9 @@ export function FeedBlockTools({ section, name, controls, hasSettings, drag, act
                     >
                         <GripVertical aria-hidden="true" />
                     </SectionToolButton>
-                    <SectionMenu
-                        canMoveUp={controls.canMoveUp}
-                        canMoveDown={controls.canMoveDown}
-                        onMoveUp={on.moveUp}
-                        onMoveDown={on.moveDown}
-                        onDelete={controls.canDelete ? on.remove : undefined}
-                    />
-                </div>
-            )}
-
+                )}
+                {hasSettings && <SectionSettingsButton onClick={on.openSettings} />}
+            </div>
         </div>
     );
 }

@@ -1,6 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
 import type { ReactNode } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
@@ -309,15 +308,13 @@ describe('FeedPageContent RSVP place', { timeout: 15_000 }, () => {
 
 describe('FeedPageContent edit mode', { timeout: 15_000 }, () => {
     it('lets the host drag RSVP on a Save my date event, with no delete', async () => {
-        const user = userEvent.setup();
         renderFeed(null, { flag: true, layout: savedLayout(dressCode), isHost: true, modules: SMD, startAt: '2099-06-01T15:00:00Z' });
         fireEvent.click(await screen.findByRole('button', { name: 'edit' }));
         const rsvp = await screen.findByRole('group', { name: 'sectionNames.feedRsvp' }, LAZY_LOOK);
         const tools = rsvp.querySelector('[data-feed-block-tools]') as HTMLElement;
         expect(within(tools).getByRole('button', { name: 'drag' })).toBeTruthy();
-        await user.click(within(tools).getByRole('button', { name: 'options' }));
-        expect(await screen.findByRole('menuitem', { name: 'moveUp' })).toBeTruthy();
-        expect(screen.queryByRole('menuitem', { name: 'delete' })).toBeNull();
+        expect(within(tools).queryByRole('button', { name: 'delete' })).toBeNull();
+        expect(within(tools).queryByRole('button', { name: 'options' })).toBeNull();
     });
 
     it('keeps the pill while editing, with Theme, Cancel and Save under it', async () => {

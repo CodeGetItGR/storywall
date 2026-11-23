@@ -3217,6 +3217,7 @@
             "reactionTypes": "Reactions",
             "themePresets": "Themes",
             "themeFonts": "Theme fonts",
+            "textStyles": "Text styles",
             "qrCards": "QR cards",
             "invitationThemes": "Themes",
             "billingOps": "Billing ops",
@@ -5773,6 +5774,40 @@
                 "cardLabel": "QR card: {title}"
             }
         },
+        "textStyles": {
+            "title": "Text styles",
+            "create": "New style",
+            "empty": "No styles yet.",
+            "loading": "Loading styles",
+            "columns": {
+                "name": "Name",
+                "font": "Font",
+                "size": "Size",
+                "look": "Look"
+            },
+            "fields": {
+                "nameEn": "Name (English)",
+                "nameEl": "Name (Greek)",
+                "font": "Font",
+                "size": "Size",
+                "weight": "Weight",
+                "italic": "Italic",
+                "letterSpacing": "Letter spacing",
+                "case": "Case"
+            },
+            "weight": {
+                "normal": "Normal",
+                "bold": "Bold"
+            },
+            "case": {
+                "normal": "Normal",
+                "upper": "Capitals"
+            },
+            "preview": "Preview",
+            "delete": "Delete",
+            "deleteTitle": "Delete this style?",
+            "deleteBody": "Texts already styled with it keep their look."
+        },
         "themeFonts": {
             "title": "Theme fonts",
             "subtitle": "Heading fonts that theme presets can use for event titles. Each font needs a WOFF2, TTF or OTF file that covers every Greek and Latin letter.",
@@ -6683,6 +6718,7 @@
         }
     },
     "FeedEditor": {
+        "addPhoto": "Add photo",
         "background": {
             "tooDark": "Too dark for the text. A lighter shade will be shown."
         },
@@ -6694,6 +6730,7 @@
         },
         "edit": "Edit",
         "saveFailed": "Couldn't save your changes. Please try again.",
+        "style": "Style",
         "themes": "Themes"
     },
     "FeedQuickActions": {
