@@ -70,6 +70,8 @@ describe('EventThemeScope', () => {
                     size: '100% auto',
                     repeat: 'repeat-y',
                     position: 'center top',
+                    stripSize: 'var(--feed-page-w) auto',
+                    stripPosition: 'calc(0px - var(--feed-strip-x)) calc(0px - var(--feed-strip-y))',
                     cardColor: '#F9F5F7',
                 },
             },

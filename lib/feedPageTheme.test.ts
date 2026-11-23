@@ -64,8 +64,10 @@ describe('feedPageTheme with a backdrop', () => {
         color: '#EFE7EC',
         image: null,
         size: '100% auto',
-        repeat: 'no-repeat',
+        repeat: 'repeat-y',
         position: 'center top',
+        stripSize: 'var(--feed-page-w) auto',
+        stripPosition: 'calc(0px - var(--feed-strip-x)) calc(0px - var(--feed-strip-y))',
         cardColor: '#F9F5F7',
     };
     const wall = { presetKey: 'dino', backgroundColor: '#BFE6E2', illustrationUrl: 'https://media.example/dino.webp', titleColor: null, headingFont: null };

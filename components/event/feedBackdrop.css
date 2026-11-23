@@ -8,9 +8,22 @@
     background-position: var(--feed-backdrop-position);
 }
 
+/* A strip that sits on the page and hides what scrolls under it (the sticky header): the page's own picture,
+   lined up with the page (hooks/useFeedBackdropStrip.ts sets where it sits), so no edge shows. */
+.feed-backdrop .feed-backdrop-strip {
+    background-image: var(--feed-backdrop-mobile);
+    background-size: var(--feed-backdrop-strip-size);
+    background-repeat: var(--feed-backdrop-repeat);
+    background-position: var(--feed-backdrop-strip-position);
+}
+
 @media (min-width: 760px) {
     .feed-backdrop {
         --smd-bg-tile-size: 720px;
+        background-image: var(--feed-backdrop-desktop);
+    }
+
+    .feed-backdrop .feed-backdrop-strip {
         background-image: var(--feed-backdrop-desktop);
     }
 }
