@@ -1,8 +1,8 @@
-import { CalendarDays, ChartNoAxesColumn, Eye, Images, type LucideIcon, Mail, Printer } from 'lucide-react';
+import { CalendarDays, ChartNoAxesColumn, Eye, Images, Inbox, type LucideIcon, Mail, Printer } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
 
-export type BusinessSectionKey = 'insights' | 'events' | 'content' | 'printPrices' | 'previews' | 'contact';
+export type BusinessSectionKey = 'insights' | 'events' | 'content' | 'printPrices' | 'previews' | 'inquiries' | 'contact';
 
 // A section's sign on its colored tile, in the style of the event page's tool icons (same size as VendorToolIcon's
 // 'md'). Decoration only: the section title next to it names it.
@@ -24,5 +24,7 @@ const TILES: Record<BusinessSectionKey, { icon: LucideIcon; wash: string; ink: s
     content: { icon: Images, wash: 'bg-status-teal-wash', ink: 'text-status-teal' },
     printPrices: { icon: Printer, wash: 'bg-status-warn-wash', ink: 'text-status-warn' },
     previews: { icon: Eye, wash: 'bg-accent-pink/12', ink: 'text-accent-pink' },
+    // The one accent no other section uses (Contact already has the good tones).
+    inquiries: { icon: Inbox, wash: 'bg-accent-orange/15', ink: 'text-accent-orange' },
     contact: { icon: Mail, wash: 'bg-status-good-wash', ink: 'text-status-good' },
 };
