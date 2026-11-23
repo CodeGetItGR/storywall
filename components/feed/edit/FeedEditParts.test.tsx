@@ -4,7 +4,7 @@ import type { ReactNode } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { FeedBlockSheet } from '@/components/feed/edit/FeedBlockSheet';
-import { FeedEditPills } from '@/components/feed/edit/FeedEditPills';
+import { FeedEditRow } from '@/components/feed/edit/FeedEditRow';
 import type { SettingsPart } from '@/lib/settingsPreview';
 import en from '@/messages/en.json';
 
@@ -60,15 +60,15 @@ describe('FeedBlockSheet', () => {
     });
 });
 
-describe('FeedEditPills', () => {
-    it('shows the save error under the pills only after a failed save', () => {
+describe('FeedEditRow', () => {
+    it('shows the save error under the row only after a failed save', () => {
         const props = { saving: false, onCancel: vi.fn(), onSave: vi.fn() };
-        const { rerender } = renderIn(<FeedEditPills {...props} failed={false} />);
+        const { rerender } = renderIn(<FeedEditRow {...props} failed={false} />);
         expect(screen.queryByRole('alert')).toBeNull();
 
         rerender(
             <NextIntlClientProvider locale="en" messages={en}>
-                <FeedEditPills {...props} failed />
+                <FeedEditRow {...props} failed />
             </NextIntlClientProvider>,
         );
         expect(screen.getByRole('alert').textContent).toBe(en.FeedEditor.saveFailed);

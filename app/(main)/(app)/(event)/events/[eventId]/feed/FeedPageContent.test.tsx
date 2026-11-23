@@ -278,6 +278,16 @@ describe('FeedPageContent layout', { timeout: 15_000 }, () => {
 
 // The edit code loads lazily, so the first lookup after tapping Edit waits for it.
 describe('FeedPageContent edit mode', { timeout: 15_000 }, () => {
+    it('keeps the pill while editing, with Theme, Cancel and Save under it', async () => {
+        renderFeed(null, { flag: true, layout: savedLayout(dressCode), isHost: true, modules: SMD, startAt: '2099-06-01T15:00:00Z' });
+        fireEvent.click(await screen.findByRole('button', { name: 'edit' }, LAZY_LOOK));
+        const cancel = await screen.findByRole('button', { name: 'cancel' }, LAZY_LOOK);
+        const pill = screen.getAllByRole('button', { name: 'invitation' })[0];
+        expect(pill.compareDocumentPosition(cancel) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+        const cover = screen.getByRole('group', { name: 'sectionNames.feedCover' });
+        expect(cover.contains(cancel)).toBe(false);
+    });
+
     afterEach(() => api.put.mockReset());
 
     // First in this block: once the edit code is in, later taps never wait for it.

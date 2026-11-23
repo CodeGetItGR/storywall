@@ -12,7 +12,7 @@ import { FeedBlockPlaceholder } from '@/components/feed/edit/FeedBlockPlaceholde
 import { FeedBlockSheet } from '@/components/feed/edit/FeedBlockSheet';
 import { FeedEditBlock } from '@/components/feed/edit/FeedEditBlock';
 import { FeedEditInvitationSection } from '@/components/feed/edit/FeedEditInvitationSection';
-import { FeedEditPills } from '@/components/feed/edit/FeedEditPills';
+import { FeedEditRow } from '@/components/feed/edit/FeedEditRow';
 import { FeedThemeSheet } from '@/components/feed/edit/FeedThemeSheet';
 import { FeedLook, FeedNative } from '@/components/feed/layout/FeedLook';
 import { feedLookParts } from '@/components/feed/layout/FeedLookTop';
@@ -48,8 +48,9 @@ type FeedEditTopProps = Omit<FeedTopProps, 'view'> & { event: EventDetailRespons
 type FeedNameKey = `sectionNames.${NewSectionType | FeedSectionType}`;
 const nameKey = (type: SectionType) => `sectionNames.${type}` as FeedNameKey;
 
-// The top of the feed in edit mode: the same frame as the feed, every block with its tools, Save my date
-// text typed in place, the Add section row closing the middle, and the Theme sheet. All held until Save.
+// The top of the feed in edit mode: the same frame as the feed, Theme / Cancel / Save under the cover, every block
+// with its tools, Save my date text typed in place, the Add section row closing the middle, and the Theme sheet. All
+// held until Save.
 export function FeedEditTop({ event, onDone, cancelRef, mode, modeSwitch, dateRow, cover, stories, description, rsvp }: FeedEditTopProps) {
     const t = useTranslations('InvitationEditor');
     const session = useFeedEditSession(event, onDone);
@@ -79,8 +80,8 @@ export function FeedEditTop({ event, onDone, cancelRef, mode, modeSwitch, dateRo
         onDelete: actions.askDelete,
         onOpenSettings: panels.openSettings,
     };
-    const pills = (
-        <FeedEditPills
+    const editRow = (
+        <FeedEditRow
             saving={session.saving}
             failed={session.failed}
             onTheme={panels.openTheme}
@@ -99,7 +100,6 @@ export function FeedEditTop({ event, onDone, cancelRef, mode, modeSwitch, dateRo
             hasSettings={sheet.hasSettings(section)}
             actions={tools}
             active={sheet.section?.id === section.id}
-            corner={section.type === 'feedCover' ? pills : undefined}
         >
             {node}
         </FeedEditBlock>
@@ -126,6 +126,7 @@ export function FeedEditTop({ event, onDone, cancelRef, mode, modeSwitch, dateRo
             view={view}
             mode={mode}
             modeSwitch={modeSwitch}
+            editRow={editRow}
             dateRow={dateRow}
             parts={parts}
             cover={cover}
