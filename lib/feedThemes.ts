@@ -55,7 +55,7 @@ function withStyle(section: InvitationSection, style: SectionStyle): InvitationS
 // and hides the Save my date blocks the theme has no kind for.
 // On the feed the theme's background covers the whole page, so every block then sits on it
 // ("auto"): the theme's own sections pick top or content images, which would draw seams between
-// blocks. A block shows its own picture again only once the host picks one in its settings.
+// blocks. Every block sits on the page's one background: the feed has no background choice per block.
 export function planFeedThemeSwitch(current: InvitationDocument, target: ThemeSwitchTarget, oldThemeImageIds: ReadonlySet<string>): InvitationDocument {
     const feedBlocks = defaultFeedLayout().sections.map((section) => withStyle(section, borrowedStyle(section.type as FeedSectionType, target.document)));
     const document = { ...target.document, sections: [...target.document.sections, ...feedBlocks] };
