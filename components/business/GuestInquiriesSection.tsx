@@ -40,7 +40,6 @@ export function GuestInquiriesSection({
 }) {
     const t = useTranslations('BusinessPage.inquiries');
     const tEvents = useTranslations('BusinessPage.events');
-    const tPartner = useTranslations('Vendors.partner.benefits.inquiries');
     const locale = useLocale();
 
     return (
@@ -52,7 +51,7 @@ export function GuestInquiriesSection({
         >
             {!partner ? (
                 /* Locked */
-                <LockedPreview label={tPartner('title')} canApply={false} onApplyAction={noop}>
+                <LockedPreview canApply={false} onApplyAction={noop}>
                     <ul className="divide-y divide-border">
                         {SAMPLE_INQUIRIES.map((sample) => (
                             <li key={sample.guestName} className="flex min-h-14 flex-col justify-center py-3">

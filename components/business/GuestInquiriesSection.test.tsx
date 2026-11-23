@@ -63,7 +63,9 @@ describe('GuestInquiriesSection', () => {
 
     it('shows a locked sample to a non-partner, with nothing to tap', () => {
         renderSection({ partner: false, inquiries: [] });
-        expect(screen.getByText('Guest inquiries', { selector: 'p' })).toBeInTheDocument();
+        // The title names the section once; the lock only says who it is for.
+        expect(screen.getAllByText('Guest inquiries')).toHaveLength(1);
+        expect(screen.getByText('For partners')).toBeInTheDocument();
         expect(screen.queryByRole('button', { name: /Maria/ })).not.toBeInTheDocument();
     });
 });
