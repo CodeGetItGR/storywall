@@ -7,6 +7,7 @@ import {
     publishedInvitationSchema,
     upgradeInvitationDocument,
 } from '@/lib/invitation/document';
+import { textStyleSchema } from '@/lib/invitation/primitives';
 import { SAMPLE_DOCUMENT, SAMPLE_SECTIONS, SAMPLE_THEME } from '@/lib/invitation/samples';
 import { FEED_SECTION_TYPES, resolveTextField, SECTION_TYPES, sectionSchema } from '@/lib/invitation/sections';
 import { themeDesignSchema } from '@/lib/invitation/theme';
@@ -141,5 +142,12 @@ describe('members-only sections', () => {
 
     it('refuses anything but true or false', () => {
         expect(invitationDocumentSchema.safeParse(withFlag('yes')).success).toBe(false);
+    });
+});
+
+describe('letter spacing and capitals (KAN-262)', () => {
+    it('takes spacing from -5 to 50 pixels', () => {
+        expect(textStyleSchema.safeParse({ letterSpacing: 51 }).success).toBe(false);
+        expect(textStyleSchema.safeParse({ letterSpacing: -5, uppercase: false }).success).toBe(true);
     });
 });
