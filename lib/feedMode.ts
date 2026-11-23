@@ -1,6 +1,7 @@
 import type { EventDetailResponseDto } from '@/lib/api/types';
 import { localDay } from '@/lib/datetime';
 import { journeyTimeZone, primaryDay } from '@/lib/eventJourney';
+import { routes } from '@/lib/routes';
 
 // The feed page's two modes with Save my date (the Invitation | Feed switch). 'single': one page, no switch.
 export const FEED_MODES = ['invitation', 'feed'] as const;
@@ -68,4 +69,9 @@ export function withViewParam(pathname: string, search: string, mode: FeedMode):
     const params = new URLSearchParams(search);
     params.set(VIEW_PARAM, mode);
     return `${pathname}?${params.toString()}`;
+}
+
+// The date row's place link for a member: the main session's place page, as the cover's main session button.
+export function feedPlaceHref(event: Pick<EventDetailResponseDto, 'id' | 'sessions'>): string | null {
+    return (event.sessions ?? []).some((session) => session.isMain) ? routes.events.location(event.id, 'main') : null;
 }

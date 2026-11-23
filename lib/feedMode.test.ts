@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import type { EventDetailResponseDto } from '@/lib/api/types';
-import { eventDayOf, openingFeedMode, parseFeedModeParam, readFeedModePick, todayFor, withViewParam } from '@/lib/feedMode';
+import { eventDayOf, feedPlaceHref, openingFeedMode, parseFeedModeParam, readFeedModePick, todayFor, withViewParam } from '@/lib/feedMode';
 
 const athens = (startAt: string | null) =>
     ({ schedule: { startAt, timezone: 'Europe/Athens' }, sessions: [] }) as unknown as Pick<EventDetailResponseDto, 'schedule' | 'sessions'>;
@@ -76,5 +76,12 @@ describe('the stored pick and the view param', () => {
         expect(parseFeedModeParam('posts')).toBeNull();
         expect(withViewParam('/events/e-1/feed', '?post=p-1', 'feed')).toBe('/events/e-1/feed?post=p-1&view=feed');
         expect(withViewParam('/events/e-1/feed', '?view=feed', 'invitation')).toBe('/events/e-1/feed?view=invitation');
+    });
+});
+
+describe('feedPlaceHref', () => {
+    it('links the main session, and nothing without one', () => {
+        expect(feedPlaceHref({ id: 'e', sessions: [{ isMain: true }] } as never)).toBe('/events/e/location/main');
+        expect(feedPlaceHref({ id: 'e', sessions: [] } as never)).toBeNull();
     });
 });
