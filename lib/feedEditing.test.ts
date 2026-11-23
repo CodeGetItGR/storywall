@@ -1,6 +1,8 @@
 import { produce } from 'immer';
 import { describe, expect, it } from 'vitest';
 
+import type { EventModuleResponseDto } from '@/lib/api/types';
+import { feedAddList } from '@/lib/feedAddList';
 import {
     addableFeedSectionTypes,
     appendFeedSection,
@@ -163,16 +165,9 @@ describe('edits', () => {
 });
 
 describe('what the add row offers', () => {
-    it('offers only Save my date blocks a feed may hold', () => {
-        const types = addableFeedSectionTypes(layout(), 'WEDDING');
-        expect(types.length).toBeGreaterThan(0);
-        expect(types).toContain('dressCode');
-        expect(types).not.toContain('date');
-        expect(types).not.toContain('rsvp');
-    });
-
-    it('leaves out a single-use type already on the page', () => {
-        expect(addableFeedSectionTypes(layout(dressCode), 'WEDDING')).not.toContain('dressCode');
+    it("is the event type's Add section list", () => {
+        const modules = [{ moduleKey: 'schedule', isAvailable: true } as EventModuleResponseDto];
+        expect(addableFeedSectionTypes(layout(dressCode), 'WEDDING', modules)).toEqual(feedAddList(layout(dressCode), 'WEDDING', modules));
     });
 });
 

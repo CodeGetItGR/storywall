@@ -1,11 +1,12 @@
 import type { Draft } from 'immer';
 
-import { type FeedFrame, feedFrame, PAID_FEED_SECTION_TYPES } from '@/lib/feedLayout';
+import type { EventModuleResponseDto } from '@/lib/api/types';
+import { feedAddList } from '@/lib/feedAddList';
+import { type FeedFrame, feedFrame } from '@/lib/feedLayout';
 import { type InvitationDocument, MAX_SECTIONS } from '@/lib/invitation/document';
 import type { ImageUploader } from '@/lib/invitation/editorUploads';
 import type { NewSectionType } from '@/lib/invitation/newSection';
 import { deleteSection, type MoveDirection, setSectionVisible } from '@/lib/invitation/sectionActions';
-import { addableSectionTypes } from '@/lib/invitation/sectionRules';
 import { type InvitationSection, isFeedSectionType, type SectionType } from '@/lib/invitation/sections';
 import type { SettingsGroup } from '@/lib/invitation/sectionSettings';
 import type { SettingsPart } from '@/lib/settingsPreview';
@@ -120,11 +121,10 @@ export function appendFeedSection(section: InvitationSection, options: HostBlock
     };
 }
 
-const FEED_TYPES: readonly SectionType[] = PAID_FEED_SECTION_TYPES;
-
-export function addableFeedSectionTypes(document: InvitationDocument, eventType: string): NewSectionType[] {
-    if (document.sections.length >= MAX_SECTIONS) return [];
-    return addableSectionTypes(document, eventType, 'host').filter((type) => FEED_TYPES.includes(type));
+// The feed's Add section list (lib/feedAddList): the event type's own list, minus what is on the page or covered by
+// a module the event has.
+export function addableFeedSectionTypes(document: InvitationDocument, eventType: string, modules: readonly EventModuleResponseDto[]): NewSectionType[] {
+    return feedAddList(document, eventType, modules);
 }
 
 // The event's own fields each feed block shows, edited on the event as the Settings page does.

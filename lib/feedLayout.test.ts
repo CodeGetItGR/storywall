@@ -1,9 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
 import type { FeedLayoutDto } from '@/lib/api/types';
+import { FEED_ADD_TYPES } from '@/lib/feedAddList';
 import {
     defaultFeedLayout,
     feedFrame,
+    PAID_FEED_SECTION_TYPES,
     readFeedLayout,
     shellsFeedBlock,
     usesInvitationLook,
@@ -156,5 +158,11 @@ describe('feedFrame with a movable RSVP', () => {
     it('leaves a hidden RSVP out either way', () => {
         const hidden = { ...layout, sections: layout.sections.map((section) => (section.type === 'feedRsvp' ? { ...section, visible: false } : section)) };
         expect(feedFrame(hidden, { ended: false, rsvpMoves: true }).middle.some((section) => section.type === 'feedRsvp')).toBe(false);
+    });
+});
+
+describe('the paid feed types', () => {
+    it("hold every type the Add section lists offer", () => {
+        expect(FEED_ADD_TYPES.filter((type) => !(PAID_FEED_SECTION_TYPES as readonly string[]).includes(type))).toEqual([]);
     });
 });

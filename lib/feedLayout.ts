@@ -13,7 +13,8 @@ import { type ThemeDesign, themeDesignSchema } from '@/lib/invitation/theme';
 // document.themeId for a layout on the event's own wall theme.
 export const WALL_THEME_ID = 'wall';
 
-// The Save my date blocks a feed may hold. They need the save_my_date module.
+// The Save my date blocks a feed may hold. They need the save_my_date module. The list's types (lib/feedAddList)
+// and the older ones a saved layout may still hold (coupleNames, parentsSimple, weddingSponsorsSimple).
 export const PAID_FEED_SECTION_TYPES = [
     'coupleNames',
     'parents',
@@ -24,6 +25,15 @@ export const PAID_FEED_SECTION_TYPES = [
     'dressCode',
     'faq',
     'gallery',
+    'invitation',
+    'coupleProfiles',
+    'ourStoryProposal',
+    'program',
+    'accommodation',
+    'gift',
+    'contact',
+    'baby',
+    'parentsPhoto',
 ] as const satisfies readonly SectionType[];
 
 // Shared with the server prefetch, so it lives here rather than in the 'use client' hook.

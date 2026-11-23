@@ -21,12 +21,15 @@ import type { SectionEdit } from '@/lib/invitation/sectionActions';
 export function useFeedBlockActions(
     store: InvitationEditorStore,
     document: InvitationDocument,
-    event: Pick<EventDetailResponseDto, 'eventType'>,
+    event: Pick<EventDetailResponseDto, 'eventType' | 'modules'>,
     options: HostBlockOptions,
 ) {
     const edit = useCallback<SectionEdit>((recipe) => store.getState().edit(recipe), [store]);
     const remove = useDeleteSectionConfirm(edit, document);
-    const addable = useMemo(() => addableFeedSectionTypes(document, event.eventType), [document, event.eventType]);
+    const addable = useMemo(
+        () => addableFeedSectionTypes(document, event.eventType, event.modules ?? []),
+        [document, event.eventType, event.modules],
+    );
     // With nothing left to add (the section limit), the Add section row isn't drawn.
     const showAdd = addable.length > 0;
     const [adding, setAdding] = useState(false);
