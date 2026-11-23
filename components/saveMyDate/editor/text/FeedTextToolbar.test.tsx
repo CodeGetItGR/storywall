@@ -38,12 +38,13 @@ const toolbar = {
     lockHref: undefined,
 } as unknown as TextToolbarState;
 
-function renderToolbar() {
+function renderToolbar(container?: HTMLElement) {
     const on = { onAddLink: vi.fn(), onDelete: vi.fn(), onPreset: vi.fn() };
     render(
         <NextIntlClientProvider locale="en" messages={en}>
             <FeedTextToolbar toolbar={toolbar} anchor={null} canAdd presets={[]} text="Maria & Nikos" {...on} />
         </NextIntlClientProvider>,
+        container ? { container } : undefined,
     );
     return on;
 }
@@ -72,5 +73,16 @@ describe('FeedTextToolbar', () => {
         fireEvent.click(screen.getByRole('button', { name: en.InvitationEditor.textColor }));
         await screen.findByText(en.InvitationEditor.moreColors);
         expect(screen.queryByText(en.InvitationEditor.thisSection)).toBeNull();
+    });
+
+    // The desktop shell's <main> has a transform, which makes it the box a fixed toolbar is placed in.
+    it('sits on the page itself, not inside the transformed page area, so it lines up with the text', () => {
+        const main = document.body.appendChild(document.createElement('main'));
+        main.style.transform = 'translate3d(0, 0, 0)';
+        renderToolbar(main);
+        const bar = screen.getByRole('toolbar');
+        expect(main.contains(bar)).toBe(false);
+        expect(bar.parentElement).toBe(document.body);
+        main.remove();
     });
 });

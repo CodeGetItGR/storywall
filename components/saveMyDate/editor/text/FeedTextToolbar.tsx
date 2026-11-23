@@ -3,6 +3,7 @@
 import { Bold, Italic, Trash2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { type KeyboardEvent, type RefObject, useRef } from 'react';
+import { createPortal } from 'react-dom';
 
 import { EventLockNote } from '@/components/saveMyDate/editor/EventLockNote';
 import { TextAddMenu } from '@/components/saveMyDate/editor/text/TextAddMenu';
@@ -46,6 +47,8 @@ const DOCKED_SELECT = 'appearance-none px-2 text-center';
 // The feed's text toolbar (spec item 9): +, Style, size, colour (this text only), bold, italic, delete. No font,
 // alignment or line spacing: on the feed every text is centred and its font comes from its Style. It floats over the
 // text on a computer and docks above the keyboard on a phone, as the invitation editor's does.
+// It renders on the page's body: the desktop shell's <main> has a transform, so a fixed toolbar inside it would be
+// placed against <main> (shifted by the nav rail and the scroll) instead of the screen.
 export function FeedTextToolbar({ toolbar, anchor, canAdd, presets, text, onPreset, onAddLink, onDelete, toolbarRef, onKeyDown }: FeedTextToolbarProps) {
     const t = useTranslations('InvitationEditor');
     const ownRef = useRef<HTMLDivElement>(null);
@@ -54,7 +57,7 @@ export function FeedTextToolbar({ toolbar, anchor, canAdd, presets, text, onPres
     const keyboardInset = useKeyboardInset();
     useTextToolbarPlacement(anchor, ref, docked, keyboardInset);
 
-    return (
+    return createPortal(
         <div
             ref={ref}
             role="toolbar"
@@ -119,6 +122,7 @@ export function FeedTextToolbar({ toolbar, anchor, canAdd, presets, text, onPres
                     </>
                 )}
             </div>
-        </div>
+        </div>,
+        document.body,
     );
 }
