@@ -22,7 +22,7 @@ type FeedThemeSheetProps = {
     onClose: () => void;
 };
 
-// Edit mode's Theme sheet: every theme the feed can wear (maybe none), then its one background colour.
+// Edit mode's Theme sheet: every theme the feed can wear ("No theme" at least), then its one background colour.
 // Picks are held until Save; while Save runs or a theme loads, the cards and the colour wait.
 export function FeedThemeSheet({
     open,
@@ -46,18 +46,16 @@ export function FeedThemeSheet({
                 {/* Theme fonts */}
                 {hasInvitationThemes && <InvitationFontFaces css={fontFaces} />}
 
-                {/* Themes: none for an event with neither wall themes nor Save my date themes */}
-                {options.length > 0 && (
-                    <ThemePresetRadioGroup
-                        options={options}
-                        labelledBy={titleId}
-                        disabled={disabled}
-                        size="large"
-                        onDark
-                        previewTitle={previewTitle}
-                        onSelectAction={onSelect}
-                    />
-                )}
+                {/* Themes */}
+                <ThemePresetRadioGroup
+                    options={options}
+                    labelledBy={titleId}
+                    disabled={disabled}
+                    size="large"
+                    onDark
+                    previewTitle={previewTitle}
+                    onSelectAction={onSelect}
+                />
 
                 {/* Background */}
                 <FeedBackgroundSetting value={background} disabled={disabled} onChange={onBackground} />

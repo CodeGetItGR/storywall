@@ -2,7 +2,7 @@ import { act, renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { useFeedEditThemeGrid } from '@/hooks/useFeedEditThemeGrid';
-import type { EventDetailResponseDto, ThemePresetDto } from '@/lib/api/types';
+import type { EventDetailResponseDto, EventThemeDto, ThemePresetDto } from '@/lib/api/types';
 import { invitationThemeChoice } from '@/lib/feedThemes';
 
 const preset: ThemePresetDto = {
@@ -26,6 +26,16 @@ vi.mock('@/hooks/useThemePicker', () => ({
     }),
 }));
 vi.mock('@/hooks/useWallThemeOptions', () => ({
+    useNoThemeCard: (look: EventThemeDto | null, selected: boolean) => ({
+        id: 'none',
+        presetId: null,
+        label: 'none',
+        backgroundColor: look?.backgroundColor ?? null,
+        illustrationUrl: look?.illustrationUrl ?? null,
+        titleColor: look?.titleColor ?? null,
+        headingFont: look?.headingFont ?? null,
+        selected,
+    }),
     useWallThemeOptions: (_picker: unknown, { checkable }: { checkable: boolean }) => [
         {
             id: 'none',
@@ -93,9 +103,31 @@ describe('useFeedEditThemeGrid', () => {
         expect(pickWall).toHaveBeenLastCalledWith(null, null, true);
     });
 
-    it('leaves the wall themes out when the event cannot pick one', () => {
-        mocks.available = false;
-        const { result } = renderHook(() => useFeedEditThemeGrid(event, session()));
-        expect(result.current.options.map((option) => option.id)).toEqual([invitationThemeChoice('rose')]);
+    describe('without wall themes (no theme module)', () => {
+        const dino: EventThemeDto = { presetKey: 'dino-mint', backgroundColor: '#BFE6E2', illustrationUrl: 'u', titleColor: '#123456', headingFont: null };
+        const themed = { ...event, theme: dino } as EventDetailResponseDto;
+        beforeEach(() => {
+            mocks.available = false;
+        });
+
+        it("offers just 'No theme' before the Save my date themes, in the event's current wall look", () => {
+            const { result } = renderHook(() => useFeedEditThemeGrid(themed, session({ themeSlug: 'rose' })));
+            expect(result.current.options.map((option) => option.id)).toEqual(['none', invitationThemeChoice('rose')]);
+            expect(result.current.options[0]).toMatchObject({ presetId: null, backgroundColor: '#BFE6E2', illustrationUrl: 'u', titleColor: '#123456', selected: false });
+        });
+
+        it('draws the plain look for an event with no wall theme, selected on the wall', () => {
+            const { result } = renderHook(() => useFeedEditThemeGrid({ ...event, theme: null } as EventDetailResponseDto, session()));
+            expect(result.current.options[0]).toMatchObject({ id: 'none', backgroundColor: null, illustrationUrl: null, selected: true });
+        });
+
+        it("holds a switch back to the event's own wall look, leaving its theme as it is", () => {
+            const pickWall = vi.fn();
+            const { result } = renderHook(() => useFeedEditThemeGrid(themed, session({ themeSlug: 'rose', pickWall })));
+            act(() => result.current.select(null));
+            expect(pickWall).toHaveBeenCalledWith(null, dino, true);
+            act(() => result.current.select('p-1'));
+            expect(pickWall).toHaveBeenCalledOnce();
+        });
     });
 });
