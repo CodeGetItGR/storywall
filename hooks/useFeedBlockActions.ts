@@ -13,6 +13,8 @@ import {
     reorderFeedBlocks,
     setFeedBlockVisible,
 } from '@/lib/feedEditing';
+import { newFeedBlock } from '@/lib/feedLayout';
+import { feedModuleSection, type TileModuleKey } from '@/lib/feedModuleBlocks';
 import { type InvitationDocument, MAX_SECTIONS } from '@/lib/invitation/document';
 import type { InvitationEditorStore } from '@/lib/invitation/editorStore';
 import { createSection, type NewSectionType } from '@/lib/invitation/newSection';
@@ -72,8 +74,13 @@ export function useFeedBlockActions(
         [addingAt, edit, options],
     );
     const add = useCallback((type: NewSectionType) => place(createSection(type, event.eventType)), [event.eventType, place]);
+    // A Premium tile that adds: RSVP's own block, or the module's block (lib/feedModuleBlocks), in the sheet's place.
+    const addModule = useCallback(
+        (module: TileModuleKey) => place(module === 'rsvp' ? newFeedBlock('feedRsvp') : feedModuleSection(module)),
+        [place],
+    );
 
-    return { toggleVisible, reorder, askDelete, remove, addable, showAdd, adding, openAdd, closeAdd, add, place };
+    return { toggleVisible, reorder, askDelete, remove, addable, showAdd, adding, openAdd, closeAdd, add, addModule };
 }
 
 export type FeedBlockActions = ReturnType<typeof useFeedBlockActions>;

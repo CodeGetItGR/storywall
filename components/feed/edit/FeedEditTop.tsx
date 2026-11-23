@@ -14,6 +14,7 @@ import { FeedEditBlock } from '@/components/feed/edit/FeedEditBlock';
 import { FeedEditBlockButtons } from '@/components/feed/edit/FeedEditBlockButtons';
 import { FeedEditInvitationSection } from '@/components/feed/edit/FeedEditInvitationSection';
 import { FeedEditRow } from '@/components/feed/edit/FeedEditRow';
+import { FeedPremiumTiles } from '@/components/feed/edit/FeedPremiumTiles';
 import { FeedThemeSheet } from '@/components/feed/edit/FeedThemeSheet';
 import { FeedLook, FeedNative } from '@/components/feed/layout/FeedLook';
 import { feedLookParts } from '@/components/feed/layout/FeedLookTop';
@@ -31,6 +32,7 @@ import { useFeedEditBlockTools } from '@/hooks/useFeedEditBlockTools';
 import { useFeedEditPanels } from '@/hooks/useFeedEditPanels';
 import { useFeedEditSession } from '@/hooks/useFeedEditSession';
 import { useFeedEditThemeGrid } from '@/hooks/useFeedEditThemeGrid';
+import { useFeedModuleTiles } from '@/hooks/useFeedModuleTiles';
 import { useEditPageTheme } from '@/hooks/useFeedPageTheme';
 import { useFeedSectionPreviews } from '@/hooks/useFeedSectionPreviews';
 import { useFeedTextPresets } from '@/hooks/useFeedTextPresets';
@@ -73,6 +75,7 @@ export function FeedEditTop({ event, onDone, cancelRef, mode, modeSwitch, dateRo
         eventType: event.eventType,
         enabled: actions.adding,
     });
+    const tiles = useFeedModuleTiles(session.document, event, actions.adding);
     const preview = useSettingsPreview(event, true, true);
     const sheet = useFeedBlockSheet(session.store, session.document, session.theme, uploads.media, fonts.data, preview.parts);
     const panels = useFeedEditPanels(sheet.openFor, sheet.close, actions.openAdd);
@@ -249,7 +252,11 @@ export function FeedEditTop({ event, onDone, cancelRef, mode, modeSwitch, dateRo
                 open={actions.adding}
                 eventType={event.eventType}
                 previews={sectionPreviews}
-                tiles={null}
+                tiles={
+                    tiles.length > 0 && (
+                        <FeedPremiumTiles tiles={tiles} eventId={event.id} eventType={event.eventType} onAdd={actions.addModule} />
+                    )
+                }
                 onAdd={actions.add}
                 onClose={actions.closeAdd}
             />
