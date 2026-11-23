@@ -1,4 +1,6 @@
-import type { TextStylePresetDto } from '@/lib/api/types';
+import type { CSSProperties } from 'react';
+
+import type { TextStylePresetDto, TextStylePresetRequestDto } from '@/lib/api/types';
 import type { TextStylePatch } from '@/lib/invitation/textEditing';
 
 // How long a stretch of the edited text the Style menu draws each preset on (Open question 6).
@@ -13,6 +15,18 @@ export function presetStyle(preset: TextStylePresetDto): TextStylePatch {
         italic: preset.italic,
         letterSpacing: preset.letterSpacing,
         uppercase: preset.uppercase,
+    };
+}
+
+// A preset drawn as itself (the Style menu, the admin preview); maxSize caps the size so a large one still fits.
+export function presetCss(preset: TextStylePresetRequestDto, maxSize = Infinity): CSSProperties {
+    return {
+        fontFamily: preset.font,
+        fontSize: Math.min(preset.size, maxSize),
+        fontWeight: preset.weight === 'BOLD' ? 700 : 400,
+        fontStyle: preset.italic ? 'italic' : 'normal',
+        letterSpacing: `${preset.letterSpacing}px`,
+        textTransform: preset.uppercase ? 'uppercase' : 'none',
     };
 }
 

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import type { TextStylePresetDto } from '@/lib/api/types';
-import { presetName, presetSample, presetStyle } from '@/lib/textStylePresets';
+import { presetCss, presetName, presetSample, presetStyle } from '@/lib/textStylePresets';
 
 const PRESET: TextStylePresetDto = {
     id: 'p',
@@ -26,6 +26,18 @@ describe('text style presets', () => {
         expect(presetSample('Μαρία & Νίκος\nΣας προσκαλούμε', PRESET, 'el')).toBe('Μαρία & Νίκος');
         expect(presetSample('A'.repeat(40), PRESET, 'en')).toBe('A'.repeat(24));
         expect(presetSample('   ', PRESET, 'el')).toBe('Καλλιγραφικό');
+    });
+
+    it('draws a preset as itself, with the size capped when asked', () => {
+        expect(presetCss(PRESET)).toEqual({
+            fontFamily: "'Great Vibes', cursive",
+            fontSize: 40,
+            fontWeight: 700,
+            fontStyle: 'italic',
+            letterSpacing: '1.5px',
+            textTransform: 'none',
+        });
+        expect(presetCss(PRESET, 26).fontSize).toBe(26);
     });
 
     it('names a preset in the page language', () => {

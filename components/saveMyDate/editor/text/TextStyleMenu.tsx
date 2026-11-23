@@ -7,11 +7,14 @@ import { useCallback } from 'react';
 
 import { keepTextFocus } from '@/components/saveMyDate/editor/text/TextToolbarButton';
 import type { TextStylePresetDto } from '@/lib/api/types';
-import { presetName, presetSample } from '@/lib/textStylePresets';
+import { presetCss, presetName, presetSample } from '@/lib/textStylePresets';
 
 type TextStyleMenuProps = { presets: TextStylePresetDto[]; text: string; onPick: (preset: TextStylePresetDto) => void };
 
 // The feed toolbar's Style (spec item 10): the admin's presets, each drawn on the start of the text being edited.
+// The samples are capped so a large size still fits the menu.
+const MENU_SAMPLE_MAX_SIZE = 26;
+
 export function TextStyleMenu({ presets, text, onPick }: TextStyleMenuProps) {
     const t = useTranslations('FeedEditor');
 
@@ -54,18 +57,8 @@ function StyleChoice({ preset, text, onPick }: { preset: TextStylePresetDto; tex
         >
             {/* Name */}
             <span className="text-[10px] tracking-[0.12em] text-white/60 uppercase">{presetName(preset, locale)}</span>
-            {/* Sample, in the preset; capped so a large size still fits the menu */}
-            <span
-                className="max-w-full truncate leading-tight"
-                style={{
-                    fontFamily: preset.font,
-                    fontSize: Math.min(preset.size, 26),
-                    fontWeight: preset.weight === 'BOLD' ? 700 : 400,
-                    fontStyle: preset.italic ? 'italic' : 'normal',
-                    letterSpacing: `${preset.letterSpacing}px`,
-                    textTransform: preset.uppercase ? 'uppercase' : 'none',
-                }}
-            >
+            {/* Sample, in the preset */}
+            <span className="max-w-full truncate leading-tight" style={presetCss(preset, MENU_SAMPLE_MAX_SIZE)}>
                 {presetSample(text, preset, locale)}
             </span>
         </Popover.Close>

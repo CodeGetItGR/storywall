@@ -11,7 +11,7 @@ function CurrentTab() {
     return (
         <p>
             {tab}:{tabs.find((item) => item.key === tab)?.label}:{activeHash}:
-            {keys.indexOf('themeFonts') + 1 === keys.indexOf('qrCards') ? 'afterThemeFonts' : 'elsewhere'}
+            {keys.indexOf('textStyles') + 1 === keys.indexOf('qrCards') ? 'afterTextStyles' : 'elsewhere'}
         </p>
     );
 }
@@ -22,7 +22,7 @@ afterEach(() => {
 });
 
 describe('QR cards tab', () => {
-    it('opens from #qr-cards and sits right after Theme fonts', () => {
+    it('opens from #qr-cards and sits right after Text styles', () => {
         window.history.replaceState(null, '', '/admin#qr-cards');
         render(
             <NextIntlClientProvider locale="en" messages={messages}>
@@ -32,6 +32,6 @@ describe('QR cards tab', () => {
             </NextIntlClientProvider>,
         );
 
-        expect(screen.getByText('qrCards:QR cards:#qr-cards:afterThemeFonts')).toBeInTheDocument();
+        expect(screen.getByText('qrCards:QR cards:#qr-cards:afterTextStyles')).toBeInTheDocument();
     });
 });
