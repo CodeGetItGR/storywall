@@ -1198,8 +1198,18 @@ export interface FeedLayoutDto {
     revision: number;
     document: unknown; // an invitation document (lib/invitation/document.ts)
     design: unknown | null; // the Save my date theme's design; null on the wall theme
-    imageUrls: Record<string, string>; // image id to URL: the theme's images and the event photos the layout uses
+    imageUrls: Record<string, string>; // image id to URL: the theme's images, the host's feed photos and the event photos the layout uses
     updatedAt: string;
+}
+
+// A photo uploaded for the feed layout (guestwall-be FeedLayoutImageDto). url expires: never store it in a document.
+export interface FeedLayoutImageDto {
+    mediaId: string;
+    url: string;
+    contentType: string;
+    width: number;
+    height: number;
+    byteSize: number;
 }
 
 // PUT /api/events/{id}/feed-layout (KAN-243). revision: the one the host saw, 0 before the first save;
