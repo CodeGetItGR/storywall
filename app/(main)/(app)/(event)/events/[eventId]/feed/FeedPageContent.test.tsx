@@ -8,6 +8,7 @@ import { eventKeys } from '@/hooks/useEvent';
 import type { EventDetailResponseDto, FeedLayoutDto } from '@/lib/api/types';
 import { defaultFeedLayout, feedLayoutKeys } from '@/lib/feedLayout';
 import { feedPageThemeFor, feedPageThemeSnapshot, publishFeedPageTheme } from '@/lib/feedPageTheme';
+import type { InvitationDocument } from '@/lib/invitation/document';
 import { SAMPLE_SECTIONS, SAMPLE_THEME } from '@/lib/invitation/samples';
 import type { InvitationSection } from '@/lib/invitation/sections';
 import { FeedEditorFlagProvider } from '@/providers/FeedEditorFlagProvider';
@@ -112,8 +113,9 @@ const dressCode = SAMPLE_SECTIONS.dressCode as InvitationSection;
 // A layout whose host put RSVP above the description.
 function rsvpFirstLayout(): FeedLayoutDto {
     const saved = savedLayout(dressCode);
-    const [cover, details, description, rsvp, ...rest] = saved.document.sections;
-    return { ...saved, document: { ...saved.document, sections: [cover, details, rsvp, description, ...rest] } };
+    const document = saved.document as InvitationDocument;
+    const [cover, details, description, rsvp, ...rest] = document.sections;
+    return { ...saved, document: { ...document, sections: [cover, details, rsvp, description, ...rest] } };
 }
 
 function follows(first: HTMLElement, second: HTMLElement): boolean {

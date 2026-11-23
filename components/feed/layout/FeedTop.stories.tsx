@@ -46,7 +46,7 @@ function TopStory({ extra, ended = false, styledDetails = false, mode = 'single'
         <Top
             view={view}
             mode={mode}
-            modeSwitch={mode === 'single' ? undefined : <FeedModeSwitch mode={mode} onSelect={() => undefined} />}
+            modeSwitch={mode === 'single' ? undefined : <FeedModeSwitch mode={mode} onSelect={noop} />}
             // The pure row, with no calendar sheet; the frame draws it in Social Feed mode only.
             dateRow={<EventInfo date={Date.UTC(2026, 11, 30)} place="Rhodes" className="mt-3 w-full px-4" />}
             cover={<Box label="Cover + title" />}
@@ -56,6 +56,8 @@ function TopStory({ extra, ended = false, styledDetails = false, mode = 'single'
         />
     );
 }
+
+const noop = () => undefined;
 
 const meta = {
     title: 'Feed/Layout/FeedTop',

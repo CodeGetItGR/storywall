@@ -2,7 +2,7 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { NextIntlClientProvider } from 'next-intl';
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { EventInfoSection, type EventInfoEvent } from '@/components/feed/EventInfoSection';
+import { type EventInfoEvent,EventInfoSection } from '@/components/feed/EventInfoSection';
 import en from '@/messages/en.json';
 
 afterEach(cleanup);

@@ -36,7 +36,7 @@ import { useFeedPageTheme } from '@/hooks/useFeedPageTheme';
 import { useFeedTop } from '@/hooks/useFeedTop';
 import { useHideMobileTabBarOnScroll } from '@/hooks/useHideMobileTabBarOnScroll';
 import { useRsvpPromptVisible } from '@/hooks/useRsvpPromptVisible';
-import { feedPlaceHref, type FeedPageMode } from '@/lib/feedMode';
+import { type FeedPageMode,feedPlaceHref } from '@/lib/feedMode';
 import { cn } from '@/lib/utils';
 
 import { useFeedPage } from './FeedPageContext';
@@ -55,7 +55,7 @@ export function FeedPageContent() {
     const feedMode = useFeedMode(event);
     // null while the mode isn't known yet: the page keeps its loading state.
     const pageMode: FeedPageMode | null = feedMode.available ? feedMode.mode : 'single';
-    const pin = useFeedModeSwitchPin(pageMode !== null && pageMode !== 'single');
+    const { ref: pinRef, pinned } = useFeedModeSwitchPin(pageMode !== null && pageMode !== 'single');
     // The Overview's Start editing (?edit=blocks) opens the invitation.
     const startFromLink = useCallback(() => {
         if (feedMode.available) feedMode.select('invitation');
@@ -65,7 +65,7 @@ export function FeedPageContent() {
     const pill = feedMode.mode && <FeedModeSwitch mode={feedMode.mode} onSelect={feedMode.select} />;
     const modeSwitch = pill && (
         // Centred on the cover's bottom edge, half over it. While a copy is pinned under the header, it keeps its space.
-        <div ref={pin.ref} className={cn('relative z-10 -mt-6 flex justify-center', pin.pinned && 'invisible')}>
+        <div ref={pinRef} className={cn('relative z-10 -mt-6 flex justify-center', pinned && 'invisible')}>
             {pill}
         </div>
     );
@@ -115,7 +115,7 @@ export function FeedPageContent() {
             <Header
                 countdownTime={event.schedule.startAt ? new Date(event.schedule.startAt).getTime() : 0}
                 eventId={eventId}
-                pinned={pin.pinned ? pill : undefined}
+                pinned={pinned ? pill : undefined}
             />
             {/* Install */}
             <InstallAppBanner />
