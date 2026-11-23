@@ -163,7 +163,7 @@ export function FeedPageContent() {
                                             <FeedPostRenderer key={item.post.id} post={item.post} isLcpCandidate={item.index === 0} />
                                         ) : (
                                             /* Partner card */
-                                            event.partnerBranding && <PartnerFeedCard key={item.key} branding={event.partnerBranding} />
+                                            event.partnerBranding && <PartnerFeedCard key={item.key} branding={event.partnerBranding} eventId={eventId} />
                                         ),
                                     )
                                 )}
