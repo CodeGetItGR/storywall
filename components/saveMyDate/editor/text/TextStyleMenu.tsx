@@ -8,14 +8,21 @@ import { useCallback } from 'react';
 import { keepTextFocus } from '@/components/saveMyDate/editor/text/TextToolbarButton';
 import type { TextStylePresetDto } from '@/lib/api/types';
 import { presetCss, presetName, presetSample } from '@/lib/textStylePresets';
+import { cn } from '@/lib/utils';
 
-type TextStyleMenuProps = { presets: TextStylePresetDto[]; text: string; onPick: (preset: TextStylePresetDto) => void };
+type TextStyleMenuProps = {
+    presets: TextStylePresetDto[];
+    text: string;
+    onPick: (preset: TextStylePresetDto) => void;
+    // The trigger's size, for the docked toolbar.
+    className?: string;
+};
 
 // The feed toolbar's Style (spec item 10): the admin's presets, each drawn on the start of the text being edited.
 // The samples are capped so a large size still fits the menu.
 const MENU_SAMPLE_MAX_SIZE = 26;
 
-export function TextStyleMenu({ presets, text, onPick }: TextStyleMenuProps) {
+export function TextStyleMenu({ presets, text, onPick, className }: TextStyleMenuProps) {
     const t = useTranslations('FeedEditor');
 
     return (
@@ -25,7 +32,10 @@ export function TextStyleMenu({ presets, text, onPick }: TextStyleMenuProps) {
                 aria-label={t('style')}
                 disabled={presets.length === 0}
                 onMouseDown={keepTextFocus}
-                className="flex h-10 shrink-0 items-center gap-1 rounded-[10px] px-2.5 text-[13px] font-semibold hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none disabled:opacity-50"
+                className={cn(
+                    'flex h-10 shrink-0 items-center gap-1 rounded-[10px] px-2.5 text-[13px] font-semibold hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none disabled:opacity-50',
+                    className,
+                )}
             >
                 {t('style')}
                 <ChevronDown className="h-3.5 w-3.5" aria-hidden="true" />

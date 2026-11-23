@@ -16,6 +16,8 @@ type TextColorPickerProps = {
     onPick: (color: string, scope: ColorScope) => void;
     // Where a colour can go; with one, there is nothing to choose (the feed colours this text only).
     scopes?: ColorScope[];
+    // The trigger's size, for the docked feed toolbar.
+    className?: string;
 };
 
 const SCOPES: ColorScope[] = ['text', 'section', 'all'];
@@ -27,7 +29,7 @@ const PICKER_SIZE = { width: '100%', height: 180 };
 const ACTION_CLASS = 'h-10 flex-1 rounded-[10px] text-[13px] font-semibold focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none';
 
 // The text colour: the theme's colours, the ones in use and a full picker, for this text, its section or every text.
-export function TextColorPicker({ value, swatches, onPick, scopes = SCOPES }: TextColorPickerProps) {
+export function TextColorPicker({ value, swatches, onPick, scopes = SCOPES, className }: TextColorPickerProps) {
     const t = useTranslations('InvitationEditor');
     const picker = useTextColorPicker(value, onPick);
     const scopeLabelId = useId();
@@ -39,7 +41,10 @@ export function TextColorPicker({ value, swatches, onPick, scopes = SCOPES }: Te
                 aria-label={t('textColor')}
                 title={t('textColor')}
                 onMouseDown={keepTextFocus}
-                className="grid h-10 w-10 shrink-0 place-items-center rounded-[10px] hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+                className={cn(
+                    'grid h-10 w-10 shrink-0 place-items-center rounded-[10px] hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none',
+                    className,
+                )}
             >
                 <span aria-hidden="true" className="h-6 w-6 rounded-full border-2 border-white/70" style={{ background: value }} />
             </Popover.Trigger>

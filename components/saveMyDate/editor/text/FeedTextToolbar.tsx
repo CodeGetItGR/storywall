@@ -34,7 +34,14 @@ type FeedTextToolbarProps = {
 };
 
 const COLOR_SCOPES: ColorScope[] = ['text'];
-const Divider = () => <span aria-hidden="true" className="mx-0.5 h-6 w-px shrink-0 bg-white/12" />;
+const Divider = ({ docked }: { docked: boolean }) => <span aria-hidden="true" className={cn('h-6 w-px shrink-0 bg-white/12', !docked && 'mx-0.5')} />;
+
+// Docked on a phone, every control is narrower so the whole row fits a 320 px screen. Same height, same controls.
+const DOCKED_TOOL = 'min-w-8 px-1';
+const DOCKED_COLOR = 'w-8';
+const DOCKED_STYLE = 'gap-0.5 px-1.5';
+// No native arrow on a phone: the select shrinks to its number.
+const DOCKED_SELECT = 'appearance-none px-2 text-center';
 
 // The feed's text toolbar (spec item 9): +, Style, size, colour (this text only), bold, italic, delete. No font,
 // alignment or line spacing: on the feed every text is centred and its font comes from its Style. It floats over the
@@ -64,14 +71,19 @@ export function FeedTextToolbar({ toolbar, anchor, canAdd, presets, text, onPres
             {toolbar.lock && <EventLockNote source={toolbar.lock} href={toolbar.lockHref} className="max-w-90 px-1.5 pt-0.5" />}
 
             {/* Tools */}
-            <div className="-m-1.5 flex items-center gap-1 overflow-x-auto p-1.5">
+            <div className={cn('-m-1.5 flex items-center overflow-x-auto p-1.5', docked ? 'justify-between gap-0.5' : 'gap-1')}>
                 {/* Add */}
-                <TextAddMenu disabled={!canAdd} onAdd={toolbar.add} onAddLink={onAddLink} />
-                <Divider />
+                <TextAddMenu disabled={!canAdd} onAdd={toolbar.add} onAddLink={onAddLink} className={docked ? DOCKED_TOOL : undefined} />
+                <Divider docked={docked} />
 
                 {/* Style and size */}
-                <TextStyleMenu presets={presets} text={text} onPick={onPreset} />
-                <TextToolbarSelect label={t('fontSize')} value={toolbar.size ? String(toolbar.size) : ''} onChange={toolbar.setSize}>
+                <TextStyleMenu presets={presets} text={text} onPick={onPreset} className={docked ? DOCKED_STYLE : undefined} />
+                <TextToolbarSelect
+                    label={t('fontSize')}
+                    value={toolbar.size ? String(toolbar.size) : ''}
+                    onChange={toolbar.setSize}
+                    className={docked ? DOCKED_SELECT : undefined}
+                >
                     {toolbar.sizes.map((size) => (
                         <option key={size} value={size}>
                             {size}
@@ -80,22 +92,28 @@ export function FeedTextToolbar({ toolbar, anchor, canAdd, presets, text, onPres
                 </TextToolbarSelect>
 
                 {/* Colour: this text only (the block's droplet colours all of them) */}
-                <TextColorPicker value={toolbar.color} swatches={toolbar.swatches} onPick={toolbar.pickColor} scopes={COLOR_SCOPES} />
-                <Divider />
+                <TextColorPicker
+                    value={toolbar.color}
+                    swatches={toolbar.swatches}
+                    onPick={toolbar.pickColor}
+                    scopes={COLOR_SCOPES}
+                    className={docked ? DOCKED_COLOR : undefined}
+                />
+                <Divider docked={docked} />
 
                 {/* Weight and slant */}
-                <TextToolbarButton label={t('bold')} pressed={toolbar.bold} onClick={toolbar.toggleBold}>
+                <TextToolbarButton label={t('bold')} pressed={toolbar.bold} onClick={toolbar.toggleBold} className={docked ? DOCKED_TOOL : undefined}>
                     <Bold aria-hidden="true" />
                 </TextToolbarButton>
-                <TextToolbarButton label={t('italic')} pressed={toolbar.italic} onClick={toolbar.toggleItalic}>
+                <TextToolbarButton label={t('italic')} pressed={toolbar.italic} onClick={toolbar.toggleItalic} className={docked ? DOCKED_TOOL : undefined}>
                     <Italic aria-hidden="true" />
                 </TextToolbarButton>
 
                 {/* Delete */}
                 {!toolbar.lock && (
                     <>
-                        <Divider />
-                        <TextToolbarButton label={t('deleteText')} onClick={onDelete} className="text-rose-300">
+                        <Divider docked={docked} />
+                        <TextToolbarButton label={t('deleteText')} onClick={onDelete} className={cn('text-rose-300', docked && DOCKED_TOOL)}>
                             <Trash2 aria-hidden="true" />
                         </TextToolbarButton>
                     </>
