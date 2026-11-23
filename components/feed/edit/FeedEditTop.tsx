@@ -90,7 +90,6 @@ export function FeedEditTop({ event, onDone, cancelRef, mode, modeSwitch, dateRo
 
     const tools: FeedBlockToolActions = {
         onToggleVisible: actions.toggleVisible,
-        onMove: actions.move,
         onDelete: actions.askDelete,
         onOpenSettings: panels.openSettings,
     };
