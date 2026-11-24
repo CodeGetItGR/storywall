@@ -2,7 +2,15 @@ import type { EventThemeDto, FeedLayoutDto } from '@/lib/api/types';
 import { themeFontFamily } from '@/lib/eventTheme';
 import { INVITATION_SCHEMA_VERSION, type InvitationDocument, upgradeInvitationDocument } from '@/lib/invitation/document';
 import type { MediaResolver } from '@/lib/invitation/render';
-import { FEED_SECTION_TYPES, type FeedSectionType, type InvitationSection, isFeedSectionType, type SectionType } from '@/lib/invitation/sections';
+import {
+    FEED_SECTION_TYPES,
+    type FeedSectionType,
+    type InvitationSection,
+    isFeedModeSectionType,
+    isFeedSectionType,
+    isSaveMyDateSectionType,
+    type SectionType,
+} from '@/lib/invitation/sections';
 import type { SectionStyle } from '@/lib/invitation/sectionStyle';
 import { type ThemeDesign, themeDesignSchema } from '@/lib/invitation/theme';
 
@@ -86,23 +94,34 @@ export type FeedFrame = {
     middle: InvitationSection[];
     // RSVP's fixed place, last; null when it is one of the middle blocks.
     rsvp: InvitationSection | null;
+    // Feed mode's sections, in the host's order: under the stories in Feed mode, above the posts on the one page.
+    feed: InvitationSection[];
 };
 
 // rsvpMoves: the event has Save my date, so RSVP is one of the host's blocks (spec item 17).
 export type FeedFrameOptions = { ended: boolean; rsvpMoves?: boolean };
 
-// The layout split into the page's fixed places. After the event only the cover stays.
+// The layout split into the page's fixed places. After the event only the cover and Feed mode's sections stay.
 // The details block isn't drawn: the date and place live in the header and the schedule. It stays in the
 // layout, shown, because the public view shares the event's date, sessions and place while it is.
 export function feedFrame(layout: InvitationDocument, { ended, rsvpMoves = false }: FeedFrameOptions): FeedFrame {
     const shown = (type: FeedSectionType) => layout.sections.find((section) => section.type === type && section.visible) ?? null;
     const isMiddle = (section: InvitationSection) =>
-        section.type === 'feedDescription' || !isFeedSectionType(section.type) || (rsvpMoves && section.type === 'feedRsvp');
+        section.type === 'feedDescription' ||
+        (!isFeedSectionType(section.type) && !isFeedModeSectionType(section.type)) ||
+        (rsvpMoves && section.type === 'feedRsvp');
     return {
         cover: layout.sections.find((section) => section.type === 'feedCover') ?? newFeedBlock('feedCover'),
         middle: ended ? [] : layout.sections.filter((section) => section.visible && isMiddle(section)),
         rsvp: ended || rsvpMoves ? null : shown('feedRsvp'),
+        feed: layout.sections.filter((section) => section.visible && isFeedModeSectionType(section.type)),
     };
+}
+
+// What an event without Save my date shows of its layout: its Save my date sections, module blocks among them, stay
+// saved but don't draw.
+export function withoutSaveMyDateSections(layout: InvitationDocument): InvitationDocument {
+    return { ...layout, sections: layout.sections.filter((section) => !isSaveMyDateSectionType(section.type) && section.type !== 'feedModule') };
 }
 
 // A feed block draws inside the invitation section shell (background, effect, transition) on a
@@ -114,7 +133,9 @@ export function shellsFeedBlock(themeId: string, section: InvitationSection): bo
 // Whether the top of the feed needs the invitation root (theme fonts, colours, effects). The plain
 // default layout doesn't, so it draws exactly today's markup.
 export function usesInvitationLook(layout: InvitationDocument): boolean {
-    return layout.sections.some((section) => !isFeedSectionType(section.type) || shellsFeedBlock(layout.themeId, section));
+    return layout.sections.some(
+        (section) => (!isFeedSectionType(section.type) && !isFeedModeSectionType(section.type)) || shellsFeedBlock(layout.themeId, section),
+    );
 }
 
 const WALL_TEXT = '#2f2b2d';

@@ -12,7 +12,6 @@ import { letDragKeysThrough } from '@/lib/sortableKeys';
 type FeedEditSheetFrameProps = {
     open: boolean;
     title: string;
-    titleId?: string;
     isDesktop: boolean;
     onClose: () => void;
     children: ReactNode;
@@ -20,27 +19,27 @@ type FeedEditSheetFrameProps = {
 
 // Edit mode's settings surface: a panel at the right on desktop, a sheet over the lower screen on
 // phones; the feed above stays live either way.
-export function FeedEditSheetFrame({ open, title, titleId, isDesktop, onClose, children }: FeedEditSheetFrameProps) {
+export function FeedEditSheetFrame({ open, title, isDesktop, onClose, children }: FeedEditSheetFrameProps) {
     if (!isDesktop) {
         return (
-            <SectionSettingsSheet open={open} title={title} titleId={titleId} onClose={onClose}>
+            <SectionSettingsSheet open={open} title={title} onClose={onClose}>
                 {children}
             </SectionSettingsSheet>
         );
     }
 
     return (
-        <FeedEditPanel open={open} title={title} titleId={titleId} onClose={onClose}>
+        <FeedEditPanel open={open} title={title} onClose={onClose}>
             {children}
         </FeedEditPanel>
     );
 }
 
-type FeedEditPanelProps = { open: boolean; title: string; titleId?: string; onClose: () => void; children: ReactNode };
+type FeedEditPanelProps = { open: boolean; title: string; onClose: () => void; children: ReactNode };
 
 // The desktop panel, fixed at the right of the screen. It is portalled to the body: the page shell
 // carries a transform, which would pin a fixed child to the shell and let it scroll away.
-function FeedEditPanel({ open, title, titleId, onClose, children }: FeedEditPanelProps) {
+function FeedEditPanel({ open, title, onClose, children }: FeedEditPanelProps) {
     const onOpenChange = useCallback((next: boolean) => !next && onClose(), [onClose]);
 
     return (
@@ -52,7 +51,7 @@ function FeedEditPanel({ open, title, titleId, onClose, children }: FeedEditPane
                 >
                     {/* Header */}
                     <div className="flex items-center justify-between gap-3">
-                        <Dialog.Title id={titleId} className="truncate text-[14px] font-bold text-white">
+                        <Dialog.Title className="truncate text-[14px] font-bold text-white">
                             {title}
                         </Dialog.Title>
                         <Dialog.Close render={<SectionSettingsDone />} />

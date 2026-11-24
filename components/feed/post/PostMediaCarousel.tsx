@@ -11,15 +11,17 @@ import { PostMediaImageSlide } from '@/components/feed/post/PostMediaImageSlide'
 import type { MediaResponseDto } from '@/lib/api/types';
 import { cn } from '@/lib/utils';
 
+// One photo or video of the full-screen viewer, with its own alt text.
+export type ViewerMedia = Pick<MediaResponseDto, 'id' | 'mediaUrl' | 'mediaType' | 'status' | 'metadata'> & { alt: string };
+
 interface PostMediaCarouselProps {
-    media: MediaResponseDto[];
+    media: readonly ViewerMedia[];
     initialIndex: number;
     onIndexChange: (index: number) => void;
-    alt: string;
     className?: string;
 }
 
-export function PostMediaCarousel({ media, initialIndex, onIndexChange, alt, className }: PostMediaCarouselProps) {
+export function PostMediaCarousel({ media, initialIndex, onIndexChange, className }: PostMediaCarouselProps) {
     const t = useTranslations('PostModal');
     const [emblaRef, emblaApi] = useEmblaCarousel({ startIndex: initialIndex });
     const [currentIndex, setCurrentIndex] = useState(initialIndex);
@@ -91,7 +93,7 @@ export function PostMediaCarousel({ media, initialIndex, onIndexChange, alt, cla
                             ) : (
                                 <PostMediaImageSlide
                                     mediaUrl={item.mediaUrl}
-                                    alt={alt}
+                                    alt={item.alt}
                                     loading={index === currentIndex ? 'eager' : 'lazy'}
                                     active={index === currentIndex}
                                 />

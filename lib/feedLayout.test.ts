@@ -11,7 +11,9 @@ import {
     usesInvitationLook,
     WALL_THEME_ID,
     wallThemeDesign,
+    withoutSaveMyDateSections,
 } from '@/lib/feedLayout';
+import { feedModuleSection } from '@/lib/feedModuleBlocks';
 import { invitationDocumentSchema } from '@/lib/invitation/document';
 import { SAMPLE_SECTIONS, SAMPLE_THEME } from '@/lib/invitation/samples';
 import type { InvitationSection } from '@/lib/invitation/sections';
@@ -164,5 +166,29 @@ describe('feedFrame with a movable RSVP', () => {
 describe('the paid feed types', () => {
     it("hold every type the Add section lists offer", () => {
         expect(FEED_ADD_TYPES.filter((type) => !(PAID_FEED_SECTION_TYPES as readonly string[]).includes(type))).toEqual([]);
+    });
+});
+
+describe('feed sections in the frame', () => {
+    it('lists the shown feed sections in their own place, never in the middle, after the event too', () => {
+        const prompt = { ...SAMPLE_SECTIONS.feedPrompt, id: 'p' } as InvitationSection;
+        const hidden = { ...SAMPLE_SECTIONS.feedSchedule, id: 's', visible: false } as InvitationSection;
+        const layout = layoutWith(prompt, hidden);
+        const frame = feedFrame(layout, { ended: false });
+        expect(frame.feed.map((section) => section.id)).toEqual(['p']);
+        expect(frame.middle.map((section) => section.id)).toEqual(['feed-feedDescription']);
+        expect(feedFrame(layout, { ended: true }).feed.map((section) => section.id)).toEqual(['p']);
+    });
+
+    it('drops the Save my date sections, module blocks too, from what an event without the module shows', () => {
+        const prompt = { ...SAMPLE_SECTIONS.feedPrompt, id: 'p' } as InvitationSection;
+        const shown = withoutSaveMyDateSections(layoutWith({ ...faq, id: 'faq' }, feedModuleSection('playlist', () => 'module'), prompt));
+        expect(shown.sections.map((section) => section.id)).toEqual([
+            'feed-feedCover',
+            'feed-feedDetails',
+            'feed-feedDescription',
+            'feed-feedRsvp',
+            'p',
+        ]);
     });
 });

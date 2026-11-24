@@ -88,8 +88,9 @@ export const routes = {
         tools: {
             // Only redirects now (KAN-227): hosts land on manage?tab=rsvp. Kept for old links.
             rsvp: (eventId: string) => `${eventBasePath(eventId)}/tools/rsvp`,
-            rsvpSubmit: (eventId: string, attending?: 'attending' | 'not-attending' | null) =>
-                withQuery(`${eventBasePath(eventId)}/tools/rsvp/submit`, { attending }),
+            // session: open the form on that session's question (Today's schedule's RSVP button).
+            rsvpSubmit: (eventId: string, attending?: 'attending' | 'not-attending' | null, params: { session?: string | null } = {}) =>
+                withQuery(`${eventBasePath(eventId)}/tools/rsvp/submit`, { attending, ...params }),
             gallery: (eventId: string) => `${eventBasePath(eventId)}/tools/gallery`,
             playlist: (eventId: string) => `${eventBasePath(eventId)}/tools/playlist`,
             quiz: (eventId: string) => `${eventBasePath(eventId)}/tools/quiz`,

@@ -1,14 +1,15 @@
 import type { CSSProperties } from 'react';
 
-import { contrastRatio, INK_COLOR, MIN_INK_CONTRAST, readableOnInk } from '@/lib/contrast';
+import { contrastRatio, INK_COLOR, MIN_INK_CONTRAST, readableOnInk, readableOnInkText } from '@/lib/contrast';
 import { activeEffect, revealsBackground, type SectionEffect } from '@/lib/invitation/backgroundEffects';
 import type { CanvasTools } from '@/lib/invitation/canvasTools';
+import { colorInputValue } from '@/lib/invitation/colorInput';
 import type { InvitationDocument } from '@/lib/invitation/document';
 import type { InvitationElement } from '@/lib/invitation/elements';
 import { INVITATION_LABELS, type InvitationLabels, invitationLanguage } from '@/lib/invitation/labels';
 import type { ImageRef, TextStyle } from '@/lib/invitation/primitives';
 import type { RsvpSender } from '@/lib/invitation/rsvp';
-import type { InvitationSection } from '@/lib/invitation/sections';
+import { type InvitationSection, isSaveMyDateSectionType } from '@/lib/invitation/sections';
 import type { TextRenderer } from '@/lib/invitation/textEditing';
 import type { ThemeDesign } from '@/lib/invitation/theme';
 import { PHOTO_SHAPES } from '@/lib/invitation/theme';
@@ -34,6 +35,8 @@ export type RenderContext = {
     // The customizable feed draws the theme's content background behind the whole page (lib/feedPageBackdrop.ts):
     // sections left on the "auto" background show the page through.
     pageBackdrop?: boolean;
+    // The customizable feed lets a Save my date section keep a colour or photo of its own (KAN-269), over the page's.
+    ownBackgrounds?: boolean;
     // The customizable feed draws every text centred: its toolbar has no alignment (spec item 9).
     centerText?: boolean;
     // A preset decides the font of text that has none of its own.
@@ -165,6 +168,28 @@ function themeSlot(section: InvitationSection, index: number, ctx: RenderContext
     return index % 2 ? 'content' : 'top';
 }
 
+// On the feed, the colour or photo the host gave a Save my date section. The colour is drawn light enough for ink;
+// a photo that can't be found leaves the page showing.
+type OwnBackground = { color: string; url?: never } | { url: string; color?: never };
+
+function ownBackground(section: InvitationSection, ctx: RenderContext): OwnBackground | undefined {
+    if (!ctx.ownBackgrounds || !isSaveMyDateSectionType(section.type)) return undefined;
+    const { background } = section.style;
+    if (background.kind === 'color') {
+        const color = colorInputValue(background.color, '');
+        return color ? { color: readableOnInkText(color) } : undefined;
+    }
+    const url = background.kind === 'image' ? resolveImage(background.image, ctx) : undefined;
+    return url ? { url } : undefined;
+}
+
+function photoBackground(url: string): SectionBackground {
+    return {
+        style: { backgroundImage: cssUrl(url), backgroundSize: 'cover', backgroundRepeat: 'no-repeat', backgroundPosition: 'center' },
+        hasThemeImage: false,
+    };
+}
+
 function alternatingColor(index: number, ctx: RenderContext): string {
     return index % 2 ? ctx.theme.colors.secondary || DEFAULT_SECONDARY : '#ffffff';
 }
@@ -172,6 +197,9 @@ function alternatingColor(index: number, ctx: RenderContext): string {
 export type SectionBackground = { style: CSSProperties; hasThemeImage: boolean };
 
 export function sectionBackground(section: InvitationSection, index: number, ctx: RenderContext): SectionBackground {
+    const own = ownBackground(section, ctx);
+    if (own?.color) return { style: { background: own.color }, hasThemeImage: false };
+    if (own?.url) return photoBackground(own.url);
     if (ctx.backgroundColor) return { style: { background: ctx.backgroundColor }, hasThemeImage: false };
     if (showsPage(ctx)) return { style: { background: 'transparent' }, hasThemeImage: false };
     const { background } = section.style;
@@ -180,12 +208,7 @@ export function sectionBackground(section: InvitationSection, index: number, ctx
     }
     if (background.kind === 'image') {
         const url = resolveImage(background.image, ctx);
-        if (url) {
-            return {
-                style: { backgroundImage: cssUrl(url), backgroundSize: 'cover', backgroundRepeat: 'no-repeat', backgroundPosition: 'center' },
-                hasThemeImage: false,
-            };
-        }
+        if (url) return photoBackground(url);
     }
     const slot = ctx.theme.backgrounds[themeSlot(section, index, ctx)];
     const desktop = slot.desktop ? ctx.media(slot.desktop.mediaId) : undefined;
@@ -215,6 +238,8 @@ export function cssUrl(url: string): string {
 export type SectionPhotos = { desktop: string; mobile: string };
 
 export function sectionBackgroundPhotos(section: InvitationSection, index: number, ctx: RenderContext): SectionPhotos | undefined {
+    const own = ownBackground(section, ctx);
+    if (own) return own.url ? { desktop: own.url, mobile: own.url } : undefined;
     if (ctx.backgroundColor) return undefined;
     const { background } = section.style;
     if (!showsPage(ctx) && background.kind === 'color') return undefined;
@@ -243,6 +268,8 @@ export function sectionPhotoTint(section: InvitationSection, index: number, ctx:
 
 // A solid colour behind the section, or '' when it shows an image.
 function solidBackgroundColor(section: InvitationSection, index: number, ctx: RenderContext): string {
+    const own = ownBackground(section, ctx);
+    if (own) return own.color ?? '';
     if (ctx.backgroundColor) return ctx.backgroundColor;
     const { background } = section.style;
     if (!showsPage(ctx) && background.kind === 'color') return background.color || ctx.theme.colors.secondary || DEFAULT_SECONDARY;
@@ -316,7 +343,7 @@ export type SectionShell = {
     transition?: SectionTransitionArt;
 };
 
-const KEEPS_SAVED_HEIGHT: ReadonlySet<InvitationSection['type']> = new Set(['photo', 'photoFrame', 'footer']);
+export const KEEPS_SAVED_HEIGHT: ReadonlySet<InvitationSection['type']> = new Set(['photo', 'photoFrame', 'footer']);
 
 // The <section> around every section type (old sectionHtml).
 export function sectionShell(section: InvitationSection, index: number, ctx: RenderContext): SectionShell {
@@ -324,7 +351,9 @@ export function sectionShell(section: InvitationSection, index: number, ctx: Ren
     const background = sectionBackground(section, index, ctx);
     const effect = activeEffect(section.style);
     const surface = effect && revealsBackground(effect.type) ? { style: { background: 'transparent' }, hasThemeImage: false } : background;
-    const baseText = resolveTextColor(contrast, ctx.textColor, ctx) || ctx.textColor;
+    // Text with no colour of its own has to read on the section's own colour too.
+    const textColor = textColorOn(ownBackground(section, ctx)?.color, ctx.textColor);
+    const baseText = resolveTextColor(contrast, textColor, ctx) || textColor;
     const { minHeight, paddingY } = section.style;
     const style: Record<string, unknown> = {
         ...surface.style,

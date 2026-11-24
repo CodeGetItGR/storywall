@@ -7,6 +7,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { FeedEditBlock } from '@/components/feed/edit/FeedEditBlock';
 import { defaultFeedLayout } from '@/lib/feedLayout';
+import { feedModuleSection } from '@/lib/feedModuleBlocks';
 import { SAMPLE_SECTIONS } from '@/lib/invitation/samples';
 import type { InvitationSection } from '@/lib/invitation/sections';
 import en from '@/messages/en.json';
@@ -17,7 +18,12 @@ vi.mock('@/components/saveMyDate/invitation/invitationFonts', () => ({ INVITATIO
 const section = { ...(SAMPLE_SECTIONS.dressCode as InvitationSection), id: 'dress' };
 
 function renderBlock(props: Partial<ComponentProps<typeof FeedEditBlock>> = {}) {
-    const actions = { onToggleVisible: vi.fn(), onDelete: vi.fn(), onOpenSettings: vi.fn() };
+    const actions = {
+        onToggleVisible: vi.fn(),
+        onDelete: vi.fn(),
+        onOpenSettings: vi.fn(),
+        onMenuOpenChange: vi.fn(),
+    };
     render(
         <NextIntlClientProvider locale="en" messages={en}>
             <DndContext>
@@ -63,9 +69,9 @@ describe('FeedEditBlock taps', () => {
         expect(actions.onOpenSettings).not.toHaveBeenCalled();
     });
 
-    it('opens its settings once from the pencil', () => {
-        const actions = renderBlock();
-        fireEvent.click(screen.getByRole('button', { name: en.InvitationEditor.sectionSettings.open }));
+    it('opens its settings once from the dropdown', async () => {
+        const actions = renderBlock({ menuOpen: true });
+        fireEvent.click(await screen.findByRole('menuitem', { name: en.InvitationEditor.sectionSettings.open }));
         expect(actions.onOpenSettings).toHaveBeenCalledExactlyOnceWith('dress');
     });
 
@@ -85,17 +91,42 @@ describe('FeedEditBlock name', () => {
         expect(screen.getByRole('group', { name: 'Dress code' })).toBeTruthy();
     });
 
-    // Theme, Cancel and Save moved to a row under the cover (FeedEditRow), so the cover keeps its name on phones too.
-    it("shows the cover's name first, on every screen", () => {
+    it("shows no name on a module block, whose card does, and keeps it for screen readers", () => {
+        renderBlock({ section: feedModuleSection('playlist', () => 'dress'), name: 'Playlist' });
+        expect(screen.getByRole('group', { name: 'Playlist' })).toBeTruthy();
+        expect(screen.queryByText('Playlist')).toBeNull();
+    });
+
+    it('shows no name on the cover, which keeps its name for screen readers and its settings', () => {
         const cover = defaultFeedLayout().sections.find((item) => item.type === 'feedCover') as InvitationSection;
         renderBlock({
             section: cover,
             name: 'Cover',
             controls: { canHide: false, canDelete: false, movable: false, canMoveUp: false, canMoveDown: false },
         });
-        const label = screen.getByText('Cover');
-        expect(label.previousElementSibling).toBeNull();
-        expect(label).not.toHaveClass('max-sm:hidden');
+        expect(screen.queryByText('Cover')).toBeNull();
+        const group = screen.getByRole('group', { name: 'Cover' });
+        const tools = group.querySelector('[data-feed-block-tools]') as HTMLElement;
+        expect(within(tools).getAllByRole('button')).toEqual([screen.getByRole('button', { name: en.InvitationEditor.sectionSettings.open })]);
+    });
+
+    it('draws every tool 32 px, with a 40 px tap area', () => {
+        renderBlock();
+        const { sections } = en.InvitationEditor;
+        for (const name of [sections.hide, sections.drag, sections.options]) {
+            const tool = screen.getByRole('button', { name });
+            expect(tool).toHaveClass('h-8', 'w-8', 'before:-inset-1', '[&_svg]:h-4');
+            expect(tool).not.toHaveClass('h-10');
+            expect(tool).not.toHaveClass('[&_svg]:h-4.5');
+        }
+    });
+
+    it("ends on the content's right edge, and sits inside a module block's card", () => {
+        renderBlock();
+        expect(document.querySelector('[data-feed-block-tools]')).toHaveClass('inset-x-4', 'top-3');
+        cleanup();
+        renderBlock({ section: feedModuleSection('playlist', () => 'dress') });
+        expect(document.querySelector('[data-feed-block-tools]')).toHaveClass('inset-x-7', 'top-3');
     });
 
     // The name is no button: a tap on it falls through to the block, which opens the settings.
@@ -107,18 +138,20 @@ describe('FeedEditBlock name', () => {
 });
 
 describe('FeedEditBlock while its settings are open', () => {
-    it('keeps the accent outline and marks the block as the current one', () => {
+    it('keeps the faint wash, with no outline, and marks the block as the current one', () => {
         renderBlock({ active: true });
         const group = screen.getByRole('group', { name: 'Dress code' });
         expect(group).toHaveAttribute('aria-current', 'true');
-        expect(group).toHaveClass('outline-2', 'outline-(--smd-editor-accent)');
+        expect(group).toHaveClass('after:bg-primary/8');
+        expect(group).not.toHaveClass('outline-2');
     });
 
-    it('shows the outline only on hover or focus otherwise', () => {
+    it('washes only on hover otherwise', () => {
         renderBlock();
         const group = screen.getByRole('group', { name: 'Dress code' });
         expect(group).not.toHaveAttribute('aria-current');
-        expect(group).not.toHaveClass('outline-2');
+        expect(group).toHaveClass('hover:after:bg-primary/4');
+        expect(group).not.toHaveClass('after:bg-primary/8');
     });
 });
 
@@ -146,28 +179,29 @@ describe('FeedEditBlock members only', () => {
     });
 });
 
-describe('FeedEditBlock tools (2026-11-23)', () => {
-    it('puts the eye and name left, and ✕, drag and settings stacked right, with no menu', () => {
+describe('FeedEditBlock tools (2026-11-24)', () => {
+    it('puts the eye and name left, and the drag handle and the chevron side by side right', () => {
         renderBlock({ controls: { canHide: true, canDelete: true, movable: true, canMoveUp: true, canMoveDown: true }, hasSettings: true });
         const tools = document.querySelector('[data-feed-block-tools]') as HTMLElement;
         const right = tools.querySelector('[data-feed-block-tools-right]') as HTMLElement;
-        expect(within(right).getAllByRole('button').map((button) => button.getAttribute('aria-label'))).toEqual([
-            en.InvitationEditor.sections.delete,
-            en.InvitationEditor.sections.drag,
-            en.InvitationEditor.sectionSettings.open,
-        ]);
-        expect(within(tools).queryByRole('button', { name: en.InvitationEditor.sections.options })).toBeNull();
+        expect(
+            within(right)
+                .getAllByRole('button')
+                .map((button) => button.getAttribute('aria-label')),
+        ).toEqual([en.InvitationEditor.sections.drag, en.InvitationEditor.sections.options]);
+        expect(right).not.toHaveClass('flex-col');
         expect(within(tools).getByRole('button', { name: en.InvitationEditor.sections.hide })).toBeTruthy();
     });
 
-    it('asks before deleting', () => {
-        const actions = renderBlock({ controls: { canHide: true, canDelete: true, movable: true, canMoveUp: false, canMoveDown: false } });
-        fireEvent.click(screen.getByRole('button', { name: en.InvitationEditor.sections.delete }));
+    it('asks before deleting', async () => {
+        const actions = renderBlock({ menuOpen: true });
+        fireEvent.click(await screen.findByRole('menuitem', { name: en.InvitationEditor.sections.delete }));
         expect(actions.onDelete).toHaveBeenCalledWith(section.id);
     });
 
-    it('has no ✕ on a block that cannot be deleted', () => {
+    it('has only its settings, with no chevron, on a block that cannot be deleted', () => {
         renderBlock({ controls: { canHide: true, canDelete: false, movable: true, canMoveUp: false, canMoveDown: false } });
-        expect(screen.queryByRole('button', { name: en.InvitationEditor.sections.delete })).toBeNull();
+        expect(screen.getByRole('button', { name: en.InvitationEditor.sectionSettings.open })).toBeTruthy();
+        expect(screen.queryByRole('button', { name: en.InvitationEditor.sections.options })).toBeNull();
     });
 });

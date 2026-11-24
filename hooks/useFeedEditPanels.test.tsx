@@ -27,6 +27,25 @@ describe('useFeedEditPanels', () => {
         act(() => hook.result.current.openAdd({ after: 's-1' }));
         expect(hook.result.current.themeOpen).toBe(false);
         expect(closeSettings).toHaveBeenCalledTimes(1);
-        expect(openAddSection).toHaveBeenCalledWith({ after: 's-1' });
+        expect(openAddSection).toHaveBeenCalledWith('invitation', { after: 's-1' });
+    });
+
+    it('closes the theme sheet and block settings for the preview', () => {
+        const { hook, closeSettings } = renderPanels();
+        act(() => hook.result.current.openTheme());
+        closeSettings.mockClear();
+        act(() => hook.result.current.closeAll());
+        expect(hook.result.current.themeOpen).toBe(false);
+        expect(closeSettings).toHaveBeenCalledTimes(1);
+    });
+
+    it("opens Feed mode's Add sheet the same way", () => {
+        const { hook, closeSettings, openAddSection } = renderPanels();
+        act(() => hook.result.current.openTheme());
+        closeSettings.mockClear();
+        act(() => hook.result.current.openAddFeed());
+        expect(hook.result.current.themeOpen).toBe(false);
+        expect(closeSettings).toHaveBeenCalledTimes(1);
+        expect(openAddSection).toHaveBeenCalledWith('feed');
     });
 });

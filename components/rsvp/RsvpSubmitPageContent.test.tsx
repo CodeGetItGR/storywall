@@ -32,6 +32,14 @@ describe('RsvpSubmitPageContent', () => {
         expect(screen.getByText('form')).toBeTruthy();
     });
 
+    it('shows the thanks screen after an RSVP, or the form from a link to one session', () => {
+        render(<RsvpSubmitPageContent data={data({ hasExistingRsvp: true })} />);
+        expect(screen.getByText('submitted')).toBeTruthy();
+        cleanup();
+        render(<RsvpSubmitPageContent data={data({ hasExistingRsvp: true, opensForm: true })} />);
+        expect(screen.getByText('form')).toBeTruthy();
+    });
+
     it('shows the loading state, not the form, while the vendor role is loading', () => {
         render(<RsvpSubmitPageContent data={data({ isVendorRoleLoading: true })} />);
         expect(screen.getByText('skeleton')).toBeTruthy();

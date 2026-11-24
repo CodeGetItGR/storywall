@@ -6,7 +6,7 @@ import { useCallback } from 'react';
 
 import type { FeedAddPlace } from '@/lib/feedEditing';
 
-// "+ Add section" on a dotted line, above the host's first block, between two and after the last (spec item 8). Edit mode only.
+// "+ Add section" on a dotted line, after each of the host's blocks (spec item 8). Edit mode only.
 export function FeedAddBetween({ onAdd }: { onAdd: () => void }) {
     const t = useTranslations('InvitationEditor.sections');
 

@@ -9,7 +9,8 @@ import { feedModuleToolHref, moduleOfBlock } from '@/lib/feedModuleBlocks';
 import type { InvitationSection } from '@/lib/invitation/sections';
 
 // What FeedTopFrame draws inside a module block (plan 7c): the block, opening the module's tool for a member.
-export function useFeedModuleBlockPart(event: Pick<EventDetailResponseDto, 'id' | 'eventType' | 'modules'>) {
+// underTools: in edit mode, with room for the block's tools.
+export function useFeedModuleBlockPart(event: Pick<EventDetailResponseDto, 'id' | 'eventType' | 'modules'>, underTools = false) {
     const { id, eventType, modules } = event;
     return useCallback(
         (section: InvitationSection) => {
@@ -21,9 +22,10 @@ export function useFeedModuleBlockPart(event: Pick<EventDetailResponseDto, 'id' 
                     eventType={eventType}
                     href={feedModuleToolHref(id, key)}
                     available={isModuleAvailable(modules, key)}
+                    underTools={underTools}
                 />
             );
         },
-        [eventType, id, modules],
+        [eventType, id, modules, underTools],
     );
 }

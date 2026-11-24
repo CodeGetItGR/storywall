@@ -1,13 +1,14 @@
 import type { Draft } from 'immer';
 
 import type { InvitationDocument } from '@/lib/invitation/document';
-import type { InvitationSection, SectionType } from '@/lib/invitation/sections';
+import { type InvitationSection, isFeedModeSectionType, type SectionType } from '@/lib/invitation/sections';
 
 // Blocks every visitor sees, signed out too: never members only (guestwall-be FeedLayoutRules.NEVER_MEMBERS_ONLY).
+// Nor are Feed mode's sections (its FEED_MODE_TYPES): the public read leaves them out.
 const ALWAYS_PUBLIC: readonly SectionType[] = ['feedCover', 'feedDetails', 'feedRsvp', 'feedModule'];
 
 export function canBeMembersOnly(section: Pick<InvitationSection, 'type'>): boolean {
-    return !ALWAYS_PUBLIC.includes(section.type);
+    return !ALWAYS_PUBLIC.includes(section.type) && !isFeedModeSectionType(section.type);
 }
 
 export function setFeedBlockMembersOnly(id: string, membersOnly: boolean) {

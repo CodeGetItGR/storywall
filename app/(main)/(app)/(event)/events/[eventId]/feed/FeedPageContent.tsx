@@ -31,13 +31,15 @@ import { useFeedEditMode } from '@/hooks/useFeedEditMode';
 import { useFeedEditTrigger } from '@/hooks/useFeedEditTrigger';
 import { useFeedItems } from '@/hooks/useFeedItems';
 import { useFeedMode } from '@/hooks/useFeedMode';
-import { useFeedModeSwitchPin } from '@/hooks/useFeedModeSwitchPin';
 import { useFeedModuleBlockPart } from '@/hooks/useFeedModuleBlockPart';
 import { useFeedPageTheme } from '@/hooks/useFeedPageTheme';
+import { useFeedSectionPart } from '@/hooks/useFeedSectionPart';
 import { useFeedTop } from '@/hooks/useFeedTop';
+import { useHideMobileTabBar } from '@/hooks/useHideMobileTabBar';
 import { useHideMobileTabBarOnScroll } from '@/hooks/useHideMobileTabBarOnScroll';
 import { useRsvpPromptVisible } from '@/hooks/useRsvpPromptVisible';
-import { type FeedPageMode,feedPlaceHref } from '@/lib/feedMode';
+import { type FeedPageMode, feedPlaceHref } from '@/lib/feedMode';
+import { hasFeedSection } from '@/lib/feedSections';
 import { cn } from '@/lib/utils';
 
 import { useFeedPage } from './FeedPageContext';
@@ -51,24 +53,28 @@ export function FeedPageContent() {
     const shouldShowRSVP = useRsvpPromptVisible({ eventId, isHost, rsvpAvailable: moduleFlags.rsvp, rsvpId: currentMemberRsvpId });
     const top = useFeedTop(event);
     const moduleBlock = useFeedModuleBlockPart(event);
+    const feedSection = useFeedSectionPart(event, top.ctx.media);
     const coverEvent = useFeedPageTheme(event, top.pageBackground, top.backdrop);
     const editMode = useFeedEditMode(event, isHost, isRoleLoading);
     const { start: startEditing, finish: finishEditing, editPill, cancelPill } = useFeedEditFocus(editMode.start, editMode.finish);
     const feedMode = useFeedMode(event);
     // null while the mode isn't known yet: the page keeps its loading state.
     const pageMode: FeedPageMode | null = feedMode.available ? feedMode.mode : 'single';
-    const { ref: pinRef, pinned } = useFeedModeSwitchPin(pageMode !== null && pageMode !== 'single');
+    // The invitation takes the whole phone: the switch to Social Feed brings the tab bar back.
+    const tabBarAway = pageMode === 'invitation';
+    useHideMobileTabBar(tabBarAway, 'feed-invitation');
+    // No switch while editing: the host edits the mode they were in.
+    const hasSwitch = feedMode.mode !== null && !editMode.editing;
     // The Overview's Start editing (?edit=blocks) opens the invitation.
     const startFromLink = useCallback(() => {
         if (feedMode.available) feedMode.select('invitation');
         startEditing();
     }, [feedMode, startEditing]);
     useFeedEditTrigger({ settled: editMode.settled, canEdit: editMode.canEdit, start: startFromLink });
-    const pill = feedMode.mode && <FeedModeSwitch mode={feedMode.mode} onSelect={feedMode.select} />;
-    const modeSwitch = pill && (
-        // Centred on the cover's bottom edge, half over it. While a copy is pinned under the header, it keeps its space.
-        <div ref={pinRef} className={cn('relative z-10 -mt-6 flex justify-center', pinned && 'invisible')}>
-            {pill}
+    const modeSwitch = hasSwitch && feedMode.mode && (
+        // Centred on the cover's bottom edge, half over it. It scrolls away with the cover.
+        <div className="relative z-10 -mt-5 flex justify-center">
+            <FeedModeSwitch mode={feedMode.mode} onSelect={feedMode.select} />
         </div>
     );
     const topParts = {
@@ -78,6 +84,7 @@ export function FeedPageContent() {
                 isHost={isHost}
                 wishlist={moduleFlags.wishlist}
                 clearPill={Boolean(modeSwitch)}
+                editing={editMode.editing}
                 corner={editMode.canEdit && !editMode.editing ? <FeedEditPill ref={editPill} onClick={startEditing} /> : undefined}
             />
         ),
@@ -100,7 +107,14 @@ export function FeedPageContent() {
         moduleBlock,
     };
 
-    const feedTop = <FeedTop view={top} mode={pageMode ?? 'single'} modeSwitch={modeSwitch} {...topParts} />;
+    // What guests see differently from the host editing, for edit mode's preview.
+    const guestParts = {
+        cover: <FeedCoverBlock event={coverEvent} isHost={false} wishlist={moduleFlags.wishlist} />,
+        rsvp: moduleFlags.rsvp ? <FeedRsvpBlock eventId={eventId} deadline={event.schedule.rsvpDeadline ?? null} /> : null,
+    };
+
+    // Feed mode's sections go to the member page only: edit mode draws its own, where a pinned photo takes no tap.
+    const feedTop = <FeedTop view={top} mode={pageMode ?? 'single'} modeSwitch={modeSwitch} {...topParts} feedSection={feedSection} />;
 
     function openStoryModal(nextStoryId: string) {
         setStoryId(nextStoryId);
@@ -114,24 +128,21 @@ export function FeedPageContent() {
     if (pageMode === null) return <FeedPageSkeleton />;
 
     return (
-        <div className="mx-auto flex w-full flex-col lg:max-w-2xl">
+        <div className="mx-auto flex w-full flex-col lg:max-w-2xl" data-tab-bar-away={tabBarAway || undefined}>
             {/* Header */}
-            <Header
-                countdownTime={event.schedule.startAt ? new Date(event.schedule.startAt).getTime() : 0}
-                eventId={eventId}
-                pinned={pinned ? pill : undefined}
-            />
+            <Header countdownTime={event.schedule.startAt ? new Date(event.schedule.startAt).getTime() : 0} eventId={eventId} />
             {/* Install */}
             <InstallAppBanner />
             {/* Invitation blocks, stories and RSVP */}
             {editMode.editing ? (
                 <LazyFeedEditTop
                     event={event}
+                    scope={editMode.scope}
+                    guest={guestParts}
                     onDone={finishEditing}
                     cancelRef={cancelPill}
                     fallback={feedTop}
                     mode={pageMode}
-                    modeSwitch={modeSwitch}
                     {...topParts}
                 />
             ) : (
@@ -155,8 +166,10 @@ export function FeedPageContent() {
                             <PublishQueueCards />
                             {/* Guest offer */}
                             <GuestOfferCard eventId={eventId} isHost={isHost} />
-                            {/* Boy or Girl? prompt */}
-                            <HeOrShePromptCard eventId={eventId} eventType={event.eventType} enabled={moduleFlags.he_or_she} />
+                            {/* Boy or Girl? prompt: the fixed card, unless the host placed the section */}
+                            {!hasFeedSection(top.sections, 'feedHeOrShe') && (
+                                <HeOrShePromptCard eventId={eventId} eventType={event.eventType} enabled={moduleFlags.he_or_she} />
+                            )}
                             <div className="flex flex-col">
                                 {posts.length === 0 ? (
                                     <FeedEmptyState />

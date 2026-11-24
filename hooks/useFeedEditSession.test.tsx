@@ -259,6 +259,8 @@ describe('useFeedEditSession', () => {
         titleColor: null,
         headingFont: null,
     };
+    const P1 = { presetId: 'p-1', theme: dino, applied: false };
+    const PLAIN = { presetId: null, theme: null, applied: true };
 
     it('holds a Save my date theme until Save, then saves the layout on it', async () => {
         mocks.put.mockResolvedValue({ revision: 4, updatedAt: '2026-11-22T11:00:00Z' });
@@ -282,7 +284,7 @@ describe('useFeedEditSession', () => {
         mocks.put.mockResolvedValue({ theme: dino });
         const onDone = vi.fn();
         const { result } = renderHook(() => useFeedEditSession(event, onDone), { wrapper });
-        await act(() => result.current.pickWall('p-1', dino, false));
+        await act(() => result.current.pickWall(P1));
         expect(result.current.dirty).toBe(true);
         expect(result.current.wallTheme).toEqual(dino);
         await act(() => result.current.save());
@@ -296,7 +298,7 @@ describe('useFeedEditSession', () => {
         const { result } = renderHook(() => useFeedEditSession(event, onDone), { wrapper });
         // A layout change a theme pick keeps (the pick clears a background colour).
         hideRsvp(result.current);
-        await act(() => result.current.pickWall('p-1', dino, false));
+        await act(() => result.current.pickWall(P1));
         mocks.put.mockResolvedValueOnce({ revision: 4, updatedAt: '2026-11-22T11:00:00Z' }).mockRejectedValueOnce(new Error('offline'));
         await act(() => result.current.save());
         expect(result.current.failed).toBe(true);
@@ -312,46 +314,68 @@ describe('useFeedEditSession', () => {
 
     it('drops a held preset picked back to the applied one', async () => {
         const { result } = renderHook(() => useFeedEditSession(event, vi.fn()), { wrapper });
-        await act(() => result.current.pickWall('p-1', dino, false));
-        await act(() => result.current.pickWall(null, null, true));
+        await act(() => result.current.pickWall(P1));
+        await act(() => result.current.pickWall(PLAIN));
         expect(result.current.heldWall).toBeUndefined();
         expect(result.current.dirty).toBe(false);
     });
 
-    it('sets the background colour, and a theme pick clears it', async () => {
+    it('sets a solid colour, and a theme pick clears it', async () => {
         const { result } = renderHook(() => useFeedEditSession(event, vi.fn()), { wrapper });
-        act(() => result.current.setBackground('#F5E6D3'));
+        act(() => result.current.pickSolid('#F5E6D3', PLAIN));
         expect(result.current.background).toBe('#F5E6D3');
+        expect(result.current.heldWall).toBeUndefined();
         expect(result.current.dirty).toBe(true);
         await act(() => result.current.pickInvitation('rose'));
         expect(result.current.background).toBeUndefined();
     });
 
-    it('clears the background colour on a pick of another wall preset', async () => {
+    it('makes one undo step of a solid colour being mixed', () => {
         const { result } = renderHook(() => useFeedEditSession(event, vi.fn()), { wrapper });
-        act(() => result.current.setBackground('#F5E6D3'));
-        await act(() => result.current.pickWall('p-1', dino, false));
-        expect(result.current.background).toBeUndefined();
+        act(() => result.current.pickSolid('#F5E6D3', PLAIN));
+        act(() => result.current.pickSolid('#E3F1E8', PLAIN));
+        expect(result.current.background).toBe('#E3F1E8');
+        expect(result.current.store.getState().past).toHaveLength(1);
     });
 
-    it('keeps the background colour when the applied preset is picked again', async () => {
+    it('clears the solid colour on any card, the one it was on too', async () => {
         const { result } = renderHook(() => useFeedEditSession(event, vi.fn()), { wrapper });
-        act(() => result.current.setBackground('#F5E6D3'));
-        await act(() => result.current.pickWall(null, null, true));
+        act(() => result.current.pickSolid('#F5E6D3', PLAIN));
+        await act(() => result.current.pickWall(PLAIN));
+        expect(result.current.background).toBeUndefined();
+        expect(result.current.dirty).toBe(false);
+        act(() => result.current.pickSolid('#F5E6D3', PLAIN));
+        await act(() => result.current.pickWall(P1));
+        expect(result.current.background).toBeUndefined();
+        expect(result.current.heldWall).toEqual({ presetId: 'p-1', theme: dino });
+    });
+
+    it('puts a solid colour on the plain look in place of a held preset', async () => {
+        const { result } = renderHook(() => useFeedEditSession(event, vi.fn()), { wrapper });
+        await act(() => result.current.pickWall(P1));
+        act(() => result.current.pickSolid('#F5E6D3', PLAIN));
         expect(result.current.background).toBe('#F5E6D3');
         expect(result.current.heldWall).toBeUndefined();
-        expect(result.current.dirty).toBe(true);
-        act(() => result.current.setBackground(undefined));
-        expect(result.current.dirty).toBe(false);
     });
 
-    it('keeps the background colour when the held preset is picked again', async () => {
+    it('holds the plain look when a preset is the one applied', () => {
+        const { result } = renderHook(() => useFeedEditSession({ ...event, theme: dino } as EventDetailResponseDto, vi.fn()), { wrapper });
+        act(() => result.current.pickSolid('#F5E6D3', { ...PLAIN, applied: false }));
+        expect(result.current.heldWall).toEqual({ presetId: null, theme: null });
+    });
+
+    it('leaves a Save my date theme for the plain look in the last colour mixed, in one undo step', async () => {
         const { result } = renderHook(() => useFeedEditSession(event, vi.fn()), { wrapper });
-        await act(() => result.current.pickWall('p-1', dino, false));
-        act(() => result.current.setBackground('#F5E6D3'));
-        await act(() => result.current.pickWall('p-1', dino, false));
-        expect(result.current.background).toBe('#F5E6D3');
-        expect(result.current.heldWall).toEqual({ presetId: 'p-1', theme: dino });
+        await act(() => result.current.pickInvitation('rose'));
+        await act(async () => {
+            result.current.pickSolid('#F5E6D3', PLAIN);
+            result.current.pickSolid('#E3F1E8', PLAIN);
+        });
+        expect(result.current.themeSlug).toBe('');
+        expect(result.current.document.themeId).toBe(WALL_THEME_ID);
+        expect(result.current.background).toBe('#E3F1E8');
+        expect(result.current.pickingSolid).toBe(false);
+        expect(result.current.store.getState().past).toHaveLength(2);
     });
 
     it('keeps the current theme when a Save my date theme fails to load, and a second tap retries', async () => {
@@ -413,7 +437,7 @@ describe('useFeedEditSession', () => {
         const onDone = vi.fn();
         const { result } = renderHook(() => useFeedEditSession(event, onDone), { wrapper });
         hideRsvp(result.current);
-        await act(() => result.current.pickWall('p-1', dino, false));
+        await act(() => result.current.pickWall(P1));
         await act(() => result.current.save());
         expect(result.current.conflict).toBe(true);
         expect(mocks.put).toHaveBeenCalledOnce();
@@ -424,11 +448,10 @@ describe('useFeedEditSession', () => {
         expect(onDone).toHaveBeenCalledOnce();
     });
 
-    it('switches from a Save my date theme back to the wall on a wall pick, clearing the background colour', async () => {
+    it('switches from a Save my date theme back to the wall on a wall pick', async () => {
         const { result } = renderHook(() => useFeedEditSession(event, vi.fn()), { wrapper });
         await act(() => result.current.pickInvitation('rose'));
-        act(() => result.current.setBackground('#F5E6D3'));
-        await act(() => result.current.pickWall(null, null, true));
+        await act(() => result.current.pickWall(PLAIN));
         expect(result.current.themeSlug).toBe('');
         expect(result.current.document.themeId).toBe(WALL_THEME_ID);
         expect(result.current.background).toBeUndefined();
@@ -442,7 +465,7 @@ describe('useFeedEditSession', () => {
         const themed = { ...event, theme: dino } as EventDetailResponseDto;
         const { result } = renderHook(() => useFeedEditSession(themed, onDone), { wrapper });
         expect(result.current.themeSlug).toBe('rose');
-        await act(() => result.current.pickWall(null, dino, true));
+        await act(() => result.current.pickWall({ presetId: null, theme: dino, applied: true }));
         expect(result.current.themeSlug).toBe('');
         expect(result.current.heldWall).toBeUndefined();
         expect(result.current.wallTheme).toEqual(dino);
@@ -457,7 +480,7 @@ describe('useFeedEditSession', () => {
 
     it('adds no undo step for a wall pick when no colour is set', async () => {
         const { result } = renderHook(() => useFeedEditSession(event, vi.fn()), { wrapper });
-        await act(() => result.current.pickWall('p-1', dino, false));
+        await act(() => result.current.pickWall(P1));
         expect(result.current.store.getState().past).toHaveLength(0);
     });
 });

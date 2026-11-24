@@ -7,9 +7,20 @@ const PROGRAM_BY_EVENT_TYPE: Record<string, 'programWedding' | 'programBaptism'>
     BAPTISM: 'programBaptism',
 };
 
-export type SectionNameKey = `sectionNames.${SectionType | 'programWedding' | 'programBaptism'}`;
+// Boy or Girl and a module block have no name of their own: they go by their module's (hooks/useFeedSectionName).
+export type NamedSectionType = Exclude<SectionType, 'feedHeOrShe' | 'feedModule'>;
+export type SectionNameKey = `sectionNames.${NamedSectionType | 'programWedding' | 'programBaptism'}`;
 
-export function sectionNameKey(type: SectionType, eventType: string | null | undefined): SectionNameKey {
+export function hasSectionName(type: SectionType): type is NamedSectionType {
+    return type !== 'feedHeOrShe' && type !== 'feedModule';
+}
+
+export function sectionNameKey(type: NamedSectionType, eventType: string | null | undefined): SectionNameKey {
     const program = type === 'program' && eventType ? PROGRAM_BY_EVENT_TYPE[eventType] : undefined;
     return `sectionNames.${program ?? type}`;
+}
+
+// A section's name in the invitation editor, which holds no Boy or Girl or module block.
+export function sectionName(t: (key: SectionNameKey) => string, type: SectionType, eventType: string | null | undefined): string {
+    return hasSectionName(type) ? t(sectionNameKey(type, eventType)) : '';
 }

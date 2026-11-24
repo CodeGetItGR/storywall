@@ -8,6 +8,7 @@ import { fn } from 'storybook/test';
 
 import { FeedEditBlock } from '@/components/feed/edit/FeedEditBlock';
 import { eventThemeStyle } from '@/lib/eventTheme';
+import { newFeedBlock } from '@/lib/feedLayout';
 import { SAMPLE_SECTIONS } from '@/lib/invitation/samples';
 import type { InvitationSection } from '@/lib/invitation/sections';
 
@@ -31,7 +32,12 @@ const meta = {
         name: 'Dress code',
         controls: { canHide: true, canDelete: true, movable: true, canMoveUp: true, canMoveDown: false },
         hasSettings: true,
-        actions: { onToggleVisible: fn(), onDelete: fn(), onOpenSettings: fn() },
+        actions: {
+            onToggleVisible: fn(),
+            onDelete: fn(),
+            onOpenSettings: fn(),
+            onMenuOpenChange: fn(),
+        },
         children: <div className="h-40 bg-[#f4efe9]" />,
     },
 } satisfies Meta<typeof FeedEditBlock>;
@@ -41,8 +47,20 @@ type Story = StoryObj<typeof meta>;
 
 export const Visible: Story = {};
 export const Hidden: Story = { args: { section: { ...section, visible: false } } };
+// The cover: no eye and no name on screen, only its settings.
+export const Cover: Story = {
+    args: {
+        section: newFeedBlock('feedCover'),
+        name: 'Cover',
+        controls: { canHide: false, canDelete: false, movable: false, canMoveUp: false, canMoveDown: false },
+    },
+};
 // Its settings are open.
 export const Active: Story = { args: { active: true } };
+// Its dropdown is open.
+export const Dropdown: Story = { args: { menuOpen: true, children: <div className="h-72 bg-[#f4efe9]" /> } };
+// One of its photos is on its way.
+export const UploadingPhoto: Story = { args: { uploading: true }, tags: ['visual-skip'] };
 
 // On a Save my date theme: no strip above the block, the tools float over it on the page.
 export const OnThemedPage: Story = {

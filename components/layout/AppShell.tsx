@@ -53,6 +53,8 @@ export function AppShell({ children }: { children: ReactNode }) {
                 className={cn(
                     'desktop-account-page h-full min-w-0 flex-1 overflow-y-auto overscroll-contain bg-background md:ml-20 md:pb-0',
                     reservesTabBar && 'pb-[calc(var(--tab-bar-h)+var(--overview-fab-room,0px))]',
+                    // A page that keeps the tab bar hidden (the feed's invitation) gets its room back.
+                    'has-data-tab-bar-away:[--tab-bar-h:env(safe-area-inset-bottom,0px)]',
                     reservesOverviewFab && '[--overview-fab-room:3.5rem]',
                 )}
             >

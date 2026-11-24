@@ -23,6 +23,7 @@ export function feedLookParts(view: FeedTopView): FeedTopParts {
             ),
         native,
         invitation: (section: Section) => <InvitationSection key={section.id} section={section} index={sections.indexOf(section)} ctx={ctx} />,
+        feed: (section: Section, content: ReactNode) => <FeedNative key={section.id}>{content}</FeedNative>,
     };
 }
 
