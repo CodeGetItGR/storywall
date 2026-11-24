@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 import { useTranslations } from 'next-intl';
-import { expect, fn, within } from 'storybook/test';
+import { expect, fn, waitFor, within } from 'storybook/test';
 
 import { copyFor } from '@/.storybook/copy';
 import { ThemePresetRadioGroup, type ThemeRadioOption } from '@/components/manage/ThemePresetRadioGroup';
@@ -16,11 +16,21 @@ const PRESETS: ThemeRadioOption[] = [
     { id: 'paper', label: 'Paper', backgroundColor: '#F6F1EA', titleColor: null, icon: '/icons/story.svg' },
 ].map(({ icon, ...preset }) => ({ ...preset, presetId: preset.id, illustrationUrl: icon, headingFont: null, selected: preset.id === 'olive' }));
 
-// Save my date themes as the Theme page lists them after the presets; names come from the server.
+// Save my date themes as the Theme page lists them after the presets, each portrait picture on the same light
+// neutral; names come from the server.
 const INVITATION_THEMES: ThemeRadioOption[] = [
-    { id: 'invitation:rose', label: 'Rose garden', backgroundColor: '#FBE6E4', titleColor: '#9C4A5A', titleFontFamily: 'Georgia, serif' },
-    { id: 'invitation:olive', label: 'Olive branch', backgroundColor: '#EEF1E4', titleColor: '#4D5A2C', titleFontFamily: '"Courier New", monospace' },
-].map((theme) => ({ ...theme, presetId: theme.id, illustrationUrl: null, headingFont: null, selected: false }));
+    { id: 'invitation:rose', label: 'Rose garden', titleColor: '#9C4A5A', titleFontFamily: 'Georgia, serif', art: '/landing/qr-wedding/table-card-pampas-en.webp' },
+    { id: 'invitation:olive', label: 'Olive branch', titleColor: '#4D5A2C', titleFontFamily: '"Courier New", monospace', art: '/landing/qr-wedding/table-card-olive-branch-en.webp' },
+].map(({ art, ...theme }) => ({
+    ...theme,
+    presetId: theme.id,
+    // The catalogue's card colour (every staging theme has this mint); the card leaves it out for one light neutral.
+    backgroundColor: '#B8DFD3',
+    illustrationUrl: art,
+    neutralSwatch: true,
+    headingFont: null,
+    selected: false,
+}));
 
 // The Theme page's grid, with "No theme" first and its label from the app's copy.
 function ThemeGrid({
@@ -100,11 +110,14 @@ export const WithoutTitle: Story = { args: { previewTitle: undefined } };
 // A pick is being saved: a spinner on that card, the rest dimmed.
 export const Saving: Story = { tags: ['visual-skip'], args: { savingPresetId: 'sea' } };
 
-// Save my date themes after the presets, each title in its theme's font and colour.
+// Save my date themes after the presets, each title in its theme's font and colour, each picture on the light
+// neutral rather than the theme's own colour.
 export const WithInvitationThemes: Story = {
     args: { extra: INVITATION_THEMES },
     play: async ({ canvasElement }) => {
-        await expect(within(canvasElement).getByRole('radio', { name: 'Rose garden' })).toBeInTheDocument();
+        const canvas = within(canvasElement);
+        await expect(canvas.getByRole('radio', { name: 'Rose garden' })).toBeInTheDocument();
+        await waitFor(() => expect(canvas.getByRole('img', { name: 'Olive branch' })).toHaveProperty('complete', true));
     },
 };
 

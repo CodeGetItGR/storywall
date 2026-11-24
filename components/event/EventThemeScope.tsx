@@ -5,10 +5,11 @@ import '@/components/event/feedBackdrop.css';
 import { usePathname } from 'next/navigation';
 import type { ReactNode } from 'react';
 
+import { FeedBackdropLayer } from '@/components/event/FeedBackdropLayer';
 import { ThemeFontFace } from '@/components/event/ThemeFontFace';
 import { useFeedPageThemeOverride } from '@/hooks/useFeedPageTheme';
 import { eventThemeStyle, isThemedEventPage, themeFontScopeProps } from '@/lib/eventTheme';
-import { feedBackdropStyle } from '@/lib/feedPageBackdrop';
+import { feedBackdropClassName, feedBackdropStyle } from '@/lib/feedPageBackdrop';
 import { cn } from '@/lib/utils';
 import { useActiveEvent, useRouteEventId } from '@/providers/EventProvider';
 
@@ -42,14 +43,17 @@ export function EventThemeScope({ children }: { children: ReactNode }) {
         <div
             className={cn(
                 '-mb-[calc(var(--tab-bar-h)+var(--overview-fab-room,0px))] bg-event pb-[calc(var(--tab-bar-h)+var(--overview-fab-room,0px))] md:mb-0 md:pb-0',
-                backdrop && 'feed-backdrop',
+                feedBackdropClassName(backdrop),
             )}
             style={{ ...themeStyle, ...feedBackdropStyle(backdrop) }}
             data-event-scope=""
             {...themeFontScopeProps(headingFont)}
         >
             <ThemeFontFace font={headingFont} />
-            {children}
+            {/* Fixed picture: a cover theme's picture, still behind the scrolling page */}
+            {backdrop?.fixed && <FeedBackdropLayer />}
+            {/* Page */}
+            <div className="feed-backdrop-content">{children}</div>
         </div>
     );
 }

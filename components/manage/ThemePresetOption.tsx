@@ -20,6 +20,7 @@ export function ThemePresetOption({
     titleColor,
     headingFont,
     titleFontFamily = null,
+    neutralSwatch = false,
     locked = false,
     lockedLabel,
     selected,
@@ -42,6 +43,8 @@ export function ThemePresetOption({
     headingFont: EventThemeFontDto | null;
     // A Save my date theme's title font; the title uses it instead of headingFont.
     titleFontFamily?: string | null;
+    // The picture sits on one light neutral instead of backgroundColor (every Save my date theme's card).
+    neutralSwatch?: boolean;
     locked?: boolean;
     // The lock's hover text and screen-reader description.
     lockedLabel?: string;
@@ -100,10 +103,11 @@ export function ThemePresetOption({
             {/* Swatch */}
             <span
                 className={cn(
-                    'relative block overflow-hidden bg-surface-muted',
+                    'relative block overflow-hidden',
+                    neutralSwatch ? 'bg-canvas' : 'bg-surface-muted',
                     size === 'large' ? 'aspect-square rounded-lg' : 'h-25 rounded-md lg:h-30',
                 )}
-                style={backgroundColor && isHexColor(backgroundColor) ? { backgroundColor } : undefined}
+                style={!neutralSwatch && backgroundColor && isHexColor(backgroundColor) ? { backgroundColor } : undefined}
             >
                 {illustrationUrl && failedUrl !== illustrationUrl && (
                     <ProtectedImage

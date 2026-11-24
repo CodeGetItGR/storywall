@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 
 import { lightTone, readableOnInk } from '@/lib/contrast';
 import { defaultFeedLayout, wallThemeDesign } from '@/lib/feedLayout';
-import { FEED_CARD_LIGHTEN, feedBackdropStyle, feedPageBackdrop } from '@/lib/feedPageBackdrop';
+import { FEED_CARD_LIGHTEN, feedBackdropClassName, feedBackdropStyle, feedPageBackdrop } from '@/lib/feedPageBackdrop';
 import { SAMPLE_THEME } from '@/lib/invitation/samples';
 import type { ThemeDesign } from '@/lib/invitation/theme';
 
@@ -20,6 +20,7 @@ describe('feedPageBackdrop', () => {
             repeat: 'repeat-y',
             position: 'center top',
             tiled: false,
+            fixed: false,
             cardColor: lightTone(readableOnInk('#efe7ec'), FEED_CARD_LIGHTEN),
         });
     });
@@ -31,14 +32,20 @@ describe('feedPageBackdrop', () => {
             repeat: 'repeat',
             position: 'center top',
             tiled: true,
+            fixed: false,
         });
         const repeat = { ...texture, backgrounds: { ...texture.backgrounds, content: { ...texture.backgrounds.content, mode: 'repeat' } } } as ThemeDesign;
         expect(feedPageBackdrop(themed, repeat, media)).toMatchObject({ size: 'var(--smd-bg-tile-size) auto', repeat: 'repeat' });
     });
 
-    it('tiles a cover image down the page at full width, so the page never turns to flat colour', () => {
+    it('fixes a cover picture to the screen, filling it, so it never repeats into a seam', () => {
         const cover = { ...SAMPLE_THEME, backgrounds: { ...SAMPLE_THEME.backgrounds, content: { desktop: { mediaId: 'm-c' }, mode: 'cover', stableRepeat: false } } } as ThemeDesign;
-        expect(feedPageBackdrop(themed, cover, media)).toMatchObject({ size: '100% auto', repeat: 'repeat-y', position: 'center top', tiled: false });
+        expect(feedPageBackdrop(themed, cover, media)).toMatchObject({ size: 'cover', repeat: 'no-repeat', position: 'center', tiled: false, fixed: true });
+    });
+
+    it('keeps a stable repeat running down the page at full width, whatever its mode', () => {
+        const stable = { ...SAMPLE_THEME, backgrounds: { ...SAMPLE_THEME.backgrounds, content: { desktop: { mediaId: 'm-c' }, mode: 'cover', stableRepeat: true } } } as ThemeDesign;
+        expect(feedPageBackdrop(themed, stable, media)).toMatchObject({ size: '100% auto', repeat: 'repeat-y', fixed: false });
     });
 
     it('is the secondary colour alone when the slot has no image', () => {
@@ -57,6 +64,15 @@ describe('feedPageBackdrop', () => {
             draft.overrides.backgroundColor = '#F5E6D3';
         });
         expect(feedPageBackdrop(coloured, SAMPLE_THEME, media)).toBeNull();
+    });
+});
+
+describe('feedBackdropClassName', () => {
+    it('marks a page whose picture is fixed to the screen, and nothing without a backdrop', () => {
+        const cover = { ...SAMPLE_THEME, backgrounds: { ...SAMPLE_THEME.backgrounds, content: { desktop: { mediaId: 'm-c' }, mode: 'cover', stableRepeat: false } } } as ThemeDesign;
+        expect(feedBackdropClassName(feedPageBackdrop(themed, cover, media))).toBe('feed-backdrop feed-backdrop--fixed');
+        expect(feedBackdropClassName(feedPageBackdrop(themed, SAMPLE_THEME, media))).toBe('feed-backdrop');
+        expect(feedBackdropClassName(null)).toBeUndefined();
     });
 });
 

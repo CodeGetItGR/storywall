@@ -1,21 +1,13 @@
 import { BookHeart, Camera, Check, type LucideIcon, MailOpen, Share2, Store } from 'lucide-react';
 
+import { WashCardIcon } from '@/components/ui/WashCardIcon';
 import type { FeedQuickActionKey } from '@/lib/feedQuickActions';
-import { cn } from '@/lib/utils';
 
-// A quick action's icon, drawn like VendorToolIcon: a wash with the sign on a small paper card. Decoration only:
-// the label under it names the action. done swaps the sign for a check (the link was copied).
+// A quick action's icon, drawn like VendorToolIcon. Decoration only: the label under it names the action.
+// done swaps the sign for a check (the link was copied).
 export function FeedActionIcon({ action, done = false }: { action: FeedQuickActionKey; done?: boolean }) {
     const { icon, wash, ink } = ICONS[action];
-    const Icon = done ? Check : icon;
-
-    return (
-        <span aria-hidden="true" className={cn('flex size-12 shrink-0 items-center justify-center rounded-[0.875rem]', wash)}>
-            <span className="flex size-8 -rotate-6 items-center justify-center rounded-md bg-card shadow-sm ring-1 ring-ink/5">
-                <Icon className={cn('size-4.5', ink)} strokeWidth={2.25} />
-            </span>
-        </span>
-    );
+    return <WashCardIcon icon={done ? Check : icon} wash={wash} ink={ink} />;
 }
 
 const ICONS: Record<FeedQuickActionKey, { icon: LucideIcon; wash: string; ink: string }> = {

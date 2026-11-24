@@ -25,3 +25,7 @@ export function feedEditBannerState(input: FeedEditBannerInput): FeedEditBannerS
     if (input.saveMyDate) return input.writable ? 'included' : null;
     return input.offered && input.checkout && input.canBuy && !input.paused ? 'locked' : null;
 }
+
+// What the banner lists that hosts can change on their feed, in order.
+export const FEED_EDIT_FEATURES = ['themes', 'text', 'photos', 'order', 'membersOnly'] as const;
+export type FeedEditFeature = (typeof FEED_EDIT_FEATURES)[number];

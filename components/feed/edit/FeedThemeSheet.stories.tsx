@@ -15,11 +15,20 @@ const OLIVE: EventThemeDto = {
     headingFont: null,
 };
 
-// Save my date themes after "No theme"; names come from the server.
+// Save my date themes after "No theme", each portrait picture on the same light neutral; names come from the server.
 const INVITATION_THEMES: ThemeRadioOption[] = [
-    { id: 'invitation:rose', label: 'Rose garden', backgroundColor: '#FBE6E4', titleColor: '#9C4A5A', titleFontFamily: 'Georgia, serif' },
-    { id: 'invitation:olive', label: 'Olive branch', backgroundColor: '#EEF1E4', titleColor: '#4D5A2C', titleFontFamily: '"Courier New", monospace' },
-].map((theme) => ({ ...theme, presetId: theme.id, illustrationUrl: null, headingFont: null, selected: false }));
+    { id: 'invitation:rose', label: 'Rose garden', titleColor: '#9C4A5A', titleFontFamily: 'Georgia, serif', art: '/landing/qr-wedding/table-card-pampas-en.webp' },
+    { id: 'invitation:olive', label: 'Olive branch', titleColor: '#4D5A2C', titleFontFamily: '"Courier New", monospace', art: '/landing/qr-wedding/table-card-olive-branch-en.webp' },
+].map(({ art, ...theme }) => ({
+    ...theme,
+    presetId: theme.id,
+    // The catalogue's card colour (every staging theme has this mint); the card leaves it out for one light neutral.
+    backgroundColor: '#B8DFD3',
+    illustrationUrl: art,
+    neutralSwatch: true,
+    headingFont: null,
+    selected: false,
+}));
 
 // The Theme sheet of an event without the theme module: "No theme" in the event's current wall look,
 // then the Save my date themes. `onWall`: the feed is on the wall look, so "No theme" is the current card.

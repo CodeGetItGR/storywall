@@ -22,6 +22,8 @@ export type ThemeRadioOption = {
     headingFont: EventThemeFontDto | null;
     // A Save my date theme's title font, as its design names it; the card's title uses it.
     titleFontFamily?: string | null;
+    // A Save my date theme: its picture sits on one light neutral, not on the theme's own colour.
+    neutralSwatch?: boolean;
     // Needs the save_my_date module; lockedLabel says so.
     locked?: boolean;
     lockedLabel?: string;
@@ -103,6 +105,7 @@ export function ThemePresetRadioGroup({
                     titleColor={option.titleColor}
                     headingFont={option.headingFont}
                     titleFontFamily={option.titleFontFamily ?? null}
+                    neutralSwatch={option.neutralSwatch ?? false}
                     locked={option.locked ?? false}
                     lockedLabel={option.lockedLabel}
                     selected={option.selected}
