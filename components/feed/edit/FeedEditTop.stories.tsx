@@ -8,6 +8,7 @@ import { withAppContext } from '@/.storybook/appContext';
 import { copyFor } from '@/.storybook/copy';
 import { storyEvent, storyHostMember, storyModules, storyPhotos } from '@/.storybook/fixtures';
 import { FeedEditTop } from '@/components/feed/edit/FeedEditTop';
+import { EventDescription } from '@/components/feed/EventDescription';
 import { EventInfo } from '@/components/feed/EventInfo';
 import { FeedCoverBlock } from '@/components/feed/layout/FeedCoverBlock';
 import type { EventDetailResponseDto, FeedLayoutDto } from '@/lib/api/types';
@@ -77,7 +78,7 @@ function EditStory({ event, sections, mode, scope }: EditArgs) {
                 cover={<FeedCoverBlock event={event} isHost wishlist={false} editing />}
                 dateRow={<EventInfo date={Date.UTC(2026, 6, 4)} place="Rhodes" className="mt-3 w-full px-4" />}
                 stories={<Box label="Stories" />}
-                description={<Box label="Description" className={mode === 'invitation' ? UNDER_TOOLS : undefined} />}
+                description={<EventDescription eventId={event.id} description={event.description ?? ''} keepShown />}
                 rsvp={<Box label="RSVP" className={mode === 'invitation' ? UNDER_TOOLS : undefined} />}
             />
         </Saved>

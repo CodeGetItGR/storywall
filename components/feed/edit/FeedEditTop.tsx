@@ -233,6 +233,10 @@ export function FeedEditTop({
     };
 
     const guestFeedSection = useFeedSectionPart(event, uploads.media);
+    // The description starts 24 px down on the feed: 24 more puts it below its tools.
+    const editedDescription = description ? <div className="pt-6">{description}</div> : <FeedBlockPlaceholder name={t('sectionNames.feedDescription')} />;
+    const shownDescription = feedOnly ? description : editedDescription;
+
     const guestPieces: Partial<FeedTopProps> = { ...guest, description, feedSection: guestFeedSection, between: undefined, afterFeed: undefined };
 
     const frame = (
@@ -244,7 +248,7 @@ export function FeedEditTop({
             parts={previewing ? feedPreviewParts(base) : editParts}
             cover={cover}
             stories={stories}
-            description={description || (!feedOnly && <FeedBlockPlaceholder name={t('sectionNames.feedDescription')} />)}
+            description={shownDescription}
             rsvp={rsvp ?? (feedOnly ? null : <FeedBlockPlaceholder name={t('sectionNames.feedRsvp')} />)}
             moduleBlock={moduleBlock}
             between={actions.showAdd && !feedOnly ? addRow : undefined}
