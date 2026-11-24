@@ -6,7 +6,7 @@ import { type FeedFrame, feedFrame } from '@/lib/feedLayout';
 import { type InvitationDocument, MAX_SECTIONS } from '@/lib/invitation/document';
 import type { NewSectionType } from '@/lib/invitation/newSection';
 import { deleteSection, type MoveDirection, setSectionVisible } from '@/lib/invitation/sectionActions';
-import { type InvitationSection, isFeedSectionType, type SectionType } from '@/lib/invitation/sections';
+import { type InvitationSection, isFeedModeSectionType, isFeedSectionType, type SectionType } from '@/lib/invitation/sections';
 import type { SettingsGroup } from '@/lib/invitation/sectionSettings';
 import type { SettingsPart } from '@/lib/settingsPreview';
 
@@ -22,7 +22,11 @@ export type HostBlockOptions = { rsvpMoves: boolean };
 
 // The description, every Save my date block, and RSVP with Save my date: what the host orders.
 export function isHostBlock(section: Pick<InvitationSection, 'type'>, { rsvpMoves }: HostBlockOptions): boolean {
-    return section.type === 'feedDescription' || !isFeedSectionType(section.type) || (rsvpMoves && section.type === 'feedRsvp');
+    return (
+        section.type === 'feedDescription' ||
+        (!isFeedSectionType(section.type) && !isFeedModeSectionType(section.type)) ||
+        (rsvpMoves && section.type === 'feedRsvp')
+    );
 }
 
 // Edit mode lists every block, hidden ones too, and the middle is never dropped after the event.
@@ -138,11 +142,6 @@ export function insertFeedSection(section: InvitationSection, place: FeedAddPlac
         const at = place && 'after' in place ? anchor + 1 : anchor;
         draft.sections.splice(at, 0, section as Draft<InvitationSection>);
     };
-}
-
-// An invitation section on the feed: not one of the feed's own blocks, not a module block.
-export function isSaveMyDateBlock(section: Pick<InvitationSection, 'type'>): boolean {
-    return !isFeedSectionType(section.type) && section.type !== 'feedModule';
 }
 
 // The feed's Add section list (lib/feedAddList): the event type's own list, minus what is on the page or covered by

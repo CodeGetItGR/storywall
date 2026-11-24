@@ -5,7 +5,7 @@ import { eventThemeStyle, isHexColor, themeFontScopeProps } from '@/lib/eventThe
 import { defaultFeedLayout, PLAIN_FEED_STYLE, WALL_THEME_ID } from '@/lib/feedLayout';
 import type { InvitationDocument } from '@/lib/invitation/document';
 import { createSection, type NewSectionType } from '@/lib/invitation/newSection';
-import { type FeedSectionType, type InvitationSection, isFeedSectionType, type SectionType } from '@/lib/invitation/sections';
+import { type FeedSectionType, type InvitationSection, isSaveMyDateSectionType, type SectionType } from '@/lib/invitation/sections';
 import type { SectionStyle } from '@/lib/invitation/sectionStyle';
 import type { ThemeDesign } from '@/lib/invitation/theme';
 import { planThemeSwitch, type ThemeSwitchTarget } from '@/lib/invitation/themeSwitch';
@@ -67,7 +67,7 @@ export function planFeedThemeSwitch(current: InvitationDocument, target: ThemeSw
 // new block's look, without the old theme's images, frames and transitions.
 export function planFeedWallSwitch(current: InvitationDocument, wall: ThemeDesign, eventType: string, oldThemeImageIds: ReadonlySet<string>): InvitationDocument {
     const sections = current.sections.flatMap((section) => {
-        if (isFeedSectionType(section.type)) return [withStyle(section, PLAIN_FEED_STYLE)];
+        if (!isSaveMyDateSectionType(section.type)) return [withStyle(section, PLAIN_FEED_STYLE)];
         if (section.type === 'footer') return [];
         return [createSection(section.type as NewSectionType, eventType)];
     });

@@ -17,8 +17,8 @@ import { themeDesignSchema } from '@/lib/invitation/theme';
 const clone = <T>(value: T): T => structuredClone(value);
 
 describe('invitation document format', () => {
-    it('covers the 30 section types of the old editor, the 4 feed blocks and the module block', () => {
-        expect(SECTION_TYPES).toHaveLength(35);
+    it('covers the 30 section types of the old editor, the 4 feed blocks, the module block and the 3 Feed mode sections', () => {
+        expect(SECTION_TYPES).toHaveLength(38);
     });
 
     it.each(SECTION_TYPES)('accepts the %s sample', (type) => {
@@ -164,5 +164,23 @@ describe('feedModule', () => {
         const bad = { ...feedModuleSection('playlist', () => 'm1'), data: { module: 'posts' } };
         const doc = { ...defaultFeedLayout(), sections: [...defaultFeedLayout().sections, bad] };
         expect(invitationDocumentSchema.safeParse(doc).success).toBe(false);
+    });
+});
+
+describe('feed sections', () => {
+    // A feed layout: an invitation's footer must stay last.
+    const withSection = (section: unknown) => ({ ...defaultFeedLayout(), sections: [...defaultFeedLayout().sections, section] });
+    const base = { id: 'f-1', name: 'feedPrompt', visible: true, locked: false, textStyles: {}, elements: [], style: SAMPLE_DOCUMENT.sections[0].style };
+
+    it('accepts each of them', () => {
+        expect(invitationDocumentSchema.safeParse(withSection({ ...base, type: 'feedSchedule', data: {} })).success).toBe(true);
+        expect(invitationDocumentSchema.safeParse(withSection({ ...base, type: 'feedPrompt', data: { text: 'Show us' } })).success).toBe(true);
+        expect(invitationDocumentSchema.safeParse(withSection({ ...base, type: 'feedHeOrShe', data: {} })).success).toBe(true);
+    });
+
+    it('refuses a prompt over 80 characters, and data on the schedule or on Boy or Girl', () => {
+        expect(invitationDocumentSchema.safeParse(withSection({ ...base, type: 'feedPrompt', data: { text: 'x'.repeat(81) } })).success).toBe(false);
+        expect(invitationDocumentSchema.safeParse(withSection({ ...base, type: 'feedSchedule', data: { day: 1 } })).success).toBe(false);
+        expect(invitationDocumentSchema.safeParse(withSection({ ...base, type: 'feedHeOrShe', data: { guess: 'HE' } })).success).toBe(false);
     });
 });

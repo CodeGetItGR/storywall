@@ -16,7 +16,6 @@ import {
     feedSettingsGroups,
     insertFeedSection,
     isHostBlock,
-    isSaveMyDateBlock,
     moveFeedBlock,
     opensBlockSettings,
     reorderFeedBlocks,
@@ -28,7 +27,7 @@ import type { InvitationDocument } from '@/lib/invitation/document';
 import { MAX_SECTIONS } from '@/lib/invitation/document';
 import { createSection } from '@/lib/invitation/newSection';
 import { SAMPLE_SECTIONS } from '@/lib/invitation/samples';
-import type { InvitationSection } from '@/lib/invitation/sections';
+import { type InvitationSection, isSaveMyDateSectionType } from '@/lib/invitation/sections';
 
 // Without Save my date: RSVP keeps its fixed place.
 const OFF = { rsvpMoves: false };
@@ -90,8 +89,8 @@ describe('which block may do what', () => {
     });
 
     it('tells a Save my date block from the feed blocks and module blocks', () => {
-        expect(isSaveMyDateBlock(dressCode)).toBe(true);
-        expect([cover, details, description, rsvp, feedModuleSection('playlist', () => 'm')].some(isSaveMyDateBlock)).toBe(false);
+        expect(isSaveMyDateSectionType(dressCode.type)).toBe(true);
+        expect([cover, details, description, rsvp, feedModuleSection('playlist', () => 'm')].some((section) => isSaveMyDateSectionType(section.type))).toBe(false);
     });
 
     it('sums it up per block', () => {

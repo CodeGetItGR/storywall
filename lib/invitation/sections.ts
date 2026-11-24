@@ -100,6 +100,9 @@ const columns = z.number().int().min(1).max(3);
 export const FEED_MODULE_KEYS = ['wishbook', 'playlist', 'he_or_she', 'quiz_polls', 'schedule', 'wishlist', 'gallery'] as const;
 export type FeedModuleKey = (typeof FEED_MODULE_KEYS)[number];
 
+// One line on a phone.
+export const FEED_PROMPT_MAX_LENGTH = 80;
+
 export const SECTION_DATA_SCHEMAS = {
     top: z.object({}).strict(),
     baby: z
@@ -330,6 +333,11 @@ export const SECTION_DATA_SCHEMAS = {
     // A module's compact block on the feed (plan 7c): its icon, name and a button that opens the tool. Added from the
     // Add section sheet's Premium tiles, Save my date events only. Stores which module, nothing else.
     feedModule: z.object({ module: z.enum(FEED_MODULE_KEYS) }).strict(),
+    // Feed mode's own sections (the Invitation | Feed switch): short, in the app's own look, free on every feed plan.
+    // The schedule draws the event's own sessions and Boy or Girl the event's own vote, so they store nothing.
+    feedSchedule: z.object({}).strict(),
+    feedPrompt: z.object({ text: z.string().max(FEED_PROMPT_MAX_LENGTH) }).strict(),
+    feedHeOrShe: z.object({}).strict(),
 } as const;
 
 export type SectionType = keyof typeof SECTION_DATA_SCHEMAS;
@@ -350,6 +358,19 @@ export type FeedSectionType = (typeof FEED_SECTION_TYPES)[number];
 
 export function isFeedSectionType(type: SectionType): type is FeedSectionType {
     return (FEED_SECTION_TYPES as readonly SectionType[]).includes(type);
+}
+
+// Feed mode's sections. Drawn under the stories in Feed mode, or above the posts on the one page; never in the invitation.
+export const FEED_MODE_SECTION_TYPES = ['feedSchedule', 'feedPrompt', 'feedHeOrShe'] as const satisfies readonly SectionType[];
+export type FeedModeSectionType = (typeof FEED_MODE_SECTION_TYPES)[number];
+
+export function isFeedModeSectionType(type: SectionType): type is FeedModeSectionType {
+    return (FEED_MODE_SECTION_TYPES as readonly SectionType[]).includes(type);
+}
+
+// A Save my date section: not one of the feed's fixed blocks, Feed mode's sections or a module block.
+export function isSaveMyDateSectionType(type: SectionType): boolean {
+    return !isFeedSectionType(type) && !isFeedModeSectionType(type) && type !== 'feedModule';
 }
 
 function sectionSchemaFor<T extends SectionType>(type: T) {

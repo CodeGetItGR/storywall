@@ -44,11 +44,11 @@ import { useSectionDrag } from '@/hooks/useSectionDrag';
 import { useSettingsPreview } from '@/hooks/useSettingsPreview';
 import type { EventDetailResponseDto } from '@/lib/api/types';
 import { blockTextColor } from '@/lib/feedBlockEdits';
-import { type FeedAddPlace, feedBlockControls, isSaveMyDateBlock } from '@/lib/feedEditing';
+import { type FeedAddPlace, feedBlockControls } from '@/lib/feedEditing';
 import { moduleOfBlock } from '@/lib/feedModuleBlocks';
 import { feedImageUploader } from '@/lib/invitation/editorUploads';
 import { sectionNameKey } from '@/lib/invitation/sectionNames';
-import type { InvitationSection, SectionType } from '@/lib/invitation/sections';
+import { type InvitationSection, isSaveMyDateSectionType, type SectionType } from '@/lib/invitation/sections';
 
 const MODIFIERS = [restrictToVerticalAxis];
 
@@ -129,7 +129,7 @@ export function FeedEditTop({ event, onDone, cancelRef, mode, modeSwitch, dateRo
             actions={tools}
             active={sheet.section?.id === section.id}
             buttons={
-                isSaveMyDateBlock(section) && (
+                isSaveMyDateSectionType(section.type) && (
                     <FeedEditBlockButtons
                         sectionId={section.id}
                         color={blockTextColor(section, view.ctx)}

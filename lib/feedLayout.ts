@@ -2,7 +2,14 @@ import type { EventThemeDto, FeedLayoutDto } from '@/lib/api/types';
 import { themeFontFamily } from '@/lib/eventTheme';
 import { INVITATION_SCHEMA_VERSION, type InvitationDocument, upgradeInvitationDocument } from '@/lib/invitation/document';
 import type { MediaResolver } from '@/lib/invitation/render';
-import { FEED_SECTION_TYPES, type FeedSectionType, type InvitationSection, isFeedSectionType, type SectionType } from '@/lib/invitation/sections';
+import {
+    FEED_SECTION_TYPES,
+    type FeedSectionType,
+    type InvitationSection,
+    isFeedModeSectionType,
+    isFeedSectionType,
+    type SectionType,
+} from '@/lib/invitation/sections';
 import type { SectionStyle } from '@/lib/invitation/sectionStyle';
 import { type ThemeDesign, themeDesignSchema } from '@/lib/invitation/theme';
 
@@ -97,7 +104,9 @@ export type FeedFrameOptions = { ended: boolean; rsvpMoves?: boolean };
 export function feedFrame(layout: InvitationDocument, { ended, rsvpMoves = false }: FeedFrameOptions): FeedFrame {
     const shown = (type: FeedSectionType) => layout.sections.find((section) => section.type === type && section.visible) ?? null;
     const isMiddle = (section: InvitationSection) =>
-        section.type === 'feedDescription' || !isFeedSectionType(section.type) || (rsvpMoves && section.type === 'feedRsvp');
+        section.type === 'feedDescription' ||
+        (!isFeedSectionType(section.type) && !isFeedModeSectionType(section.type)) ||
+        (rsvpMoves && section.type === 'feedRsvp');
     return {
         cover: layout.sections.find((section) => section.type === 'feedCover') ?? newFeedBlock('feedCover'),
         middle: ended ? [] : layout.sections.filter((section) => section.visible && isMiddle(section)),
@@ -114,7 +123,9 @@ export function shellsFeedBlock(themeId: string, section: InvitationSection): bo
 // Whether the top of the feed needs the invitation root (theme fonts, colours, effects). The plain
 // default layout doesn't, so it draws exactly today's markup.
 export function usesInvitationLook(layout: InvitationDocument): boolean {
-    return layout.sections.some((section) => !isFeedSectionType(section.type) || shellsFeedBlock(layout.themeId, section));
+    return layout.sections.some(
+        (section) => (!isFeedSectionType(section.type) && !isFeedModeSectionType(section.type)) || shellsFeedBlock(layout.themeId, section),
+    );
 }
 
 const WALL_TEXT = '#2f2b2d';
