@@ -11,8 +11,8 @@ import type { PartnerBrandingCardContent } from '@/hooks/usePartnerBrandingCard'
 const FEED_COVER_SIZES = '(min-width: 1024px) 672px, 100vw';
 
 // Variant FEATURE_CARD: cover photo, tagline and a button. coverSizes is the cover's rendered width when the card
-// sits somewhere narrower than the feed (a preview). action sits under the link, inside the card: the feed puts
-// "Ask about my date" there; previews leave it out.
+// sits somewhere narrower than the feed (a preview). action sits next to the visit button, outside the card's link:
+// the feed puts "Ask about my date" there; previews leave it out.
 export function PartnerFeatureCard({
     content,
     coverSizes = FEED_COVER_SIZES,
@@ -46,17 +46,32 @@ export function PartnerFeatureCard({
                     <p className="px-4 pt-2 text-sm leading-relaxed text-ink">{content.tagline}</p>
 
                     {/* Visit */}
-                    <div className={action ? 'px-4 pt-3' : 'px-4 pt-3 pb-4'}>
-                        <span className="inline-flex min-h-10 items-center gap-1.5 rounded-full bg-ink px-4 text-sm font-semibold text-white transition-opacity group-hover:opacity-90">
-                            {content.visitLabel}
-                            <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
-                        </span>
-                    </div>
+                    {!action && (
+                        <div className="px-4 pt-3 pb-4">
+                            <VisitButton label={content.visitLabel} />
+                        </div>
+                    )}
                 </PartnerCardLink>
 
-                {/* Ask */}
-                {action && <div className="px-4 pt-2 pb-4">{action}</div>}
+                {/* Actions: visit and ask on one row, wrapping only when the screen is too narrow for both */}
+                {action && (
+                    <div className="flex flex-wrap items-center gap-2 px-4 pt-3 pb-4">
+                        <PartnerCardLink href={content.href} newTabLabel={content.newTabLabel} className="group inline-flex">
+                            <VisitButton label={content.visitLabel} />
+                        </PartnerCardLink>
+                        {action}
+                    </div>
+                )}
             </div>
         </article>
+    );
+}
+
+function VisitButton({ label }: { label: string }) {
+    return (
+        <span className="inline-flex min-h-10 items-center gap-1.5 rounded-full bg-ink px-4 text-sm font-semibold text-white transition-opacity group-hover:opacity-90">
+            {label}
+            <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
+        </span>
     );
 }

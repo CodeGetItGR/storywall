@@ -8423,6 +8423,7 @@
     },
     "PartnerCard": {
         "visit": "Visit website",
+        "visitShort": "Website",
         "newTab": "(opens in a new tab)",
         "roles": {
             "PLANNER": "Planner",
