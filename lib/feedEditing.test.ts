@@ -203,8 +203,9 @@ describe('the pencil sheet', () => {
         expect(feedBlockParts('dressCode', ['cover'])).toEqual([]);
     });
 
-    it('keeps the gallery settings on the feed now that it takes photos', () => {
-        expect(feedSettingsGroups(['gallery', 'follow', 'background', 'buttons'])).toEqual(['gallery', 'buttons']);
+    it("keeps the gallery's layout, and shows the date's language and layout apart", () => {
+        expect(feedSettingsGroups(['gallery', 'follow', 'background', 'buttons'])).toEqual(['galleryLayout', 'buttons']);
+        expect(feedSettingsGroups(['date'])).toEqual(['dateLanguage', 'dateLayout']);
     });
 });
 

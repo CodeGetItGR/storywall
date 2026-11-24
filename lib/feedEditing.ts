@@ -222,8 +222,15 @@ export function feedBlockParts(type: SectionType, available: readonly SettingsPa
 // The feed has one page background, and no theme to follow. Photos come from the feed's uploads (plan 7b).
 const LEFT_OUT: readonly SettingsGroup[] = ['follow', 'background'];
 
+// The feed shows how a section looks after everything else, so the date's group is two here. The gallery's photos are
+// added on the page itself, which leaves its look.
+const ON_FEED: Partial<Record<SettingsGroup, readonly SettingsGroup[]>> = {
+    date: ['dateLanguage', 'dateLayout'],
+    gallery: ['galleryLayout'],
+};
+
 export function feedSettingsGroups(groups: readonly SettingsGroup[]): SettingsGroup[] {
-    return groups.filter((group) => !LEFT_OUT.includes(group));
+    return groups.filter((group) => !LEFT_OUT.includes(group)).flatMap((group) => ON_FEED[group] ?? [group]);
 }
 
 // What keeps its own job when tapped inside a block: anything the host presses or types in,

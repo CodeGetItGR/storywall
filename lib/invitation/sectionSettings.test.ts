@@ -16,7 +16,7 @@ import {
     setThemeBackground,
 } from '@/lib/invitation/sectionBackgrounds';
 import type { InvitationSection } from '@/lib/invitation/sections';
-import { type DocumentRecipe, patchStyle, settingMergeKey, settingsGroups } from '@/lib/invitation/sectionSettings';
+import { type DocumentRecipe, groupsOfKind, patchStyle, settingMergeKey, settingsGroups } from '@/lib/invitation/sectionSettings';
 import {
     addDressCodeColor,
     addProgramItem,
@@ -87,6 +87,16 @@ describe('settingsGroups', () => {
     it('adds the buttons group when the section has a link button', () => {
         const withLink = { ...SAMPLE_SECTIONS.blank, elements: [{ id: 'l1', kind: 'link' as const, text: 'Map', url: '' }] };
         expect(settingsGroups(withLink, 'admin', SAMPLE_THEME)).toContain('buttons');
+    });
+
+    it('puts what a section says before how it looks', () => {
+        const withLink = { ...SAMPLE_SECTIONS.faq, elements: [{ id: 'l1', kind: 'link' as const, text: 'Map', url: '' }] };
+        const groups = settingsGroups(withLink, 'host', SAMPLE_THEME);
+        expect(groups).toEqual(['faqItems', 'buttons', 'faq', 'background']);
+        expect(groupsOfKind(groups, 'inputs')).toEqual(['faqItems', 'buttons']);
+        expect(groupsOfKind(groups, 'style')).toEqual(['faq', 'background']);
+        expect(settingsGroups(SAMPLE_SECTIONS.contact, 'host', SAMPLE_THEME)).toEqual(['contact', 'contactStyle', 'background']);
+        expect(settingsGroups(SAMPLE_SECTIONS.coupleContact, 'host', SAMPLE_THEME)).toEqual(['coupleContact', 'contactStyle', 'background']);
     });
 
     it('leaves out the transition when the theme has none', () => {
