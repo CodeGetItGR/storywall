@@ -1,6 +1,7 @@
 import type { AdminInvitationThemeAssetDto } from '@/lib/adminInvitationThemes';
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
+import type { FeedLayoutImageDto } from '@/lib/api/types';
 import type { InvitationDraftImageDto } from '@/lib/invitation/programIconUpload';
 
 // Where the editor's uploads go: a host's draft, or the admin's theme. Either way the
@@ -27,5 +28,13 @@ export function themeImageUploader(themeId: string): ImageUploader {
     return async (file) => {
         const saved = await api.postForm<AdminInvitationThemeAssetDto>(endpoints.admin.invitationThemes.assets(themeId), formWith(file));
         return { mediaId: saved.assetId, url: saved.url, width: saved.width, height: saved.height };
+    };
+}
+
+// The feed layout's own photos (KAN-262): hosts and co-hosts, no module needed.
+export function feedImageUploader(eventId: string): ImageUploader {
+    return async (file) => {
+        const saved = await api.postForm<FeedLayoutImageDto>(endpoints.events.feedLayoutImages(eventId), formWith(file));
+        return { mediaId: saved.mediaId, url: saved.url, width: saved.width, height: saved.height };
     };
 }

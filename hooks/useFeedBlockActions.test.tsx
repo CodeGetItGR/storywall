@@ -26,8 +26,6 @@ function setup(extra: InvitationSection[] = [dressCode]) {
     return { store, ...hook };
 }
 
-const middle = (sections: InvitationSection[]) => sections.filter((section) => section.id === 'dress' || section.type === 'feedDescription');
-
 describe('useFeedBlockActions', () => {
     it('hides and shows a block', () => {
         const { store, result } = setup();
@@ -35,12 +33,6 @@ describe('useFeedBlockActions', () => {
         expect(store.getState().document.sections[3].visible).toBe(false);
         act(() => result.current.toggleVisible('feed-feedRsvp'));
         expect(store.getState().document.sections[3].visible).toBe(true);
-    });
-
-    it('moves a middle block', () => {
-        const { store, result } = setup();
-        act(() => result.current.move('dress', -1));
-        expect(middle(store.getState().document.sections).map((section) => section.id)).toEqual(['dress', 'feed-feedDescription']);
     });
 
     it('asks before deleting, and never for a feed block', () => {

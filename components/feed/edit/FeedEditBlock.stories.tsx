@@ -31,7 +31,7 @@ const meta = {
         name: 'Dress code',
         controls: { canHide: true, canDelete: true, movable: true, canMoveUp: true, canMoveDown: false },
         hasSettings: true,
-        actions: { onToggleVisible: fn(), onMove: fn(), onDelete: fn(), onOpenSettings: fn() },
+        actions: { onToggleVisible: fn(), onDelete: fn(), onOpenSettings: fn() },
         children: <div className="h-40 bg-[#f4efe9]" />,
     },
 } satisfies Meta<typeof FeedEditBlock>;

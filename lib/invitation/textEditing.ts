@@ -75,7 +75,7 @@ export const THEME_FONT = 'inherit';
 // Starting size of a new text, as in the old editor.
 export const NEW_TEXT_SIZES: Record<TextRole, number> = { title: 32, subtitle: 22, paragraph: 16 };
 
-const MAX_ELEMENTS = 100;
+export const MAX_ELEMENTS = 100;
 const RECENT_LIMIT = 10;
 
 export function textTargetKey(target: TextTarget): string {
@@ -248,6 +248,12 @@ export function writeColor(
     // Every text: fields with no style of their own follow the invitation's text colour.
     draft.overrides.textColor = color;
     for (const section of draft.sections) colorSection(section, color, Object.keys(section.textStyles));
+}
+
+// Every text in one section, without a text being edited (the feed block's droplet, KAN-262).
+export function writeSectionColor(draft: Draft<InvitationDocument>, sectionId: string, color: string, sectionPaths: Iterable<string> = []) {
+    const section = draft.sections.find((item) => item.id === sectionId);
+    if (section) colorSection(section, color, [...sectionPaths, ...Object.keys(section.textStyles)]);
 }
 
 export function canAddText(document: InvitationDocument, sectionId: string): boolean {

@@ -4,6 +4,7 @@ import {
     BarChart3,
     Bug,
     CalendarDays,
+    CaseSensitive,
     ChartNoAxesCombined,
     Flag,
     Footprints,
@@ -72,6 +73,7 @@ export type AdminTab =
     | 'reactionTypes'
     | 'themePresets'
     | 'themeFonts'
+    | 'textStyles'
     | 'qrCards'
     | 'demoEvents'
     | 'billingOps'
@@ -127,6 +129,7 @@ const HASH_TO_TAB: Record<string, AdminTab> = {
     '#reaction-types': 'reactionTypes',
     '#theme-presets': 'themePresets',
     '#theme-fonts': 'themeFonts',
+    '#text-styles': 'textStyles',
     '#qr-cards': 'qrCards',
     '#billing-ops': 'billingOps',
     '#accounts': 'accounts',
@@ -160,6 +163,7 @@ const TAB_TO_HASH: Record<AdminTab, string> = {
     reactionTypes: '#reaction-types',
     themePresets: '#theme-presets',
     themeFonts: '#theme-fonts',
+    textStyles: '#text-styles',
     qrCards: '#qr-cards',
     demoEvents: DEMO_EVENTS_HASH_ROOT,
     billingOps: '#billing-ops',
@@ -299,6 +303,7 @@ export function AdminNavigationProvider({ children, role = 'ADMIN' }: { children
             { key: 'reactionTypes', label: t('reactionTypes'), icon: Smile },
             { key: 'themePresets', label: t('themePresets'), icon: Palette },
             { key: 'themeFonts', label: t('themeFonts'), icon: Type },
+            { key: 'textStyles', label: t('textStyles'), icon: CaseSensitive },
             { key: 'qrCards', label: t('qrCards'), icon: QrCode },
             { key: 'demoEvents', label: t('demoEvents'), icon: MonitorPlay },
             { key: 'accounts', label: t('accounts'), icon: Users },

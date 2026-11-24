@@ -1,7 +1,6 @@
 import { DndContext } from '@dnd-kit/core';
 import { SortableContext } from '@dnd-kit/sortable';
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
 import { NextIntlClientProvider } from 'next-intl';
 import type { ComponentProps } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -18,7 +17,7 @@ vi.mock('@/components/saveMyDate/invitation/invitationFonts', () => ({ INVITATIO
 const section = { ...(SAMPLE_SECTIONS.dressCode as InvitationSection), id: 'dress' };
 
 function renderBlock(props: Partial<ComponentProps<typeof FeedEditBlock>> = {}) {
-    const actions = { onToggleVisible: vi.fn(), onMove: vi.fn(), onDelete: vi.fn(), onOpenSettings: vi.fn() };
+    const actions = { onToggleVisible: vi.fn(), onDelete: vi.fn(), onOpenSettings: vi.fn() };
     render(
         <NextIntlClientProvider locale="en" messages={en}>
             <DndContext>
@@ -70,15 +69,6 @@ describe('FeedEditBlock taps', () => {
         expect(actions.onOpenSettings).toHaveBeenCalledExactlyOnceWith('dress');
     });
 
-    it("keeps its menu, drawn elsewhere on the page, from opening the block's settings", async () => {
-        const user = userEvent.setup();
-        const actions = renderBlock();
-        await user.click(screen.getByRole('button', { name: en.InvitationEditor.sections.options }));
-        await user.click(await screen.findByRole('menuitem', { name: en.InvitationEditor.sections.moveUp }));
-        expect(actions.onMove).toHaveBeenCalledWith('dress', -1);
-        expect(actions.onOpenSettings).not.toHaveBeenCalled();
-    });
-
     it('ignores the tap on a block with nothing to set', () => {
         const actions = renderBlock({ hasSettings: false });
         fireEvent.click(screen.getByText('Black tie'));
@@ -87,18 +77,16 @@ describe('FeedEditBlock taps', () => {
 });
 
 describe('FeedEditBlock name', () => {
-    const pencil = () => screen.getByRole('button', { name: en.InvitationEditor.sectionSettings.open });
-
-    it('shows the block name right after the eye and pencil, once for screen readers', () => {
+    it('shows the block name right after the eye, once for screen readers', () => {
         renderBlock();
         const label = screen.getByText('Dress code');
         expect(label).toHaveAttribute('aria-hidden', 'true');
-        expect(label.previousElementSibling).toBe(pencil());
+        expect(label.previousElementSibling).toBe(screen.getByRole('button', { name: en.InvitationEditor.sections.hide }));
         expect(screen.getByRole('group', { name: 'Dress code' })).toBeTruthy();
     });
 
     // Theme, Cancel and Save moved to a row under the cover (FeedEditRow), so the cover keeps its name on phones too.
-    it("shows the cover's name right after its pencil, on every screen", () => {
+    it("shows the cover's name first, on every screen", () => {
         const cover = defaultFeedLayout().sections.find((item) => item.type === 'feedCover') as InvitationSection;
         renderBlock({
             section: cover,
@@ -106,7 +94,7 @@ describe('FeedEditBlock name', () => {
             controls: { canHide: false, canDelete: false, movable: false, canMoveUp: false, canMoveDown: false },
         });
         const label = screen.getByText('Cover');
-        expect(label.previousElementSibling).toBe(pencil());
+        expect(label.previousElementSibling).toBeNull();
         expect(label).not.toHaveClass('max-sm:hidden');
     });
 
@@ -155,5 +143,31 @@ describe('FeedEditBlock members only', () => {
         renderBlock({ section: { ...section, membersOnly: true } });
         const tools = document.querySelector('[data-feed-block-tools]') as HTMLElement;
         expect(within(tools).getByText(en.FeedLayout.membersOnly)).toBeTruthy();
+    });
+});
+
+describe('FeedEditBlock tools (2026-11-23)', () => {
+    it('puts the eye and name left, and ✕, drag and settings stacked right, with no menu', () => {
+        renderBlock({ controls: { canHide: true, canDelete: true, movable: true, canMoveUp: true, canMoveDown: true }, hasSettings: true });
+        const tools = document.querySelector('[data-feed-block-tools]') as HTMLElement;
+        const right = tools.querySelector('[data-feed-block-tools-right]') as HTMLElement;
+        expect(within(right).getAllByRole('button').map((button) => button.getAttribute('aria-label'))).toEqual([
+            en.InvitationEditor.sections.delete,
+            en.InvitationEditor.sections.drag,
+            en.InvitationEditor.sectionSettings.open,
+        ]);
+        expect(within(tools).queryByRole('button', { name: en.InvitationEditor.sections.options })).toBeNull();
+        expect(within(tools).getByRole('button', { name: en.InvitationEditor.sections.hide })).toBeTruthy();
+    });
+
+    it('asks before deleting', () => {
+        const actions = renderBlock({ controls: { canHide: true, canDelete: true, movable: true, canMoveUp: false, canMoveDown: false } });
+        fireEvent.click(screen.getByRole('button', { name: en.InvitationEditor.sections.delete }));
+        expect(actions.onDelete).toHaveBeenCalledWith(section.id);
+    });
+
+    it('has no ✕ on a block that cannot be deleted', () => {
+        renderBlock({ controls: { canHide: true, canDelete: false, movable: true, canMoveUp: false, canMoveDown: false } });
+        expect(screen.queryByRole('button', { name: en.InvitationEditor.sections.delete })).toBeNull();
     });
 });

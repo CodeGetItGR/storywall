@@ -11,6 +11,7 @@ import { FeedAddSectionSheet } from '@/components/feed/edit/FeedAddSectionSheet'
 import { FeedBlockPlaceholder } from '@/components/feed/edit/FeedBlockPlaceholder';
 import { FeedBlockSheet } from '@/components/feed/edit/FeedBlockSheet';
 import { FeedEditBlock } from '@/components/feed/edit/FeedEditBlock';
+import { FeedEditBlockButtons } from '@/components/feed/edit/FeedEditBlockButtons';
 import { FeedEditInvitationSection } from '@/components/feed/edit/FeedEditInvitationSection';
 import { FeedEditRow } from '@/components/feed/edit/FeedEditRow';
 import { FeedThemeSheet } from '@/components/feed/edit/FeedThemeSheet';
@@ -26,18 +27,22 @@ import { useInvitationFonts } from '@/hooks/useAdminInvitationThemes';
 import { useFeedBlockActions } from '@/hooks/useFeedBlockActions';
 import type { FeedBlockToolActions } from '@/hooks/useFeedBlockHandlers';
 import { useFeedBlockSheet } from '@/hooks/useFeedBlockSheet';
+import { useFeedEditBlockTools } from '@/hooks/useFeedEditBlockTools';
 import { useFeedEditPanels } from '@/hooks/useFeedEditPanels';
 import { useFeedEditSession } from '@/hooks/useFeedEditSession';
 import { useFeedEditThemeGrid } from '@/hooks/useFeedEditThemeGrid';
 import { useEditPageTheme } from '@/hooks/useFeedPageTheme';
 import { useFeedSectionPreviews } from '@/hooks/useFeedSectionPreviews';
+import { useFeedTextPresets } from '@/hooks/useFeedTextPresets';
 import { useFeedTop } from '@/hooks/useFeedTop';
+import { useFeedUploadedMedia } from '@/hooks/useFeedUploadedMedia';
 import { useSectionDrag } from '@/hooks/useSectionDrag';
 import { useSettingsPreview } from '@/hooks/useSettingsPreview';
 import type { EventDetailResponseDto } from '@/lib/api/types';
+import { blockTextColor } from '@/lib/feedBlockEdits';
 import { feedBlockControls } from '@/lib/feedEditing';
 import type { NewSectionType } from '@/lib/invitation/newSection';
-import type { FeedSectionType, InvitationSection, SectionType } from '@/lib/invitation/sections';
+import { type FeedSectionType, type InvitationSection, isFeedSectionType, type SectionType } from '@/lib/invitation/sections';
 
 const MODIFIERS = [restrictToVerticalAxis];
 
@@ -54,9 +59,12 @@ const nameKey = (type: SectionType) => `sectionNames.${type}` as FeedNameKey;
 export function FeedEditTop({ event, onDone, cancelRef, mode, modeSwitch, dateRow, cover, stories, description, rsvp }: FeedEditTopProps) {
     const t = useTranslations('InvitationEditor');
     const session = useFeedEditSession(event, onDone);
-    const view = useFeedTop(event, { document: session.document, theme: session.theme, media: session.media });
+    // The saved layout's photos plus the ones the host uploads while editing.
+    const uploads = useFeedUploadedMedia(session.media);
+    const view = useFeedTop(event, { document: session.document, theme: session.theme, media: uploads.media });
     useEditPageTheme(event.id, session.wallTheme, session.background, view.backdrop);
     const fonts = useInvitationFonts(true);
+    const textPresets = useFeedTextPresets(fonts.data);
     const hostOptions = useMemo(() => ({ rsvpMoves: view.rsvpMoves }), [view.rsvpMoves]);
     const actions = useFeedBlockActions(session.store, session.document, event, hostOptions);
     const sectionPreviews = useFeedSectionPreviews({
@@ -64,20 +72,26 @@ export function FeedEditTop({ event, onDone, cancelRef, mode, modeSwitch, dateRo
         themeSlug: session.themeSlug,
         document: session.document,
         theme: session.theme,
-        media: session.media,
+        media: uploads.media,
         eventType: event.eventType,
         enabled: actions.adding,
     });
     const preview = useSettingsPreview(event, true, true);
-    const sheet = useFeedBlockSheet(session.store, session.document, session.theme, session.media, fonts.data, preview.parts);
+    const sheet = useFeedBlockSheet(session.store, session.document, session.theme, uploads.media, fonts.data, preview.parts);
     const panels = useFeedEditPanels(sheet.openFor, sheet.close, actions.openAdd);
     const themeGrid = useFeedEditThemeGrid(event, session);
     const middleIds = view.frame.middle.map((section) => section.id);
     const drag = useSectionDrag(middleIds.length, actions.reorder);
+    const blockTools = useFeedEditBlockTools({
+        eventId: event.id,
+        store: session.store,
+        document: session.document,
+        ctx: view.ctx,
+        remember: uploads.remember,
+    });
 
     const tools: FeedBlockToolActions = {
         onToggleVisible: actions.toggleVisible,
-        onMove: actions.move,
         onDelete: actions.askDelete,
         onOpenSettings: panels.openSettings,
     };
@@ -101,6 +115,17 @@ export function FeedEditTop({ event, onDone, cancelRef, mode, modeSwitch, dateRo
             hasSettings={sheet.hasSettings(section)}
             actions={tools}
             active={sheet.section?.id === section.id}
+            buttons={
+                !isFeedSectionType(section.type) && (
+                    <FeedEditBlockButtons
+                        sectionId={section.id}
+                        color={blockTextColor(section, view.ctx)}
+                        uploading={blockTools.uploadingId === section.id}
+                        onPhoto={blockTools.addPhoto}
+                        onColor={blockTools.setColor}
+                    />
+                )
+            }
         >
             {node}
         </FeedEditBlock>
@@ -115,7 +140,7 @@ export function FeedEditTop({ event, onDone, cancelRef, mode, modeSwitch, dateRo
             wrap(
                 section,
                 view.look ? (
-                    <FeedEditInvitationSection section={section} index={view.sections.indexOf(section)} ctx={view.ctx} />
+                    <FeedEditInvitationSection section={section} index={view.sections.indexOf(section)} ctx={blockTools.ctx} />
                 ) : (
                     base.invitation(section)
                 ),
@@ -147,7 +172,18 @@ export function FeedEditTop({ event, onDone, cancelRef, mode, modeSwitch, dateRo
     );
 
     return (
-        <InlineTextEditing store={session.store} document={session.document} theme={session.theme} uploadedFonts={fonts.data}>
+        <InlineTextEditing
+            store={session.store}
+            document={session.document}
+            theme={session.theme}
+            uploadedFonts={fonts.data}
+            variant="feed"
+            presets={textPresets.presets}
+            onLinkAdded={panels.openSettings}
+        >
+            {/* The uploaded fonts the Style presets name */}
+            {textPresets.fontFaces && <style>{textPresets.fontFaces}</style>}
+
             {/* Blocks */}
             <DndContext
                 sensors={drag.sensors}
