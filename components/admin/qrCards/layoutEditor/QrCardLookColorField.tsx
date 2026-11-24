@@ -4,10 +4,9 @@ import type { ChangeEvent, ReactNode } from 'react';
 import { useId } from 'react';
 
 import { AdminField, adminInputClass } from '@/components/admin/AdminField';
+import { ColorSwatch } from '@/components/ui/color/ColorSwatch';
 
-const SWATCH_CLASS = 'h-10 w-12 shrink-0 cursor-pointer rounded-md border border-border bg-white p-1';
-
-// A colour picked from a swatch or typed as hex, both named `name` so one handler takes either.
+// A colour picked from the circles or typed as hex.
 export function QrCardLookColorField({
     name,
     label,
@@ -17,6 +16,7 @@ export function QrCardLookColorField({
     hint,
     invalid,
     hintLive,
+    onColorAction,
     onChangeAction,
     children,
 }: {
@@ -28,6 +28,7 @@ export function QrCardLookColorField({
     hint?: string;
     invalid: boolean;
     hintLive?: boolean;
+    onColorAction: (color: string) => void;
     onChangeAction: (event: ChangeEvent<HTMLInputElement>) => void;
     children?: ReactNode;
 }) {
@@ -37,15 +38,7 @@ export function QrCardLookColorField({
     return (
         <AdminField label={label} required hint={hint} hintId={hintId} hintLive={hintLive}>
             <div className="flex items-center gap-2">
-                <input
-                    type="color"
-                    name={name}
-                    value={swatchValue}
-                    onChange={onChangeAction}
-                    aria-label={label}
-                    aria-describedby={describedBy}
-                    className={SWATCH_CLASS}
-                />
+                <ColorSwatch value={swatchValue} label={label} describedBy={describedBy} surface="light" onChange={onColorAction} />
                 <input
                     name={name}
                     value={value}
