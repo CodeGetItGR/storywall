@@ -99,7 +99,7 @@ function convertOld(oldSection: Record<string, unknown>) {
     return result.document.sections[0];
 }
 
-const NEW_TYPES = SECTION_TYPES.filter((type): type is NewSectionType => type !== 'footer' && !isFeedSectionType(type));
+const NEW_TYPES = SECTION_TYPES.filter((type): type is NewSectionType => type !== 'footer' && type !== 'feedModule' && !isFeedSectionType(type));
 const EVENTS: [string, Category][] = [['WEDDING', 'Γάμος'], ['BAPTISM', 'Βάπτιση'], ['BIRTHDAY', 'Γενέθλια']];
 
 describe('createSection', () => {

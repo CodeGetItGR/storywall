@@ -82,6 +82,7 @@ export function InvitationEditor({ draft, uploadedFonts, onReload, isReloading =
             fieldLinks={editor.fieldLinks}
             joinUrl={editor.joinUrl}
             photoSlots={editor.photos.slots}
+            eventType={draft.eventType}
         >
             {/* Publishing */}
             <PublishSignInDialog signIn={editor.publishing.signIn} />
@@ -104,7 +105,12 @@ export function InvitationEditor({ draft, uploadedFonts, onReload, isReloading =
                 onRetryList={editor.themeSwitch.retryList}
                 onClose={editor.themeSwitch.close}
             />
-            <ThemeSwitchDialog step={editor.themeSwitch.step} onConfirm={editor.themeSwitch.confirm} onCancel={editor.themeSwitch.back} />
+            <ThemeSwitchDialog
+                step={editor.themeSwitch.step}
+                eventType={draft.eventType}
+                onConfirm={editor.themeSwitch.confirm}
+                onCancel={editor.themeSwitch.back}
+            />
 
             {/* Tour */}
             <EditorTour tour={editor.tour} />

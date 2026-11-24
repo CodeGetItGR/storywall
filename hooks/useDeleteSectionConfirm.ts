@@ -4,9 +4,9 @@ import { useCallback, useRef, useState } from 'react';
 
 import type { InvitationDocument } from '@/lib/invitation/document';
 import { deleteSection, type SectionEdit, sectionToFocusAfterDelete } from '@/lib/invitation/sectionActions';
-import type { SectionType } from '@/lib/invitation/sections';
+import type { InvitationSection, SectionType } from '@/lib/invitation/sections';
 
-type Target = { id: string; type: SectionType };
+type Target = { id: string; type: SectionType; section: InvitationSection };
 
 function sectionFrame(id: string): HTMLElement | null {
     const frames = globalThis.document.querySelectorAll<HTMLElement>('[data-editor-section]');
@@ -29,7 +29,7 @@ export function useDeleteSectionConfirm(edit: SectionEdit, document: InvitationD
             const section = document.sections.find((item) => item.id === id);
             if (!section || section.locked) return;
             focusAfterClose.current = null;
-            setTarget({ id, type: section.type });
+            setTarget({ id, type: section.type, section });
             setIsAsking(true);
         },
         [document],
@@ -49,5 +49,5 @@ export function useDeleteSectionConfirm(edit: SectionEdit, document: InvitationD
         return (id && sectionFrame(id)) || true;
     }, []);
 
-    return { isOpen, sectionType: target?.type ?? null, ask, cancel, confirm, finalFocus };
+    return { isOpen, sectionType: target?.type ?? null, section: target?.section ?? null, ask, cancel, confirm, finalFocus };
 }

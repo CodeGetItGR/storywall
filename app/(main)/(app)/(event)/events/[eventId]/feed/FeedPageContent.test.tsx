@@ -70,7 +70,9 @@ vi.mock('@/components/feed/Header', () => ({ Header: () => null }));
 vi.mock('@/components/feed/PostModal', () => ({ PostModal: () => null }));
 vi.mock('@/components/feed/PublishQueueCards', () => ({ PublishQueueCards: () => null }));
 vi.mock('@/components/feed/RsvpPrompt', () => ({ RsvpPrompt: () => <div data-testid="rsvp" /> }));
-vi.mock('@/hooks/useAdminInvitationThemes', () => ({ useInvitationFonts: () => ({ data: [] }) }));
+// One list for every render, as a query gives: a new one each time would rebuild the Add section previews forever.
+const fonts = vi.hoisted(() => ({ data: [] }));
+vi.mock('@/hooks/useAdminInvitationThemes', () => ({ useInvitationFonts: () => fonts }));
 vi.mock('@/components/feed/StoriesRow', () => ({ StoriesRow: () => null }));
 vi.mock('@/components/pwa/InstallAppBanner', () => ({ InstallAppBanner: () => null }));
 vi.mock('@/components/story/StoryModal', () => ({ StoryModal: () => null }));
@@ -307,14 +309,31 @@ describe('FeedPageContent RSVP place', { timeout: 15_000 }, () => {
 });
 
 describe('FeedPageContent edit mode', { timeout: 15_000 }, () => {
-    it('lets the host drag RSVP on a Save my date event, with no delete', async () => {
+    it('lets the host drag and delete RSVP on a Save my date event', async () => {
         renderFeed(null, { flag: true, layout: savedLayout(dressCode), isHost: true, modules: SMD, startAt: '2099-06-01T15:00:00Z' });
         fireEvent.click(await screen.findByRole('button', { name: 'edit' }));
         const rsvp = await screen.findByRole('group', { name: 'sectionNames.feedRsvp' }, LAZY_LOOK);
         const tools = rsvp.querySelector('[data-feed-block-tools]') as HTMLElement;
         expect(within(tools).getByRole('button', { name: 'drag' })).toBeTruthy();
-        expect(within(tools).queryByRole('button', { name: 'delete' })).toBeNull();
+        expect(within(tools).getByRole('button', { name: 'delete' })).toBeTruthy();
         expect(within(tools).queryByRole('button', { name: 'options' })).toBeNull();
+    });
+
+    it("asks before RSVP's delete, then adds RSVP back from its tile", async () => {
+        const modules = [...SMD, { moduleKey: 'rsvp', isAvailable: true, isEnabled: true }];
+        renderFeed(null, { flag: true, layout: savedLayout(dressCode), isHost: true, modules, startAt: '2099-06-01T15:00:00Z' });
+        fireEvent.click(await screen.findByRole('button', { name: 'edit' }));
+        const rsvp = await screen.findByRole('group', { name: 'sectionNames.feedRsvp' }, LAZY_LOOK);
+        fireEvent.click(within(rsvp.querySelector('[data-feed-block-tools]') as HTMLElement).getByRole('button', { name: 'delete' }));
+        const dialog = await screen.findByRole('dialog');
+        expect(screen.getByRole('group', { name: 'sectionNames.feedRsvp', hidden: true })).toBeTruthy();
+        fireEvent.click(within(dialog).getByRole('button', { name: 'deleteConfirm' }));
+        await waitFor(() => expect(screen.queryByRole('group', { name: 'sectionNames.feedRsvp' })).toBeNull());
+
+        const rows = screen.getAllByRole('button', { name: 'add' });
+        fireEvent.click(rows[rows.length - 1]);
+        fireEvent.click(await screen.findByRole('button', { name: 'rsvp' }));
+        expect(await screen.findByRole('group', { name: 'sectionNames.feedRsvp' })).toBeTruthy();
     });
 
     it('keeps the pill while editing, with Theme, Cancel and Save under it', async () => {

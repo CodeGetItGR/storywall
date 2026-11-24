@@ -16,10 +16,12 @@ type EditorCanvasProps = {
     // Section tools; without them the canvas only shows the invitation.
     sections?: SectionActions;
     sectionSettings?: SectionSettingsOpener;
+    // The draft's event type, which names the schedule (sectionNameKey). A theme has none.
+    eventType?: string | null;
 };
 
 // The invitation being edited, drawn by the same renderer guests see. It scrolls on its own.
-export function EditorCanvas({ document, theme, media, uploadedFonts, sections, sectionSettings }: EditorCanvasProps) {
+export function EditorCanvas({ document, theme, media, uploadedFonts, sections, sectionSettings, eventType }: EditorCanvasProps) {
     const renderText = useEditableTextRenderer();
     const canvasTools = useCanvasHandles()?.tools;
     const renderer = (wrapSection?: Parameters<typeof InvitationRenderer>[0]['wrapSection']) => (
@@ -39,7 +41,7 @@ export function EditorCanvas({ document, theme, media, uploadedFonts, sections, 
         <main className="min-h-0 min-w-0 flex-1 overflow-y-auto p-2 [background:var(--smd-editor-canvas)] sm:p-6">
             <div className="mx-auto w-full max-w-245 overflow-hidden shadow-[0_18px_50px_rgba(0,0,0,0.45)]">
                 {sections ? (
-                    <EditorSections actions={sections} settings={sectionSettings}>
+                    <EditorSections actions={sections} settings={sectionSettings} eventType={eventType}>
                         {renderer}
                     </EditorSections>
                 ) : (

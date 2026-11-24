@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 
 import type { JourneyPhase } from '@/lib/eventJourney';
 
@@ -40,7 +40,6 @@ function forget(key: string, raw: string | null) {
  * Where the host was on the Overview when they opened one of its links. The app scrolls inside the
  * shell's <main>, not the window, so the browser can't put the scroll back on Back. Tapping a link
  * saves the spot; the next time the Overview opens on the same phase it scrolls back there, once.
- * Returns a ref for the element whose links count.
  */
 export function useOverviewScrollMemory(eventId: string, phase: JourneyPhase) {
     const key = storageKey(eventId);
@@ -83,23 +82,20 @@ export function useOverviewScrollMemory(eventId: string, phase: JourneyPhase) {
         };
     }, [key]);
 
-    return useCallback(
-        (element: HTMLElement | null) => {
-            if (!element) return;
-            // Capture, so the spot is saved before the link navigates and the next page moves the scroll.
-            const save = (event: MouseEvent) => {
-                if (!(event.target instanceof Element) || !event.target.closest('a[href]')) return;
-                const main = document.querySelector('main');
-                if (!main) return;
-                try {
-                    window.sessionStorage.setItem(key, JSON.stringify({ top: main.scrollTop, phase: phaseRef.current } satisfies Saved));
-                } catch {
-                    // Storage blocked: nothing to come back to.
-                }
-            };
-            element.addEventListener('click', save, true);
-            return () => element.removeEventListener('click', save, true);
-        },
-        [key],
-    );
+    // Any link on the page counts, the section menu at the foot of the Overview on a phone too. Capture,
+    // so the spot is saved before the link's own handler moves the scroll to the top of the next page.
+    useEffect(() => {
+        const main = document.querySelector('main');
+        if (!main) return;
+        const save = (event: MouseEvent) => {
+            if (!(event.target instanceof Element) || !event.target.closest('a[href]')) return;
+            try {
+                window.sessionStorage.setItem(key, JSON.stringify({ top: main.scrollTop, phase: phaseRef.current } satisfies Saved));
+            } catch {
+                // Storage blocked: nothing to come back to.
+            }
+        };
+        main.addEventListener('click', save, true);
+        return () => main.removeEventListener('click', save, true);
+    }, [key]);
 }

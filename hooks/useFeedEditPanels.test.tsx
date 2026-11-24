@@ -24,9 +24,9 @@ describe('useFeedEditPanels', () => {
         const { hook, closeSettings, openAddSection } = renderPanels();
         act(() => hook.result.current.openTheme());
         closeSettings.mockClear();
-        act(() => hook.result.current.openAdd());
+        act(() => hook.result.current.openAdd({ after: 's-1' }));
         expect(hook.result.current.themeOpen).toBe(false);
         expect(closeSettings).toHaveBeenCalledTimes(1);
-        expect(openAddSection).toHaveBeenCalledTimes(1);
+        expect(openAddSection).toHaveBeenCalledWith({ after: 's-1' });
     });
 });

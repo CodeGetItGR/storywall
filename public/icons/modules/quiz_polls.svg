@@ -1,0 +1,18 @@
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">
+<g stroke-width="1.500">
+<rect x="3" y="13" width="3.5" height="7" rx="0.8" stroke="url(#g-modules-quiz_polls)"/>
+<rect x="8.5" y="9" width="3.5" height="11" rx="0.8" stroke="url(#g-modules-quiz_polls)"/>
+<rect x="14" y="15" width="3.5" height="5" rx="0.8" stroke="url(#g-modules-quiz_polls)"/>
+<path d="M16.5 5.5a2 2 0 1 1 2.81 1.83C18.8 7.6 18.5 8 18.5 8.9" stroke="url(#g-modules-quiz_polls)"/>
+<circle cx="18.5" cy="11" r="0.85" fill="url(#g-modules-quiz_polls)" stroke="none"/>
+</g>
+<defs>
+<linearGradient id="g-modules-quiz_polls" x1="-0.30" y1="-0.30" x2="20.00" y2="20.00" gradientUnits="userSpaceOnUse">
+<stop offset="0.2" stop-color="#C777B1"/>
+<stop offset="0.43" stop-color="#E48279"/>
+<stop offset="0.54" stop-color="#F2885C"/>
+<stop offset="0.99" stop-color="#FEC463"/>
+</linearGradient>
+
+</defs>
+</svg>

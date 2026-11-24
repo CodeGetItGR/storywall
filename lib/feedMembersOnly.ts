@@ -4,7 +4,7 @@ import type { InvitationDocument } from '@/lib/invitation/document';
 import type { InvitationSection, SectionType } from '@/lib/invitation/sections';
 
 // Blocks every visitor sees, signed out too: never members only (guestwall-be FeedLayoutRules.NEVER_MEMBERS_ONLY).
-const ALWAYS_PUBLIC: readonly SectionType[] = ['feedCover', 'feedDetails', 'feedRsvp'];
+const ALWAYS_PUBLIC: readonly SectionType[] = ['feedCover', 'feedDetails', 'feedRsvp', 'feedModule'];
 
 export function canBeMembersOnly(section: Pick<InvitationSection, 'type'>): boolean {
     return !ALWAYS_PUBLIC.includes(section.type);

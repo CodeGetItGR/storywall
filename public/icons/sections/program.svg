@@ -1,0 +1,20 @@
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">
+<g stroke-width="1.500">
+<circle cx="7.5" cy="7.5" r="4.5" stroke="url(#g-sections-program)"/>
+<path d="M7.5 5v2.5l1.8 1" stroke="url(#g-sections-program)"/>
+<path d="M14.5 6h6M14.5 9.5H19" stroke="url(#g-sections-program)"/>
+<circle cx="4.5" cy="15.5" r="0.9" fill="url(#g-sections-program)" stroke="none"/>
+<path d="M8 15.5h12.5" stroke="url(#g-sections-program)"/>
+<circle cx="4.5" cy="20" r="0.9" fill="url(#g-sections-program)" stroke="none"/>
+<path d="M8 20h9.5" stroke="url(#g-sections-program)"/>
+</g>
+<defs>
+<linearGradient id="g-sections-program" x1="-0.30" y1="-0.30" x2="20.00" y2="20.00" gradientUnits="userSpaceOnUse">
+<stop offset="0.2" stop-color="#C777B1"/>
+<stop offset="0.43" stop-color="#E48279"/>
+<stop offset="0.54" stop-color="#F2885C"/>
+<stop offset="0.99" stop-color="#FEC463"/>
+</linearGradient>
+
+</defs>
+</svg>

@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
+import { defaultFeedLayout } from '@/lib/feedLayout';
+import { feedModuleSection } from '@/lib/feedModuleBlocks';
 import {
     findMissingThemeAssets,
     INVITATION_SCHEMA_VERSION,
@@ -15,8 +17,8 @@ import { themeDesignSchema } from '@/lib/invitation/theme';
 const clone = <T>(value: T): T => structuredClone(value);
 
 describe('invitation document format', () => {
-    it('covers the 30 section types of the old editor and the 4 feed blocks', () => {
-        expect(SECTION_TYPES).toHaveLength(34);
+    it('covers the 30 section types of the old editor, the 4 feed blocks and the module block', () => {
+        expect(SECTION_TYPES).toHaveLength(35);
     });
 
     it.each(SECTION_TYPES)('accepts the %s sample', (type) => {
@@ -149,5 +151,18 @@ describe('letter spacing and capitals (KAN-262)', () => {
     it('takes spacing from -5 to 50 pixels', () => {
         expect(textStyleSchema.safeParse({ letterSpacing: 51 }).success).toBe(false);
         expect(textStyleSchema.safeParse({ letterSpacing: -5, uppercase: false }).success).toBe(true);
+    });
+});
+
+describe('feedModule', () => {
+    it('holds one of the tile modules', () => {
+        const doc = { ...defaultFeedLayout(), sections: [...defaultFeedLayout().sections, feedModuleSection('playlist', () => 'm1')] };
+        expect(invitationDocumentSchema.safeParse(doc).success).toBe(true);
+    });
+
+    it('refuses any other module', () => {
+        const bad = { ...feedModuleSection('playlist', () => 'm1'), data: { module: 'posts' } };
+        const doc = { ...defaultFeedLayout(), sections: [...defaultFeedLayout().sections, bad] };
+        expect(invitationDocumentSchema.safeParse(doc).success).toBe(false);
     });
 });

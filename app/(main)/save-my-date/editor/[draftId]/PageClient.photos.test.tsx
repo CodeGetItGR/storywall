@@ -91,8 +91,8 @@ const withEmptyGallery = () => withGallery([]);
 const unshown = (count: number): ImageRef[] => Array.from({ length: count }, (_, index) => ({ source: 'media', mediaId: `gone-${index}` }));
 
 function openGallerySettings() {
-    fireEvent.click(within(section('Gallery / Carousel')).getByRole('button', { name: 'Section settings' }));
-    return screen.getByRole('complementary', { name: 'Gallery / Carousel' });
+    fireEvent.click(within(section('Photo Gallery')).getByRole('button', { name: 'Section settings' }));
+    return screen.getByRole('complementary', { name: 'Photo Gallery' });
 }
 
 // Every case opens the whole editor and some wait for its autosave, which takes a while when the whole suite runs.
@@ -230,7 +230,7 @@ describe('Invitation editor: photos', { timeout: EDITOR_FLOW_TIMEOUT_MS }, () =>
     it('adds several photos to an empty gallery from the canvas and saves them in order', async () => {
         withEmptyGallery();
         await openEditor();
-        const gallery = section('Gallery / Carousel');
+        const gallery = section('Photo Gallery');
 
         fireEvent.click(within(gallery).getByRole('button', { name: 'Add photos' }));
         fireEvent.change(within(gallery).getByTestId('gallery-empty-input'), { target: { files: [jpeg('one.jpg'), jpeg('two.jpg')] } });
@@ -249,13 +249,13 @@ describe('Invitation editor: photos', { timeout: EDITOR_FLOW_TIMEOUT_MS }, () =>
     it('deletes a gallery photo from its settings, undoable', async () => {
         withEmptyGallery();
         await openEditor();
-        const gallery = section('Gallery / Carousel');
+        const gallery = section('Photo Gallery');
         fireEvent.click(within(gallery).getByRole('button', { name: 'Add photos' }));
         fireEvent.change(within(gallery).getByTestId('gallery-empty-input'), { target: { files: [jpeg('one.jpg')] } });
         await waitFor(() => expect(within(gallery).getAllByRole('img')).toHaveLength(1), { timeout: 4000 });
 
         fireEvent.click(within(gallery).getByRole('button', { name: 'Section settings' }));
-        const settings = screen.getByRole('complementary', { name: 'Gallery / Carousel' });
+        const settings = screen.getByRole('complementary', { name: 'Photo Gallery' });
         expect(within(settings).getByText('1/10 photos')).toBeInTheDocument();
         fireEvent.click(within(settings).getByRole('button', { name: 'Delete photo' }));
 
@@ -268,7 +268,7 @@ describe('Invitation editor: photos', { timeout: EDITOR_FLOW_TIMEOUT_MS }, () =>
     it("keeps a wrong file's notice while the next photo of the same pick uploads", async () => {
         withEmptyGallery();
         await openEditor();
-        const gallery = section('Gallery / Carousel');
+        const gallery = section('Photo Gallery');
         fireEvent.click(within(gallery).getByRole('button', { name: 'Add photos' }));
         const text = new File(['notes'], 'notes.txt', { type: 'text/plain' });
         fireEvent.change(within(gallery).getByTestId('gallery-empty-input'), { target: { files: [text, jpeg('one.jpg')] } });
@@ -306,6 +306,6 @@ describe('Invitation editor: photos', { timeout: EDITOR_FLOW_TIMEOUT_MS }, () =>
     it('shows no add box for a gallery whose photos cannot be shown', async () => {
         withGallery(unshown(2));
         await openEditor();
-        expect(within(section('Gallery / Carousel')).queryByRole('button', { name: 'Add photos' })).not.toBeInTheDocument();
+        expect(within(section('Photo Gallery')).queryByRole('button', { name: 'Add photos' })).not.toBeInTheDocument();
     });
 });

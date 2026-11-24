@@ -4,10 +4,11 @@ import { useCallback, useMemo, useState } from 'react';
 
 import type { SettingsEdit } from '@/hooks/useSectionSettings';
 import type { SettingsScope } from '@/hooks/useSectionSettingsPanel';
-import { feedBlockParts, feedSettingsGroups, noFeedUploads } from '@/lib/feedEditing';
+import { feedBlockParts, feedSettingsGroups } from '@/lib/feedEditing';
 import { canBeMembersOnly, setFeedBlockMembersOnly } from '@/lib/feedMembersOnly';
 import type { InvitationDocument } from '@/lib/invitation/document';
 import type { InvitationEditorStore } from '@/lib/invitation/editorStore';
+import type { ImageUploader, UploadedImage } from '@/lib/invitation/editorUploads';
 import type { MediaResolver } from '@/lib/invitation/render';
 import type { InvitationSection } from '@/lib/invitation/sections';
 import { settingMergeKey, settingsGroups } from '@/lib/invitation/sectionSettings';
@@ -16,7 +17,8 @@ import type { ThemeDesign } from '@/lib/invitation/theme';
 import type { InvitationFontDto } from '@/lib/invitation/uploadedFonts';
 import type { SettingsPart } from '@/lib/settingsPreview';
 
-const ignoreUpload = () => undefined;
+// Photos upload to the feed (plan 7b's uploader); each one is remembered so it shows before the next read signs it.
+export type FeedSheetUploads = { uploadImage: ImageUploader; remember: (image: Pick<UploadedImage, 'mediaId' | 'url'>) => void };
 
 // The block whose pencil is open: its event parts (saved on the event at once) and its style
 // groups (saved with the layout). It closes by itself when the block goes away or has nothing to set.
@@ -27,6 +29,7 @@ export function useFeedBlockSheet(
     media: MediaResolver,
     uploadedFonts: InvitationFontDto[] | undefined,
     eventParts: SettingsPart[],
+    { uploadImage, remember }: FeedSheetUploads,
 ) {
     const [openId, setOpenId] = useState<string | null>(null);
     const groupsOf = useCallback((section: InvitationSection) => feedSettingsGroups(settingsGroups(section, 'host', theme)), [theme]);
@@ -50,6 +53,16 @@ export function useFeedBlockSheet(
         [openId, store],
     );
 
+    const upload = useCallback<ImageUploader>(
+        async (file) => {
+            const image = await uploadImage(file);
+            remember(image);
+            return image;
+        },
+        [remember, uploadImage],
+    );
+    const addUploaded = useCallback((mediaId: string, url: string) => remember({ mediaId, url }), [remember]);
+
     const scope = useMemo<SettingsScope | null>(
         () =>
             section
@@ -61,14 +74,14 @@ export function useFeedBlockSheet(
                       theme,
                       media,
                       fonts,
-                      uploadImage: noFeedUploads,
-                      addUploaded: ignoreUpload,
+                      uploadImage: upload,
+                      addUploaded,
                       event: null,
                       eventSamples: null,
                       eventFieldLinks: null,
                   }
                 : null,
-        [edit, fonts, media, section, theme],
+        [addUploaded, edit, fonts, media, section, theme, upload],
     );
 
     // null: this block can't be members only.
