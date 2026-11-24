@@ -179,13 +179,14 @@ export function FeedEditTop({
         },
         native: base.native,
         // Feed mode's sections draw their live content; a tap opens their settings, as on every block. A short one sits
-        // at the bottom of a box as tall as its three stacked tools, so they never cover the next section's.
+        // at the bottom of a box as tall as its three stacked tools, so they never cover the next section's, and starts
+        // below its eye and name.
         feed: (section, content) =>
             wrap(
                 section,
                 base.feed(
                     section,
-                    <div inert className="flex min-h-40 flex-col justify-end">
+                    <div inert className="flex min-h-40 flex-col justify-end pt-11">
                         {content}
                     </div>,
                 ),
