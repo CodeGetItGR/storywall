@@ -402,6 +402,7 @@ describe('FeedPageContent edit mode', { timeout: 15_000 }, () => {
         const rsvp = await screen.findByRole('group', { name: 'sectionNames.feedRsvp' }, LAZY_LOOK);
         fireEvent.click(within(rsvp.querySelector('[data-feed-block-tools]') as HTMLElement).getByRole('button', { name: 'delete' }));
         const dialog = await screen.findByRole('dialog');
+        expect(within(dialog).getByText('deleteBody')).toBeTruthy();
         expect(screen.getByRole('group', { name: 'sectionNames.feedRsvp', hidden: true })).toBeTruthy();
         fireEvent.click(within(dialog).getByRole('button', { name: 'deleteConfirm' }));
         await waitFor(() => expect(screen.queryByRole('group', { name: 'sectionNames.feedRsvp' })).toBeNull());
@@ -486,6 +487,15 @@ describe('FeedPageContent edit mode', { timeout: 15_000 }, () => {
         const sections = api.put.mock.calls[0][1].document.sections as InvitationSection[];
         expect(sections).toContainEqual(dressCode);
         expect(sections.map((section) => section.type).slice(-2)).toEqual(['feedPrompt', 'feedPinned']);
+    });
+
+    it('says a feed section goes from the feed, not the invitation', async () => {
+        const prompt = { ...createFeedModeSection('feedPrompt', () => 'p'), data: { text: 'Show us' } } as InvitationSection;
+        renderFeed(null, { flag: true, isHost: true, layout: savedLayout(prompt), modules: [] });
+        fireEvent.click(await screen.findByRole('button', { name: 'edit' }));
+        const group = await screen.findByRole('group', { name: 'sectionNames.feedPrompt' }, LAZY_LOOK);
+        fireEvent.click(within(group.querySelector('[data-feed-block-tools]') as HTMLElement).getByRole('button', { name: 'delete' }));
+        expect(within(await screen.findByRole('dialog')).getByText('deleteBodyFeed')).toBeTruthy();
     });
 
     it('adds no stand-ins for empty fixed blocks without Save my date', async () => {

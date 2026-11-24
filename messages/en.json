@@ -10651,6 +10651,7 @@
             "drag": "Drag to move",
             "deleteTitle": "Delete this section?",
             "deleteBody": "The «{name}» section will be removed from the invitation.",
+            "deleteBodyFeed": "The «{name}» section will be removed from the feed.",
             "deleteConfirm": "Delete",
             "deleteCancel": "Cancel",
             "dragInstructions": "Press space to pick up a section. Use the arrow keys to move it, space to drop it, or escape to cancel.",

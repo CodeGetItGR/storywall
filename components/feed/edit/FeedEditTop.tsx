@@ -49,7 +49,7 @@ import { blockTextColor } from '@/lib/feedBlockEdits';
 import { draggableFeedBlocks, type FeedAddPlace, feedBlockControls, type FeedEditScope } from '@/lib/feedEditing';
 import { moduleOfBlock } from '@/lib/feedModuleBlocks';
 import { feedImageUploader } from '@/lib/invitation/editorUploads';
-import { type InvitationSection, isSaveMyDateSectionType } from '@/lib/invitation/sections';
+import { type InvitationSection, isFeedModeSectionType, isSaveMyDateSectionType } from '@/lib/invitation/sections';
 
 const MODIFIERS = [restrictToVerticalAxis];
 
@@ -322,6 +322,7 @@ export function FeedEditTop({
             <DeleteSectionDialog
                 open={actions.remove.isOpen}
                 sectionName={actions.remove.section ? blockName(actions.remove.section) : ''}
+                fromFeed={actions.remove.section !== null && isFeedModeSectionType(actions.remove.section.type)}
                 onDelete={actions.remove.confirm}
                 onCancel={actions.remove.cancel}
                 finalFocus={actions.remove.finalFocus}
