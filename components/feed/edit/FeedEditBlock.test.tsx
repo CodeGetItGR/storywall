@@ -85,17 +85,27 @@ describe('FeedEditBlock name', () => {
         expect(screen.getByRole('group', { name: 'Dress code' })).toBeTruthy();
     });
 
-    // Theme, Cancel and Save moved to a row under the cover (FeedEditRow), so the cover keeps its name on phones too.
-    it("shows the cover's name first, on every screen", () => {
+    it('shows no name on the cover, which keeps its name for screen readers and its settings', () => {
         const cover = defaultFeedLayout().sections.find((item) => item.type === 'feedCover') as InvitationSection;
         renderBlock({
             section: cover,
             name: 'Cover',
             controls: { canHide: false, canDelete: false, movable: false, canMoveUp: false, canMoveDown: false },
         });
-        const label = screen.getByText('Cover');
-        expect(label.previousElementSibling).toBeNull();
-        expect(label).not.toHaveClass('max-sm:hidden');
+        expect(screen.queryByText('Cover')).toBeNull();
+        const group = screen.getByRole('group', { name: 'Cover' });
+        const tools = group.querySelector('[data-feed-block-tools]') as HTMLElement;
+        expect(within(tools).getAllByRole('button')).toEqual([screen.getByRole('button', { name: en.InvitationEditor.sectionSettings.open })]);
+    });
+
+    it('draws a 32 px eye with a 40 px tap area, and 40 px tools on the right', () => {
+        renderBlock();
+        const eye = screen.getByRole('button', { name: en.InvitationEditor.sections.hide });
+        expect(eye).toHaveClass('h-8', 'w-8', 'before:-inset-1');
+        expect(eye).not.toHaveClass('h-10');
+        for (const name of [en.InvitationEditor.sections.delete, en.InvitationEditor.sections.drag, en.InvitationEditor.sectionSettings.open]) {
+            expect(screen.getByRole('button', { name })).toHaveClass('h-10', 'w-10');
+        }
     });
 
     // The name is no button: a tap on it falls through to the block, which opens the settings.
@@ -151,11 +161,11 @@ describe('FeedEditBlock tools (2026-11-23)', () => {
         renderBlock({ controls: { canHide: true, canDelete: true, movable: true, canMoveUp: true, canMoveDown: true }, hasSettings: true });
         const tools = document.querySelector('[data-feed-block-tools]') as HTMLElement;
         const right = tools.querySelector('[data-feed-block-tools-right]') as HTMLElement;
-        expect(within(right).getAllByRole('button').map((button) => button.getAttribute('aria-label'))).toEqual([
-            en.InvitationEditor.sections.delete,
-            en.InvitationEditor.sections.drag,
-            en.InvitationEditor.sectionSettings.open,
-        ]);
+        expect(
+            within(right)
+                .getAllByRole('button')
+                .map((button) => button.getAttribute('aria-label')),
+        ).toEqual([en.InvitationEditor.sections.delete, en.InvitationEditor.sections.drag, en.InvitationEditor.sectionSettings.open]);
         expect(within(tools).queryByRole('button', { name: en.InvitationEditor.sections.options })).toBeNull();
         expect(within(tools).getByRole('button', { name: en.InvitationEditor.sections.hide })).toBeTruthy();
     });

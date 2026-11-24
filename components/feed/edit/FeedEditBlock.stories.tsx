@@ -8,6 +8,7 @@ import { fn } from 'storybook/test';
 
 import { FeedEditBlock } from '@/components/feed/edit/FeedEditBlock';
 import { eventThemeStyle } from '@/lib/eventTheme';
+import { newFeedBlock } from '@/lib/feedLayout';
 import { SAMPLE_SECTIONS } from '@/lib/invitation/samples';
 import type { InvitationSection } from '@/lib/invitation/sections';
 
@@ -41,6 +42,14 @@ type Story = StoryObj<typeof meta>;
 
 export const Visible: Story = {};
 export const Hidden: Story = { args: { section: { ...section, visible: false } } };
+// The cover: no eye and no name on screen, only its settings.
+export const Cover: Story = {
+    args: {
+        section: newFeedBlock('feedCover'),
+        name: 'Cover',
+        controls: { canHide: false, canDelete: false, movable: false, canMoveUp: false, canMoveDown: false },
+    },
+};
 // Its settings are open.
 export const Active: Story = { args: { active: true } };
 

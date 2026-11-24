@@ -6,9 +6,10 @@ import { fn } from 'storybook/test';
 
 import { withAppContext } from '@/.storybook/appContext';
 import { copyFor } from '@/.storybook/copy';
-import { storyEvent, storyHostMember, storyModules } from '@/.storybook/fixtures';
+import { storyEvent, storyHostMember, storyModules, storyPhotos } from '@/.storybook/fixtures';
 import { FeedEditTop } from '@/components/feed/edit/FeedEditTop';
 import { EventInfo } from '@/components/feed/EventInfo';
+import { FeedCoverBlock } from '@/components/feed/layout/FeedCoverBlock';
 import type { EventDetailResponseDto, FeedLayoutDto } from '@/lib/api/types';
 import type { FeedEditScope } from '@/lib/feedEditing';
 import { defaultFeedLayout, feedLayoutKeys } from '@/lib/feedLayout';
@@ -64,7 +65,7 @@ function EditStory({ event, sections, mode, scope }: EditArgs) {
                 mode={mode}
                 scope={scope}
                 onDone={fn()}
-                cover={<Box label="Cover + title" />}
+                cover={<FeedCoverBlock event={event} isHost wishlist={false} editing />}
                 dateRow={<EventInfo date={Date.UTC(2026, 6, 4)} place="Rhodes" className="mt-3 w-full px-4" />}
                 stories={<Box label="Stories" />}
                 description={<Box label="Description" />}
@@ -83,7 +84,10 @@ const meta = {
     args: { event: withSaveMyDate, sections: [], mode: 'feed', scope: 'all' },
     parameters: { layout: 'fullscreen', app: { event: withSaveMyDate, member: storyHostMember } },
     beforeEach({ msw }) {
-        msw.use(http.get('*/api/invitation-*', () => HttpResponse.json([])));
+        msw.use(
+            http.get('*/api/invitation-*', () => HttpResponse.json([])),
+            http.get('*/gift-account', () => new HttpResponse(null, { status: 404 })),
+        );
     },
     decorators: [
         withAppContext,
@@ -104,6 +108,20 @@ export const FeedMode: Story = {
 };
 
 const withoutSaveMyDate = storyEvent({ modules: storyModules(['posts', 'stories', 'rsvp']) });
+
+// A cover photo, at 360 px.
+export const FeedModeNarrow: Story = {
+    args: { event: storyEvent({ modules: withSaveMyDate.modules, coverMedia: storyPhotos[0] }) },
+    tags: ['visual-mobile-only'],
+    decorators: [
+        (Story) => (
+            <div className="w-[360px]">
+                <Story />
+            </div>
+        ),
+    ],
+    render: (args, { globals }) => <EditStory {...args} sections={sectionsWith(copyFor(globals).FeedSections.prompt.placeholder)} />,
+};
 
 // Without Save my date, on the one page: no Theme, and tools on the feed sections only.
 export const WithoutSaveMyDate: Story = {

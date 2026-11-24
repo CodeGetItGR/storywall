@@ -517,11 +517,11 @@ describe('FeedPageContent edit mode', { timeout: 15_000 }, () => {
         expect(await screen.findByRole('button', { name: 'edit' })).toBeTruthy();
     });
 
-    it('names every block in its tools while editing, and nowhere once done', async () => {
+    it('names every block but the cover in its tools while editing, and nowhere once done', async () => {
         renderFeed(null, { flag: true, layout: savedLayout(dressCode), isHost: true, modules: SMD });
         fireEvent.click(await screen.findByRole('button', { name: 'edit' }));
         await screen.findByRole('group', { name: 'sectionNames.feedCover' }, LAZY_LOOK);
-        for (const type of ['feedCover', 'feedDescription', dressCode.type, 'feedRsvp']) {
+        for (const type of ['feedDescription', dressCode.type, 'feedRsvp']) {
             const group = screen.getByRole('group', { name: `sectionNames.${type}` });
             const tools = group.querySelector('[data-feed-block-tools]') as HTMLElement;
             expect(within(tools).getByText(`sectionNames.${type}`)).toHaveAttribute('aria-hidden', 'true');
@@ -533,11 +533,12 @@ describe('FeedPageContent edit mode', { timeout: 15_000 }, () => {
         expect(document.querySelector('[data-feed-block-tools]')).toBeNull();
     });
 
-    it('gives the cover no eye', async () => {
+    it('gives the cover no eye and no name on screen', async () => {
         renderFeed(null, { flag: true, layout: savedLayout(), isHost: true, modules: SMD });
         fireEvent.click(await screen.findByRole('button', { name: 'edit' }));
         const cover = await screen.findByRole('group', { name: 'sectionNames.feedCover' }, LAZY_LOOK);
         expect(within(cover).queryByRole('button', { name: 'hide' })).toBeNull();
+        expect(within(cover).queryByText('sectionNames.feedCover')).toBeNull();
     });
 
     it('hides a block and saves the layout with its revision', async () => {
