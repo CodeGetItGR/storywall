@@ -6,6 +6,7 @@ import { FeedEditRow } from '@/components/feed/edit/FeedEditRow';
 const meta = {
     title: 'Feed/Edit/FeedEditRow',
     component: FeedEditRow,
+    parameters: { layout: 'fullscreen' },
     args: { saving: false, failed: false, previewing: false, onPreview: fn(), onTheme: fn(), onCancel: fn(), onSave: fn() },
     decorators: [
         (Story) => (
@@ -30,7 +31,6 @@ export const SaveFailed: Story = { args: { failed: true } };
 // A 360 px phone, the narrowest all four must fit on (the Greek words are the longest).
 const onNarrowPhone: Story = {
     tags: ['visual-mobile-only'],
-    parameters: { layout: 'fullscreen' },
     decorators: [
         (Story) => (
             <div className="w-[360px]">
