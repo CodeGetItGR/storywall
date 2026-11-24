@@ -44,6 +44,19 @@ function labelOf(text: string): HTMLElement {
 
 afterEach(cleanup);
 
+describe('ThemePresetRadioGroup swatch', () => {
+    const swatchOf = (name: string) => screen.getByRole('radio', { name }).firstElementChild as HTMLElement;
+
+    it("puts a Save my date card's picture on the light neutral, not on the theme's colour", () => {
+        renderGroup([preset('a', { neutralSwatch: true, titleFontFamily: 'Georgia, serif', titleColor: '#7A2E3B' }), preset('b')]);
+        expect(swatchOf('Preset a')).toHaveClass('bg-canvas');
+        expect(swatchOf('Preset a').style.backgroundColor).toBe('');
+        expect((labelOf('Preset a').parentElement as HTMLElement).style.getPropertyValue('--event-title')).toBe('#7A2E3B');
+        expect(swatchOf('Preset b')).not.toHaveClass('bg-canvas');
+        expect(swatchOf('Preset b').style.backgroundColor).toBe('rgb(191, 230, 226)');
+    });
+});
+
 describe('ThemePresetRadioGroup fonts and title colour', () => {
     it('declares a font shared by two cards only once', () => {
         const { container } = renderGroup([NONE, preset('a', { headingFont: SCRIPT }), preset('b', { headingFont: SCRIPT })]);

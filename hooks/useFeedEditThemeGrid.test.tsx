@@ -82,6 +82,8 @@ describe('useFeedEditThemeGrid', () => {
     it('lists the wall themes, then the Save my date themes', () => {
         const { result } = renderHook(() => useFeedEditThemeGrid(event, session()));
         expect(result.current.options.map((option) => option.id)).toEqual(['none', 'p-1', invitationThemeChoice('rose')]);
+        // Only the Save my date card sits on the light neutral.
+        expect(result.current.options.map((option) => option.neutralSwatch ?? false)).toEqual([false, false, true]);
     });
 
     it('marks the held pick', () => {

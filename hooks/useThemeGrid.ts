@@ -41,6 +41,7 @@ export function useThemeGrid(event: EventDetailResponseDto, canWrite: boolean, o
         titleColor: card.titleColor,
         headingFont: null,
         titleFontFamily: card.titleFontFamily,
+        neutralSwatch: true,
         locked,
         lockedLabel: locked ? t('locked') : undefined,
         selected: layout.themeSlug === card.slug,

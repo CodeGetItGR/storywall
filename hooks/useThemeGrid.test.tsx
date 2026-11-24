@@ -57,7 +57,7 @@ describe('useThemeGrid', () => {
         const { result } = renderHook(() => useThemeGrid(eventWith(true), true, vi.fn()));
         expect(result.current.options.map((option) => option.label)).toEqual(['none', 'Dino', 'Rose']);
         expect(optionNamed(result.current.options, 'Dino').selected).toBe(true);
-        expect(optionNamed(result.current.options, 'Rose')).toMatchObject({ presetId: 'invitation:rose', titleFontFamily: 'Georgia, serif', locked: false });
+        expect(optionNamed(result.current.options, 'Rose')).toMatchObject({ presetId: 'invitation:rose', titleFontFamily: 'Georgia, serif', locked: false, neutralSwatch: true });
     });
 
     it('checks the Save my date theme the feed is on, and no wall theme', () => {
