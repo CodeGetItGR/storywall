@@ -54,7 +54,7 @@ import { type InvitationSection, isFeedModeSectionType, isSaveMyDateSectionType 
 const MODIFIERS = [restrictToVerticalAxis];
 
 // scope: what may change (useFeedEditMode). cancelRef: the Cancel pill, which takes focus as edit mode opens.
-type FeedEditTopProps = Omit<FeedTopProps, 'view'> & {
+type FeedEditTopProps = Omit<FeedTopProps, 'view' | 'modeSwitch'> & {
     event: EventDetailResponseDto;
     scope: FeedEditScope;
     onDone: () => void;
@@ -70,7 +70,6 @@ export function FeedEditTop({
     onDone,
     cancelRef,
     mode = 'single',
-    modeSwitch,
     dateRow,
     cover,
     stories,
@@ -160,7 +159,7 @@ export function FeedEditTop({
             {node}
         </FeedEditBlock>
     );
-    // "+ Add section" above, between and after the host's blocks; none at the section limit.
+    // "+ Add section" after each of the host's blocks; none at the section limit.
     const { openAdd } = panels;
     const addRow = useCallback(
         (place: FeedAddPlace) => (
@@ -207,7 +206,6 @@ export function FeedEditTop({
         <FeedTopFrame
             view={view}
             mode={mode}
-            modeSwitch={modeSwitch}
             editRow={editRow}
             dateRow={dateRow}
             parts={parts}

@@ -56,6 +56,12 @@ vi.mock('next-intl', () => ({
     useLocale: () => 'en',
 }));
 vi.mock('@/hooks/useGiftAccount', () => ({ useGiftAccount: () => ({ isLoading: true, data: undefined }) }));
+const tabBar = vi.hoisted(() => ({ away: false }));
+vi.mock('@/hooks/useHideMobileTabBar', () => ({
+    useHideMobileTabBar: (active: boolean) => {
+        tabBar.away = active;
+    },
+}));
 vi.mock('@/hooks/useHideMobileTabBarOnScroll', () => ({ useHideMobileTabBarOnScroll: () => undefined }));
 vi.mock('@/hooks/useRsvpPromptVisible', () => ({ useRsvpPromptVisible: () => rsvpVisible.value }));
 vi.mock('@/components/feed/ComposerCard', () => ({ ComposerCard: () => null }));
@@ -265,6 +271,21 @@ describe('FeedPageContent layout', { timeout: 15_000 }, () => {
         expect(window.localStorage.getItem('storywall.feedMode.e-1')).toContain('"mode":"feed"');
     });
 
+    it('keeps the phone tab bar away on Invitation, and its room with it', async () => {
+        renderFeed(null, { description: 'Hello', flag: true, layout: savedLayout(dressCode), modules: SMD, startAt: '2099-06-01T15:00:00Z' });
+        const socialFeed = await screen.findByRole('button', { name: 'socialFeed' }, LAZY_LOOK);
+        expect(tabBar.away).toBe(true);
+        expect(document.querySelector('[data-tab-bar-away]')).toBeTruthy();
+        fireEvent.click(socialFeed);
+        expect(tabBar.away).toBe(false);
+        expect(document.querySelector('[data-tab-bar-away]')).toBeNull();
+    });
+
+    it('keeps the tab bar on the one page', () => {
+        renderFeed(null, { description: 'Hello', flag: true, layout: savedLayout(dressCode) });
+        expect(tabBar.away).toBe(false);
+    });
+
     it('shows the date row in Social Feed mode only', async () => {
         renderFeed(null, { flag: true, layout: savedLayout(dressCode), modules: SMD, startAt: '2020-06-01T15:00:00Z' });
         expect(await screen.findByTestId('date-row', {}, LAZY_LOOK)).toBeTruthy();
@@ -413,12 +434,12 @@ describe('FeedPageContent edit mode', { timeout: 15_000 }, () => {
         expect(await screen.findByRole('group', { name: 'sectionNames.feedRsvp' })).toBeTruthy();
     });
 
-    it('keeps the pill while editing, with Theme, Cancel and Save under it', async () => {
+    it('hides the pill while editing, with the edit row under the cover', async () => {
         renderFeed(null, { flag: true, layout: savedLayout(dressCode), isHost: true, modules: SMD, startAt: '2099-06-01T15:00:00Z' });
         fireEvent.click(await screen.findByRole('button', { name: 'edit' }, LAZY_LOOK));
         const cancel = await screen.findByRole('button', { name: 'cancel' }, LAZY_LOOK);
-        const pill = screen.getAllByRole('button', { name: 'invitation' })[0];
-        expect(pill.compareDocumentPosition(cancel) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+        expect(screen.queryByRole('button', { name: 'invitation' })).toBeNull();
+        expect(screen.queryByRole('button', { name: 'socialFeed' })).toBeNull();
         const cover = screen.getByRole('group', { name: 'sectionNames.feedCover' });
         expect(cover.contains(cancel)).toBe(false);
     });
@@ -431,17 +452,6 @@ describe('FeedPageContent edit mode', { timeout: 15_000 }, () => {
         fireEvent.click(await screen.findByRole('button', { name: 'edit' }));
         expect(screen.getByTestId('banner')).toBeTruthy();
         expect(await screen.findByRole('group', { name: 'sectionNames.feedCover' }, LAZY_LOOK)).toBeTruthy();
-    });
-
-    it('keeps edit mode and its changes when switching modes', async () => {
-        renderFeed(null, { flag: true, isHost: true, layout: savedLayout(), modules: SMD, startAt: '2099-06-01T15:00:00Z' });
-        fireEvent.click(await screen.findByRole('button', { name: 'edit' }, LAZY_LOOK));
-        const rsvp = await screen.findByRole('group', { name: 'sectionNames.feedRsvp' }, LAZY_LOOK);
-        fireEvent.click(within(rsvp).getByRole('button', { name: 'hide' }));
-        fireEvent.click(screen.getAllByRole('button', { name: 'socialFeed' })[0]);
-        expect(screen.queryByRole('group', { name: 'sectionNames.feedRsvp' })).toBeNull();
-        fireEvent.click(screen.getAllByRole('button', { name: 'invitation' })[0]);
-        expect(within(await screen.findByRole('group', { name: 'sectionNames.feedRsvp' })).getByRole('button', { name: 'show' })).toBeTruthy();
     });
 
     it('moves focus to Cancel in edit mode, and back to Edit after', async () => {
