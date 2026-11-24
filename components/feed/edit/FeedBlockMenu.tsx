@@ -60,7 +60,8 @@ export function FeedBlockMenu({ tools, hasPhoto, uploading, open, onOpenChange, 
     if (tools.length === 1) return <SingleTool tool={tools[0]} label={labels[tools[0]]} onRun={run} />;
 
     return (
-        <>
+        // One item in the tools row: what the open menu adds must not count in its gaps.
+        <div className="flex">
             <Menu.Root modal={false} open={open} onOpenChange={onOpenChange}>
                 {/* Chevron */}
                 <Menu.Trigger
@@ -96,7 +97,7 @@ export function FeedBlockMenu({ tools, hasPhoto, uploading, open, onOpenChange, 
             {tools.includes('photo') && (
                 <input ref={input} type="file" accept={PHOTO_ACCEPT} aria-label={labels.photo} tabIndex={-1} onChange={pick} className="hidden" />
             )}
-        </>
+        </div>
     );
 }
 
