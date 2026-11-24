@@ -7,6 +7,7 @@ import { within } from 'storybook/test';
 import { withAppContext } from '@/.storybook/appContext';
 import { storyPhotos, storyPost } from '@/.storybook/fixtures';
 import { STORY_THEME } from '@/.storybook/invitation';
+import { FeedBackdropLayer } from '@/components/event/FeedBackdropLayer';
 import { Header } from '@/components/feed/Header';
 import { FeedLookTop } from '@/components/feed/layout/FeedLookTop';
 import { PostCard } from '@/components/feed/PostCard';
@@ -14,7 +15,7 @@ import { RightContextPanel } from '@/components/layout/RightContextPanel';
 import type { FeedTopView } from '@/hooks/useFeedTop';
 import { eventThemeStyle } from '@/lib/eventTheme';
 import { defaultFeedLayout, feedFrame } from '@/lib/feedLayout';
-import { feedBackdropStyle, feedPageBackdrop } from '@/lib/feedPageBackdrop';
+import { feedBackdropClassName, feedBackdropStyle, type FeedPageBackdrop, feedPageBackdrop } from '@/lib/feedPageBackdrop';
 import { planFeedThemeSwitch } from '@/lib/feedThemes';
 import type { InvitationDocument } from '@/lib/invitation/document';
 import { INVITATION_LABELS } from '@/lib/invitation/labels';
@@ -22,6 +23,7 @@ import { buildRenderContext } from '@/lib/invitation/render';
 import { SAMPLE_SECTIONS } from '@/lib/invitation/samples';
 import type { InvitationSection } from '@/lib/invitation/sections';
 import type { ThemeDesign } from '@/lib/invitation/theme';
+import { cn } from '@/lib/utils';
 
 // Stand-ins for today's feed blocks; their own stories cover how they look.
 const Box = ({ label }: { label: string }) => <div className="mx-4 my-3 p-4 text-sm text-ink">{label}</div>;
@@ -44,16 +46,21 @@ const TWO_IMAGES: ThemeDesign = {
         content: { desktop: { mediaId: 'page-light' }, mode: 'repeat', stableRepeat: true },
     },
 };
-// A content picture that doesn't repeat (like Γάμος 001): it still runs down the whole page, at full width.
+// A tall content picture that doesn't repeat (like Γάμος 002): it fills the screen and stays still while the
+// page scrolls over it, so it never repeats into a seam.
 const COVER: ThemeDesign = {
     ...STORY_THEME,
     backgrounds: {
         ...STORY_THEME.backgrounds,
         top: { desktop: { mediaId: 'page-dark' }, mode: 'cover', stableRepeat: false },
-        content: { desktop: { mediaId: 'page-light' }, mode: 'cover', stableRepeat: false },
+        content: { desktop: { mediaId: 'page-tall' }, mode: 'cover', stableRepeat: false },
     },
 };
-const PAGE_IMAGES: Record<string, string> = { 'page-light': '/storybook-assets/light-photo.jpg', 'page-dark': '/storybook-assets/dark-photo.jpg' };
+const PAGE_IMAGES: Record<string, string> = {
+    'page-light': '/storybook-assets/light-photo.jpg',
+    'page-dark': '/storybook-assets/dark-photo.jpg',
+    'page-tall': '/landing/qr-wedding/guest-photo-reception-dancing.webp',
+};
 const media = (id: string) => PAGE_IMAGES[id];
 
 const autoDressCode = {
@@ -125,21 +132,34 @@ function FeedColumn({ theme, document = AUTO_LAYOUT, children }: PageProps) {
     );
 }
 
+// The page's backdrop as EventThemeScope draws it: a cover picture on its layer fixed to the screen, the page's
+// content after it.
+function BackdropScope({ backdrop, className, children }: { backdrop: FeedPageBackdrop | null; className: string; children: ReactNode }) {
+    const style = { ...eventThemeStyle(backdrop?.color, { cardColor: backdrop?.cardColor }), ...feedBackdropStyle(backdrop) } as CSSProperties;
+    return (
+        <div data-event-scope="" className={cn(feedBackdropClassName(backdrop), className)} style={style}>
+            {/* Fixed picture */}
+            {backdrop?.fixed && <FeedBackdropLayer />}
+            {/* Page */}
+            <div className="feed-backdrop-content">{children}</div>
+        </div>
+    );
+}
+
 // `whole` draws the page as the app does: the sticky header and, on desktop, the side panel, in a
 // scrolling page, so the header strip and the panel can be checked against the page behind them.
 function ThemedPage({ whole = false, ...props }: PageProps) {
     const backdrop = feedPageBackdrop(props.document ?? AUTO_LAYOUT, props.theme, media);
-    const style = { ...eventThemeStyle(backdrop?.color, { cardColor: backdrop?.cardColor }), ...feedBackdropStyle(backdrop) } as CSSProperties;
     if (!whole) {
         return (
-            <div className="feed-backdrop mx-auto min-h-screen max-w-2xl bg-event pb-8" style={style}>
+            <BackdropScope backdrop={backdrop} className="mx-auto min-h-screen max-w-2xl bg-event pb-8">
                 <FeedColumn {...props} />
-            </div>
+            </BackdropScope>
         );
     }
     return (
         <div data-testid="page" className="no-scrollbar h-screen overflow-y-auto">
-            <div data-event-scope="" className="feed-backdrop bg-event" style={style}>
+            <BackdropScope backdrop={backdrop} className="bg-event">
                 <div className="flex">
                     {/* Feed */}
                     <div className="min-w-0 flex-1">
@@ -151,18 +171,28 @@ function ThemedPage({ whole = false, ...props }: PageProps) {
                     {/* Right panel */}
                     <RightContextPanel />
                 </div>
-            </div>
+            </BackdropScope>
         </div>
     );
 }
 
-// Scrolls the page part way, so the header strip sits over the page's middle, and waits for it to line up.
-async function scrollPage({ canvasElement }: { canvasElement: HTMLElement }) {
-    const page = await within(canvasElement).findByTestId('page');
-    page.scrollTop = 420;
-    page.dispatchEvent(new Event('scroll'));
-    await new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)));
-}
+// Scrolls the page to `top` (the end when it's past it) and waits for the header strip to line up.
+const scrollPageTo =
+    (top: number) =>
+    async ({ canvasElement }: { canvasElement: HTMLElement }) => {
+        const page = await within(canvasElement).findByTestId('page');
+        page.scrollTop = Math.min(top, page.scrollHeight - page.clientHeight);
+        page.dispatchEvent(new Event('scroll'));
+        await new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)));
+    };
+
+// Part way, so the header strip sits over the page's middle.
+const scrollPage = scrollPageTo(420);
+
+// A feed much longer than the screen: text posts, so the page behind them shows.
+const LONG_FEED = Array.from({ length: 12 }, (_, index) => (
+    <PostCard key={index} post={storyPost({ id: `post-${index}`, type: 'TEXT', media: [], content: 'What a day!' })} />
+));
 
 const meta = {
     title: 'Feed/Layout/FeedThemedPage',
@@ -191,12 +221,22 @@ export const Texture: Story = { args: { theme: TEXTURE } };
 // Mobile width: the tile size drops to 390px.
 export const TextureMobile: Story = { args: { theme: TEXTURE }, globals: { viewport: { value: 'mobile' } } };
 
-// The whole page on a content picture that doesn't repeat, scrolled: the picture runs down the page at
-// full width, and the header strip and the side panel show the same picture with no edge.
+// The whole page on a content picture that doesn't repeat, scrolled: the picture fills the screen and stays still,
+// and the header strip and the side panel show the same picture with no edge.
 export const WholePageCover: Story = { args: { theme: COVER, document: PICKED_LAYOUT, whole: true }, play: scrollPage };
 
 // The same at mobile width (no side panel).
 export const WholePageCoverMobile: Story = { ...WholePageCover, globals: { viewport: { value: 'mobile' } } };
+
+// A long feed on that picture, scrolled to its end, far past one picture's height: the picture is still in the same
+// place, with no seam behind the blocks or the posts.
+export const LongFeedCover: Story = {
+    args: { theme: COVER, document: PICKED_LAYOUT, whole: true, children: LONG_FEED },
+    play: scrollPageTo(Number.MAX_SAFE_INTEGER),
+};
+
+// The same at mobile width.
+export const LongFeedCoverMobile: Story = { ...LongFeedCover, globals: { viewport: { value: 'mobile' } } };
 
 // The whole page on a repeating picture, scrolled.
 export const WholePageRepeating: Story = { args: { theme: LIGHT, whole: true }, play: scrollPage };

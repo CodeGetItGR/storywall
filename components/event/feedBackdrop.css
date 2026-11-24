@@ -33,3 +33,68 @@
         background-image: var(--feed-backdrop-desktop);
     }
 }
+
+/* A cover picture fixed to the screen (FIXED in lib/feedPageBackdrop.ts): one layer that stays still while the page
+   scrolls over it, so the picture never repeats. The layer is sticky at the top of the scrolling page, not
+   position: fixed (on desktop the page has a transform, which would make it scroll with the page) nor
+   background-attachment: fixed (iOS Safari ignores it). Its negative bottom margin keeps it out of the page's flow,
+   and the page's content is a positioned box after it, so it paints over it. These rules come after the ones above
+   so they win over them. */
+.feed-backdrop.feed-backdrop--fixed {
+    background-image: none;
+}
+
+.feed-backdrop-layer {
+    position: sticky;
+    top: 0;
+    height: calc(100dvh - var(--site-notice-h, 0px));
+    margin-bottom: calc(var(--site-notice-h, 0px) - 100dvh);
+    pointer-events: none;
+}
+
+.feed-backdrop--fixed > .feed-backdrop-content {
+    position: relative;
+}
+
+/* The sticky header shows the same picture through a box behind its content, placed where the strip sits on the
+   layer: hooks/useFeedBackdropStrip.ts sets --feed-layer-x / -y and the layer's size --feed-layer-w / -h. */
+.feed-backdrop-strip-fill {
+    display: none;
+}
+
+.feed-backdrop.feed-backdrop--fixed .feed-backdrop-strip {
+    background-image: none;
+}
+
+.feed-backdrop--fixed .feed-backdrop-strip-fill {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    display: block;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+.feed-backdrop--fixed .feed-backdrop-strip-fill::before {
+    position: absolute;
+    top: calc(0px - var(--feed-layer-y, 0px));
+    left: calc(0px - var(--feed-layer-x, 0px));
+    width: var(--feed-layer-w, 100vw);
+    height: var(--feed-layer-h, 100dvh);
+    content: '';
+}
+
+.feed-backdrop-layer,
+.feed-backdrop--fixed .feed-backdrop-strip-fill::before {
+    background-image: var(--feed-backdrop-mobile);
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+
+@media (min-width: 760px) {
+    .feed-backdrop-layer,
+    .feed-backdrop--fixed .feed-backdrop-strip-fill::before {
+        background-image: var(--feed-backdrop-desktop);
+    }
+}
