@@ -36,13 +36,13 @@ describe('InquirySheet', () => {
         expect(screen.getByText('Anna & Nikos')).toBeInTheDocument();
         expect(screen.getByText('Summer wedding')).toBeInTheDocument();
         expect(screen.getByRole('link', { name: /Call/ })).toHaveAttribute('href', 'tel:+306900000000');
-        expect(screen.getByRole('link', { name: /Email/ })).toHaveAttribute('href', 'mailto:maria%40example.com');
+        expect(screen.getByRole('link', { name: /Email/ })).toHaveAttribute('href', 'mailto:maria@example.com');
     });
 
     it('keeps a typed email from adding mail headers', () => {
         renderSheet({ ...ROW, email: 'maria@example.com?cc=boss@example.com&body=hi' });
         const href = screen.getByRole('link', { name: /Email/ }).getAttribute('href');
-        expect(href).toBe('mailto:maria%40example.com%3Fcc%3Dboss%40example.com%26body%3Dhi');
+        expect(href).toBe('mailto:maria@example.com%3Fcc%3Dboss@example.com%26body%3Dhi');
     });
 
     it('calls only the digits and plus of the phone', () => {
