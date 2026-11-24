@@ -5,9 +5,7 @@ import { FeedPostList } from '@/components/feed/FeedPostList';
 import type { PartnerBrandingDto, PostResponseDto } from '@/lib/api/types';
 
 vi.mock('@/components/feed/PostCard', () => ({
-    PostCard: ({ startsRun, endsRun }: { startsRun?: boolean; endsRun?: boolean }) => (
-        <article>{`post${startsRun ? ' start' : ''}${endsRun ? ' end' : ''}`}</article>
-    ),
+    PostCard: ({ isFirst }: { isFirst?: boolean }) => <article>{isFirst ? 'first post' : 'post'}</article>,
 }));
 vi.mock('@/components/feed/PlaylistDigestCard', () => ({ PlaylistDigestCard: () => <article>digest</article> }));
 vi.mock('@/components/feed/partner/PartnerFeedCard', () => ({ PartnerFeedCard: () => <article>partner</article> }));
@@ -24,15 +22,19 @@ const drawn = () => screen.getAllByRole('article').map((card) => card.textConten
 describe('FeedPostList', () => {
     afterEach(cleanup);
 
-    it('ends a run at each card that is not a post', () => {
+    it('marks only the first post', () => {
         render(list([post('a'), post('b'), post('c'), digest, post('d')], branding));
-        expect(drawn()).toEqual(['post start', 'post end', 'partner', 'post start end', 'digest', 'post start end']);
+        expect(drawn()).toEqual(['first post', 'post', 'partner', 'post', 'digest', 'post']);
     });
 
-    it('joins the last post to the ones that load after it', () => {
-        const { rerender } = render(list([post('a'), post('b')]));
-        expect(drawn()).toEqual(['post start', 'post end']);
-        rerender(list([post('a'), post('b'), post('c')]));
-        expect(drawn()).toEqual(['post start', 'post', 'post end']);
+    it('marks no post when another card comes first', () => {
+        render(list([digest, post('a')]));
+        expect(drawn()).toEqual(['digest', 'post']);
+    });
+
+    it('keeps the mark on the first post when more load', () => {
+        const { rerender } = render(list([post('a')]));
+        rerender(list([post('a'), post('b')]));
+        expect(drawn()).toEqual(['first post', 'post']);
     });
 });

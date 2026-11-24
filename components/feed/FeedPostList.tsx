@@ -15,18 +15,17 @@ interface FeedPostListProps {
 export function FeedPostList({ posts, partnerBranding, eventId }: FeedPostListProps) {
     const feedItems = useFeedItems(posts, partnerBranding);
 
-    return feedItems.map((item) =>
-        item.kind === 'post' ? (
-            <FeedPostRenderer
-                key={item.post.id}
-                post={item.post}
-                isLcpCandidate={item.index === 0}
-                startsRun={item.startsRun}
-                endsRun={item.endsRun}
-            />
-        ) : (
-            /* Partner card */
-            partnerBranding && <PartnerFeedCard key={item.key} branding={partnerBranding} eventId={eventId} />
-        ),
+    return (
+        // A plain block, so the space around two cards in a row counts once.
+        <div>
+            {feedItems.map((item) =>
+                item.kind === 'post' ? (
+                    <FeedPostRenderer key={item.post.id} post={item.post} isLcpCandidate={item.index === 0} isFirst={item.index === 0} />
+                ) : (
+                    /* Partner card */
+                    partnerBranding && <PartnerFeedCard key={item.key} branding={partnerBranding} eventId={eventId} />
+                ),
+            )}
+        </div>
     );
 }

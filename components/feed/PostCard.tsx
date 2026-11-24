@@ -36,12 +36,11 @@ interface PostCardProps {
     post: PostResponseDto;
     showCommentLink?: boolean;
     isLcpCandidate?: boolean;
-    // The first and last of the posts joined in a row. Only the feed sets these.
-    startsRun?: boolean;
-    endsRun?: boolean;
+    // The feed's first card, rounded on top on phones too.
+    isFirst?: boolean;
 }
 
-export function PostCard({ post, showCommentLink = true, isLcpCandidate = false, startsRun = false, endsRun = false }: PostCardProps) {
+export function PostCard({ post, showCommentLink = true, isLcpCandidate = false, isFirst = false }: PostCardProps) {
     const t = useTranslations('PostCard');
     const tRoles = useTranslations('MemberRoles');
     const [selectedMediaIndex, setSelectedMediaIndex] = useState<number | null>(null);
@@ -172,10 +171,11 @@ export function PostCard({ post, showCommentLink = true, isLcpCandidate = false,
                 'relative border-b border-event-card-line bg-event-card',
                 // The tint sits over the card colour, so it reads on every event theme.
                 isLabelled && 'bg-linear-to-b from-primary/12 to-primary/5',
-                // Rounded without clipping: the reaction menu and messages hang over the card's edges.
-                startsRun && 'rounded-t-xl',
-                endsRun && 'rounded-b-xl',
-                showHostPostBadge && 'pt-3 sm:pt-0 sm:pr-3',
+                // Phones: full width, joined to the next post. Desktop: a card of its own, rounded without clipping, since
+                // the reaction menu and messages hang over its edges.
+                'lg:my-4 lg:rounded-xl lg:border',
+                isFirst && 'rounded-t-xl',
+                showHostPostBadge && 'pt-3 sm:pt-0',
             )}
             ref={viewRef}
         >

@@ -25,7 +25,8 @@ const branding: PartnerBrandingDto = {
     placement: { firstAfter: 2, every: 25 },
 };
 
-// Posts in a row stay joined; only the ends of each run are rounded.
+// Phones: posts in a row stay joined and square, with only the feed's first card rounded on top. Desktop: every
+// post is a card of its own.
 const meta = {
     title: 'Feed/FeedPostList',
     component: FeedPostList,
@@ -34,7 +35,7 @@ const meta = {
         withAppContext,
         (Story, { parameters }) => (
             <div className="bg-event py-6" style={eventThemeStyle(parameters.page ?? '#dfe9e4', { cardColor: parameters.card ?? '#ffffff' })}>
-                <div className="mx-auto flex max-w-2xl flex-col">
+                <div className="mx-auto max-w-2xl">
                     <Story />
                 </div>
             </div>
@@ -46,17 +47,23 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const OneRun: Story = {};
+export const PostsOnly: Story = {};
 
 export const LonePost: Story = { args: { posts: [photo] } };
 
-// The announcement's tint and the comments' background follow the corners.
+// Announcements stay joined to the posts; the tint and the comments' background follow the corners.
 export const TintAndComments: Story = { args: { posts: [announcement, photo, commented] } };
 
-// A playlist digest and a partner card each end a run and start the next.
-export const BrokenByCards: Story = {
+// Space before and after a playlist digest and a partner card.
+export const WithOtherCards: Story = {
     args: { posts: [text('a'), text('b'), text('c'), digest, announcement, commented], partnerBranding: branding },
 };
 
+// No rounded post when the feed starts with another card.
+export const DigestFirst: Story = { args: { posts: [digest, text('a'), text('b')] } };
+
+// The whole vendor card, with the page around it.
+export const VendorPhotoCard: Story = { args: { posts: [text('a'), text('b')], partnerBranding: { ...branding, variant: 'FEATURE_CARD', placement: { firstAfter: 1, every: 25 } } } };
+
 // A wall theme: cards in the page's own colour.
-export const WallTheme: Story = { ...BrokenByCards, parameters: { page: '#f6e7dd', card: '#f6e7dd' } };
+export const WallTheme: Story = { ...WithOtherCards, parameters: { page: '#f6e7dd', card: '#f6e7dd' } };

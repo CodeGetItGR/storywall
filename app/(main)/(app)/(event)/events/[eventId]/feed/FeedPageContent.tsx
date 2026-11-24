@@ -151,7 +151,7 @@ export function FeedPageContent() {
                 <section id="posts">
                     {moduleFlags.posts && (
                         <div
-                            className={cn('flex flex-col px-0 pb-24 md:pb-10', {
+                            className={cn('flex flex-col px-0 pb-24 md:pb-16', {
                                 'mt-4':
                                     (!moduleFlags.stories || !top.drawsMiddle || pageMode === 'feed') &&
                                     !(shouldShowRSVP && top.frame.rsvp && pageMode !== 'feed'),
