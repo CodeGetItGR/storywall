@@ -21,6 +21,12 @@ describe('FeedEditBanner', () => {
         expect(container.querySelector('[data-banner-lock]')).toBeNull();
     });
 
+    it('lists what hosts can change', () => {
+        render(<FeedEditBanner state="included" href="/x" illustration={<span />} />);
+        const items = screen.getAllByRole('listitem').map((item) => item.textContent);
+        expect(items).toEqual(['features.themes', 'features.text', 'features.photos', 'features.order', 'features.membersOnly']);
+    });
+
     it('names its picture', () => {
         render(<FeedEditBanner state="included" href="/x" illustration={<span />} />);
         expect(screen.getByRole('img', { name: 'previewAlt' })).toBeTruthy();
