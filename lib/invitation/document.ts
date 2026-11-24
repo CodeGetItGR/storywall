@@ -32,6 +32,7 @@ export const invitationDocumentSchema = z
         const sectionIds = new Set<string>();
         const elementIds = new Set<string>();
         const singleTypes = new Set<string>();
+        const blockModules = new Set<string>();
         document.sections.forEach((section, index) => {
             if (sectionIds.has(section.id)) {
                 ctx.addIssue({ code: 'custom', path: ['sections', index, 'id'], message: 'Duplicate section id' });
@@ -42,6 +43,12 @@ export const invitationDocumentSchema = z
                     ctx.addIssue({ code: 'custom', path: ['sections', index], message: 'Section type used twice' });
                 }
                 singleTypes.add(section.type);
+            }
+            if (section.type === 'feedModule') {
+                if (blockModules.has(section.data.module)) {
+                    ctx.addIssue({ code: 'custom', path: ['sections', index], message: 'Module block used twice' });
+                }
+                blockModules.add(section.data.module);
             }
             for (const element of section.elements) {
                 if (elementIds.has(element.id)) {

@@ -125,7 +125,7 @@ describe('FeedEditBlock name', () => {
         renderBlock();
         expect(document.querySelector('[data-feed-block-tools]')).toHaveClass('inset-x-4', 'top-3');
         cleanup();
-        renderBlock({ section: feedModuleSection('playlist', () => 'dress') });
+        renderBlock({ section: feedModuleSection('playlist', () => 'dress'), onCard: true });
         expect(document.querySelector('[data-feed-block-tools]')).toHaveClass('inset-x-7', 'top-3');
     });
 

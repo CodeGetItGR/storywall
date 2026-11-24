@@ -28,6 +28,10 @@ vi.mock('@/providers/AuthProvider', async (importOriginal) => ({
     ...(await importOriginal<typeof import('@/providers/AuthProvider')>()),
     useAuth: () => ({ isAuthenticated: false }),
 }));
+vi.mock('@/providers/EventProvider', async (importOriginal) => ({
+    ...(await importOriginal<typeof import('@/providers/EventProvider')>()),
+    useIsHost: () => true,
+}));
 vi.mock('next/navigation', () => ({
     useRouter: () => ({ push: vi.fn() }),
     usePathname: () => '/events/e-1/feed',
