@@ -6727,7 +6727,14 @@
             "previewAlt": "Preview of your invitation",
             "startEditing": "Start editing",
             "title": "Want more customization?",
-            "unlock": "Unlock"
+            "unlock": "Unlock",
+            "features": {
+                "themes": "Pick a design",
+                "text": "Edit the text",
+                "photos": "Add your photos",
+                "order": "Move sections around",
+                "membersOnly": "Choose what only members see"
+            }
         },
         "edit": "Edit",
         "moduleOpen": "Open",
