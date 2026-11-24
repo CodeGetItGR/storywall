@@ -48,7 +48,7 @@ export type FeedTopEditing = { document: InvitationDocument; theme: ThemeDesign;
 
 // Everything the top of the feed draws, from the saved layout or the default one. While editing,
 // it draws the edit session: every block, hidden ones too, in the held theme. Without Save my date its sections
-// stay saved but don't draw, in edit mode too.
+// stay saved but don't draw, in edit mode too, and edit mode changes only the feed sections: the rest draws as on the feed.
 export function useFeedTop(event: EventDetailResponseDto, editing?: FeedTopEditing): FeedTopView {
     const enabled = useFeedEditorEnabled();
     const locale = useLocale();
@@ -79,7 +79,8 @@ export function useFeedTop(event: EventDetailResponseDto, editing?: FeedTopEditi
     );
 
     const frame = useMemo(() => {
-        if (isEditing) return feedEditFrame(document, { rsvpMoves });
+        const edited = isEditing ? feedEditFrame(document, { rsvpMoves }) : null;
+        if (edited && saveMyDate) return edited;
         const split = feedFrame(document, { ended, rsvpMoves });
         const draws = (section: InvitationSection) => {
             if (section.type === 'feedDescription') return Boolean(event.description);
@@ -89,8 +90,8 @@ export function useFeedTop(event: EventDetailResponseDto, editing?: FeedTopEditi
             if (key) return isModuleAvailable(event.modules, key);
             return !isEmptyForGuests(section, ctx);
         };
-        return { ...split, middle: split.middle.filter(draws) };
-    }, [isEditing, document, ended, rsvpMoves, event.description, event.modules, ctx]);
+        return { ...split, middle: split.middle.filter(draws), feed: edited?.feed ?? split.feed };
+    }, [isEditing, saveMyDate, document, ended, rsvpMoves, event.description, event.modules, ctx]);
 
     return {
         look,

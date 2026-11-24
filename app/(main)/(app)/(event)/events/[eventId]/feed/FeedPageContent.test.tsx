@@ -461,11 +461,40 @@ describe('FeedPageContent edit mode', { timeout: 15_000 }, () => {
         expect(screen.queryByRole('button', { name: 'edit' })).toBeNull();
     });
 
-    it('shows no Edit without Save my date', async () => {
-        renderFeed(null, { flag: true, layout: savedLayout(), isHost: true, modules: [] });
-        // The layout is seeded, so the pill would show at once.
-        await screen.findByTestId('banner', {}, LAZY_LOOK);
-        expect(screen.queryByRole('button', { name: 'edit' })).toBeNull();
+    it('edits only the feed sections without Save my date: no Theme, no tools on the fixed blocks', async () => {
+        api.put.mockResolvedValue({ revision: 2, updatedAt: '2026-11-22T10:00:00Z' });
+        rsvpVisible.value = true;
+        const prompt = { ...createFeedModeSection('feedPrompt', () => 'p'), data: { text: 'Show us' } } as InvitationSection;
+        renderFeed(null, { description: 'Hello', flag: true, isHost: true, layout: savedLayout(dressCode, prompt), modules: [] });
+        fireEvent.click(await screen.findByRole('button', { name: 'edit' }));
+        expect(document.activeElement).toBe(await screen.findByRole('button', { name: 'cancel' }, LAZY_LOOK));
+        expect(screen.queryByRole('button', { name: 'themes' })).toBeNull();
+
+        // The fixed blocks draw as on the feed and take no taps.
+        for (const id of ['banner', 'description', 'rsvp']) expect(screen.getByTestId(id).closest('[inert]')).toBeTruthy();
+        expect(screen.getAllByRole('group').map((group) => group.getAttribute('aria-label'))).toEqual(['sectionNames.feedPrompt']);
+
+        // One Add section row, for the feed sections.
+        fireEvent.click(screen.getByRole('button', { name: 'add' }));
+        expect(screen.queryByRole('button', { name: 'sectionNames.faq' })).toBeNull();
+        fireEvent.click(await screen.findByRole('button', { name: 'sectionNames.feedPinned' }));
+        expect(await screen.findByRole('group', { name: 'sectionNames.feedPinned', hidden: true })).toBeTruthy();
+
+        // Save my date's own sections, out of sight, are saved as they were.
+        fireEvent.click(screen.getByRole('button', { name: 'save', hidden: true }));
+        await waitFor(() => expect(api.put).toHaveBeenCalledOnce());
+        const sections = api.put.mock.calls[0][1].document.sections as InvitationSection[];
+        expect(sections).toContainEqual(dressCode);
+        expect(sections.map((section) => section.type).slice(-2)).toEqual(['feedPrompt', 'feedPinned']);
+    });
+
+    it('adds no stand-ins for empty fixed blocks without Save my date', async () => {
+        renderFeed(null, { flag: true, isHost: true, layout: savedLayout(), modules: [] });
+        fireEvent.click(await screen.findByRole('button', { name: 'edit' }));
+        await screen.findByRole('button', { name: 'cancel' }, LAZY_LOOK);
+        expect(screen.queryByText('sectionNames.feedDescription')).toBeNull();
+        expect(screen.queryByText('sectionNames.feedRsvp')).toBeNull();
+        expect(screen.queryByRole('group')).toBeNull();
     });
 
     it('lists every block while editing, and Cancel leaves at once with no changes', async () => {

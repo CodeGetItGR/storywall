@@ -10,6 +10,7 @@ import { storyEvent, storyHostMember, storyModules } from '@/.storybook/fixtures
 import { FeedEditTop } from '@/components/feed/edit/FeedEditTop';
 import { EventInfo } from '@/components/feed/EventInfo';
 import type { EventDetailResponseDto, FeedLayoutDto } from '@/lib/api/types';
+import type { FeedEditScope } from '@/lib/feedEditing';
 import { defaultFeedLayout, feedLayoutKeys } from '@/lib/feedLayout';
 import type { FeedPageMode } from '@/lib/feedMode';
 import { createFeedModeSection } from '@/lib/feedSections';
@@ -53,14 +54,15 @@ function Saved({ event, sections, children }: { event: EventDetailResponseDto; s
     return <FeedEditorFlagProvider enabled>{children}</FeedEditorFlagProvider>;
 }
 
-type EditArgs = { event: EventDetailResponseDto; sections: InvitationSection[]; mode: FeedPageMode };
+type EditArgs = { event: EventDetailResponseDto; sections: InvitationSection[]; mode: FeedPageMode; scope: FeedEditScope };
 
-function EditStory({ event, sections, mode }: EditArgs) {
+function EditStory({ event, sections, mode, scope }: EditArgs) {
     return (
         <Saved event={event} sections={sections}>
             <FeedEditTop
                 event={event}
                 mode={mode}
+                scope={scope}
                 onDone={fn()}
                 cover={<Box label="Cover + title" />}
                 dateRow={<EventInfo date={Date.UTC(2026, 6, 4)} place="Rhodes" className="mt-3 w-full px-4" />}
@@ -78,7 +80,7 @@ const withSaveMyDate = storyEvent({ modules: storyModules(['posts', 'stories', '
 const meta = {
     title: 'Feed/Edit/FeedEditTop',
     component: EditStory,
-    args: { event: withSaveMyDate, sections: [], mode: 'feed' },
+    args: { event: withSaveMyDate, sections: [], mode: 'feed', scope: 'all' },
     parameters: { layout: 'fullscreen', app: { event: withSaveMyDate, member: storyHostMember } },
     beforeEach({ msw }) {
         msw.use(http.get('*/api/invitation-*', () => HttpResponse.json([])));
@@ -99,6 +101,17 @@ type Story = StoryObj<typeof meta>;
 // Feed mode: its sections under the stories, each with its tools, then Add section.
 export const FeedMode: Story = {
     render: (args, { globals }) => <EditStory {...args} sections={sectionsWith(copyFor(globals).FeedSections.prompt.placeholder)} />,
+};
+
+const withoutSaveMyDate = storyEvent({ modules: storyModules(['posts', 'stories', 'rsvp']) });
+
+// Without Save my date, on the one page: no Theme, and tools on the feed sections only.
+export const WithoutSaveMyDate: Story = {
+    args: { event: withoutSaveMyDate, mode: 'single', scope: 'feedSections' },
+    parameters: { app: { event: withoutSaveMyDate, member: storyHostMember } },
+    render: (args, { globals }) => (
+        <EditStory {...args} sections={[sectionsWith(copyFor(globals).FeedSections.prompt.placeholder)[1], createFeedModeSection('feedPinned')]} />
+    ),
 };
 
 // Just added: nothing to show yet, so each one is drawn by its name.

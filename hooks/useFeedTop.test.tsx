@@ -58,10 +58,20 @@ describe('useFeedTop while editing', () => {
         const prompt = { ...createFeedModeSection('feedPrompt', () => 'p'), visible: false };
         const document = { ...editing, sections: [...editing.sections, feedModuleSection('playlist', () => 'module'), prompt] };
         const { result } = renderHook(() => useFeedTop(event, { document, theme, media }), { wrapper });
-        expect(result.current.frame.middle.map((section) => section.id)).toEqual(['feed-feedDescription']);
-        expect(result.current.frame.rsvp?.type).toBe('feedRsvp');
         expect(result.current.frame.feed.map((section) => section.id)).toEqual(['p']);
+        expect(result.current.sections.map((section) => section.type)).not.toContain('dressCode');
         expect(result.current.look).toBe(false);
+    });
+
+    it('draws everything but the feed sections as on the feed without Save my date: nothing else is edited there', () => {
+        const open = { ...event, description: 'Hello', schedule: { endAt: null } } as unknown as EventDetailResponseDto;
+        const frameOf = (shown: EventDetailResponseDto, document = base) =>
+            renderHook(() => useFeedTop(shown, { document, theme, media }), { wrapper }).result.current.frame;
+        expect(frameOf(open)).toMatchObject({ middle: [{ type: 'feedDescription' }], rsvp: { type: 'feedRsvp' } });
+        // Hidden, empty or after the event: not drawn.
+        expect(frameOf(open, editing).middle).toEqual([]);
+        expect(frameOf({ ...open, description: null }).middle).toEqual([]);
+        expect(frameOf({ ...event, description: 'Hello' })).toMatchObject({ middle: [], rsvp: null });
     });
 
     it('draws the held theme and its images, and the picked background colour', () => {

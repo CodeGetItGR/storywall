@@ -23,6 +23,10 @@ import type { SettingsPart } from '@/lib/settingsPreview';
 // orders, hides and deletes the rest, and Feed mode's sections among themselves.
 // Every edit is an Immer recipe for the old editor's store.
 
+// What edit mode may change. all: with Save my date. feedSections: without it, only Feed mode's sections; the fixed
+// blocks, the invitation's sections, themes and the background are out of reach.
+export type FeedEditScope = 'all' | 'feedSections';
+
 type DocumentDraft = Draft<InvitationDocument>;
 type Block = Pick<InvitationSection, 'id' | 'type' | 'locked'>;
 

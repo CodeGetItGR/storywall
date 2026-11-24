@@ -131,6 +131,7 @@ export function FeedPageContent() {
             {editMode.editing ? (
                 <LazyFeedEditTop
                     event={event}
+                    scope={editMode.scope}
                     onDone={finishEditing}
                     cancelRef={cancelPill}
                     fallback={feedTop}
