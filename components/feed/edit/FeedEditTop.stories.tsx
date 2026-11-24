@@ -7,6 +7,7 @@ import { fn, userEvent, within } from 'storybook/test';
 import { withAppContext } from '@/.storybook/appContext';
 import { copyFor } from '@/.storybook/copy';
 import { storyEvent, storyHostMember, storyModules, storyPhotos } from '@/.storybook/fixtures';
+import { waitForOpen } from '@/.storybook/waitForOpen';
 import { FeedEditTop } from '@/components/feed/edit/FeedEditTop';
 import { EventDescription } from '@/components/feed/EventDescription';
 import { EventInfo } from '@/components/feed/EventInfo';
@@ -17,6 +18,7 @@ import { defaultFeedLayout, feedLayoutKeys } from '@/lib/feedLayout';
 import type { FeedPageMode } from '@/lib/feedMode';
 import { feedModuleSection } from '@/lib/feedModuleBlocks';
 import { createFeedModeSection } from '@/lib/feedSections';
+import { createSection } from '@/lib/invitation/newSection';
 import { SAMPLE_SECTIONS } from '@/lib/invitation/samples';
 import type { InvitationSection } from '@/lib/invitation/sections';
 import { cn } from '@/lib/utils';
@@ -46,14 +48,14 @@ const sectionsWith = (promptText: string): InvitationSection[] => [
 ];
 
 // The saved layout, already in the cache when edit mode opens.
-function Saved({ event, sections, children }: { event: EventDetailResponseDto; sections: InvitationSection[]; children: ReactNode }) {
+function Saved({ event, sections, sectionsFirst, children }: Pick<EditArgs, 'event' | 'sections' | 'sectionsFirst'> & { children: ReactNode }) {
     const queryClient = useQueryClient();
     useState(() => {
         const base = defaultFeedLayout();
         const layout: FeedLayoutDto = {
             themeSlug: null,
             revision: 1,
-            document: { ...base, sections: [...base.sections, ...sections] },
+            document: { ...base, sections: sectionsFirst ? [base.sections[0], ...sections, ...base.sections.slice(1)] : [...base.sections, ...sections] },
             design: null,
             imageUrls: PHOTOS,
             updatedAt: '2026-06-01T10:00:00Z',
@@ -64,11 +66,18 @@ function Saved({ event, sections, children }: { event: EventDetailResponseDto; s
     return <FeedEditorFlagProvider enabled>{children}</FeedEditorFlagProvider>;
 }
 
-type EditArgs = { event: EventDetailResponseDto; sections: InvitationSection[]; mode: FeedPageMode; scope: FeedEditScope };
+type EditArgs = {
+    event: EventDetailResponseDto;
+    sections: InvitationSection[];
+    // The sections come right after the cover, above the feed's own blocks.
+    sectionsFirst?: boolean;
+    mode: FeedPageMode;
+    scope: FeedEditScope;
+};
 
-function EditStory({ event, sections, mode, scope }: EditArgs) {
+function EditStory({ event, sections, sectionsFirst, mode, scope }: EditArgs) {
     return (
-        <Saved event={event} sections={sections}>
+        <Saved event={event} sections={sections} sectionsFirst={sectionsFirst}>
             <FeedEditTop
                 event={event}
                 mode={mode}
@@ -127,6 +136,36 @@ export const InvitationMode: Story = {
         sections: [{ ...(SAMPLE_SECTIONS.dressCode as InvitationSection), id: 'dress' }, feedModuleSection('quiz_polls', () => 'quiz')],
     },
     parameters: { app: { event: withModules, member: storyHostMember } },
+};
+
+// A section with nothing in it yet is barely taller than its tools: they keep off Add section and the description's own.
+export const InvitationModeShortSection: Story = {
+    args: {
+        mode: 'invitation',
+        sections: [{ ...createSection('gallery', 'WEDDING', () => 'gallery'), data: { title: '', images: [], layout: 'grid', shape: 'roundedSquare' } } as InvitationSection],
+        sectionsFirst: true,
+    },
+};
+
+// The same, its dropdown open.
+export const InvitationModeShortSectionMenu: Story = {
+    ...InvitationModeShortSection,
+    play: async ({ canvasElement, globals }) => {
+        const { options } = copyFor(globals).InvitationEditor.sections;
+        await userEvent.click((await within(canvasElement).findAllByRole('button', { name: options }))[0]);
+        await waitForOpen('menu');
+    },
+};
+
+// A description starts below its eye and name.
+export const InvitationModeDescription: Story = {
+    args: {
+        mode: 'invitation',
+        event: storyEvent({
+            modules: withSaveMyDate.modules,
+            description: 'Join us for a summer wedding by the sea. Dinner starts at sunset, and the dancing goes on until the morning boat.',
+        }),
+    },
 };
 
 const withoutSaveMyDate = storyEvent({ modules: storyModules(['posts', 'stories', 'rsvp']) });
