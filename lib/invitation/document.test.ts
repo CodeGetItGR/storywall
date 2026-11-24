@@ -11,7 +11,7 @@ import {
 } from '@/lib/invitation/document';
 import { textStyleSchema } from '@/lib/invitation/primitives';
 import { SAMPLE_DOCUMENT, SAMPLE_SECTIONS, SAMPLE_THEME } from '@/lib/invitation/samples';
-import { FEED_SECTION_TYPES, resolveTextField, SECTION_TYPES, sectionSchema } from '@/lib/invitation/sections';
+import { FEED_SECTION_TYPES, type FeedModuleKey, resolveTextField, SECTION_TYPES, sectionSchema } from '@/lib/invitation/sections';
 import { themeDesignSchema } from '@/lib/invitation/theme';
 
 const clone = <T>(value: T): T => structuredClone(value);
@@ -164,6 +164,16 @@ describe('feedModule', () => {
         const bad = { ...feedModuleSection('playlist', () => 'm1'), data: { module: 'posts' } };
         const doc = { ...defaultFeedLayout(), sections: [...defaultFeedLayout().sections, bad] };
         expect(invitationDocumentSchema.safeParse(doc).success).toBe(false);
+    });
+
+    it('comes once per module: two modules are fine, the same one twice is not (KAN-271)', () => {
+        const withModules = (...modules: FeedModuleKey[]) => ({
+            ...defaultFeedLayout(),
+            sections: [...defaultFeedLayout().sections, ...modules.map((module, index) => feedModuleSection(module, () => `m${index}`))],
+        });
+        expect(invitationDocumentSchema.safeParse(withModules('quiz_polls', 'playlist')).error).toBeUndefined();
+        const twice = invitationDocumentSchema.safeParse(withModules('playlist', 'quiz_polls', 'playlist'));
+        expect(twice.error?.issues).toMatchObject([{ path: ['sections', 6], message: 'Module block used twice' }]);
     });
 });
 
