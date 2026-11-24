@@ -116,7 +116,7 @@ export function FeedEditTop({ event, onDone, cancelRef, mode, modeSwitch, dateRo
             key={section.id}
             section={section}
             name={blockName(section)}
-            controls={feedBlockControls(session.document.sections, section, hostOptions)}
+            controls={feedBlockControls(view.sections, section, hostOptions)}
             // A module block has nothing to set: its tool is set on its own page.
             hasSettings={!moduleOfBlock(section) && sheet.hasSettings(section)}
             actions={tools}
@@ -151,6 +151,7 @@ export function FeedEditTop({ event, onDone, cancelRef, mode, modeSwitch, dateRo
         // The feed's own blocks are set on the event, not typed here: their content takes no taps.
         block: (section, content) => wrap(section, base.block(section, <div inert>{content}</div>)),
         native: base.native,
+        feed: base.feed,
         // Save my date blocks read the text editor's drawing from inside InlineTextEditing, so their text is typed in place.
         invitation: (section) =>
             wrap(

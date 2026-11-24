@@ -180,7 +180,7 @@ describe('feed sections in the frame', () => {
         expect(feedFrame(layout, { ended: true }).feed.map((section) => section.id)).toEqual(['p']);
     });
 
-    it('drops the Save my date sections from what an event without the module shows', () => {
+    it('drops the Save my date sections, module blocks too, from what an event without the module shows', () => {
         const prompt = { ...SAMPLE_SECTIONS.feedPrompt, id: 'p' } as InvitationSection;
         const shown = withoutSaveMyDateSections(layoutWith({ ...faq, id: 'faq' }, feedModuleSection('playlist', () => 'module'), prompt));
         expect(shown.sections.map((section) => section.id)).toEqual([
@@ -188,7 +188,6 @@ describe('feed sections in the frame', () => {
             'feed-feedDetails',
             'feed-feedDescription',
             'feed-feedRsvp',
-            'module',
             'p',
         ]);
     });

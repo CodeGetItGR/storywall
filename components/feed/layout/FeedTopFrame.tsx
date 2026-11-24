@@ -24,6 +24,10 @@ export type FeedTopProps = {
     moduleBlock?: (section: InvitationSection) => ReactNode;
     // Edit mode's "+ Add section" rows (plan 7c): above the first host block, after each one; with none, one row (null).
     between?: (place: FeedAddPlace) => ReactNode;
+    // Draws one of Feed mode's sections (FeedModeSection), given by the page.
+    feedSection?: (section: InvitationSection) => ReactNode;
+    // Edit mode's Add section row after the feed sections.
+    afterFeed?: ReactNode;
 };
 
 // How the frame draws its pieces: plainly, or in the invitation look (FeedLookTop).
@@ -34,6 +38,8 @@ export type FeedTopParts = {
     native: (content: ReactNode) => ReactNode;
     // A Save my date block.
     invitation: (section: InvitationSection) => ReactNode;
+    // One of Feed mode's sections: the app's own look, on the page.
+    feed: (section: InvitationSection, content: ReactNode) => ReactNode;
 };
 
 // The plain feed: today's markup with nothing around it. Its layout holds only the feed's own blocks.
@@ -41,11 +47,12 @@ export const PLAIN_PARTS: FeedTopParts = {
     block: (section, content) => <Fragment key={section.id}>{content}</Fragment>,
     native: (content) => content,
     invitation: () => null,
+    feed: (section, content) => <Fragment key={section.id}>{content}</Fragment>,
 };
 
 // The top of the feed in its fixed frame. Invitation: cover, switch, the host's blocks (RSVP among them on Save my
-// date), RSVP last otherwise. Social Feed: cover, switch, the date row, stories (posts follow on the page). One page:
-// everything, nothing folded. Edit mode's row sits under the switch, or under the cover without one.
+// date), RSVP last otherwise. Social Feed: cover, switch, the date row, stories, feed sections (posts follow on the
+// page). One page: everything, nothing folded, the feed sections last. Edit mode's row sits under the switch, or under the cover without one.
 export function FeedTopFrame({
     view,
     mode = 'single',
@@ -58,6 +65,8 @@ export function FeedTopFrame({
     rsvp,
     moduleBlock,
     between,
+    feedSection,
+    afterFeed,
     parts,
 }: FeedTopProps & { parts: FeedTopParts }) {
     const { frame } = view;
@@ -79,6 +88,13 @@ export function FeedTopFrame({
         </Fragment>
     ));
 
+    const feed = (
+        <>
+            {feedSection && frame.feed.map((section) => parts.feed(section, feedSection(section)))}
+            {afterFeed}
+        </>
+    );
+
     return (
         <>
             {/* Cover */}
@@ -96,12 +112,18 @@ export function FeedTopFrame({
             {/* Stories */}
             {mode !== 'invitation' && stories && parts.native(stories)}
 
+            {/* Feed sections: under the stories in Feed mode */}
+            {mode === 'feed' && feed}
+
             {/* Invitation sections */}
             {invitation && middle}
             {invitation && between && !firstHost && between(null)}
 
             {/* RSVP */}
             {invitation && frame.rsvp && rsvp && parts.block(frame.rsvp, rsvp)}
+
+            {/* Feed sections: right above the posts on the one page */}
+            {mode === 'single' && feed}
         </>
     );
 }

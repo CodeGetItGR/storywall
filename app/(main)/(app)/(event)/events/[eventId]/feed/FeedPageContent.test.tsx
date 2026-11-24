@@ -7,6 +7,7 @@ import { eventKeys } from '@/hooks/useEvent';
 import type { EventDetailResponseDto, FeedLayoutDto } from '@/lib/api/types';
 import { defaultFeedLayout, feedLayoutKeys } from '@/lib/feedLayout';
 import { feedPageThemeFor, feedPageThemeSnapshot, publishFeedPageTheme } from '@/lib/feedPageTheme';
+import { createFeedModeSection } from '@/lib/feedSections';
 import type { InvitationDocument } from '@/lib/invitation/document';
 import { SAMPLE_SECTIONS, SAMPLE_THEME } from '@/lib/invitation/samples';
 import type { InvitationSection } from '@/lib/invitation/sections';
@@ -77,6 +78,15 @@ vi.mock('@/components/feed/StoriesRow', () => ({ StoriesRow: () => null }));
 vi.mock('@/components/pwa/InstallAppBanner', () => ({ InstallAppBanner: () => null }));
 vi.mock('@/components/story/StoryModal', () => ({ StoryModal: () => null }));
 vi.mock('@/components/vendors/VendorProfilePrompt', () => ({ VendorProfilePrompt: () => null }));
+vi.mock('@/components/feed/guestOffer/GuestOfferCard', () => ({ GuestOfferCard: () => null }));
+// The real viewer needs an IntersectionObserver, which jsdom doesn't have.
+vi.mock('@/components/feed/post/MediaViewer', () => ({ MediaViewer: () => <div role="dialog" /> }));
+vi.mock('@/components/feed/HeOrShePromptCard', () => ({ HeOrShePromptCard: () => <span>fixed card</span> }));
+vi.mock('@/components/feed/sections/FeedHeOrSheSection', () => ({ FeedHeOrSheSection: () => <span>section card</span> }));
+vi.mock('@/providers/composer/ComposerContext', async (importOriginal) => ({
+    ...(await importOriginal<typeof import('@/providers/composer/ComposerContext')>()),
+    useComposer: () => ({ openPostComposer: vi.fn(), canComposePost: true }),
+}));
 vi.mock('@/components/feed/quickActions/FeedQuickActions', () => ({ FeedQuickActions: () => null }));
 
 // jsdom has no matchMedia; the edit sheet asks whether the screen is desktop-wide.
@@ -133,11 +143,12 @@ type FeedOptions = {
     modules?: { moduleKey: string; isAvailable: boolean; isEnabled: boolean }[];
     stories?: boolean;
     startAt?: string | null;
+    posts?: boolean;
 };
 
 function renderFeed(
     illustrationUrl: string | null,
-    { description = null, endAt = null, layout, flag = false, isHost = false, modules = [], stories = false, startAt = null }: FeedOptions = {},
+    { description = null, endAt = null, layout, flag = false, isHost = false, modules = [], stories = false, startAt = null, posts = false }: FeedOptions = {},
 ) {
     // staleTime: the seeded layout counts as fresh, so nothing is fetched for real.
     const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false, staleTime: Infinity } } });
@@ -166,7 +177,7 @@ function renderFeed(
         isHost,
         loadMoreRef: { current: null },
         loadingMoreLabel: '',
-        moduleFlags: { rsvp: false, stories, posts: false, wishlist: false },
+        moduleFlags: { rsvp: false, stories, posts, wishlist: false },
         posts: [],
     } as unknown as Parameters<typeof FeedPageProvider>[0]['value'];
     const wrap = (children: ReactNode) => (
@@ -305,6 +316,67 @@ describe('FeedPageContent RSVP place', { timeout: 15_000 }, () => {
         renderFeed(null, { description: 'Hello', flag: true, layout: rsvpFirstLayout() });
         const description = await screen.findByTestId('description', {}, LAZY_LOOK);
         expect(follows(description, screen.getByTestId('rsvp'))).toBe(true);
+    });
+});
+
+describe('FeedPageContent feed sections', { timeout: 15_000 }, () => {
+    const prompt = { ...createFeedModeSection('feedPrompt', () => 'p'), data: { text: 'Show us' } } as InvitationSection;
+    const heOrShe = createFeedModeSection('feedHeOrShe', () => 'h');
+    const pinned = {
+        ...createFeedModeSection('feedPinned', () => 'pin'),
+        data: { photos: [{ id: 'one', image: { source: 'media', mediaId: 'm-1' } }] },
+    } as InvitationSection;
+    const withPhoto = { ...savedLayout(pinned), imageUrls: { 'm-1': 'https://media.test/one.jpg' } };
+
+    it('draws them on the one page, after RSVP and above the posts', () => {
+        rsvpVisible.value = true;
+        renderFeed(null, { flag: true, layout: savedLayout(prompt), posts: true });
+        const line = screen.getByText('Show us');
+        expect(follows(screen.getByTestId('rsvp'), line)).toBe(true);
+        expect(follows(line, document.querySelector('#posts') as HTMLElement)).toBe(true);
+    });
+
+    it('draws them in Social Feed mode only, under the stories, with Save my date', async () => {
+        renderFeed(null, { flag: true, layout: savedLayout(prompt), modules: SMD, startAt: '2020-06-01T15:00:00Z', stories: true });
+        const line = await screen.findByText('Show us', {}, LAZY_LOOK);
+        expect(follows(document.querySelector('#stories') as HTMLElement, line)).toBe(true);
+        fireEvent.click(screen.getByRole('button', { name: 'invitation' }));
+        expect(screen.queryByText('Show us')).toBeNull();
+    });
+
+    it("leaves Save my date's sections out of the one page", () => {
+        renderFeed(null, { flag: true, layout: savedLayout(dressCode, prompt) });
+        expect(screen.getByText('Show us')).toBeTruthy();
+        // Without them the layout needs no invitation look, so the feed draws plainly.
+        expect(document.querySelector('.smd-invitation')).toBeNull();
+    });
+
+    it('opens a pinned photo full screen from the page, and takes no tap in edit mode', async () => {
+        renderFeed(null, { flag: true, layout: withPhoto });
+        fireEvent.click(screen.getByRole('button', { name: 'photoAlt' }));
+        expect(await screen.findByRole('dialog')).toBeTruthy();
+        cleanup();
+
+        renderFeed(null, { flag: true, layout: withPhoto, isHost: true, modules: SMD, startAt: '2020-06-01T15:00:00Z' });
+        expect(await screen.findByRole('button', { name: 'photoAlt' }, LAZY_LOOK)).toBeTruthy();
+        fireEvent.click(screen.getByRole('button', { name: 'edit' }));
+        await screen.findByRole('group', { name: 'sectionNames.feedCover' }, LAZY_LOOK);
+        expect(screen.queryByRole('button', { name: 'photoAlt' })).toBeNull();
+    });
+
+    it('draws the fixed Boy or Girl card only while the layout has no Boy or Girl section, shown or hidden', () => {
+        renderFeed(null, { flag: true, layout: savedLayout(), posts: true });
+        expect(screen.getByText('fixed card')).toBeTruthy();
+        cleanup();
+
+        renderFeed(null, { flag: true, layout: savedLayout({ ...heOrShe, visible: false }), posts: true });
+        expect(screen.queryByText('fixed card')).toBeNull();
+        expect(screen.queryByText('section card')).toBeNull();
+        cleanup();
+
+        renderFeed(null, { flag: true, layout: savedLayout(heOrShe), posts: true });
+        expect(screen.getByText('section card')).toBeTruthy();
+        expect(screen.queryByText('fixed card')).toBeNull();
     });
 });
 

@@ -34,10 +34,12 @@ import { useFeedMode } from '@/hooks/useFeedMode';
 import { useFeedModeSwitchPin } from '@/hooks/useFeedModeSwitchPin';
 import { useFeedModuleBlockPart } from '@/hooks/useFeedModuleBlockPart';
 import { useFeedPageTheme } from '@/hooks/useFeedPageTheme';
+import { useFeedSectionPart } from '@/hooks/useFeedSectionPart';
 import { useFeedTop } from '@/hooks/useFeedTop';
 import { useHideMobileTabBarOnScroll } from '@/hooks/useHideMobileTabBarOnScroll';
 import { useRsvpPromptVisible } from '@/hooks/useRsvpPromptVisible';
-import { type FeedPageMode,feedPlaceHref } from '@/lib/feedMode';
+import { type FeedPageMode, feedPlaceHref } from '@/lib/feedMode';
+import { hasFeedSection } from '@/lib/feedSections';
 import { cn } from '@/lib/utils';
 
 import { useFeedPage } from './FeedPageContext';
@@ -51,6 +53,7 @@ export function FeedPageContent() {
     const shouldShowRSVP = useRsvpPromptVisible({ eventId, isHost, rsvpAvailable: moduleFlags.rsvp, rsvpId: currentMemberRsvpId });
     const top = useFeedTop(event);
     const moduleBlock = useFeedModuleBlockPart(event);
+    const feedSection = useFeedSectionPart(event, top.ctx.media);
     const coverEvent = useFeedPageTheme(event, top.pageBackground, top.backdrop);
     const editMode = useFeedEditMode(event, isHost, isRoleLoading);
     const { start: startEditing, finish: finishEditing, editPill, cancelPill } = useFeedEditFocus(editMode.start, editMode.finish);
@@ -100,7 +103,8 @@ export function FeedPageContent() {
         moduleBlock,
     };
 
-    const feedTop = <FeedTop view={top} mode={pageMode ?? 'single'} modeSwitch={modeSwitch} {...topParts} />;
+    // Feed mode's sections go to the member page only: edit mode draws its own, where a pinned photo takes no tap.
+    const feedTop = <FeedTop view={top} mode={pageMode ?? 'single'} modeSwitch={modeSwitch} {...topParts} feedSection={feedSection} />;
 
     function openStoryModal(nextStoryId: string) {
         setStoryId(nextStoryId);
@@ -155,8 +159,10 @@ export function FeedPageContent() {
                             <PublishQueueCards />
                             {/* Guest offer */}
                             <GuestOfferCard eventId={eventId} isHost={isHost} />
-                            {/* Boy or Girl? prompt */}
-                            <HeOrShePromptCard eventId={eventId} eventType={event.eventType} enabled={moduleFlags.he_or_she} />
+                            {/* Boy or Girl? prompt: the fixed card, unless the host placed the section */}
+                            {!hasFeedSection(top.sections, 'feedHeOrShe') && (
+                                <HeOrShePromptCard eventId={eventId} eventType={event.eventType} enabled={moduleFlags.he_or_she} />
+                            )}
                             <div className="flex flex-col">
                                 {posts.length === 0 ? (
                                     <FeedEmptyState />

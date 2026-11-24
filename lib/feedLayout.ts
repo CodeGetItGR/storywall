@@ -118,9 +118,10 @@ export function feedFrame(layout: InvitationDocument, { ended, rsvpMoves = false
     };
 }
 
-// What an event without Save my date shows of its layout: its Save my date sections stay saved, but don't draw.
+// What an event without Save my date shows of its layout: its Save my date sections, module blocks among them, stay
+// saved but don't draw.
 export function withoutSaveMyDateSections(layout: InvitationDocument): InvitationDocument {
-    return { ...layout, sections: layout.sections.filter((section) => !isSaveMyDateSectionType(section.type)) };
+    return { ...layout, sections: layout.sections.filter((section) => !isSaveMyDateSectionType(section.type) && section.type !== 'feedModule') };
 }
 
 // A feed block draws inside the invitation section shell (background, effect, transition) on a
