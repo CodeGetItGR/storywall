@@ -42,6 +42,12 @@ const FEED_MODE_SECTIONS = [
     { ...createFeedModeSection('feedSchedule', () => 'schedule'), visible: false },
 ] as InvitationSection[];
 
+// Two module blocks around the feed's own blocks.
+const MODULE_BLOCKS = [feedModuleSection('playlist', () => 'playlist'), feedModuleSection('quiz_polls', () => 'quiz')];
+const TWO_MODULES = [MODULE_BLOCKS[0], ...defaultFeedLayout().sections, MODULE_BLOCKS[1]];
+const moduleBlocks = (document: InvitationDocument) => document.sections.filter((section) => section.type === 'feedModule');
+const ids = (sections: readonly InvitationSection[]) => sections.map((section) => section.id);
+
 describe('theme choices', () => {
     it('marks a Save my date card apart from wall presets', () => {
         expect(readThemeChoice(invitationThemeChoice('rose-garden'))).toBe('rose-garden');
@@ -134,6 +140,12 @@ describe('planFeedThemeSwitch', () => {
         expect(byType(next, 'feedModule')).toEqual(playlist);
     });
 
+    it('keeps two module blocks, each with its own module, at their places', () => {
+        const next = planFeedThemeSwitch({ ...defaultFeedLayout(), sections: TWO_MODULES }, target([styled('top', '#111111')]), new Set());
+        expect(moduleBlocks(next)).toEqual(MODULE_BLOCKS);
+        expect(ids(next.sections)).toEqual(ids(TWO_MODULES));
+    });
+
     it('shows a module block an earlier switch hid, and leaves one the host hid', () => {
         const hidden = { ...feedModuleSection('playlist', () => 'playlist'), visible: false };
         const switchTo = (block: InvitationSection) =>
@@ -154,6 +166,12 @@ describe('planFeedWallSwitch', () => {
         const next = planFeedWallSwitch(current, wallThemeDesign(null), 'WEDDING', new Set());
         expect(next.sections.slice(-3)).toEqual(FEED_MODE_SECTIONS);
         expect(byType(next, 'feedModule')).toMatchObject({ id: 'playlist', visible: true, data: playlist.data });
+    });
+
+    it('keeps two module blocks, each with its own module, at their places', () => {
+        const next = planFeedWallSwitch(themeDocument(TWO_MODULES), wallThemeDesign(null), 'WEDDING', new Set());
+        expect(moduleBlocks(next)).toEqual(MODULE_BLOCKS);
+        expect(ids(next.sections)).toEqual(ids(TWO_MODULES));
     });
 
     it('puts the feed blocks back to the plain style on the wall theme', () => {
