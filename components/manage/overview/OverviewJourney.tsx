@@ -33,22 +33,20 @@ export function OverviewJourney({
     const day = useDayJourney(event, now);
     const after = useAfterJourney(event, planName, now);
     const planLine = useOverviewPlanLine(event.id, planName, eventUsage);
-    const scrollMemoryRef = useOverviewScrollMemory(event.id, phase.selected);
+    // A tapped link saves the scroll, so Back lands on the same spot.
+    useOverviewScrollMemory(event.id, phase.selected);
 
     return (
-        // A tapped link saves the scroll, so Back lands on the same spot.
-        <div ref={scrollMemoryRef}>
-            <OverviewJourneyView
-                labels={{ getReady: t('journey.getReady'), day: t('journey.phases.day'), afterEvent: t('journey.afterEvent') }}
-                steps={phase.steps}
-                selected={phase.selected}
-                onSelectPhase={phase.select}
-                before={{ ...before, printHref: journeyPrintHref(event) }}
-                day={day}
-                after={after}
-                planLine={planLine}
-                undated={!hasEventDate(event)}
-            />
-        </div>
+        <OverviewJourneyView
+            labels={{ getReady: t('journey.getReady'), day: t('journey.phases.day'), afterEvent: t('journey.afterEvent') }}
+            steps={phase.steps}
+            selected={phase.selected}
+            onSelectPhase={phase.select}
+            before={{ ...before, printHref: journeyPrintHref(event) }}
+            day={day}
+            after={after}
+            planLine={planLine}
+            undated={!hasEventDate(event)}
+        />
     );
 }
