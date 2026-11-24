@@ -343,7 +343,7 @@ export type SectionShell = {
     transition?: SectionTransitionArt;
 };
 
-const KEEPS_SAVED_HEIGHT: ReadonlySet<InvitationSection['type']> = new Set(['photo', 'photoFrame', 'footer']);
+export const KEEPS_SAVED_HEIGHT: ReadonlySet<InvitationSection['type']> = new Set(['photo', 'photoFrame', 'footer']);
 
 // The <section> around every section type (old sectionHtml).
 export function sectionShell(section: InvitationSection, index: number, ctx: RenderContext): SectionShell {

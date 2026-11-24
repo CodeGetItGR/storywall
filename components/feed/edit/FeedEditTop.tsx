@@ -89,12 +89,12 @@ export function FeedEditTop({
     const t = useTranslations('InvitationEditor');
     const feedOnly = scope === 'feedSections';
     const { blockName } = useFeedSectionName(event.eventType);
-    const moduleBlock = useFeedModuleBlockPart(event);
     const session = useFeedEditSession(event, onDone);
     // The saved layout's photos plus the ones the host uploads while editing.
     const uploads = useFeedUploadedMedia(session.media);
     const sheetUploads = useMemo(() => ({ uploadImage: feedImageUploader(event.id), remember: uploads.remember }), [event.id, uploads.remember]);
     const { previewing, toggle: togglePreview } = useFeedEditPreview();
+    const moduleBlock = useFeedModuleBlockPart(event, !previewing);
     const view = useFeedTop(event, { document: session.document, theme: session.theme, media: uploads.media, asGuest: previewing });
     useEditPageTheme(event.id, session.wallTheme, session.background, view.backdrop);
     const fonts = useInvitationFonts(true);
@@ -193,14 +193,14 @@ export function FeedEditTop({
             return feedOnly ? block : wrap(section, block);
         },
         native: base.native,
-        // Feed mode's sections draw their live content; a tap opens their settings, as on every block. It starts below
-        // the section's tools.
+        // Feed mode's sections draw their live content; a tap opens their settings, as on every block. It starts
+        // well below the section's tools.
         feed: (section, content) =>
             wrap(
                 section,
                 base.feed(
                     section,
-                    <div inert className="pt-12">
+                    <div inert className="pt-15">
                         {content}
                     </div>,
                 ),
@@ -218,8 +218,13 @@ export function FeedEditTop({
     };
 
     const guestFeedSection = useFeedSectionPart(event, uploads.media);
-    // The description starts 24 px down on the feed: 24 more puts it below its tools.
-    const editedDescription = description ? <div className="pt-6">{description}</div> : <FeedBlockPlaceholder name={t('sectionNames.feedDescription')} />;
+    // The description starts 24 px down on the feed and a placeholder 12: the rest is room for their tools (FEED_TOOLS_ROOM).
+    const placeholder = (name: string) => (
+        <div className="pt-15">
+            <FeedBlockPlaceholder name={name} />
+        </div>
+    );
+    const editedDescription = description ? <div className="pt-12">{description}</div> : placeholder(t('sectionNames.feedDescription'));
     const shownDescription = feedOnly ? description : editedDescription;
 
     const guestPieces: Partial<FeedTopProps> = { ...guest, description, feedSection: guestFeedSection, between: undefined, afterFeed: undefined };
@@ -234,7 +239,7 @@ export function FeedEditTop({
             cover={cover}
             stories={stories}
             description={shownDescription}
-            rsvp={rsvp ?? (feedOnly ? null : <FeedBlockPlaceholder name={t('sectionNames.feedRsvp')} />)}
+            rsvp={rsvp ?? (feedOnly ? null : placeholder(t('sectionNames.feedRsvp')))}
             moduleBlock={moduleBlock}
             between={actions.showAdd && !feedOnly ? addRow : undefined}
             feedSection={feedSection}

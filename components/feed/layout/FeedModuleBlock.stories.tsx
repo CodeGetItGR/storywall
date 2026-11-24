@@ -44,7 +44,7 @@ function EditModeBlock({ visible, ...args }: ComponentProps<typeof FeedModuleBlo
         <DndContext>
             <SortableContext items={['module']}>
                 <FeedEditBlock section={{ ...section, visible }} name="Playlist" controls={controls} hasSettings={false} actions={actions}>
-                    <FeedModuleBlock {...args} />
+                    <FeedModuleBlock {...args} underTools />
                 </FeedEditBlock>
             </SortableContext>
         </DndContext>

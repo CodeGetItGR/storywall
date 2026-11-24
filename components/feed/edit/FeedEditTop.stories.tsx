@@ -21,16 +21,10 @@ import { createFeedModeSection } from '@/lib/feedSections';
 import { createSection } from '@/lib/invitation/newSection';
 import { SAMPLE_SECTIONS } from '@/lib/invitation/samples';
 import type { InvitationSection } from '@/lib/invitation/sections';
-import { cn } from '@/lib/utils';
 import { FeedEditorFlagProvider } from '@/providers/FeedEditorFlagProvider';
 
 // Stand-ins for today's feed blocks; their own stories cover how they look.
-const Box = ({ label, className }: { label: string; className?: string }) => (
-    <div className={cn('mx-4 my-3 rounded-xl bg-surface-muted p-4 text-sm text-ink', className)}>{label}</div>
-);
-
-// Clear of the block's tools.
-const UNDER_TOOLS = 'py-12 text-center';
+const Box = ({ label }: { label: string }) => <div className="mx-4 my-3 rounded-xl bg-surface-muted p-4 text-sm text-ink">{label}</div>;
 
 const PHOTOS: Record<string, string> = {
     florals: '/images/post-florals.png',
@@ -88,7 +82,8 @@ function EditStory({ event, sections, sectionsFirst, mode, scope }: EditArgs) {
                 dateRow={<EventInfo date={Date.UTC(2026, 6, 4)} place="Rhodes" className="mt-3 w-full px-4" />}
                 stories={<Box label="Stories" />}
                 description={<EventDescription eventId={event.id} description={event.description ?? ''} keepShown />}
-                rsvp={<Box label="RSVP" className={mode === 'invitation' ? UNDER_TOOLS : undefined} />}
+                // In Invitation mode it has tools: none here, so it is drawn by its name.
+                rsvp={mode === 'invitation' ? null : <Box label="RSVP" />}
             />
         </Saved>
     );
@@ -154,6 +149,18 @@ export const InvitationModeShortSectionMenu: Story = {
         const { options } = copyFor(globals).InvitationEditor.sections;
         await userEvent.click((await within(canvasElement).findAllByRole('button', { name: options }))[0]);
         await waitForOpen('menu');
+    },
+};
+
+// Save my date sections start below their tools, a full-width photo too.
+export const InvitationModeSections: Story = {
+    args: {
+        mode: 'invitation',
+        sections: [
+            SAMPLE_SECTIONS.coupleNames,
+            { ...SAMPLE_SECTIONS.photo, data: { photo: { source: 'media', mediaId: 'florals' }, imageY: 50 } },
+            SAMPLE_SECTIONS.footer,
+        ] as InvitationSection[],
     },
 };
 

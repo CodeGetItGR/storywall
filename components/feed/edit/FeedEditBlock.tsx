@@ -52,7 +52,7 @@ export function FeedEditBlock({ section, name, controls, hasSettings, actions, a
                 isDragging && 'z-50 shadow-[0_10px_28px_rgba(0,0,0,0.35)]',
             )}
         >
-            {/* Block: the tools float over its top, on the page, so nothing moves when editing starts */}
+            {/* Block: the tools float over its top; its content makes room for them while editing (FEED_TOOLS_ROOM) */}
             <div className={cn('min-h-14', !section.visible && 'opacity-[0.48]')}>{children}</div>
 
             {/* Editing tools: the app's own look, not the theme's (FeedNative undoes the invitation's element styles) */}
