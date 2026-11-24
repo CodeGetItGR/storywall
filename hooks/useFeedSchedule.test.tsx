@@ -3,7 +3,7 @@ import { NextIntlClientProvider } from 'next-intl';
 import type { ReactNode } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { useFeedSchedule } from '@/hooks/useFeedSchedule';
+import { useFeedSchedule, useFeedScheduleDays } from '@/hooks/useFeedSchedule';
 import type { EventDetailResponseDto } from '@/lib/api/types';
 import en from '@/messages/en.json';
 
@@ -50,5 +50,28 @@ describe('useFeedSchedule', () => {
             vi.advanceTimersByTime(3_600_000);
         });
         expect(result.current).toBeNull();
+    });
+});
+
+describe('useFeedScheduleDays', () => {
+    const wrapperIn = (locale: 'en' | 'el') =>
+        function Wrapper({ children }: { children: ReactNode }) {
+            return <NextIntlClientProvider locale={locale}>{children}</NextIntlClientProvider>;
+        };
+
+    it('has no date heading on a one-day event, and keeps sessions that are over', () => {
+        vi.setSystemTime(new Date('2027-01-01T00:00:00Z'));
+        const { result } = renderHook(() => useFeedScheduleDays(event), { wrapper });
+        expect(result.current).toEqual([{ day: '2026-12-19', label: null, items: [{ ...church, state: 'done' }] }]);
+    });
+
+    it("heads each day with its date, in the event's time zone and the viewer's language", () => {
+        // Midnight in Athens, the evening before in UTC.
+        const night = { ...event.sessions?.[0], id: 'night', startAt: '2026-12-19T22:00:00Z', endAt: null };
+        const twoDays = { ...event, sessions: [...(event.sessions ?? []), night] } as EventDetailResponseDto;
+        const labels = (locale: 'en' | 'el') =>
+            renderHook(() => useFeedScheduleDays(twoDays), { wrapper: wrapperIn(locale) }).result.current.map((day) => day.label);
+        expect(labels('en')).toEqual(['Saturday, December 19', 'Sunday, December 20']);
+        expect(labels('el')).toEqual(['Σάββατο 19 Δεκεμβρίου', 'Κυριακή 20 Δεκεμβρίου']);
     });
 });

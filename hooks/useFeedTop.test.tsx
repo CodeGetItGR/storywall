@@ -2,7 +2,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderHook } from '@testing-library/react';
 import { produce } from 'immer';
 import type { ReactNode } from 'react';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { useFeedTop } from '@/hooks/useFeedTop';
 import type { EventDetailResponseDto, FeedLayoutDto } from '@/lib/api/types';
@@ -14,6 +14,8 @@ import type { InvitationSection } from '@/lib/invitation/sections';
 import { FeedEditorFlagProvider } from '@/providers/FeedEditorFlagProvider';
 
 vi.mock('next-intl', () => ({ useLocale: () => 'en' }));
+const viewer = vi.hoisted(() => ({ isHost: false }));
+vi.mock('@/providers/EventProvider', () => ({ useIsHost: () => viewer.isHost }));
 vi.mock('@/hooks/useAdminInvitationThemes', () => ({ useInvitationFonts: () => ({ data: [] }) }));
 
 // An event that has ended: the read-only feed keeps only the cover and details.
@@ -159,5 +161,53 @@ describe('useFeedTop on a Save my date theme', () => {
     it('follows the theme held in edit mode', () => {
         const { result } = renderHook(() => useFeedTop(event, { document: themed, theme: SAMPLE_THEME, media: (id) => `https://held.test/${id}` }), { wrapper });
         expect(result.current.backdrop?.image?.desktop).toBe('https://held.test/m-content');
+    });
+});
+
+describe('useFeedTop and a schedule with no sessions', () => {
+    afterEach(() => {
+        viewer.isHost = false;
+    });
+
+    const base = defaultFeedLayout();
+    const document = {
+        ...base,
+        sections: [base.sections[0], feedModuleSection('schedule', () => 'module'), createFeedModeSection('feedSchedule', () => 'today')],
+    };
+    const saved: FeedLayoutDto = { themeSlug: null, revision: 3, document, design: null, imageUrls: {}, updatedAt: '2026-11-22T10:00:00Z' };
+    const church = { id: 'church', title: 'Church', startAt: '2030-06-20T16:00:00Z', endAt: null, deletedAt: null };
+    const eventWith = (over: object = {}) =>
+        ({
+            ...event,
+            modules: ['save_my_date', 'schedule'].map((moduleKey) => ({ moduleKey, isAvailable: true })),
+            schedule: { startAt: '2030-06-20T16:00:00Z', timezone: 'Europe/Athens', endAt: null },
+            sessions: [],
+            ...over,
+        }) as unknown as EventDetailResponseDto;
+    const idsOf = (shown: EventDetailResponseDto, asGuest?: boolean) => {
+        const editing = asGuest === undefined ? undefined : { document, theme: wallThemeDesign(null), media: () => undefined, asGuest };
+        const { frame } = renderHook(() => useFeedTop(shown, editing), { wrapper: wrapperWith(saved) }).result.current;
+        return [...frame.middle, ...frame.feed].map((section) => section.id);
+    };
+
+    it('leaves both schedule blocks out for guests', () => {
+        expect(idsOf(eventWith())).toEqual([]);
+    });
+
+    it('keeps both for hosts, on the feed and in edit mode, but not in the guest preview', () => {
+        viewer.isHost = true;
+        expect(idsOf(eventWith())).toEqual(['module', 'today']);
+        expect(idsOf(eventWith(), false)).toEqual(['module', 'today']);
+        expect(idsOf(eventWith(), true)).toEqual([]);
+    });
+
+    it('keeps both for everyone once a session has a time', () => {
+        expect(idsOf(eventWith({ sessions: [church] }))).toEqual(['module', 'today']);
+        expect(idsOf(eventWith({ sessions: [{ ...church, startAt: null }] }))).toEqual([]);
+    });
+
+    it("leaves the host's card out after the event", () => {
+        viewer.isHost = true;
+        expect(idsOf(eventWith({ schedule: { startAt: '2020-01-01T00:00:00Z', timezone: 'Europe/Athens', endAt: '2020-01-02T00:00:00Z' } }))).toEqual([]);
     });
 });
