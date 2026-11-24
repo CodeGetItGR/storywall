@@ -6712,6 +6712,9 @@
         "prompt": {
             "question": "What should guests photograph?",
             "placeholder": "Show us your best dance move"
+        },
+        "pinned": {
+            "photoAlt": "Photo {number} of {count}"
         }
     },
     "FeedLayout": {
@@ -10683,7 +10686,8 @@
             "feedDescription": "Description",
             "feedRsvp": "RSVP",
             "feedSchedule": "Today's schedule",
-            "feedPrompt": "Photo prompt"
+            "feedPrompt": "Photo prompt",
+            "feedPinned": "Pinned photos"
         },
         "eventPhotos": {
             "title": "Event photos",

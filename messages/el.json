@@ -6841,6 +6841,9 @@
         "prompt": {
             "question": "Τι να φωτογραφίσουν οι καλεσμένοι;",
             "placeholder": "Δείξτε μας την καλύτερη χορευτική σας κίνηση"
+        },
+        "pinned": {
+            "photoAlt": "Φωτογραφία {number} από {count}"
         }
     },
     "FeedLayout": {
@@ -10721,7 +10724,8 @@
             "feedDescription": "Περιγραφή",
             "feedRsvp": "RSVP",
             "feedSchedule": "Το πρόγραμμα της ημέρας",
-            "feedPrompt": "Ιδέα για φωτογραφία"
+            "feedPrompt": "Ιδέα για φωτογραφία",
+            "feedPinned": "Καρφιτσωμένες φωτογραφίες"
         },
         "eventPhotos": {
             "title": "Φωτογραφίες εκδήλωσης",
