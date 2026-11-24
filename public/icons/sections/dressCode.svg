@@ -1,0 +1,15 @@
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">
+<g stroke-width="1.500">
+<path d="M12 11.5V9.75A1.75 1.75 0 1 1 13.75 8" stroke="url(#g-sections-dressCode)"/>
+<path d="M12 11.5l-9.5 7a1 1 0 0 0 .6 1.8h17.8a1 1 0 0 0 .6-1.8z" stroke="url(#g-sections-dressCode)"/>
+</g>
+<defs>
+<linearGradient id="g-sections-dressCode" x1="-0.30" y1="-0.30" x2="20.00" y2="20.00" gradientUnits="userSpaceOnUse">
+<stop offset="0.2" stop-color="#C777B1"/>
+<stop offset="0.43" stop-color="#E48279"/>
+<stop offset="0.54" stop-color="#F2885C"/>
+<stop offset="0.99" stop-color="#FEC463"/>
+</linearGradient>
+
+</defs>
+</svg>

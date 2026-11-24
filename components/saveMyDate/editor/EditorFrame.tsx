@@ -49,6 +49,8 @@ type EditorFrameProps = {
     joinUrl?: string;
     // The canvas's photo slots, which reach the canvas and the section settings alike. A theme has none.
     photoSlots?: PhotoUploadSlots | null;
+    // The draft's event type, which names the schedule (sectionNameKey). A theme has none.
+    eventType?: string | null;
     // Sheets and dialogs of its own, like the host's publishing and tour.
     children?: ReactNode;
 };
@@ -73,6 +75,7 @@ export function EditorFrame({
     fieldLinks = null,
     joinUrl,
     photoSlots = null,
+    eventType,
     children,
 }: EditorFrameProps) {
     const t = useTranslations('InvitationEditor');
@@ -120,11 +123,12 @@ export function EditorFrame({
                             uploadedFonts={uploadedFonts}
                             sections={editor.sections}
                             sectionSettings={sectionSettings.opener}
+                            eventType={eventType}
                         />
                     </CanvasHandles>
                 </InlineTextEditing>
                 {sectionSettings.isDocked && sectionSettings.panel ? (
-                    <SectionSettings panel={sectionSettings.panel} isDocked onClose={sectionSettings.close} />
+                    <SectionSettings panel={sectionSettings.panel} isDocked eventType={eventType} onClose={sectionSettings.close} />
                 ) : (
                     <EditorDockedPanel title={t('settings')}>{settings}</EditorDockedPanel>
                 )}
@@ -140,7 +144,7 @@ export function EditorFrame({
             </EditorPanelSheet>
 
             {/* Section settings on small screens */}
-            {!sectionSettings.isDocked && <SectionSettings panel={sectionSettings.panel} isDocked={false} onClose={sectionSettings.close} />}
+            {!sectionSettings.isDocked && <SectionSettings panel={sectionSettings.panel} isDocked={false} eventType={eventType} onClose={sectionSettings.close} />}
 
             {/* Preview */}
             <EditorPreview

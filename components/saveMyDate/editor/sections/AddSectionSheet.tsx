@@ -5,16 +5,19 @@ import { useCallback } from 'react';
 
 import { Modal } from '@/components/ui/modal';
 import type { NewSectionType } from '@/lib/invitation/newSection';
+import { sectionNameKey } from '@/lib/invitation/sectionNames';
 
 type AddSectionSheetProps = {
     open: boolean;
     types: NewSectionType[];
+    // The draft's event type, which names the schedule (sectionNameKey). A theme has none.
+    eventType?: string | null;
     onAdd: (type: NewSectionType) => void;
     onClose: () => void;
 };
 
 // The sections the host may add at the "+" they pressed.
-export function AddSectionSheet({ open, types, onAdd, onClose }: AddSectionSheetProps) {
+export function AddSectionSheet({ open, types, eventType, onAdd, onClose }: AddSectionSheetProps) {
     const t = useTranslations('InvitationEditor');
 
     return (
@@ -28,7 +31,7 @@ export function AddSectionSheet({ open, types, onAdd, onClose }: AddSectionSheet
                     <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                         {types.map((type) => (
                             <li key={type}>
-                                <AddSectionOption type={type} name={t(`sectionNames.${type}`)} onAdd={onAdd} />
+                                <AddSectionOption type={type} name={t(sectionNameKey(type, eventType))} onAdd={onAdd} />
                             </li>
                         ))}
                     </ul>
