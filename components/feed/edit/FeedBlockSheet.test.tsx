@@ -12,6 +12,8 @@ vi.mock('@/components/saveMyDate/invitation/invitationFonts', () => ({ INVITATIO
 
 afterEach(cleanup);
 
+const noMedia = () => undefined;
+
 function renderSheet(membersOnly: boolean | null, onMembersOnly = vi.fn(), props: Partial<ComponentProps<typeof FeedBlockSheet>> = {}) {
     render(
         <NextIntlClientProvider locale="en" messages={en}>
@@ -27,6 +29,12 @@ function renderSheet(membersOnly: boolean | null, onMembersOnly = vi.fn(), props
                 onMembersOnly={onMembersOnly}
                 promptText={null}
                 onPromptText={vi.fn()}
+                pinned={null}
+                pinnedUploading={false}
+                media={noMedia}
+                onAddPinned={vi.fn()}
+                onRemovePinned={vi.fn()}
+                onMovePinned={vi.fn()}
                 onOpenPart={vi.fn()}
                 onClose={vi.fn()}
                 {...props}
@@ -48,6 +56,19 @@ describe('FeedBlockSheet members only', () => {
     it("doesn't offer it on a block that can't be members only", () => {
         renderSheet(null);
         expect(screen.queryByRole('switch', { name: en.FeedLayout.membersOnly })).toBeNull();
+    });
+});
+
+describe('FeedBlockSheet pinned photos', () => {
+    it('lists the photos and takes new ones', () => {
+        renderSheet(null, vi.fn(), { pinned: [{ id: 'a', image: { source: 'media', mediaId: 'm-a' } }], media: () => 'https://r2/a.jpg' });
+        expect(screen.getByAltText('Photo 1 of 1')).toBeTruthy();
+        expect(screen.getByLabelText(en.FeedEditor.addPhoto)).toBeTruthy();
+    });
+
+    it('has no photos on other blocks', () => {
+        renderSheet(null);
+        expect(screen.queryByLabelText(en.FeedEditor.addPhoto)).toBeNull();
     });
 });
 

@@ -16,6 +16,8 @@ function renderIn(node: ReactNode) {
     );
 }
 
+const noMedia = () => undefined;
+
 const LABELS: Record<SettingsPart, string> = { cover: 'Cover photo', title: 'Title', date: 'Date', location: 'Location', description: 'Description' };
 
 function renderSheet(props: { isDesktop: boolean; onOpenPart?: (part: SettingsPart) => void; onClose?: () => void }) {
@@ -32,6 +34,12 @@ function renderSheet(props: { isDesktop: boolean; onOpenPart?: (part: SettingsPa
             onMembersOnly={vi.fn()}
             promptText={null}
             onPromptText={vi.fn()}
+            pinned={null}
+            pinnedUploading={false}
+            media={noMedia}
+            onAddPinned={vi.fn()}
+            onRemovePinned={vi.fn()}
+            onMovePinned={vi.fn()}
             onOpenPart={props.onOpenPart ?? vi.fn()}
             onClose={props.onClose ?? vi.fn()}
         />,

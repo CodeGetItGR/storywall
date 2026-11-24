@@ -2,10 +2,12 @@
 
 import { useCallback, useMemo, useState } from 'react';
 
+import { useFeedPinnedEdits } from '@/hooks/useFeedPinnedEdits';
 import type { SettingsEdit } from '@/hooks/useSectionSettings';
 import type { SettingsScope } from '@/hooks/useSectionSettingsPanel';
 import { feedBlockParts, feedSettingsGroups } from '@/lib/feedEditing';
 import { canBeMembersOnly, setFeedBlockMembersOnly } from '@/lib/feedMembersOnly';
+import { pinnedPhotos } from '@/lib/feedPinned';
 import { setFeedPromptText } from '@/lib/feedSections';
 import type { InvitationDocument } from '@/lib/invitation/document';
 import type { InvitationEditorStore } from '@/lib/invitation/editorStore';
@@ -35,10 +37,15 @@ export function useFeedBlockSheet(
     const [openId, setOpenId] = useState<string | null>(null);
     const groupsOf = useCallback((section: InvitationSection) => feedSettingsGroups(settingsGroups(section, 'host', theme)), [theme]);
     const partsOf = useCallback((section: InvitationSection) => feedBlockParts(section.type, eventParts), [eventParts]);
-    // A block with no style or event field still opens for its members-only setting, and the photo prompt for its line.
+    // A block with no style or event field still opens for its members-only setting, the photo prompt for its line and
+    // Pinned photos for its photos.
     const hasSettings = useCallback(
         (section: InvitationSection) =>
-            groupsOf(section).length > 0 || partsOf(section).length > 0 || canBeMembersOnly(section) || section.type === 'feedPrompt',
+            groupsOf(section).length > 0 ||
+            partsOf(section).length > 0 ||
+            canBeMembersOnly(section) ||
+            section.type === 'feedPrompt' ||
+            section.type === 'feedPinned',
         [groupsOf, partsOf],
     );
 
@@ -104,10 +111,32 @@ export function useFeedBlockSheet(
         [openId, store],
     );
 
+    // Pinned photos' list and its edits. Null on every other block.
+    const pinned = section?.type === 'feedPinned' ? pinnedPhotos(section) : null;
+    const pinnedEdits = useFeedPinnedEdits(store, openId, upload);
+
     const openFor = useCallback((id: string) => setOpenId(id), []);
     const close = useCallback(() => setOpenId(null), []);
 
-    return { section, groups, parts, scope, hasSettings, groupsOf, membersOnly, setMembersOnly, promptText, setPromptText, openFor, close };
+    return {
+        section,
+        groups,
+        parts,
+        scope,
+        hasSettings,
+        groupsOf,
+        membersOnly,
+        setMembersOnly,
+        promptText,
+        setPromptText,
+        pinned,
+        pinnedUploading: pinnedEdits.uploading,
+        addPinned: pinnedEdits.add,
+        removePinned: pinnedEdits.remove,
+        movePinned: pinnedEdits.move,
+        openFor,
+        close,
+    };
 }
 
 export type FeedBlockSheetState = ReturnType<typeof useFeedBlockSheet>;

@@ -5,10 +5,13 @@ import { useTranslations } from 'next-intl';
 import { useCallback } from 'react';
 
 import { FeedEditSheetFrame } from '@/components/feed/edit/FeedEditSheetFrame';
+import { FeedPinnedField } from '@/components/feed/edit/FeedPinnedField';
 import { FeedPromptField } from '@/components/feed/edit/FeedPromptField';
 import { SectionSettingsPanel } from '@/components/saveMyDate/editor/settings/SectionSettingsPanel';
 import { SettingsToggle } from '@/components/saveMyDate/editor/settings/SettingsControls';
 import type { SettingsScope } from '@/hooks/useSectionSettingsPanel';
+import type { PinnedPhoto } from '@/lib/feedPinned';
+import type { MediaResolver } from '@/lib/invitation/render';
 import type { SettingsGroup } from '@/lib/invitation/sectionSettings';
 import type { SettingsPart } from '@/lib/settingsPreview';
 
@@ -26,6 +29,13 @@ type FeedBlockSheetProps = {
     // The photo prompt's line; null on every other block.
     promptText: string | null;
     onPromptText: (text: string) => void;
+    // Pinned photos' photos; null on every other block.
+    pinned: readonly PinnedPhoto[] | null;
+    pinnedUploading: boolean;
+    media: MediaResolver;
+    onAddPinned: (file: File) => void;
+    onRemovePinned: (photoId: string) => void;
+    onMovePinned: (activeId: string, overId: string) => void;
     onOpenPart: (part: SettingsPart) => void;
     onClose: () => void;
 };
@@ -44,6 +54,12 @@ export function FeedBlockSheet({
     onMembersOnly,
     promptText,
     onPromptText,
+    pinned,
+    pinnedUploading,
+    media,
+    onAddPinned,
+    onRemovePinned,
+    onMovePinned,
     onOpenPart,
     onClose,
 }: FeedBlockSheetProps) {
@@ -52,6 +68,18 @@ export function FeedBlockSheet({
         <div className="flex flex-col gap-5">
             {/* Prompt */}
             {promptText !== null && <FeedPromptField text={promptText} onChange={onPromptText} />}
+
+            {/* Pinned photos */}
+            {pinned !== null && (
+                <FeedPinnedField
+                    photos={pinned}
+                    media={media}
+                    uploading={pinnedUploading}
+                    onAdd={onAddPinned}
+                    onRemove={onRemovePinned}
+                    onMove={onMovePinned}
+                />
+            )}
 
             {/* Event details */}
             {parts.length > 0 && (

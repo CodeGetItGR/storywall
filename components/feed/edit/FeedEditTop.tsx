@@ -256,6 +256,12 @@ export function FeedEditTop({ event, onDone, cancelRef, mode = 'single', modeSwi
                 onMembersOnly={sheet.setMembersOnly}
                 promptText={sheet.promptText}
                 onPromptText={sheet.setPromptText}
+                pinned={sheet.pinned}
+                pinnedUploading={sheet.pinnedUploading}
+                media={uploads.media}
+                onAddPinned={sheet.addPinned}
+                onRemovePinned={sheet.removePinned}
+                onMovePinned={sheet.movePinned}
                 onOpenPart={preview.openEditor}
                 onClose={sheet.close}
             />
