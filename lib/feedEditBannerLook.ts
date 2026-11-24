@@ -33,9 +33,9 @@ export type FeedEditBannerLook =
 
 const WALL_LOOK: FeedEditBannerLook = { kind: 'wall' };
 
-// What the banner's picture draws: the event's cover in the layout's own Save my date theme, or, on the wall
-// theme, in the stand-in theme (`fallback`, the catalogue's first for the event type). Without one (an event
-// type with no Save my date themes, or one that doesn't load or read), the cover in the event's wall look.
+// The look the banner's picture draws in: the layout's own Save my date theme, or, on the wall theme, the stand-in
+// theme (`fallback`, the catalogue's first for the event type). Without one (an event type with no Save my date
+// themes, or one that doesn't load or read), the event's wall look.
 export function feedEditBannerLook(layout: FeedLayoutView, fallback: InvitationThemePublicDto | undefined): FeedEditBannerLook {
     const withCover = (document: InvitationDocument, theme: ThemeDesign, media: MediaResolver, samples?: InvitationSection[]): FeedEditBannerLook => {
         const cover = document.sections.find((section) => section.type === 'feedCover');
@@ -52,18 +52,16 @@ export function feedEditBannerLook(layout: FeedLayoutView, fallback: InvitationT
     }
 }
 
-// The event theme scope the feed page draws around the cover (EventThemeScope with the feed's override).
+// The event theme scope the feed page draws around its blocks (EventThemeScope with the feed's override).
 export type FeedEditBannerScope = { style: CSSProperties | undefined; headingFont: EventThemeFontDto | null };
 
 export type FeedEditBannerPicture = { event: EventDetailResponseDto; scope: FeedEditBannerScope } & (
-    | { kind: 'wall'; blocks: FeedEditBannerBlock[] }
+    | { kind: 'wall'; block: FeedEditBannerBlock }
     | {
           kind: 'invitation';
           ctx: RenderContext;
-          cover: InvitationSection;
-          index: number;
-          // The two sections drawn under the cover in edit mode; the second is shown as members only.
-          blocks: FeedEditBannerBlock[];
+          // The one section the picture draws in edit mode.
+          block: FeedEditBannerBlock;
           lang: string;
           fontFaces: string;
       }
@@ -94,28 +92,20 @@ const BLOCK_TYPES: ReadonlySet<SectionType> = new Set([
     'contact',
 ]);
 
-// Two Save my date sections that guests would see, still: the layout's own, else the stand-in theme's samples, else
-// the feed's own blocks. The second is marked members only, so the picture shows its chip.
-export function feedEditBannerBlocks(sections: InvitationSection[], samples: InvitationSection[], ctx: RenderContext): FeedEditBannerBlock[] {
+// One Save my date section that guests would see, still: the layout's own, else the stand-in theme's samples, else
+// the feed's own Description block.
+export function feedEditBannerBlock(sections: InvitationSection[], samples: InvitationSection[], ctx: RenderContext): FeedEditBannerBlock {
     const pick = (from: InvitationSection[]) =>
         from.filter(
             (section) => section.visible && !isFeedSectionType(section.type) && BLOCK_TYPES.has(section.type) && !isEmptyForGuests(section, ctx),
         );
-    const own = pick(sections);
-    const chosen = own.length >= 2 ? own : pick(samples);
-    if (chosen.length < 2) return WALL_BLOCKS;
-    return chosen.slice(0, 2).map((section, position) => ({
-        section: { ...stillSection(section), membersOnly: position === 1 } as InvitationSection,
-        // Its place sets its background art; the cover's neighbours keep the theme's rhythm.
-        index: position + 1,
-    }));
+    const section = pick(sections)[0] ?? pick(samples)[0];
+    // Its place sets its background art: the first section after the cover.
+    return section ? { section: stillSection(section), index: 1 } : WALL_BLOCK;
 }
 
-// Without a Save my date theme: the feed's own Description and RSVP blocks, drawn by their names.
-const WALL_BLOCKS: FeedEditBannerBlock[] = [
-    { section: newFeedBlock('feedDescription'), index: 0 },
-    { section: { ...newFeedBlock('feedRsvp'), membersOnly: true }, index: 1 },
-];
+// Without a Save my date theme: the feed's own Description block, drawn by its name.
+const WALL_BLOCK: FeedEditBannerBlock = { section: newFeedBlock('feedDescription'), index: 0 };
 
 type FeedEditBannerPictureInput = {
     event: EventDetailResponseDto;
@@ -126,8 +116,7 @@ type FeedEditBannerPictureInput = {
 };
 
 // The look as the picture draws it, the way the feed does: the event's wall theme with the drawn document's
-// background colour around the cover (and passed to the cover), and in a Save my date theme the cover as a
-// still section with no text animation.
+// background colour around the section, and in a Save my date theme the section still, with no text animation.
 export function feedEditBannerPicture(
     look: FeedEditBannerLook,
     { event, layoutDocument, fonts, locale }: FeedEditBannerPictureInput,
@@ -138,12 +127,12 @@ export function feedEditBannerPicture(
     // The font rides with the rest of the theme: a theme whose colour is unusable is no theme at all.
     const scope = { style, headingFont: style ? (theme?.headingFont ?? null) : null };
     const themed = theme === event.theme ? event : { ...event, theme };
-    if (look.kind === 'wall') return { kind: 'wall', event: themed, scope, blocks: WALL_BLOCKS };
+    if (look.kind === 'wall') return { kind: 'wall', event: themed, scope, block: WALL_BLOCK };
 
     const ctx: RenderContext = {
         ...buildRenderContext(look.document, { ...look.theme, textAnimation: 'none' }, look.media),
         labels: INVITATION_LABELS[locale === 'en' ? 'en' : 'el'],
-        // The cover stands alone, so no neighbour's transition reaches it.
+        // The section stands alone, so no neighbour's transition reaches it.
         transitionAdjacent: new Set(),
     };
     return {
@@ -151,9 +140,7 @@ export function feedEditBannerPicture(
         event: themed,
         scope,
         ctx,
-        cover: stillSection(look.cover),
-        index: look.document.sections.indexOf(look.cover),
-        blocks: feedEditBannerBlocks(look.document.sections, look.samples ?? [], ctx),
+        block: feedEditBannerBlock(look.document.sections, look.samples ?? [], ctx),
         lang: locale,
         fontFaces: uploadedFontFaceCss(fonts, [look.document, look.theme]),
     };

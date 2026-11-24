@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import type { EventDetailResponseDto } from '@/lib/api/types';
-import { feedEditBannerBlocks, type FeedEditBannerLook, feedEditBannerLook, feedEditBannerPicture } from '@/lib/feedEditBannerLook';
+import { feedEditBannerBlock, type FeedEditBannerLook, feedEditBannerLook, feedEditBannerPicture } from '@/lib/feedEditBannerLook';
 import { defaultFeedLayout, readFeedLayout } from '@/lib/feedLayout';
 import type { InvitationDocument } from '@/lib/invitation/document';
 import { buildRenderContext } from '@/lib/invitation/render';
@@ -60,47 +60,42 @@ describe('feedEditBannerPicture', () => {
         expect(picture.event.theme?.backgroundColor).toBe('#FFF4D6');
     });
 
-    it('draws a Save my date cover still, in the theme scope', () => {
-        const cover = { ...plain.sections.find((section) => section.type === 'feedCover')! } as InvitationSection;
+    it('draws a Save my date section still, in the theme scope', () => {
+        const date = { ...SAMPLE_SECTIONS.date, id: 'date' } as InvitationSection;
         const moving = {
-            ...cover,
-            style: { ...cover.style, effect: { type: 'drift', speed: 'slow', intensity: 'subtle' }, transition: { assetId: 'a-1', edge: 'bottom' } },
+            ...date,
+            style: { ...date.style, effect: { type: 'drift', speed: 'slow', intensity: 'subtle' }, transition: { assetId: 'a-1', edge: 'bottom' } },
         } as InvitationSection;
-        const document = { ...SAMPLE_DOCUMENT, sections: [...SAMPLE_DOCUMENT.sections, moving] };
-        const look: FeedEditBannerLook = { kind: 'invitation', document, theme: SAMPLE_THEME, media: () => undefined, cover: moving };
+        const cover = { ...plain.sections.find((section) => section.type === 'feedCover')! } as InvitationSection;
+        const document = { ...SAMPLE_DOCUMENT, sections: [cover, moving] };
+        const look: FeedEditBannerLook = { kind: 'invitation', document, theme: SAMPLE_THEME, media: () => undefined, cover };
         const picture = feedEditBannerPicture(look, input);
         expect(picture.kind).toBe('invitation');
         if (picture.kind !== 'invitation') return;
-        expect(picture.cover.style.effect).toBeUndefined();
-        expect(picture.cover.style.transition).toBeUndefined();
-        expect(picture.index).toBe(document.sections.length - 1);
+        expect(picture.block.section.id).toBe('date');
+        expect(picture.block.section.style.effect).toBeUndefined();
+        expect(picture.block.section.style.transition).toBeUndefined();
         expect(picture.ctx.theme.textAnimation).toBe('none');
         expect(picture.ctx.transitionAdjacent.size).toBe(0);
         expect(picture.scope.style).toMatchObject({ '--event-bg': '#F4E1E6' });
     });
 });
 
-describe('feedEditBannerBlocks', () => {
+describe('feedEditBannerBlock', () => {
     const ctx = buildRenderContext(SAMPLE_DOCUMENT, SAMPLE_THEME, () => undefined);
     const top = { ...SAMPLE_SECTIONS.top, id: 'top' } as InvitationSection;
     const date = { ...SAMPLE_SECTIONS.date, id: 'date' } as InvitationSection;
-    const dress = { ...SAMPLE_SECTIONS.dressCode, id: 'dress' } as InvitationSection;
     const faq = { ...SAMPLE_SECTIONS.faq, id: 'faq' } as InvitationSection;
 
-    it("draws the layout's own first two text sections, the second as members only", () => {
-        const blocks = feedEditBannerBlocks([top, date, dress, faq], [], ctx);
-        expect(blocks.map((block) => block.section.id)).toEqual(['date', 'dress']);
-        expect(blocks.map((block) => block.section.membersOnly)).toEqual([false, true]);
+    it("draws the layout's own first text section", () => {
+        expect(feedEditBannerBlock([top, date, faq], [faq], ctx).section.id).toBe('date');
     });
 
-    it("draws the stand-in theme's sections while the layout has fewer than two", () => {
-        const blocks = feedEditBannerBlocks([date], [top, faq, dress], ctx);
-        expect(blocks.map((block) => block.section.id)).toEqual(['faq', 'dress']);
+    it("draws the stand-in theme's first text section while the layout has none", () => {
+        expect(feedEditBannerBlock([top], [top, faq, date], ctx).section.id).toBe('faq');
     });
 
-    it("draws the feed's own Description and RSVP without two Save my date sections", () => {
-        const blocks = feedEditBannerBlocks([top], [], ctx);
-        expect(blocks.map((block) => block.section.type)).toEqual(['feedDescription', 'feedRsvp']);
-        expect(blocks[1].section.membersOnly).toBe(true);
+    it("draws the feed's own Description without a Save my date section", () => {
+        expect(feedEditBannerBlock([top], [], ctx).section.type).toBe('feedDescription');
     });
 });
