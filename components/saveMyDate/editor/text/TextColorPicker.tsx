@@ -3,16 +3,17 @@
 import { Popover } from '@base-ui/react/popover';
 import { useTranslations } from 'next-intl';
 import { useCallback, useId } from 'react';
-import { HexColorPicker } from 'react-colorful';
 
 import { keepTextFocus } from '@/components/saveMyDate/editor/text/TextToolbarButton';
+import { ColorCircles } from '@/components/ui/color/ColorCircles';
 import { useTextColorPicker } from '@/hooks/useTextColorPicker';
 import type { ColorScope } from '@/lib/invitation/textEditing';
 import { cn } from '@/lib/utils';
 
 type TextColorPickerProps = {
     value: string;
-    swatches: string[];
+    // The theme's own.
+    themeColors: string[];
     onPick: (color: string, scope: ColorScope) => void;
     // Where a colour can go; with one, there is nothing to choose (the feed colours this text only).
     scopes?: ColorScope[];
@@ -23,15 +24,10 @@ type TextColorPickerProps = {
 const SCOPES: ColorScope[] = ['text', 'section', 'all'];
 const SCOPE_LABEL = { text: 'thisText', section: 'thisSection', all: 'everyText' } as const;
 
-// react-colorful sets its own size in a style tag it adds, so only an inline size wins.
-const PICKER_SIZE = { width: '100%', height: 180 };
-
-const ACTION_CLASS = 'h-10 flex-1 rounded-[10px] text-[13px] font-semibold focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none';
-
-// The text colour: the theme's colours, the ones in use and a full picker, for this text, its section or every text.
-export function TextColorPicker({ value, swatches, onPick, scopes = SCOPES, className }: TextColorPickerProps) {
+// The text colour, for this text, its section or every text.
+export function TextColorPicker({ value, themeColors, onPick, scopes = SCOPES, className }: TextColorPickerProps) {
     const t = useTranslations('InvitationEditor');
-    const picker = useTextColorPicker(value, onPick);
+    const picker = useTextColorPicker(onPick);
     const scopeLabelId = useId();
 
     return (
@@ -69,39 +65,8 @@ export function TextColorPicker({ value, swatches, onPick, scopes = SCOPES, clas
                             </div>
                         )}
 
-                        {picker.custom === null ? (
-                            <>
-                                {/* Swatches */}
-                                <div className="grid grid-cols-6 gap-2">
-                                    {swatches.map((color) => (
-                                        <Swatch key={color} color={color} selected={color.toLowerCase() === value.toLowerCase()} onPick={picker.pickSwatch} />
-                                    ))}
-                                </div>
-
-                                {/* Full picker */}
-                                <button
-                                    type="button"
-                                    onClick={picker.showMore}
-                                    className="h-10 rounded-[10px] bg-(--smd-editor-control) text-[13px] font-semibold hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
-                                >
-                                    {t('moreColors')}
-                                </button>
-                            </>
-                        ) : (
-                            <>
-                                {/* Full picker */}
-                                <HexColorPicker color={picker.custom} onChange={picker.setCustom} style={PICKER_SIZE} />
-                                <div className="flex items-center gap-2">
-                                    <span aria-hidden="true" className="h-8 w-8 shrink-0 rounded-full border-2 border-white/70" style={{ background: picker.custom }} />
-                                    <button type="button" onClick={picker.cancelCustom} className={cn(ACTION_CLASS, 'bg-(--smd-editor-control) hover:bg-white/10')}>
-                                        {t('cancel')}
-                                    </button>
-                                    <button type="button" onClick={picker.applyCustom} className={cn(ACTION_CLASS, 'bg-primary text-primary-foreground hover:bg-primary-dark')}>
-                                        {t('apply')}
-                                    </button>
-                                </div>
-                            </>
-                        )}
+                        {/* Colours: mixing one changes the text on Done only */}
+                        <ColorCircles value={value} themeColors={themeColors} label={t('textColor')} liveMix={false} onChange={picker.pick} onPicked={picker.close} />
                     </Popover.Popup>
                 </Popover.Positioner>
             </Popover.Portal>
@@ -124,23 +89,5 @@ function ScopeChoice({ scope, label, selected, onSelect }: ScopeChoiceProps) {
         >
             {label}
         </button>
-    );
-}
-
-type SwatchProps = { color: string; selected: boolean; onPick: (color: string) => void };
-
-function Swatch({ color, selected, onPick }: SwatchProps) {
-    const pick = useCallback(() => onPick(color), [color, onPick]);
-
-    return (
-        <button
-            type="button"
-            aria-label={color}
-            title={color}
-            aria-pressed={selected}
-            onClick={pick}
-            className="aspect-square w-full rounded-full border border-white/25 shadow-[inset_0_0_0_1px_rgba(0,0,0,0.12)] focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none aria-pressed:ring-2 aria-pressed:ring-white aria-pressed:ring-offset-2 aria-pressed:ring-offset-(--smd-editor-panel)"
-            style={{ background: color }}
-        />
     );
 }

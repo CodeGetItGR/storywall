@@ -8,6 +8,7 @@ import { StyleFields } from '@/components/saveMyDate/editor/settings/StyleFields
 import { useFooterSettings } from '@/hooks/useFooterSettings';
 import type { SectionOf, SettingsScope } from '@/hooks/useSectionSettingsPanel';
 import { FOOTER_STYLE_FIELDS } from '@/lib/invitation/sectionStyleFields';
+import { themeColors } from '@/lib/invitation/textEditing';
 
 // Admin: the footer's text style and link (old footer panel).
 export function FooterSettings({ scope }: { scope: SettingsScope<SectionOf<'footer'>> }) {
@@ -22,6 +23,7 @@ export function FooterSettings({ scope }: { scope: SettingsScope<SectionOf<'foot
                 values={footer.values}
                 isAdmin={scope.isAdmin}
                 fonts={scope.fonts}
+                themeColors={themeColors(scope.theme)}
                 onChange={footer.changeStyle}
             />
 

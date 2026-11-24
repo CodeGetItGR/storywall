@@ -32,10 +32,10 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-// The colour input of the docked settings panel on a wide screen, or of the open sheet on a phone.
-function textColorInput(label: string) {
-    const inputs = within(document.body).getAllByLabelText(label);
-    return inputs.find((input) => input.checkVisibility()) ?? inputs[0];
+// A colour circle of the docked settings panel on a wide screen, or of the open sheet on a phone.
+function textColorCircle(label: string) {
+    const groups = within(document.body).getAllByRole('group', { name: label });
+    return within(groups.find((group) => group.checkVisibility()) ?? groups[0]).getByRole('button', { name: '#AC9FC7' });
 }
 
 type EditorCopy = ReturnType<typeof copyFor>['InvitationEditor'];
@@ -45,7 +45,7 @@ const SLOW = { timeout: 10_000 };
 
 // Changes the text colour and waits until the editor has the change, so a click straight after has something to save.
 async function changeTextColor(canvasElement: HTMLElement, copy: EditorCopy) {
-    fireEvent.input(textColorInput(copy.textColor), { target: { value: '#7a1f3d' } });
+    fireEvent.click(textColorCircle(copy.textColor));
     await waitFor(() => expect(within(canvasElement).getByRole('button', { name: copy.undo })).toBeEnabled(), SLOW);
 }
 

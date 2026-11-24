@@ -5,7 +5,7 @@ import { copyFor } from '@/.storybook/copy';
 import { withEditorChrome } from '@/.storybook/editor';
 import { TextToolbar } from '@/components/saveMyDate/editor/text/TextToolbar';
 import type { TextToolbarState } from '@/hooks/useTextToolbar';
-import { BASE_TEXT_COLORS, INVITATION_FONTS, TEXT_SIZES, THEME_FONT } from '@/lib/invitation/textEditing';
+import { INVITATION_FONTS, TEXT_SIZES, THEME_FONT } from '@/lib/invitation/textEditing';
 
 const toolbar: TextToolbarState = {
     font: THEME_FONT,
@@ -14,7 +14,7 @@ const toolbar: TextToolbarState = {
     size: 20,
     sizes: [...TEXT_SIZES],
     color: '#2f2b2d',
-    swatches: [...BASE_TEXT_COLORS],
+    themeColors: ['#b8dfd3', '#efe7ec', '#2f2b2d'],
     bold: false,
     italic: true,
     align: 'center',

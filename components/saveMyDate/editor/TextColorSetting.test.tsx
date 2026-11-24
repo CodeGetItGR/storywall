@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { NextIntlClientProvider } from 'next-intl';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
@@ -9,25 +9,25 @@ function renderSetting(value: string) {
     const onChange = vi.fn();
     render(
         <NextIntlClientProvider locale="en" messages={en}>
-            <TextColorSetting value={value} onChange={onChange} />
+            <TextColorSetting value={value} themeColors={['#336699']} onChange={onChange} />
         </NextIntlClientProvider>,
     );
-    return { onChange, input: screen.getByLabelText('Text color') };
+    return { onChange, circles: within(screen.getByRole('group', { name: 'Text color' })) };
 }
 
 describe('TextColorSetting', () => {
     afterEach(cleanup);
 
     it('shows the colour and reports a new one', () => {
-        const { onChange, input } = renderSetting('#336699');
-        expect(input).toHaveValue('#336699');
+        const { onChange, circles } = renderSetting('#336699');
+        expect(circles.getByRole('button', { name: '#336699' })).toHaveAttribute('aria-pressed', 'true');
 
-        fireEvent.change(input, { target: { value: '#112233' } });
-        expect(onChange).toHaveBeenCalledWith('#112233');
+        fireEvent.click(circles.getByRole('button', { name: '#AC9FC7' }));
+        expect(onChange).toHaveBeenCalledWith('#AC9FC7');
     });
 
     it('shows a short colour in full', () => {
-        const { input } = renderSetting('#abc');
-        expect(input).toHaveValue('#aabbcc');
+        const { circles } = renderSetting('#abc');
+        expect(circles.getByRole('button', { name: '#AABBCC' })).toHaveAttribute('aria-pressed', 'true');
     });
 });

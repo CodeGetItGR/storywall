@@ -17,7 +17,7 @@ function PanelSheet({ panel, onClose }: SheetArgs) {
     return (
         <EditorPanelSheet open title={panel === 'assets' ? t('themeAssets') : t('settings')} onClose={onClose}>
             {panel === 'assets' && <ThemeAssetsPanel />}
-            {panel === 'settings' && <TextColorSetting value="#4f4a3f" onChange={fn()} />}
+            {panel === 'settings' && <TextColorSetting value="#4f4a3f" themeColors={[]} onChange={fn()} />}
             {panel === 'controls' && <SectionControls />}
         </EditorPanelSheet>
     );
