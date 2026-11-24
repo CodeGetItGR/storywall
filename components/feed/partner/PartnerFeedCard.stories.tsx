@@ -1,6 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 
-import { PartnerCardVariant, PartnerFeedCard } from '@/components/feed/partner/PartnerFeedCard';
+import { withAppContext } from '@/.storybook/appContext';
+import { PartnerCardVariant } from '@/components/feed/partner/PartnerCardVariant';
+import { PartnerFeedCard } from '@/components/feed/partner/PartnerFeedCard';
 import { usePartnerCardLabels } from '@/hooks/usePartnerBrandingCard';
 import type { PartnerBrandingDto } from '@/lib/api/types';
 
@@ -21,8 +23,10 @@ const branding: PartnerBrandingDto = {
 const meta = {
     title: 'Feed/Partner/PartnerFeedCard',
     component: PartnerFeedCard,
-    args: { branding },
+    args: { branding, eventId: 'evt-demo' },
+    // The card's "Ask about my date" sheet reads the signed-in guest for their email.
     decorators: [
+        withAppContext,
         (Story) => (
             <div className="mx-auto max-w-2xl">
                 <Story />
@@ -35,6 +39,14 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const FeatureCard: Story = {};
+
+export const FeatureCardAsk: Story = {
+    args: { branding: { ...branding, inquiry: { canAsk: true, sentAt: null } } },
+};
+
+export const FeatureCardAlreadySent: Story = {
+    args: { branding: { ...branding, inquiry: { canAsk: false, sentAt: '2026-11-23T10:00:00Z' } } },
+};
 
 export const CompactRow: Story = {
     args: { branding: { ...branding, variant: 'COMPACT_ROW' } },

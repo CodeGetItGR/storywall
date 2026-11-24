@@ -1,8 +1,9 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 
+import { AskDatesButton } from '@/components/vendors/inquiries/AskDatesButton';
 import { VendorCardAction } from '@/components/vendors/list/VendorCardAction';
 import { VendorBanner } from '@/components/vendors/VendorBanner';
 import { VendorLogo } from '@/components/vendors/VendorLogo';
@@ -10,12 +11,22 @@ import type { VendorRowDto } from '@/lib/api/types';
 import { serviceTagsForType, vendorCardActions } from '@/lib/vendors';
 
 // A vendor as a card: their banner (or a soft backdrop) on top, the logo overlapping it, then who they are, what
-// they offer and how to reach them. The card itself is not a link: only the buttons, which say where they go.
-export function VendorListRow({ vendor, onOpenAction }: { vendor: VendorRowDto; onOpenAction: (vendor: VendorRowDto) => void }) {
+// they offer and how to reach them. The card itself is not a link: only the buttons are, and a partner's card also
+// lets guests ask about a date.
+export function VendorListRow({
+    vendor,
+    onOpenAction,
+    onAskAction,
+}: {
+    vendor: VendorRowDto;
+    onOpenAction: (vendor: VendorRowDto) => void;
+    onAskAction: (vendor: VendorRowDto) => void;
+}) {
     const t = useTranslations('Vendors');
     const name = vendor.businessName ?? '';
     const tags = useMemo(() => serviceTagsForType(vendor.serviceTags, vendor.vendorType), [vendor.serviceTags, vendor.vendorType]);
     const actions = useMemo(() => vendorCardActions(vendor), [vendor]);
+    const ask = useCallback(() => onAskAction(vendor), [onAskAction, vendor]);
 
     return (
         <li className="flex flex-col overflow-hidden rounded-[1.75rem] bg-card shadow-xs ring-1 ring-ink/5">
@@ -51,12 +62,13 @@ export function VendorListRow({ vendor, onOpenAction }: { vendor: VendorRowDto; 
                     </ul>
                 )}
 
-                {/* Links */}
-                {actions.length > 0 && (
+                {/* Links and ask */}
+                {(actions.length > 0 || vendor.inquiry) && (
                     <div className="mt-auto flex flex-wrap gap-2 pt-4">
                         {actions.map((action) => (
                             <VendorCardAction key={action.kind} action={action} vendor={vendor} onOpenAction={onOpenAction} />
                         ))}
+                        {vendor.inquiry && <AskDatesButton state={vendor.inquiry} onAskAction={ask} />}
                     </div>
                 )}
             </div>

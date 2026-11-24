@@ -1,51 +1,84 @@
 import { ArrowUpRight } from 'lucide-react';
+import type { ReactNode } from 'react';
 
 import { ProtectedImage } from '@/components/common/ProtectedImage';
 import { PartnerCardLabel } from '@/components/feed/partner/PartnerCardLabel';
 import { PartnerCardLink } from '@/components/feed/partner/PartnerCardLink';
 import { PartnerLogo } from '@/components/feed/partner/PartnerLogo';
 import type { PartnerBrandingCardContent } from '@/hooks/usePartnerBrandingCard';
+import { cn } from '@/lib/utils';
 
 // The feed's width: the full screen on phones, the feed column on desktop.
 const FEED_COVER_SIZES = '(min-width: 1024px) 672px, 100vw';
 
 // Variant FEATURE_CARD: cover photo, tagline and a button. coverSizes is the cover's rendered width when the card
-// sits somewhere narrower than the feed (a preview).
-export function PartnerFeatureCard({ content, coverSizes = FEED_COVER_SIZES }: { content: PartnerBrandingCardContent; coverSizes?: string }) {
+// sits somewhere narrower than the feed (a preview). action sits next to the visit button, outside the card's link:
+// the feed puts "Ask about my date" there; previews leave it out.
+export function PartnerFeatureCard({
+    content,
+    coverSizes = FEED_COVER_SIZES,
+    action,
+}: {
+    content: PartnerBrandingCardContent;
+    coverSizes?: string;
+    action?: ReactNode;
+}) {
     return (
         <article className="border-b border-event-card-line bg-event-card px-2 py-4">
-            <PartnerCardLink
-                href={content.href}
-                newTabLabel={content.newTabLabel}
-                className="group block overflow-hidden rounded-xl bg-card ring-1 ring-border"
-            >
-                {/* Cover */}
-                <div className="relative aspect-[16/9] w-full bg-surface-muted">
-                    {content.coverUrl && (
-                        <ProtectedImage src={content.coverUrl} alt={content.name} fill sizes={coverSizes} className="object-cover" />
-                    )}
-                </div>
-
-                {/* Partner */}
-                <div className="flex items-center gap-3 px-4 pt-3">
-                    <PartnerLogo src={content.logoUrl} alt={content.name} size={40} />
-                    <div className="min-w-0">
-                        <PartnerCardLabel partnerLabel={content.partnerLabel} roleLabel={content.roleLabel} />
-                        <p className="truncate text-sm font-bold text-ink">{content.name}</p>
+            <div className="overflow-hidden rounded-xl bg-card ring-1 ring-border">
+                <PartnerCardLink href={content.href} newTabLabel={content.newTabLabel} className="group block">
+                    {/* Cover */}
+                    <div className="relative aspect-[16/9] w-full bg-surface-muted">
+                        {content.coverUrl && (
+                            <ProtectedImage src={content.coverUrl} alt={content.name} fill sizes={coverSizes} className="object-cover" />
+                        )}
                     </div>
-                </div>
 
-                {/* Tagline */}
-                <p className="px-4 pt-2 text-sm leading-relaxed text-ink">{content.tagline}</p>
+                    {/* Partner */}
+                    <div className="flex items-center gap-3 px-4 pt-3">
+                        <PartnerLogo src={content.logoUrl} alt={content.name} size={40} />
+                        <div className="min-w-0">
+                            <PartnerCardLabel partnerLabel={content.partnerLabel} roleLabel={content.roleLabel} />
+                            <p className="truncate text-sm font-bold text-ink">{content.name}</p>
+                        </div>
+                    </div>
 
-                {/* Action */}
-                <div className="px-4 pt-3 pb-4">
-                    <span className="inline-flex min-h-10 items-center gap-1.5 rounded-full bg-ink px-4 text-sm font-semibold text-white transition-opacity group-hover:opacity-90">
-                        {content.visitLabel}
-                        <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
-                    </span>
-                </div>
-            </PartnerCardLink>
+                    {/* Tagline */}
+                    <p className="px-4 pt-2 text-sm leading-relaxed text-ink">{content.tagline}</p>
+
+                    {/* Visit */}
+                    {!action && (
+                        <div className="px-4 pt-3 pb-4">
+                            <VisitButton label={content.visitLabel} />
+                        </div>
+                    )}
+                </PartnerCardLink>
+
+                {/* Actions: visit and ask on one row, wrapping only when the screen is too narrow for both */}
+                {action && (
+                    <div className="flex flex-wrap items-center gap-2 px-4 pt-3 pb-4">
+                        <PartnerCardLink href={content.href} newTabLabel={content.newTabLabel} className="group inline-flex">
+                            <VisitButton label={content.visitLabel} className="px-3" />
+                        </PartnerCardLink>
+                        {action}
+                    </div>
+                )}
+            </div>
         </article>
+    );
+}
+
+// className tightens the padding when it shares a row with the ask button.
+function VisitButton({ label, className = 'px-4' }: { label: string; className?: string }) {
+    return (
+        <span
+            className={cn(
+                'inline-flex min-h-10 items-center gap-1.5 rounded-full bg-ink text-sm font-semibold whitespace-nowrap text-white transition-opacity group-hover:opacity-90',
+                className,
+            )}
+        >
+            {label}
+            <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
+        </span>
     );
 }

@@ -1,6 +1,6 @@
 import { getTranslations } from 'next-intl/server';
 
-import { PartnerCardVariant } from '@/components/feed/partner/PartnerFeedCard';
+import { PartnerCardVariant } from '@/components/feed/partner/PartnerCardVariant';
 import { BODY, H2, INNER, SECTION } from '@/components/forBusiness/forBusinessStyles';
 import type { PartnerBrandingCardContent } from '@/hooks/usePartnerBrandingCard';
 

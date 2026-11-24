@@ -3,26 +3,37 @@ import { dehydrate } from '@tanstack/react-query';
 import { BusinessScreen } from '@/components/business/BusinessScreen';
 import { BUSINESS_EVENTS_PAGE_SIZE } from '@/hooks/useBusinessEvents';
 import { businessKeys } from '@/hooks/useBusinessOverview';
+import { GUEST_INQUIRIES_PAGE_SIZE } from '@/hooks/useGuestInquiries';
 import { partnerPortalKeys } from '@/hooks/usePartnerPortal';
 import { vendorProfileKeys } from '@/hooks/useVendorProfile';
 import { vendorServiceKeys } from '@/hooks/useVendorServices';
 import { endpoints } from '@/lib/api/endpoints';
 import type { Page as ApiPage } from '@/lib/api/pagination';
 import { serverGet, serverGetOrNull } from '@/lib/api/serverFetch';
-import type { BusinessEventDto, BusinessOverviewDto, PartnerPortalResponseDto, VendorProfileDto, VendorServiceItemDto } from '@/lib/api/types';
+import type {
+    BusinessEventDto,
+    BusinessOverviewDto,
+    GuestInquiryDto,
+    PartnerPortalResponseDto,
+    VendorProfileDto,
+    VendorServiceItemDto,
+} from '@/lib/api/types';
 import { prefetchAccessToken } from '@/lib/auth/serverEventContext';
 import { makeQueryClient } from '@/lib/queryClient';
 import { PageHydrationBoundary } from '@/providers/PageHydrationBoundary';
 
-// The partner data (and a partner photographer's print sizes) for an overview that says so, the same gates as
-// useBusinessPage. Each read is best-effort on its own.
+// The partner data (their first guest inquiries, and a partner photographer's print sizes) for an overview that
+// says so, the same gates as useBusinessPage. Each read is best-effort on its own.
 async function partnerReads(overview: BusinessOverviewDto, accessToken: string) {
     const withServices = overview.partner && overview.vendorType === 'PHOTOGRAPHER';
-    const [portal, services] = await Promise.all([
+    const [portal, services, inquiries] = await Promise.all([
         overview.partner ? serverGet<PartnerPortalResponseDto>(endpoints.partners.me, accessToken).catch(() => null) : null,
         withServices ? serverGet<VendorServiceItemDto[]>(endpoints.me.vendorServices, accessToken).catch(() => null) : null,
+        overview.partner
+            ? serverGet<ApiPage<GuestInquiryDto>>(endpoints.me.businessInquiries(0, GUEST_INQUIRIES_PAGE_SIZE), accessToken).catch(() => null)
+            : null,
     ]);
-    return { portal, services };
+    return { portal, services, inquiries };
 }
 
 // Prefetches the overview, the first events page and the profile at once, and the partner reads as soon as the
@@ -50,6 +61,7 @@ export default async function BusinessPage() {
             if (profile !== undefined) queryClient.setQueryData(vendorProfileKeys.mine, profile);
             if (partner?.portal) queryClient.setQueryData(partnerPortalKeys.me, partner.portal);
             if (partner?.services) queryClient.setQueryData(vendorServiceKeys.mine, partner.services);
+            if (partner?.inquiries) queryClient.setQueryData(businessKeys.inquiries, { pages: [partner.inquiries], pageParams: [0] });
         } catch {
             // Best-effort — the client hooks fetch normally if this fails.
         }

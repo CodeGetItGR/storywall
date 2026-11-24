@@ -16,6 +16,8 @@ import { BusinessPreviewsSection } from '@/components/business/BusinessPreviewsS
 import { BusinessProfileSetupCard } from '@/components/business/BusinessProfileSetupCard';
 import { BusinessSectionIcon } from '@/components/business/BusinessSectionIcon';
 import { BusinessSkeleton } from '@/components/business/BusinessSkeleton';
+import { GuestInquiriesSection } from '@/components/business/GuestInquiriesSection';
+import { InquirySheet } from '@/components/business/InquirySheet';
 import { ModulePageShell } from '@/components/tools/ModulePageShell';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { BecomePartnerSheet } from '@/components/vendors/BecomePartnerSheet';
@@ -86,6 +88,19 @@ export function BusinessScreen() {
                             onRetryAction={page.events.retry}
                         />
 
+                        {/* Guest inquiries */}
+                        <GuestInquiriesSection
+                            partner={overview.partner}
+                            inquiries={page.inquiries.inquiries}
+                            isLoading={page.inquiries.isLoading}
+                            loadFailed={page.inquiries.loadFailed}
+                            hasMore={page.inquiries.hasMore}
+                            isLoadingMore={page.inquiries.isLoadingMore}
+                            onOpenAction={page.inquiries.open}
+                            onLoadMoreAction={page.inquiries.loadMore}
+                            onRetryAction={page.inquiries.retry}
+                        />
+
                         {/* Content */}
                         {sections.content && overview.content && <BusinessContentSection content={overview.content} />}
                     </div>
@@ -134,6 +149,17 @@ export function BusinessScreen() {
             {/* Details sheet */}
             {page.profileOpen && overview && (
                 <VendorProfileSheet open profile={profile} defaultType={overview.vendorType ?? 'OTHER'} onCloseAction={page.closeProfile} />
+            )}
+
+            {/* Inquiry sheet */}
+            {page.inquiries.selected && (
+                <InquirySheet
+                    inquiry={page.inquiries.selected}
+                    isSaving={page.inquiries.isSaving}
+                    error={page.inquiries.saveError}
+                    onSetDoneAction={page.inquiries.setDone}
+                    onCloseAction={page.inquiries.close}
+                />
             )}
 
             {/* Print size sheet */}

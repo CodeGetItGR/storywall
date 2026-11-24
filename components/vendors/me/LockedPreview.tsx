@@ -8,14 +8,15 @@ import { Button } from '@/components/ui/button';
 
 // A partner-only feature: a blurred sample of it under a fade, with what it is and the partner action on top.
 // The sample is decoration only, hidden from assistive tech and not focusable. Without canApply (already applied, or
-// the prompt was turned off) it says the feature is for partners instead of offering the sheet.
+// the prompt was turned off) it says the feature is for partners instead of offering the sheet. Leave out label when
+// the section's own title already names the feature.
 export function LockedPreview({
     label,
     canApply,
     onApplyAction,
     children,
 }: {
-    label: string;
+    label?: string;
     canApply: boolean;
     onApplyAction: () => void;
     children: ReactNode;
@@ -34,7 +35,7 @@ export function LockedPreview({
                 <span className="flex size-9 items-center justify-center rounded-full bg-(image:--logo) shadow-sm">
                     <Lock className="size-4 text-white" aria-hidden="true" />
                 </span>
-                <p className="text-sm font-semibold text-ink">{label}</p>
+                {label && <p className="text-sm font-semibold text-ink">{label}</p>}
                 {canApply ? (
                     <Button type="button" size="lg" onClick={onApplyAction}>
                         {t('become')}

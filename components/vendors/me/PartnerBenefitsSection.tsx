@@ -62,7 +62,7 @@ export function PartnerBenefitsSection({
             {coming.length > 0 && (
                 <div className="mt-5">
                     <h3 className="text-sm font-semibold">{t('comingTitle')}</h3>
-                    <ul className="mt-2.5 grid gap-2 sm:grid-cols-3">
+                    <ul className="mt-2.5 grid gap-2 sm:grid-cols-2">
                         {coming.map((key) => (
                             <BenefitTile key={key} benefit={key} soon />
                         ))}

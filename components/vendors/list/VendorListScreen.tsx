@@ -2,18 +2,25 @@
 
 import { Store } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import { useCallback } from 'react';
 
 import { useEventRouteContext } from '@/components/routing/EventRouteGate';
 import { ModulePageShell } from '@/components/tools/ModulePageShell';
+import { AskDatesSheetFor } from '@/components/vendors/inquiries/AskDatesSheetFor';
 import { VendorListRow } from '@/components/vendors/list/VendorListRow';
 import { VendorCardsSkeleton } from '@/components/vendors/VendorsSkeletons';
+import { useAskDates } from '@/hooks/useAskDates';
 import { useVendorList } from '@/hooks/useVendorList';
+import type { VendorRowDto } from '@/lib/api/types';
 import { routes } from '@/lib/routes';
 
 export function VendorListScreen() {
     const t = useTranslations('Vendors');
     const { eventId } = useEventRouteContext();
     const { vendors, isLoading, openVendor } = useVendorList(eventId);
+    const ask = useAskDates(eventId);
+    const { openForVendor } = ask;
+    const askVendor = useCallback((vendor: VendorRowDto) => openForVendor(vendor.id, vendor.businessName ?? ''), [openForVendor]);
 
     return (
         <ModulePageShell maxWidth="2xl" title={t('list.title')} icon={Store} backLabel={t('list.back')} backHref={routes.events.feed(eventId)}>
@@ -25,10 +32,13 @@ export function VendorListScreen() {
             ) : (
                 <ul className="grid gap-4 sm:grid-cols-2">
                     {vendors.map((vendor) => (
-                        <VendorListRow key={vendor.id} vendor={vendor} onOpenAction={openVendor} />
+                        <VendorListRow key={vendor.id} vendor={vendor} onOpenAction={openVendor} onAskAction={askVendor} />
                     ))}
                 </ul>
             )}
+
+            {/* Ask sheet */}
+            <AskDatesSheetFor ask={ask} />
         </ModulePageShell>
     );
 }

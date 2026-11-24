@@ -7,6 +7,7 @@ import { useBusinessContact } from '@/hooks/useBusinessContact';
 import { useBusinessEvents } from '@/hooks/useBusinessEvents';
 import { useBusinessOverview } from '@/hooks/useBusinessOverview';
 import { useBusinessSectionTarget } from '@/hooks/useBusinessSectionTarget';
+import { useGuestInquiries } from '@/hooks/useGuestInquiries';
 import { usePartnerPortal } from '@/hooks/usePartnerPortal';
 import { useVendorProfile } from '@/hooks/useVendorProfile';
 import { useVendorServicesSection } from '@/hooks/useVendorServicesSection';
@@ -21,6 +22,7 @@ export function useBusinessPage() {
     const partner = Boolean(overview.data?.partner);
     const portal = usePartnerPortal(partner);
     const events = useBusinessEvents(Boolean(overview.data));
+    const inquiries = useGuestInquiries(partner);
     const profileQuery = useVendorProfile();
     const profileStatus = vendorProfileStatus(profileQuery);
     const profileState = profileLoadState(profileQuery);
@@ -68,6 +70,7 @@ export function useBusinessPage() {
         retryEarnings,
         cardPreview,
         events,
+        inquiries,
         services,
         contact,
         becomePartner,
