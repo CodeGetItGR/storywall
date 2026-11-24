@@ -70,24 +70,17 @@ describe('FeedCoverBlock Add cover photo', () => {
 });
 
 describe('FeedCoverBlock while editing', () => {
-    it('hides Add cover photo and Main session, keeps its place and the other buttons', () => {
+    it('draws no buttons: no photo, session or gift', () => {
         renderCover({ editing: true });
-        expect(addPhoto()).toBeNull();
-        expect(session('mainSession')).toBeNull();
-        expect(session('secondarySession')?.previousElementSibling).toHaveClass('h-9', 'w-9');
-        expect(screen.getByRole('link', { name: 'Gifts' })).toBeTruthy();
+        expect(screen.queryAllByRole('link')).toEqual([]);
+        expect(screen.queryAllByRole('button')).toEqual([]);
     });
 
-    it('hides the top button even when it is the secondary session', () => {
-        const [, secondary] = storyEvent().sessions ?? [];
-        renderCover({ editing: true, event: storyEvent({ sessions: [secondary] }) });
-        expect(session('secondarySession')).toBeNull();
-    });
-
-    it('draws both outside edit mode', () => {
+    it('draws them all outside edit mode', () => {
         renderCover();
         expect(addPhoto()).toBeTruthy();
         expect(session('mainSession')).toBeTruthy();
         expect(session('secondarySession')).toBeTruthy();
+        expect(screen.getByRole('link', { name: 'Gifts' })).toBeTruthy();
     });
 });

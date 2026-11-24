@@ -23,7 +23,7 @@ type FeedCoverBlockProps = {
     thumbnail?: boolean;
     // The Invitation | Social Feed pill sits on the cover's bottom edge: the title keeps clear of it.
     clearPill?: boolean;
-    // In edit mode the cover takes no taps and its settings button sits in the top right corner.
+    // In edit mode the cover takes no taps and draws no buttons of its own.
     editing?: boolean;
 };
 
@@ -48,18 +48,20 @@ export function FeedCoverBlock({ event, isHost, wishlist, corner, thumbnail, cle
                 thumbnail={thumbnail}
                 clearPill={clearPill}
                 actions={
-                    <>
-                        <EventSessionActionButtons event={event} topTaken={editing} />
-                        {/* Gift account */}
-                        {cover.giftHref && (
-                            <AppLink
-                                href={cover.giftHref}
-                                className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-background/92 text-ink shadow-[0_8px_22px_rgba(36,31,26,0.18)] transition-transform hover:-translate-y-0.5"
-                            >
-                                <Image src="/icons/present.svg" alt={cover.giftName} width={22} height={22} className="h-5 w-5" unoptimized />
-                            </AppLink>
-                        )}
-                    </>
+                    !editing && (
+                        <>
+                            <EventSessionActionButtons event={event} />
+                            {/* Gift account */}
+                            {cover.giftHref && (
+                                <AppLink
+                                    href={cover.giftHref}
+                                    className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-background/92 text-ink shadow-[0_8px_22px_rgba(36,31,26,0.18)] transition-transform hover:-translate-y-0.5"
+                                >
+                                    <Image src="/icons/present.svg" alt={cover.giftName} width={22} height={22} className="h-5 w-5" unoptimized />
+                                </AppLink>
+                            )}
+                        </>
+                    )
                 }
             />
 

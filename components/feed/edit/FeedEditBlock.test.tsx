@@ -7,6 +7,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { FeedEditBlock } from '@/components/feed/edit/FeedEditBlock';
 import { defaultFeedLayout } from '@/lib/feedLayout';
+import { feedModuleSection } from '@/lib/feedModuleBlocks';
 import { SAMPLE_SECTIONS } from '@/lib/invitation/samples';
 import type { InvitationSection } from '@/lib/invitation/sections';
 import en from '@/messages/en.json';
@@ -85,6 +86,12 @@ describe('FeedEditBlock name', () => {
         expect(screen.getByRole('group', { name: 'Dress code' })).toBeTruthy();
     });
 
+    it("shows no name on a module block, whose card does, and keeps it for screen readers", () => {
+        renderBlock({ section: feedModuleSection('playlist', () => 'dress'), name: 'Playlist' });
+        expect(screen.getByRole('group', { name: 'Playlist' })).toBeTruthy();
+        expect(screen.queryByText('Playlist')).toBeNull();
+    });
+
     it('shows no name on the cover, which keeps its name for screen readers and its settings', () => {
         const cover = defaultFeedLayout().sections.find((item) => item.type === 'feedCover') as InvitationSection;
         renderBlock({
@@ -98,14 +105,23 @@ describe('FeedEditBlock name', () => {
         expect(within(tools).getAllByRole('button')).toEqual([screen.getByRole('button', { name: en.InvitationEditor.sectionSettings.open })]);
     });
 
-    it('draws a 32 px eye with a 40 px tap area, and 40 px tools on the right', () => {
+    it('draws every tool 32 px, with a 40 px tap area', () => {
         renderBlock();
-        const eye = screen.getByRole('button', { name: en.InvitationEditor.sections.hide });
-        expect(eye).toHaveClass('h-8', 'w-8', 'before:-inset-1');
-        expect(eye).not.toHaveClass('h-10');
-        for (const name of [en.InvitationEditor.sections.delete, en.InvitationEditor.sections.drag, en.InvitationEditor.sectionSettings.open]) {
-            expect(screen.getByRole('button', { name })).toHaveClass('h-10', 'w-10');
+        const { sections, sectionSettings } = en.InvitationEditor;
+        for (const name of [sections.hide, sections.delete, sections.drag, sectionSettings.open]) {
+            const tool = screen.getByRole('button', { name });
+            expect(tool).toHaveClass('h-8', 'w-8', 'before:-inset-1', '[&_svg]:h-4');
+            expect(tool).not.toHaveClass('h-10');
+            expect(tool).not.toHaveClass('[&_svg]:h-4.5');
         }
+    });
+
+    it("ends on the content's right edge, and sits inside a module block's card", () => {
+        renderBlock();
+        expect(document.querySelector('[data-feed-block-tools]')).toHaveClass('inset-x-4', 'top-3');
+        cleanup();
+        renderBlock({ section: feedModuleSection('playlist', () => 'dress') });
+        expect(document.querySelector('[data-feed-block-tools]')).toHaveClass('inset-x-7', 'top-3');
     });
 
     // The name is no button: a tap on it falls through to the block, which opens the settings.

@@ -10,14 +10,12 @@ import { resolveSessionLocationIcon } from '@/lib/sessionLocations';
 
 type EventSessionActionButtonsProps = {
     event: Pick<EventDetailResponseDto, 'eventType' | 'id' | 'sessions'>;
-    // The top button's place is taken (the cover's settings button in edit mode): it isn't drawn, the rest don't move.
-    topTaken?: boolean;
 };
 
 const sessionButtonClassName =
     'inline-flex h-9 w-9 items-center justify-center rounded-full bg-background/92 text-ink shadow-[0_8px_22px_rgba(36,31,26,0.18)] transition-transform hover:-translate-y-0.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary';
 
-export function EventSessionActionButtons({ event, topTaken = false }: EventSessionActionButtonsProps) {
+export function EventSessionActionButtons({ event }: EventSessionActionButtonsProps) {
     const t = useTranslations('FeedPage');
 
     // sessions is null when the event has no schedule module.
@@ -29,8 +27,7 @@ export function EventSessionActionButtons({ event, topTaken = false }: EventSess
         <>
             {/* Session actions */}
             <div className={'flex flex-col gap-4'}>
-                {topTaken && <span className="h-9 w-9" aria-hidden="true" />}
-                {mainSession && !topTaken && (
+                {mainSession && (
                     <AppLink
                         href={routes.events.location(event.id, 'main')}
                         aria-label={t('mainSession')}
@@ -40,7 +37,7 @@ export function EventSessionActionButtons({ event, topTaken = false }: EventSess
                         <SessionLocationIcon icon={resolveSessionLocationIcon(event.eventType, 'main')} size="sm" className={'mb-1'} />
                     </AppLink>
                 )}
-                {secondarySession && !(topTaken && !mainSession) && (
+                {secondarySession && (
                     <AppLink
                         href={routes.events.location(event.id, 'secondary')}
                         aria-label={t('secondarySession')}
