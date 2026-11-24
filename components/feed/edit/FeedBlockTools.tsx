@@ -10,7 +10,6 @@ import { type FeedBlockToolActions, useFeedBlockHandlers } from '@/hooks/useFeed
 import type { SectionDragHandle } from '@/hooks/useSectionSortable';
 import { feedBlockTools } from '@/lib/feedBlockMenu';
 import type { FeedBlockControls } from '@/lib/feedEditing';
-import { sectionPhoto } from '@/lib/feedSectionBackground';
 import type { InvitationSection } from '@/lib/invitation/sections';
 import { cn } from '@/lib/utils';
 
@@ -97,14 +96,11 @@ export function FeedBlockTools({ section, name, controls, hasSettings, drag, act
                     </SectionToolButton>
                 )}
                 <FeedBlockMenu
-                    tools={feedBlockTools(section, { hasSettings, canDelete: controls.canDelete })}
-                    hasPhoto={sectionPhoto(section) !== undefined}
+                    tools={feedBlockTools({ hasSettings, canDelete: controls.canDelete })}
                     uploading={uploading}
                     open={menuOpen}
                     onOpenChange={on.setMenuOpen}
                     onSettings={on.openSettings}
-                    onBackground={on.openBackground}
-                    onPickPhoto={on.pickBackgroundPhoto}
                     onDelete={on.remove}
                 />
             </div>

@@ -36,8 +36,6 @@ const meta = {
             onToggleVisible: fn(),
             onDelete: fn(),
             onOpenSettings: fn(),
-            onOpenBackground: fn(),
-            onPickBackgroundPhoto: fn(),
             onMenuOpenChange: fn(),
         },
         children: <div className="h-40 bg-[#f4efe9]" />,
@@ -61,7 +59,7 @@ export const Cover: Story = {
 export const Active: Story = { args: { active: true } };
 // Its dropdown is open.
 export const Dropdown: Story = { args: { menuOpen: true, children: <div className="h-72 bg-[#f4efe9]" /> } };
-// Its background photo is on its way.
+// One of its photos is on its way.
 export const UploadingPhoto: Story = { args: { uploading: true }, tags: ['visual-skip'] };
 
 // On a Save my date theme: no strip above the block, the tools float over it on the page.

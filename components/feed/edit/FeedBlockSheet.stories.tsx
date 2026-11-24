@@ -5,6 +5,7 @@ import { fn } from 'storybook/test';
 import { copyFor } from '@/.storybook/copy';
 import { waitForOpen } from '@/.storybook/waitForOpen';
 import { FeedBlockSheet } from '@/components/feed/edit/FeedBlockSheet';
+import type { FeedSectionBackground } from '@/components/feed/edit/FeedSectionBackgroundFields';
 import type { PinnedPhoto } from '@/lib/feedPinned';
 
 const PHOTOS = ['/images/post-florals.png', '/images/post-cake.png', '/images/post-flowers.png'];
@@ -86,19 +87,36 @@ const pinnedStory = (count: number, uploading = false): Story => ({
 });
 const onPhone: Story = { args: { isDesktop: false }, globals: { viewport: { value: 'mobile' } } };
 
-// A Save my date section: a photo in it, and its text's colour. Also shows FeedSectionContentFields.
-const content = { textColor: '#4A3B32', themeColors: ['#7A3B2E', '#F5E6D3'], uploading: false, failed: false, onPhoto: fn(), onTextColor: fn() };
-const section: Story = {
-    render: (args, { globals }) => (
-        <Sheet {...args} title={copyFor(globals).InvitationEditor.sectionNames.dressCode} content={content} membersOnly={false} />
-    ),
+// A Save my date section: a photo in it, its text's colour, and its own background. Also shows FeedSectionContentFields and
+// FeedSectionBackgroundFields.
+const noBackground: FeedSectionBackground = { color: undefined, hasPhoto: false, failed: false, onColor: fn(), onPickPhoto: fn(), onRemovePhoto: fn() };
+const sectionWith = (background: Partial<FeedSectionBackground> = {}): Story => {
+    const content = {
+        textColor: '#4A3B32',
+        themeColors: ['#7A3B2E', '#F5E6D3'],
+        uploading: false,
+        failed: false,
+        onPhoto: fn(),
+        onTextColor: fn(),
+        background: { ...noBackground, ...background },
+    };
+    return {
+        render: (args, { globals }) => (
+            <Sheet {...args} title={copyFor(globals).InvitationEditor.sectionNames.dressCode} content={content} membersOnly={false} />
+        ),
+    };
 };
 
 export const PhotoPrompt: Story = {};
 export const PhotoPromptMobile: Story = onPhone;
 
-export const InvitationSection: Story = section;
-export const InvitationSectionMobile: Story = { ...section, ...onPhone };
+export const InvitationSection: Story = sectionWith();
+export const InvitationSectionMobile: Story = { ...sectionWith(), ...onPhone };
+export const InvitationSectionBackgroundPhoto: Story = sectionWith({ hasPhoto: true });
+// The first background photo didn't upload.
+export const InvitationSectionBackgroundFailed: Story = sectionWith({ failed: true });
+// A colour the text can't be read on.
+export const InvitationSectionBackgroundColor: Story = sectionWith({ color: '#7A3B2E' });
 
 export const PinnedPhotos: Story = pinnedStory(3);
 export const PinnedPhotosMobile: Story = { ...pinnedStory(3), ...onPhone };

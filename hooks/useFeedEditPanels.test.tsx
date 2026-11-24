@@ -30,22 +30,13 @@ describe('useFeedEditPanels', () => {
         expect(openAddSection).toHaveBeenCalledWith('invitation', { after: 's-1' });
     });
 
-    it('shows one at a time: a background closes the rest, and the rest close it', () => {
+    it('closes the theme sheet and block settings for the preview', () => {
         const { hook, closeSettings } = renderPanels();
         act(() => hook.result.current.openTheme());
         closeSettings.mockClear();
-        act(() => hook.result.current.openBackground('s-1', 'color'));
-        expect(hook.result.current.background).toEqual({ id: 's-1', kind: 'color' });
+        act(() => hook.result.current.closeAll());
         expect(hook.result.current.themeOpen).toBe(false);
         expect(closeSettings).toHaveBeenCalledTimes(1);
-        for (const other of ['openTheme', 'openAddFeed', 'closeBackground', 'closeAll'] as const) {
-            act(() => hook.result.current.openBackground('s-1', 'photo'));
-            act(() => hook.result.current[other]());
-            expect(hook.result.current.background).toBeNull();
-        }
-        act(() => hook.result.current.openBackground('s-1', 'photo'));
-        act(() => hook.result.current.openSettings('s-2'));
-        expect(hook.result.current.background).toBeNull();
     });
 
     it("opens Feed mode's Add sheet the same way", () => {

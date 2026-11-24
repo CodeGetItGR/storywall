@@ -19,10 +19,10 @@ type FeedEditBlockProps = {
     controls: FeedBlockControls;
     hasSettings: boolean;
     actions: FeedBlockToolActions;
-    // Its settings or its background are open: the wash stays on.
+    // Its settings are open: the wash stays on.
     active?: boolean;
     menuOpen?: boolean;
-    // Its background photo is on its way.
+    // One of its photos is on its way.
     uploading?: boolean;
     children: ReactNode;
 };

@@ -16,7 +16,6 @@ import { FeedEditRow } from '@/components/feed/edit/FeedEditRow';
 import { FeedEditThemeSheet } from '@/components/feed/edit/FeedEditThemeSheet';
 import { FeedPremiumTiles } from '@/components/feed/edit/FeedPremiumTiles';
 import { feedPreviewParts } from '@/components/feed/edit/feedPreviewParts';
-import { FeedSectionBackgroundSheet } from '@/components/feed/edit/FeedSectionBackgroundSheet';
 import { FeedLook, FeedNative } from '@/components/feed/layout/FeedLook';
 import { feedLookParts } from '@/components/feed/layout/FeedLookTop';
 import { FeedTopFrame, type FeedTopParts, type FeedTopProps, PLAIN_PARTS } from '@/components/feed/layout/FeedTopFrame';
@@ -40,7 +39,6 @@ import { useFeedModuleBlockPart } from '@/hooks/useFeedModuleBlockPart';
 import { useFeedModuleTiles } from '@/hooks/useFeedModuleTiles';
 import { useFeedOpenMenu } from '@/hooks/useFeedOpenMenu';
 import { useEditPageTheme } from '@/hooks/useFeedPageTheme';
-import { useFeedSectionBackground } from '@/hooks/useFeedSectionBackground';
 import { useFeedSectionContent } from '@/hooks/useFeedSectionContent';
 import { useFeedSectionName } from '@/hooks/useFeedSectionName';
 import { useFeedSectionPart } from '@/hooks/useFeedSectionPart';
@@ -131,17 +129,6 @@ export function FeedEditTop({
         remember: uploads.remember,
     });
     const ownColors = useMemo(() => themeColors(session.theme), [session.theme]);
-    const background = useFeedSectionBackground({
-        document: session.document,
-        panel: panels.background,
-        open: panels.openBackground,
-        close: panels.closeBackground,
-        uploadingId: blockTools.uploadingId,
-        failed: blockTools.failed,
-        setPhoto: blockTools.setBackgroundPhoto,
-        removePhoto: blockTools.removeBackgroundPhoto,
-        setColor: blockTools.setBackgroundColor,
-    });
     const content = useFeedSectionContent(sheet.section, view.ctx, ownColors, blockTools);
     const menu = useFeedOpenMenu();
     // The preview hides every tool, so whatever is open closes first.
@@ -157,8 +144,6 @@ export function FeedEditTop({
         onToggleVisible: actions.toggleVisible,
         onDelete: actions.askDelete,
         onOpenSettings: panels.openSettings,
-        onOpenBackground: panels.openBackground,
-        onPickBackgroundPhoto: background.pickFor,
         onMenuOpenChange: menu.setOpen,
     };
     const editRow = (
@@ -183,7 +168,7 @@ export function FeedEditTop({
             // A module block has nothing to set: its tool is set on its own page.
             hasSettings={!moduleOfBlock(section) && sheet.hasSettings(section)}
             actions={tools}
-            active={sheet.section?.id === section.id || background.section?.id === section.id}
+            active={sheet.section?.id === section.id}
             menuOpen={menu.openId === section.id}
             uploading={blockTools.uploadingId === section.id}
         >
@@ -323,19 +308,6 @@ export function FeedEditTop({
                 onMovePinned={sheet.movePinned}
                 onOpenPart={preview.openEditor}
                 onClose={sheet.close}
-            />
-            <FeedSectionBackgroundSheet
-                kind={background.kind}
-                isDesktop={preview.isDesktop}
-                color={background.color}
-                themeColors={ownColors}
-                hasPhoto={background.hasPhoto}
-                uploading={background.uploading}
-                failed={background.failed}
-                onColor={background.paint}
-                onPickPhoto={background.pick}
-                onRemovePhoto={background.remove}
-                onClose={panels.closeBackground}
             />
             <SettingsPartEditor
                 event={event}

@@ -36,8 +36,6 @@ const actions = {
     onToggleVisible: fn(),
     onDelete: fn(),
     onOpenSettings: fn(),
-    onOpenBackground: fn(),
-    onPickBackgroundPhoto: fn(),
     onMenuOpenChange: fn(),
 };
 

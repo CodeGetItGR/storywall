@@ -12,13 +12,13 @@ import { cn } from '@/lib/utils';
 type FeedSectionColorFieldProps = {
     value: string | undefined;
     themeColors: readonly string[];
-    label: string;
+    labelledBy: string;
     onChange: (color: string | undefined) => void;
 };
 
 // A section's background colour: Default while one is set (back to the feed's background), then the circles. A colour
 // ink can't be read on is drawn lighter; the field says so.
-export function FeedSectionColorField({ value, themeColors, label, onChange }: FeedSectionColorFieldProps) {
+export function FeedSectionColorField({ value, themeColors, labelledBy, onChange }: FeedSectionColorFieldProps) {
     const t = useTranslations('InvitationEditor');
     const tBackground = useTranslations('FeedEditor.background');
     const reset = useCallback(() => onChange(undefined), [onChange]);
@@ -34,7 +34,7 @@ export function FeedSectionColorField({ value, themeColors, label, onChange }: F
             )}
 
             {/* Colours */}
-            <ColorCircles value={value} themeColors={themeColors} label={label} onChange={onChange} />
+            <ColorCircles value={value} themeColors={themeColors} labelledBy={labelledBy} onChange={onChange} />
 
             {/* Too dark: always mounted, so screen readers hear the text when it appears */}
             <p role="status" className={cn('text-[12px] text-(--smd-editor-muted)', !tooDark && 'sr-only')}>

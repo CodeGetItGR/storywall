@@ -1,61 +1,42 @@
 'use client';
 
 import { Menu } from '@base-ui/react/menu';
-import { ChevronDown, Droplet, ImageIcon, LoaderCircle, Settings2, X } from 'lucide-react';
+import { ChevronDown, LoaderCircle, Settings2, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { type ChangeEvent, useCallback, useRef } from 'react';
+import { useCallback, useRef } from 'react';
 
 import { FEED_TOOL_CLASS } from '@/components/feed/edit/feedToolClass';
 import { SectionToolButton } from '@/components/saveMyDate/editor/sections/SectionToolButton';
-import type { FeedBackgroundKind, FeedBlockTool } from '@/lib/feedBlockMenu';
-import { PHOTO_ACCEPT } from '@/lib/invitation/photoUpload';
+import type { FeedBlockTool } from '@/lib/feedBlockMenu';
 import { cn } from '@/lib/utils';
 
 type FeedBlockMenuProps = {
     tools: FeedBlockTool[];
-    // The section has a background photo: its tool opens the photo's sheet instead of the file picker.
-    hasPhoto: boolean;
-    // A background photo is on its way.
+    // One of its photos is on its way.
     uploading: boolean;
     open: boolean;
     onOpenChange: (open: boolean) => void;
     onSettings: () => void;
-    onBackground: (kind: FeedBackgroundKind) => void;
-    onPickPhoto: (file: File) => void;
     onDelete: () => void;
 };
 
-const ICONS = { settings: Settings2, photo: ImageIcon, color: Droplet, delete: X } as const;
+const ICONS = { settings: Settings2, delete: X } as const;
 
 // A block's tools behind a round chevron: icons in a white pill that hangs from it (mockup 2026-11-24). With one tool
 // only, that tool is shown in the chevron's place; with none, nothing.
-export function FeedBlockMenu({ tools, hasPhoto, uploading, open, onOpenChange, onSettings, onBackground, onPickPhoto, onDelete }: FeedBlockMenuProps) {
+export function FeedBlockMenu({ tools, uploading, open, onOpenChange, onSettings, onDelete }: FeedBlockMenuProps) {
     const t = useTranslations('InvitationEditor');
-    const tFeed = useTranslations('FeedEditor');
-    const input = useRef<HTMLInputElement>(null);
     const place = useRef<HTMLDivElement>(null);
     const labels: Record<FeedBlockTool, string> = {
         settings: t('sectionSettings.open'),
-        photo: tFeed('background.image'),
-        color: tFeed('background.color'),
         delete: t('sections.delete'),
     };
     const run = useCallback(
         (tool: FeedBlockTool) => {
             if (tool === 'settings') onSettings();
-            else if (tool === 'delete') onDelete();
-            else if (tool === 'photo' && !hasPhoto) input.current?.click();
-            else onBackground(tool);
+            else onDelete();
         },
-        [hasPhoto, onBackground, onDelete, onSettings],
-    );
-    const pick = useCallback(
-        (event: ChangeEvent<HTMLInputElement>) => {
-            const file = event.target.files?.[0];
-            event.target.value = '';
-            if (file) onPickPhoto(file);
-        },
-        [onPickPhoto],
+        [onDelete, onSettings],
     );
 
     if (tools.length === 0) return null;
@@ -94,11 +75,6 @@ export function FeedBlockMenu({ tools, hasPhoto, uploading, open, onOpenChange, 
                 </Menu.Portal>
             </Menu.Root>
             <div ref={place} className="contents" />
-
-            {/* The background photo's file picker, opened from its tool */}
-            {tools.includes('photo') && (
-                <input ref={input} type="file" accept={PHOTO_ACCEPT} aria-label={labels.photo} tabIndex={-1} onChange={pick} className="hidden" />
-            )}
         </div>
     );
 }
@@ -128,7 +104,7 @@ function MenuTool({ tool, label, onRun }: ToolProps) {
             onClick={run}
             className="relative grid h-10 w-8 cursor-pointer place-items-center text-[#2b2d31] outline-none before:absolute before:inset-y-0 before:-inset-x-1 last:rounded-b-full data-highlighted:bg-[#f2f2f2] focus-visible:shadow-[inset_0_0_0_2px_var(--smd-editor-accent)]"
         >
-            <Icon className={tool === 'color' ? 'h-4 w-4 fill-current' : 'h-4 w-4'} aria-hidden="true" />
+            <Icon className="h-4 w-4" aria-hidden="true" />
         </Menu.Item>
     );
 }

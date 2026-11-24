@@ -39,7 +39,7 @@ export function useFeedBlockSheet(
     const groupsOf = useCallback((section: InvitationSection) => feedSettingsGroups(settingsGroups(section, 'host', theme)), [theme]);
     const partsOf = useCallback((section: InvitationSection) => feedBlockParts(section.type, eventParts), [eventParts]);
     // A block with no style or event field still opens for its members-only setting, the photo prompt for its line and
-    // Pinned photos for its photos; a Save my date section for its photo and text colour.
+    // Pinned photos for its photos; a Save my date section for its photo, text colour and background.
     const hasSettings = useCallback(
         (section: InvitationSection) =>
             groupsOf(section).length > 0 ||

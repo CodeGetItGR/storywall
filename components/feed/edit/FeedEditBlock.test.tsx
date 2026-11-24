@@ -22,8 +22,6 @@ function renderBlock(props: Partial<ComponentProps<typeof FeedEditBlock>> = {}) 
         onToggleVisible: vi.fn(),
         onDelete: vi.fn(),
         onOpenSettings: vi.fn(),
-        onOpenBackground: vi.fn(),
-        onPickBackgroundPhoto: vi.fn(),
         onMenuOpenChange: vi.fn(),
     };
     render(
@@ -201,9 +199,9 @@ describe('FeedEditBlock tools (2026-11-24)', () => {
         expect(actions.onDelete).toHaveBeenCalledWith(section.id);
     });
 
-    it('has no ✕ on a block that cannot be deleted', async () => {
-        renderBlock({ menuOpen: true, controls: { canHide: true, canDelete: false, movable: true, canMoveUp: false, canMoveDown: false } });
-        await screen.findByRole('menuitem', { name: en.InvitationEditor.sectionSettings.open });
-        expect(screen.queryByRole('menuitem', { name: en.InvitationEditor.sections.delete })).toBeNull();
+    it('has only its settings, with no chevron, on a block that cannot be deleted', () => {
+        renderBlock({ controls: { canHide: true, canDelete: false, movable: true, canMoveUp: false, canMoveDown: false } });
+        expect(screen.getByRole('button', { name: en.InvitationEditor.sectionSettings.open })).toBeTruthy();
+        expect(screen.queryByRole('button', { name: en.InvitationEditor.sections.options })).toBeNull();
     });
 });

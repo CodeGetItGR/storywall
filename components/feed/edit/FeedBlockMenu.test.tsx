@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { cleanup, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { NextIntlClientProvider } from 'next-intl';
 import { type ComponentProps, useCallback, useState } from 'react';
@@ -24,17 +24,16 @@ function Menu({ onOpenChange, ...props }: Props) {
 }
 
 function renderMenu(props: Partial<Props> = {}) {
-    const handlers = { onOpenChange: vi.fn(), onSettings: vi.fn(), onBackground: vi.fn(), onPickPhoto: vi.fn(), onDelete: vi.fn() };
+    const handlers = { onOpenChange: vi.fn(), onSettings: vi.fn(), onDelete: vi.fn() };
     const view = render(
         <NextIntlClientProvider locale="en" messages={en}>
-            <Menu tools={['settings', 'photo', 'color', 'delete']} hasPhoto={false} uploading={false} open={false} {...handlers} {...props} />
+            <Menu tools={['settings', 'delete']} uploading={false} open={false} {...handlers} {...props} />
         </NextIntlClientProvider>,
     );
     return { ...handlers, ...view };
 }
 
 const { open: settings } = en.InvitationEditor.sectionSettings;
-const { image, color } = en.FeedEditor.background;
 const { delete: remove, options } = en.InvitationEditor.sections;
 
 describe('FeedBlockMenu', () => {
@@ -42,42 +41,24 @@ describe('FeedBlockMenu', () => {
         renderMenu();
         await userEvent.click(screen.getByRole('button', { name: options }));
         const items = await screen.findAllByRole('menuitem');
-        expect(items.map((item) => item.getAttribute('aria-label'))).toEqual([settings, image, color, remove]);
+        expect(items.map((item) => item.getAttribute('aria-label'))).toEqual([settings, remove]);
         expect(screen.getByRole('button', { name: en.InvitationEditor.close })).toHaveAttribute('aria-expanded', 'true');
     });
 
     it('closes on a pick and runs the tool', async () => {
-        const { onBackground, onOpenChange } = renderMenu({ open: true });
-        await userEvent.click(await screen.findByRole('menuitem', { name: color }));
-        expect(onBackground).toHaveBeenCalledExactlyOnceWith('color');
+        const { onDelete, onOpenChange, onSettings } = renderMenu({ open: true });
+        await userEvent.click(await screen.findByRole('menuitem', { name: remove }));
+        expect(onDelete).toHaveBeenCalledOnce();
+        expect(onSettings).not.toHaveBeenCalled();
         expect(onOpenChange).toHaveBeenLastCalledWith(false);
         await waitFor(() => expect(screen.queryByRole('menuitem')).toBeNull());
     });
 
-    it('opens the file picker for a section with no photo, and hands over the picked file', async () => {
-        const { container, onBackground, onPickPhoto } = renderMenu({ open: true });
-        const input = container.querySelector('input[type="file"]') as HTMLInputElement;
-        const picker = vi.spyOn(input, 'click').mockImplementation(() => undefined);
-        await userEvent.click(await screen.findByRole('menuitem', { name: image }));
-        expect(picker).toHaveBeenCalledOnce();
-        expect(onBackground).not.toHaveBeenCalled();
-        const file = new File(['x'], 'photo.jpg', { type: 'image/jpeg' });
-        fireEvent.change(input, { target: { files: [file] } });
-        expect(onPickPhoto).toHaveBeenCalledExactlyOnceWith(file);
-    });
-
-    it("opens the photo's sheet for a section with one", async () => {
-        const { onBackground } = renderMenu({ open: true, hasPhoto: true });
-        await userEvent.click(await screen.findByRole('menuitem', { name: image }));
-        expect(onBackground).toHaveBeenCalledExactlyOnceWith('photo');
-    });
-
     it('shows a single tool in place of the chevron, and nothing with no tools', async () => {
-        const { onSettings, container, unmount } = renderMenu({ tools: ['settings'] });
+        const { onSettings, unmount } = renderMenu({ tools: ['settings'] });
         expect(screen.queryByRole('button', { name: options })).toBeNull();
         await userEvent.click(screen.getByRole('button', { name: settings }));
         expect(onSettings).toHaveBeenCalledOnce();
-        expect(container.querySelector('input')).toBeNull();
         unmount();
         renderMenu({ tools: [] });
         expect(screen.queryByRole('button')).toBeNull();

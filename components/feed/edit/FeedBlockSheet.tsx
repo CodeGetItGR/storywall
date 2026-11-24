@@ -34,7 +34,7 @@ type FeedBlockSheetProps = {
     pinned: readonly PinnedPhoto[] | null;
     pinnedUploading: boolean;
     media: MediaResolver;
-    // A Save my date section's photo and text colour; null on every other block.
+    // A Save my date section's photo, text colour and background; null on every other block.
     content?: FeedSectionContent | null;
     onAddPinned: (file: File) => void;
     onRemovePinned: (photoId: string) => void;
@@ -85,7 +85,7 @@ export function FeedBlockSheet({
                 />
             )}
 
-            {/* Photo and text colour */}
+            {/* Photo, text colour and background */}
             {content && <FeedSectionContentFields {...content} />}
 
             {/* Event details */}
