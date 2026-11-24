@@ -38,9 +38,11 @@ interface PostCardProps {
     isLcpCandidate?: boolean;
     // The feed's first card, rounded on top on phones too.
     isFirst?: boolean;
+    // The feed's last card, at the very end of the page: no gap below it.
+    endsPage?: boolean;
 }
 
-export function PostCard({ post, showCommentLink = true, isLcpCandidate = false, isFirst = false }: PostCardProps) {
+export function PostCard({ post, showCommentLink = true, isLcpCandidate = false, isFirst = false, endsPage = false }: PostCardProps) {
     const t = useTranslations('PostCard');
     const tRoles = useTranslations('MemberRoles');
     const [selectedMediaIndex, setSelectedMediaIndex] = useState<number | null>(null);
@@ -54,6 +56,7 @@ export function PostCard({ post, showCommentLink = true, isLcpCandidate = false,
     const authorName = post.author?.displayName ?? t('unknownAuthor');
     const timeAgo = useMemo(() => timeAgoParts(post.createdAt), [post.createdAt]);
     const media = post.media;
+    const hasComments = post.commentCount > 0;
     const isHostPost = post.author?.role === 'HOST';
     const isAnnouncement = isAnnouncementPost(post);
     const isSneakPeek = isSneakPeekPost(post);
@@ -175,6 +178,9 @@ export function PostCard({ post, showCommentLink = true, isLcpCandidate = false,
                 // the reaction menu and messages hang over its edges.
                 'lg:my-4 lg:rounded-xl lg:border',
                 isFirst && 'rounded-t-xl',
+                endsPage && 'border-b-0 lg:mb-0 lg:rounded-b-none lg:border-b-0',
+                // Its own colour continues behind the tab bar, or its comments' below.
+                endsPage && !hasComments && 'max-md:pb-[calc(var(--tab-bar-h)+var(--overview-fab-room,0px))]',
                 showHostPostBadge && 'pt-3 sm:pt-0',
             )}
             ref={viewRef}
@@ -323,8 +329,13 @@ export function PostCard({ post, showCommentLink = true, isLcpCandidate = false,
             </div>
 
             {/* Comment preview */}
-            {post.commentCount > 0 && (
-                <div className="rounded-b-[inherit] border-t border-border/50 bg-[#f8f8f8] px-4 pt-3 pb-4">
+            {hasComments && (
+                <div
+                    className={cn(
+                        'rounded-b-[inherit] border-t border-border/50 bg-[#f8f8f8] px-4 pt-3 pb-4',
+                        endsPage && 'max-md:pb-[calc(1rem+var(--tab-bar-h)+var(--overview-fab-room,0px))]',
+                    )}
+                >
                     <CommentsList comments={post.recentComments} compact />
                     {post.commentCount > post.recentComments.length && (
                         <button

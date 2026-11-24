@@ -3,9 +3,12 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { FeedPostList } from '@/components/feed/FeedPostList';
 import type { PartnerBrandingDto, PostResponseDto } from '@/lib/api/types';
+import { withPartnerCards } from '@/lib/feed/partnerBranding';
 
 vi.mock('@/components/feed/PostCard', () => ({
-    PostCard: ({ isFirst }: { isFirst?: boolean }) => <article>{isFirst ? 'first post' : 'post'}</article>,
+    PostCard: ({ isFirst, endsPage }: { isFirst?: boolean; endsPage?: boolean }) => (
+        <article>{`${isFirst ? 'first ' : ''}post${endsPage ? ' end' : ''}`}</article>
+    ),
 }));
 vi.mock('@/components/feed/PlaylistDigestCard', () => ({ PlaylistDigestCard: () => <article>digest</article> }));
 vi.mock('@/components/feed/partner/PartnerFeedCard', () => ({ PartnerFeedCard: () => <article>partner</article> }));
@@ -14,8 +17,8 @@ const post = (id: string) => ({ id, type: 'TEXT', author: { memberId: 'm1' } }) 
 const digest = { id: 'digest', type: 'PLAYLIST', author: null } as PostResponseDto;
 const branding = { placement: { firstAfter: 2, every: 25 } } as PartnerBrandingDto;
 
-const list = (posts: PostResponseDto[], partner: PartnerBrandingDto | null = null) => (
-    <FeedPostList posts={posts} partnerBranding={partner} eventId="e1" />
+const list = (posts: PostResponseDto[], partner: PartnerBrandingDto | null = null, endsWithPost = false) => (
+    <FeedPostList items={withPartnerCards(posts, partner?.placement ?? null)} partnerBranding={partner} eventId="e1" endsWithPost={endsWithPost} />
 );
 const drawn = () => screen.getAllByRole('article').map((card) => card.textContent);
 
@@ -36,5 +39,10 @@ describe('FeedPostList', () => {
         const { rerender } = render(list([post('a')]));
         rerender(list([post('a'), post('b')]));
         expect(drawn()).toEqual(['first post', 'post']);
+    });
+
+    it('tells only the last post that it ends the page', () => {
+        render(list([post('a'), post('b')], null, true));
+        expect(drawn()).toEqual(['first post', 'post end']);
     });
 });

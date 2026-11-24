@@ -15,6 +15,7 @@ import { PostCard } from '@/components/feed/PostCard';
 import { RightContextPanel } from '@/components/layout/RightContextPanel';
 import type { FeedTopView } from '@/hooks/useFeedTop';
 import { eventThemeStyle } from '@/lib/eventTheme';
+import { withPartnerCards } from '@/lib/feed/partnerBranding';
 import { defaultFeedLayout, feedFrame } from '@/lib/feedLayout';
 import { feedBackdropClassName, feedBackdropStyle, type FeedPageBackdrop, feedPageBackdrop } from '@/lib/feedPageBackdrop';
 import { planFeedThemeSwitch } from '@/lib/feedThemes';
@@ -127,7 +128,7 @@ function FeedColumn({ theme, document = AUTO_LAYOUT, children }: PageProps) {
 <div>{children ?? (
                 <>
                     <PostCard post={storyPost({ media: [storyPhotos[0]] })} />
-                    <PostCard post={storyPost({ id: 'post-text', type: 'TEXT', media: [], content: 'What a day!' })} />
+                    <PostCard post={storyPost({ id: 'post-text', type: 'TEXT', media: [], content: 'What a day!' })} endsPage />
                 </>
             )}</div>
         </>
@@ -154,7 +155,7 @@ function ThemedPage({ whole = false, ...props }: PageProps) {
     const backdrop = feedPageBackdrop(props.document ?? AUTO_LAYOUT, props.theme, media);
     if (!whole) {
         return (
-            <BackdropScope backdrop={backdrop} className="mx-auto min-h-screen max-w-2xl bg-event pb-8">
+            <BackdropScope backdrop={backdrop} className="mx-auto min-h-screen max-w-2xl bg-event">
                 <FeedColumn {...props} />
             </BackdropScope>
         );
@@ -165,7 +166,7 @@ function ThemedPage({ whole = false, ...props }: PageProps) {
                 <div className="flex">
                     {/* Feed */}
                     <div className="min-w-0 flex-1">
-                        <div className="mx-auto flex w-full flex-col pb-8 lg:max-w-2xl">
+                        <div className="mx-auto flex w-full flex-col lg:max-w-2xl">
                             <Header countdownTime={Date.parse('2026-07-04T15:00:00Z')} eventId="evt-story" />
                             <FeedColumn {...props} />
                         </div>
@@ -193,7 +194,7 @@ const scrollPage = scrollPageTo(420);
 
 // A feed much longer than the screen: text posts, so the page behind them shows.
 const LONG_FEED = Array.from({ length: 12 }, (_, index) => (
-    <PostCard key={index} post={storyPost({ id: `post-${index}`, type: 'TEXT', media: [], content: 'What a day!' })} />
+    <PostCard key={index} post={storyPost({ id: `post-${index}`, type: 'TEXT', media: [], content: 'What a day!' })} endsPage={index === 11} />
 ));
 
 // Posts with a playlist digest between them.
@@ -252,4 +253,4 @@ export const LongFeedCoverMobile: Story = { ...LongFeedCover, globals: { viewpor
 export const WholePageRepeating: Story = { args: { theme: LIGHT, whole: true }, play: scrollPage };
 
 // Posts with a playlist digest between them, on the page's picture: it shows around the cards.
-export const PostsWithDigest: Story = { args: { theme: COVER, children: <FeedPostList posts={DIGEST_POSTS} partnerBranding={null} eventId="evt-story" /> } };
+export const PostsWithDigest: Story = { args: { theme: COVER, children: <FeedPostList items={withPartnerCards(DIGEST_POSTS, null)} partnerBranding={null} eventId="evt-story" endsWithPost /> } };

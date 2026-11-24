@@ -129,3 +129,20 @@ describe('PostCard corners', () => {
         expect(classes(true).some((name) => name.startsWith('overflow'))).toBe(false);
     });
 });
+
+describe('PostCard at the end of the page', () => {
+    afterEach(cleanup);
+
+    it('leaves nothing below it: no line, margin or rounded bottom', () => {
+        render(<PostCard post={post('TEXT')} endsPage />);
+        const names = screen.getByRole('article').className.split(' ');
+        expect(names).toEqual(expect.arrayContaining(['border-b-0', 'lg:mb-0', 'lg:rounded-b-none', 'lg:border-b-0']));
+        expect(names.some((name) => name.startsWith('max-md:pb-'))).toBe(true);
+    });
+
+    it('lets its comments fill the room behind the tab bar', () => {
+        const { container } = render(<PostCard post={{ ...post('TEXT'), commentCount: 1 }} endsPage />);
+        expect(container.querySelector('article')?.className).not.toContain('max-md:pb-');
+        expect(container.querySelector('article > div[class*="max-md:pb-"]')).not.toBeNull();
+    });
+});

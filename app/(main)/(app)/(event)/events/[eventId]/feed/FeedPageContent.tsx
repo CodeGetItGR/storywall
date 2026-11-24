@@ -28,6 +28,7 @@ import { VendorProfilePrompt } from '@/components/vendors/VendorProfilePrompt';
 import { useFeedEditFocus } from '@/hooks/useFeedEditFocus';
 import { useFeedEditMode } from '@/hooks/useFeedEditMode';
 import { useFeedEditTrigger } from '@/hooks/useFeedEditTrigger';
+import { useFeedItems } from '@/hooks/useFeedItems';
 import { useFeedMode } from '@/hooks/useFeedMode';
 import { useFeedModuleBlockPart } from '@/hooks/useFeedModuleBlockPart';
 import { useFeedPageTheme } from '@/hooks/useFeedPageTheme';
@@ -36,6 +37,7 @@ import { useFeedTop } from '@/hooks/useFeedTop';
 import { useHideMobileTabBar } from '@/hooks/useHideMobileTabBar';
 import { useHideMobileTabBarOnScroll } from '@/hooks/useHideMobileTabBarOnScroll';
 import { useRsvpPromptVisible } from '@/hooks/useRsvpPromptVisible';
+import { feedEndsWithPost } from '@/lib/feed/feedEnd';
 import { type FeedPageMode, feedPlaceHref } from '@/lib/feedMode';
 import { hasFeedSection } from '@/lib/feedSections';
 import { cn } from '@/lib/utils';
@@ -44,8 +46,10 @@ import { useFeedPage } from './FeedPageContext';
 
 export function FeedPageContent() {
     useHideMobileTabBarOnScroll();
-    const { currentMemberRsvpId, event, eventId, isFetchingNextPage, isHost, isRoleLoading, loadMoreRef, loadingMoreLabel, moduleFlags, posts } =
+    const { currentMemberRsvpId, event, eventId, hasNextPage, isFetchingNextPage, isHost, isRoleLoading, loadMoreRef, loadingMoreLabel, moduleFlags, posts } =
         useFeedPage();
+    const feedItems = useFeedItems(posts, event.partnerBranding);
+    const endsWithPost = feedEndsWithPost(feedItems, hasNextPage);
     const [storyId, setStoryId] = useState<string | null>(null);
     const shouldShowRSVP = useRsvpPromptVisible({ eventId, isHost, rsvpAvailable: moduleFlags.rsvp, rsvpId: currentMemberRsvpId });
     const top = useFeedTop(event);
@@ -151,7 +155,10 @@ export function FeedPageContent() {
                 <section id="posts">
                     {moduleFlags.posts && (
                         <div
-                            className={cn('flex flex-col px-0 pb-24 md:pb-16', {
+                            className={cn('flex flex-col px-0', {
+                                // A last post reaches the page's end: on phones it takes the tab bar's room itself (PostCard).
+                                '-mb-[calc(var(--tab-bar-h)+var(--overview-fab-room,0px))] md:mb-0': endsWithPost,
+                                'pb-24 md:pb-16': !endsWithPost,
                                 'mt-4':
                                     (!moduleFlags.stories || !top.drawsMiddle || pageMode === 'feed') &&
                                     !(shouldShowRSVP && top.frame.rsvp && pageMode !== 'feed'),
@@ -171,9 +178,9 @@ export function FeedPageContent() {
                                 {posts.length === 0 ? (
                                     <FeedEmptyState />
                                 ) : (
-                                    <FeedPostList posts={posts} partnerBranding={event.partnerBranding} eventId={eventId} />
+                                    <FeedPostList items={feedItems} partnerBranding={event.partnerBranding} eventId={eventId} endsWithPost={endsWithPost} />
                                 )}
-                                <div ref={loadMoreRef} className="h-1" />
+                                <div ref={loadMoreRef} className="-mt-1 h-1" />
                                 {isFetchingNextPage && <p className="py-2 text-center text-sm text-ink-muted">{loadingMoreLabel}</p>}
                             </div>
                         </div>

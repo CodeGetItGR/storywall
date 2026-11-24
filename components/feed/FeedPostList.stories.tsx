@@ -3,8 +3,11 @@ import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 import { withAppContext } from '@/.storybook/appContext';
 import { guestAuthor, storyComment, storyPhotos, storyPost } from '@/.storybook/fixtures';
 import { FeedPostList } from '@/components/feed/FeedPostList';
+import { useFeedItems } from '@/hooks/useFeedItems';
 import type { PartnerBrandingDto, PostResponseDto } from '@/lib/api/types';
 import { eventThemeStyle } from '@/lib/eventTheme';
+import { feedEndsWithPost } from '@/lib/feed/feedEnd';
+import { cn } from '@/lib/utils';
 
 const text = (id: string, overrides: Partial<PostResponseDto> = {}) =>
     storyPost({ id, type: 'TEXT', media: [], content: 'What a day!', author: guestAuthor, authorMemberId: guestAuthor.memberId, ...overrides });
@@ -25,16 +28,27 @@ const branding: PartnerBrandingDto = {
     placement: { firstAfter: 2, every: 25 },
 };
 
+// The page's end as the feed draws it: nothing below a last post, room below any other card.
+function FeedEnd({ posts, partnerBranding }: { posts: PostResponseDto[]; partnerBranding: PartnerBrandingDto | null }) {
+    const items = useFeedItems(posts, partnerBranding);
+    const endsWithPost = feedEndsWithPost(items, false);
+    return (
+        <div className={cn('flow-root', !endsWithPost && 'pb-24 md:pb-16')}>
+            <FeedPostList items={items} partnerBranding={partnerBranding} eventId="evt-story" endsWithPost={endsWithPost} />
+        </div>
+    );
+}
+
 // Phones: posts in a row stay joined and square, with only the feed's first card rounded on top. Desktop: every
 // post is a card of its own.
 const meta = {
     title: 'Feed/FeedPostList',
-    component: FeedPostList,
-    args: { posts: [text('a'), text('b'), text('c')], partnerBranding: null, eventId: 'evt-story' },
+    component: FeedEnd,
+    args: { posts: [text('a'), text('b'), text('c')], partnerBranding: null },
     decorators: [
         withAppContext,
         (Story, { parameters }) => (
-            <div className="bg-event py-6" style={eventThemeStyle(parameters.page ?? '#dfe9e4', { cardColor: parameters.card ?? '#ffffff' })}>
+            <div className="bg-event pt-6" style={eventThemeStyle(parameters.page ?? '#dfe9e4', { cardColor: parameters.card ?? '#ffffff' })}>
                 <div className="mx-auto max-w-2xl">
                     <Story />
                 </div>
@@ -42,7 +56,7 @@ const meta = {
         ),
     ],
     parameters: { layout: 'fullscreen' },
-} satisfies Meta<typeof FeedPostList>;
+} satisfies Meta<typeof FeedEnd>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
@@ -58,6 +72,9 @@ export const TintAndComments: Story = { args: { posts: [announcement, photo, com
 export const WithOtherCards: Story = {
     args: { posts: [text('a'), text('b'), text('c'), digest, announcement, commented], partnerBranding: branding },
 };
+
+// A digest at the end keeps its room below.
+export const DigestLast: Story = { args: { posts: [text('a'), digest] } };
 
 // No rounded post when the feed starts with another card.
 export const DigestFirst: Story = { args: { posts: [digest, text('a'), text('b')] } };

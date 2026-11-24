@@ -158,11 +158,13 @@ type FeedOptions = {
     stories?: boolean;
     startAt?: string | null;
     posts?: boolean;
+    feedPosts?: unknown[];
+    hasNextPage?: boolean;
 };
 
 function renderFeed(
     illustrationUrl: string | null,
-    { description = null, endAt = null, layout, flag = false, isHost = false, modules = [], stories = false, startAt = null, posts = false }: FeedOptions = {},
+    { description = null, endAt = null, layout, flag = false, isHost = false, modules = [], stories = false, startAt = null, posts = false, feedPosts = [], hasNextPage = false }: FeedOptions = {},
 ) {
     // staleTime: the seeded layout counts as fresh, so nothing is fetched for real.
     const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false, staleTime: Infinity } } });
@@ -187,12 +189,13 @@ function renderFeed(
         event,
         eventId: 'e-1',
         currentMemberRsvpId: null,
+        hasNextPage,
         isFetchingNextPage: false,
         isHost,
         loadMoreRef: { current: null },
         loadingMoreLabel: '',
         moduleFlags: { rsvp: false, stories, posts, wishlist: false },
-        posts: [],
+        posts: feedPosts,
     } as unknown as Parameters<typeof FeedPageProvider>[0]['value'];
     const wrap = (children: ReactNode) => (
         <QueryClientProvider client={queryClient}>
@@ -689,5 +692,24 @@ describe('FeedPageContent on a Save my date theme', { timeout: 15_000 }, () => {
         expect(row).toContain('bg-event/90');
         expect(row).toContain('[.feed-backdrop_&]:bg-transparent');
         expect(row).toContain('[.feed-backdrop_&]:backdrop-blur-none');
+    });
+});
+
+describe('FeedPageContent end of the feed', () => {
+    const room = () => document.querySelector('#posts > div')?.className ?? '';
+    const post = { id: 'p1', type: 'TEXT', author: { memberId: 'm1' } };
+
+    it('leaves nothing below a last post', () => {
+        renderFeed(null, { posts: true, feedPosts: [post] });
+        expect(room()).toContain('-mb-[');
+        expect(room()).not.toContain('pb-24');
+    });
+
+    it('keeps room below while more posts load, a music card or an empty feed', () => {
+        for (const options of [{ feedPosts: [post], hasNextPage: true }, { feedPosts: [{ ...post, type: 'PLAYLIST', author: null }] }, {}]) {
+            const { unmount } = renderFeed(null, { posts: true, ...options });
+            expect(room()).toContain('pb-24');
+            unmount();
+        }
     });
 });
