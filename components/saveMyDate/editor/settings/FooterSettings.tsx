@@ -10,13 +10,18 @@ import type { SectionOf, SettingsScope } from '@/hooks/useSectionSettingsPanel';
 import { FOOTER_STYLE_FIELDS } from '@/lib/invitation/sectionStyleFields';
 import { themeColors } from '@/lib/invitation/textEditing';
 
-// Admin: the footer's text style and link (old footer panel).
+// Admin: the footer's link and text style (old footer panel).
 export function FooterSettings({ scope }: { scope: SettingsScope<SectionOf<'footer'>> }) {
     const t = useTranslations('InvitationEditor.sectionSettings');
     const footer = useFooterSettings(scope);
 
     return (
         <>
+            {/* Link */}
+            <SettingsGroup>
+                <SettingsTextField label={t('link')} value={footer.link} onSave={footer.setLink} isLink />
+            </SettingsGroup>
+
             {/* Style */}
             <StyleFields
                 groups={FOOTER_STYLE_FIELDS}
@@ -26,11 +31,6 @@ export function FooterSettings({ scope }: { scope: SettingsScope<SectionOf<'foot
                 themeColors={themeColors(scope.theme)}
                 onChange={footer.changeStyle}
             />
-
-            {/* Link */}
-            <SettingsGroup>
-                <SettingsTextField label={t('link')} value={footer.link} onSave={footer.setLink} isLink />
-            </SettingsGroup>
         </>
     );
 }

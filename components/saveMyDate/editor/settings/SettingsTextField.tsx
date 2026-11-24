@@ -1,7 +1,7 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { useId } from 'react';
+import { type ReactNode, useId } from 'react';
 
 import { FIELD_CLASS, SettingsHint } from '@/components/saveMyDate/editor/settings/SettingsControls';
 import { useSettingsTextField } from '@/hooks/useSettingsTextField';
@@ -9,6 +9,8 @@ import { cn } from '@/lib/utils';
 
 type SettingsTextFieldProps = {
     label: string;
+    // Drawn before the label, for the eye only.
+    icon?: ReactNode;
     value: string;
     onSave: (value: string) => void;
     // Checked as a web, mail, phone or text-message link when left.
@@ -22,6 +24,7 @@ type SettingsTextFieldProps = {
 // A text or link setting, saved when the field is left.
 export function SettingsTextField({
     label,
+    icon,
     value,
     onSave,
     isLink = false,
@@ -47,7 +50,8 @@ export function SettingsTextField({
     return (
         <div className="flex min-w-0 flex-col gap-1.5">
             {/* Label */}
-            <label htmlFor={id} className="text-[13px] leading-tight">
+            <label htmlFor={id} className={cn('text-[13px] leading-tight', icon && 'flex items-center gap-2')}>
+                {icon}
                 {label}
             </label>
 
