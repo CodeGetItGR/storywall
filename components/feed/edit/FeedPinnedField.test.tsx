@@ -16,6 +16,15 @@ const photosOf = (...ids: string[]): PinnedPhoto[] => ids.map((id) => ({ id, ima
 const media = (id: string) => `https://r2/${id}.jpg`;
 const tools = en.InvitationEditor.sections;
 
+// jsdom has no layout: each photo gets its own place in a row, inside its list.
+function layOutPhotos() {
+    vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function (this: HTMLElement) {
+        const place = [...document.querySelectorAll('li')].findIndex((item) => item.contains(this));
+        const [left, width] = place < 0 ? [0, 290] : [place * 100, 90];
+        return { x: left, y: 0, left, top: 0, right: left + width, bottom: 90, width, height: 90, toJSON: () => ({}) } as DOMRect;
+    });
+}
+
 function renderField(props: Partial<ComponentProps<typeof FeedPinnedField>> = {}) {
     const on = { onAdd: vi.fn(), onRemove: vi.fn(), onMove: vi.fn() };
     render(
@@ -40,11 +49,7 @@ describe('FeedPinnedField', () => {
     });
 
     it('drags a photo into a new place', async () => {
-        // jsdom has no layout: each photo gets its own place in a row.
-        vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function (this: HTMLElement) {
-            const left = [...document.querySelectorAll('li')].findIndex((item) => item.contains(this)) * 100;
-            return { x: left, y: 0, left, top: 0, right: left + 90, bottom: 90, width: 90, height: 90, toJSON: () => ({}) } as DOMRect;
-        });
+        layOutPhotos();
         const on = renderField({ photos: photosOf('a', 'b') });
         const handle = screen.getAllByRole('button', { name: tools.drag })[0];
         handle.focus();
@@ -81,5 +86,18 @@ describe('FeedPinnedField', () => {
         renderField({ media: () => undefined });
         expect(screen.queryByRole('img')).toBeNull();
         expect(screen.getByRole('button', { name: tools.delete })).toBeTruthy();
+    });
+
+    it('keeps a dragged photo among the photos, so its sheet never scrolls sideways', async () => {
+        layOutPhotos();
+        renderField({ photos: photosOf('a', 'b') });
+        const handle = screen.getAllByRole('button', { name: tools.drag })[1];
+        fireEvent.pointerDown(handle, { isPrimary: true, button: 0, clientX: 110, clientY: 10 });
+        fireEvent.pointerMove(document, { clientX: 120, clientY: 10 });
+        await waitFor(() => {
+            fireEvent.pointerMove(document, { clientX: 900, clientY: 10 });
+            expect(handle.closest('li')?.style.transform).toContain('translate3d(100px, 0px, 0)');
+        });
+        fireEvent.pointerUp(document);
     });
 });

@@ -1,6 +1,7 @@
 'use client';
 
 import { closestCenter, DndContext } from '@dnd-kit/core';
+import { restrictToParentElement } from '@dnd-kit/modifiers';
 import { rectSortingStrategy, SortableContext } from '@dnd-kit/sortable';
 import { ImagePlus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
@@ -13,6 +14,9 @@ import { PHOTO_ACCEPT } from '@/lib/invitation/photoUpload';
 import type { MediaResolver } from '@/lib/invitation/render';
 import { FEED_PINNED_MAX_PHOTOS } from '@/lib/invitation/sections';
 import { cn } from '@/lib/utils';
+
+// A dragged photo stays among the photos, so its sheet never scrolls sideways.
+const MODIFIERS = [restrictToParentElement];
 
 type FeedPinnedFieldProps = {
     photos: readonly PinnedPhoto[];
@@ -38,7 +42,13 @@ export function FeedPinnedField({ photos, media, uploading, onAdd, onRemove, onM
     );
 
     return (
-        <DndContext sensors={drag.sensors} collisionDetection={closestCenter} accessibility={drag.accessibility} onDragEnd={drag.onDragEnd}>
+        <DndContext
+            sensors={drag.sensors}
+            collisionDetection={closestCenter}
+            modifiers={MODIFIERS}
+            accessibility={drag.accessibility}
+            onDragEnd={drag.onDragEnd}
+        >
             <SortableContext items={photos.map((photo) => photo.id)} strategy={rectSortingStrategy}>
                 <ul className="grid grid-cols-3 gap-2">
                     {/* Photos */}
