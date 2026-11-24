@@ -19,6 +19,7 @@ afterEach(() => {
 });
 
 const event = { id: 'e-1', sessions: [], schedule: { startAt: null, timezone: null } } as unknown as EventDetailResponseDto;
+const media = () => undefined;
 const section = (type: string, data: object) =>
     ({ id: type, type, name: type, visible: true, locked: false, data, textStyles: {}, elements: [], style: {} }) as unknown as InvitationSection;
 
@@ -38,7 +39,7 @@ describe('feed sections', () => {
             { id: 'a', time: '16:00', title: 'Church', place: 'St. Nicholas', state: 'done', rsvpEnabled: false },
             { id: 'b', time: '19:00', title: 'Party', place: null, state: 'now', rsvpEnabled: false },
         ];
-        renderSection(<FeedModeSection event={event} section={section('feedSchedule', {})} />);
+        renderSection(<FeedModeSection media={media} event={event} section={section('feedSchedule', {})} />);
         expect(screen.getByRole('heading', { name: en.InvitationEditor.sectionNames.feedSchedule })).toBeTruthy();
         expect(screen.getByText(en.ManagePage.journey.now)).toBeTruthy();
         expect(screen.getByText('Church').closest('li')?.dataset.state).toBe('done');
@@ -52,34 +53,38 @@ describe('feed sections', () => {
             schedule: { startAt: '2030-06-20T16:00:00Z', timezone: 'Europe/Athens' },
             sessions: [{ id: 'b', title: 'Party', startAt: '2030-06-20T16:00:00Z', endAt: null, locationName: null, deletedAt: null, isMain: false }],
         } as unknown as EventDetailResponseDto;
-        renderSection(<FeedModeSection event={timed} section={section('feedSchedule', {})} />);
+        renderSection(<FeedModeSection media={media} event={timed} section={section('feedSchedule', {})} />);
         fireEvent.click(screen.getByRole('button', { name: en.FeedPage.addToCalendar }));
         expect(screen.getByRole('dialog', { name: en.FeedPage.addToCalendar })).toBeTruthy();
 
         cleanup();
-        renderSection(<FeedModeSection event={event} section={section('feedSchedule', {})} />);
+        renderSection(<FeedModeSection media={media} event={event} section={section('feedSchedule', {})} />);
         expect(screen.queryByRole('button', { name: en.FeedPage.addToCalendar })).toBeNull();
     });
 
     it("draws nothing when there's nothing to show, or the placeholder in edit mode", () => {
         const { container } = render(
             <NextIntlClientProvider locale="en" messages={en}>
-                <FeedModeSection event={event} section={section('feedSchedule', {})} />
+                <FeedModeSection media={media} event={event} section={section('feedSchedule', {})} />
             </NextIntlClientProvider>,
         );
         expect(container.textContent).toBe('');
-        renderSection(<FeedModeSection event={event} section={section('feedPrompt', { text: '' })} placeholder={<span>empty</span>} />);
+        renderSection(<FeedModeSection media={media} event={event} section={section('feedPrompt', { text: '' })} placeholder={<span>empty</span>} />);
         expect(screen.getByText('empty')).toBeTruthy();
     });
 
     it('opens the post composer from the photo prompt', () => {
-        const composer = renderSection(<FeedModeSection event={event} section={section('feedPrompt', { text: 'Show us your best dance move' })} />);
+        const composer = renderSection(
+            <FeedModeSection media={media} event={event} section={section('feedPrompt', { text: 'Show us your best dance move' })} />,
+        );
         fireEvent.click(screen.getByRole('button', { name: 'Show us your best dance move' }));
         expect(composer.openPostComposer).toHaveBeenCalledOnce();
     });
 
     it("shows the prompt without a button to a viewer who can't post", () => {
-        renderSection(<FeedModeSection event={event} section={section('feedPrompt', { text: 'Show us' })} />, { canComposePost: false });
+        renderSection(<FeedModeSection media={media} event={event} section={section('feedPrompt', { text: 'Show us' })} />, {
+            canComposePost: false,
+        });
         expect(screen.queryByRole('button')).toBeNull();
         expect(screen.getByText('Show us')).toBeTruthy();
     });

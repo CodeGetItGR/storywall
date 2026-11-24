@@ -5,6 +5,7 @@ import { withAppContext } from '@/.storybook/appContext';
 import { copyFor } from '@/.storybook/copy';
 import { storyEvent, storySession } from '@/.storybook/fixtures';
 import { waitForOpen } from '@/.storybook/waitForOpen';
+import { FeedBlockPlaceholder } from '@/components/feed/edit/FeedBlockPlaceholder';
 import { FeedModeSection } from '@/components/feed/sections/FeedModeSection';
 import type { EventDetailResponseDto, EventSessionResponseDto } from '@/lib/api/types';
 import { createFeedModeSection } from '@/lib/feedSections';
@@ -52,10 +53,27 @@ const longTitles = eventWith([
 
 const prompt = (text: string) => ({ ...createFeedModeSection('feedPrompt', () => 'prompt'), data: { text } }) as InvitationSection;
 
+// Pinned photos: the story's own files stand for the host's uploads.
+const PHOTOS: Record<string, string> = {
+    florals: '/images/post-florals.png',
+    cake: '/images/post-cake.png',
+    flowers: '/images/post-flowers.png',
+    tux: '/images/post-tux.png',
+    venue: '/images/venue.png',
+    cake2: '/images/post-cake.png',
+};
+const media = (id: string) => PHOTOS[id];
+const pinned = (mediaIds: string[]) =>
+    ({
+        ...createFeedModeSection('feedPinned', () => 'pinned'),
+        data: { photos: mediaIds.map((mediaId) => ({ id: mediaId, image: { source: 'media', mediaId } })) },
+    }) as InvitationSection;
+
+// Also shows FeedScheduleSection, FeedPromptSection, FeedPinnedSection and FeedPinnedPhotos.
 const meta = {
     title: 'Feed/Sections/FeedModeSection',
     component: FeedModeSection,
-    args: { event: upcoming, section: createFeedModeSection('feedSchedule', () => 'schedule') },
+    args: { event: upcoming, section: createFeedModeSection('feedSchedule', () => 'schedule'), media },
     parameters: { layout: 'fullscreen' },
     decorators: [
         withAppContext,
@@ -101,4 +119,28 @@ export const PhotoPromptReadOnly: Story = {
     play: async ({ canvasElement }) => {
         await expect(within(canvasElement).queryByRole('button')).toBeNull();
     },
+};
+
+export const PinnedPhotos: Story = { args: { section: pinned(['florals', 'cake', 'flowers']), opensPhotos: true } };
+
+export const PinnedPhotosSix: Story = {
+    args: { section: pinned(['florals', 'cake', 'flowers', 'tux', 'venue', 'cake2']), opensPhotos: true },
+};
+
+export const PinnedPhotosMobile: Story = { ...PinnedPhotosSix, globals: { viewport: { value: 'mobile' } } };
+
+// Full screen, on the second photo.
+export const PinnedPhotosOpen: Story = {
+    ...PinnedPhotos,
+    play: async ({ canvasElement }) => {
+        await userEvent.click((await within(canvasElement).findAllByRole('button'))[1]);
+        await waitForOpen('dialog');
+    },
+};
+
+export const PinnedPhotosEmptyInEdit: Story = {
+    args: { section: pinned([]) },
+    render: (args, { globals }) => (
+        <FeedModeSection {...args} placeholder={<FeedBlockPlaceholder name={copyFor(globals).InvitationEditor.sectionNames.feedPinned} />} />
+    ),
 };
