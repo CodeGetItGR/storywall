@@ -76,7 +76,8 @@ export const NoThemePlain: Story = { args: { look: null } };
 
 // The feed in one colour: no card is the current one.
 export const SolidColor: Story = { args: { solidColor: '#AC9FC7' } };
-export const SolidColorMobile: Story = { args: { solidColor: '#AC9FC7', isDesktop: false }, globals: { viewport: { value: 'mobile' } } };
+// A mixed colour too dark for the text.
+export const SolidColorMobile: Story = { args: { solidColor: '#7A3B2E', isDesktop: false }, globals: { viewport: { value: 'mobile' } } };
 
 // The phone sheet.
 export const NoThemeSelectedMobile: Story = { args: { isDesktop: false }, globals: { viewport: { value: 'mobile' } } };
