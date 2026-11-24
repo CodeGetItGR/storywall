@@ -17,16 +17,19 @@ type ColorMixerProps = {
     start: string;
     surface: 'dark' | 'light';
     disabled?: boolean;
+    // Each colour on the way counts, not only the one Done keeps.
+    live: boolean;
     onChange: (color: string) => void;
+    onPicked?: () => void;
 };
 
 // react-colorful sets its own size in a style tag it adds, so only an inline size wins.
 const PICKER_SIZE = { width: '100%', height: 180 };
 
 // The white "+" after the circles, and the mixer it opens: a colour square with a hue bar, the colour and its code.
-export function ColorMixer({ value, start, surface, disabled, onChange }: ColorMixerProps) {
+export function ColorMixer({ value, start, surface, disabled, live, onChange, onPicked }: ColorMixerProps) {
     const t = useTranslations('InvitationEditor');
-    const mixer = useColorMixer(value, start, onChange);
+    const mixer = useColorMixer(value, start, onChange, { live, onPicked });
 
     return (
         <Popover.Root open={mixer.isOpen} onOpenChange={mixer.onOpenChange}>
