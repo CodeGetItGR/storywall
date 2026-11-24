@@ -124,7 +124,8 @@ export const StyleSheetColors: Story = {
 
 // And so is their mixer.
 export const StyleSheetMixer: Story = {
-    ...StyleSheetColors,
+    tags: ['visual-mobile-only'],
+    globals: { viewport: { value: 'mobile' } },
     play: async (context) => {
         await StyleSheetColors.play?.(context);
         const copy = copyFor(context.globals).InvitationEditor;
