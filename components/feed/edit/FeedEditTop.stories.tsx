@@ -6,7 +6,7 @@ import { fn, userEvent, within } from 'storybook/test';
 
 import { withAppContext } from '@/.storybook/appContext';
 import { copyFor } from '@/.storybook/copy';
-import { storyEvent, storyHostMember, storyModules, storyPhotos } from '@/.storybook/fixtures';
+import { storyEvent, storyHostMember, storyModules, storyPhotos, storySession } from '@/.storybook/fixtures';
 import { waitForOpen } from '@/.storybook/waitForOpen';
 import { FeedEditTop } from '@/components/feed/edit/FeedEditTop';
 import { EventDescription } from '@/components/feed/EventDescription';
@@ -131,6 +131,28 @@ export const InvitationMode: Story = {
         sections: [{ ...(SAMPLE_SECTIONS.dressCode as InvitationSection), id: 'dress' }, feedModuleSection('quiz_polls', () => 'quiz')],
     },
     parameters: { app: { event: withModules, member: storyHostMember } },
+};
+
+// The Schedule block: the timeline under its tools, the card with no sessions, and neither in the preview as guests see it.
+const withSchedule = (sessions: EventDetailResponseDto['sessions']) => storyEvent({ sessions, modules: storyModules(['posts', 'stories', 'save_my_date', 'schedule']) });
+
+export const InvitationModeSchedule: Story = {
+    args: { event: withSchedule([storySession()]), mode: 'invitation', sections: [feedModuleSection('schedule', () => 'schedule')] },
+};
+
+export const InvitationModeNoSessions: Story = {
+    args: { event: withSchedule([]), mode: 'invitation', sections: [feedModuleSection('schedule', () => 'schedule')] },
+};
+
+export const InvitationModeNoSessionsPreview: Story = {
+    ...InvitationModeNoSessions,
+    play: async ({ canvasElement, globals }) => {
+        await userEvent.click(await within(canvasElement).findByRole('button', { name: copyFor(globals).InvitationEditor.preview }));
+    },
+};
+
+export const FeedModeNoSessions: Story = {
+    args: { event: withSchedule([]), sections: [createFeedModeSection('feedSchedule', () => 'schedule')] },
 };
 
 // A section with nothing in it yet is barely taller than its tools: they keep off Add section and the description's own.

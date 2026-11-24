@@ -11,6 +11,7 @@ import { feedEditFrame } from '@/lib/feedEditing';
 import { type FeedFrame, feedFrame, usesInvitationLook, withoutSaveMyDateSections } from '@/lib/feedLayout';
 import { moduleOfBlock } from '@/lib/feedModuleBlocks';
 import { type FeedPageBackdrop, feedPageBackdrop } from '@/lib/feedPageBackdrop';
+import { drawsScheduleCard } from '@/lib/feedSchedule';
 import type { InvitationDocument } from '@/lib/invitation/document';
 import { isEmptyForGuests } from '@/lib/invitation/gallery';
 import { INVITATION_LABELS } from '@/lib/invitation/labels';
@@ -19,6 +20,7 @@ import type { InvitationSection } from '@/lib/invitation/sections';
 import type { ThemeDesign } from '@/lib/invitation/theme';
 import { uploadedFontFaceCss } from '@/lib/invitation/uploadedFonts';
 import { SAVE_MY_DATE_MODULE_KEY } from '@/lib/saveMyDateRelease';
+import { useIsHost } from '@/providers/EventProvider';
 import { useFeedEditorEnabled } from '@/providers/FeedEditorFlagProvider';
 
 export type FeedTopView = {
@@ -55,6 +57,7 @@ export function useFeedTop(event: EventDetailResponseDto, editing?: FeedTopEditi
     const locale = useLocale();
     const layout = useFeedLayout(event, { enabled });
     const saveMyDate = isModuleAvailable(event.modules, SAVE_MY_DATE_MODULE_KEY);
+    const isHost = useIsHost();
     const isEditing = editing !== undefined && !editing.asGuest;
     const whole = editing?.document ?? layout.document;
     const document = useMemo(() => (saveMyDate ? whole : withoutSaveMyDateSections(whole)), [saveMyDate, whole]);
@@ -64,6 +67,8 @@ export function useFeedTop(event: EventDetailResponseDto, editing?: FeedTopEditi
     // The font files list is public (the published invitation reads it too).
     const fonts = useInvitationFonts(enabled && look);
     const ended = isEventEnded(event);
+    // Hosts get the card of a schedule with no sessions; guests, and the host previewing as one, no block at all.
+    const asHost = isHost && !editing?.asGuest;
     // With Save my date, RSVP is one of the host's blocks (spec item 17). Read as useFeedMode does, flag included.
     const rsvpMoves = enabled && saveMyDate;
 
@@ -89,11 +94,12 @@ export function useFeedTop(event: EventDetailResponseDto, editing?: FeedTopEditi
             if (section.type === 'feedRsvp') return true;
             // A module block draws only while the event has the module.
             const key = moduleOfBlock(section);
-            if (key) return isModuleAvailable(event.modules, key);
+            if (key) return isModuleAvailable(event.modules, key) && (asHost || !drawsScheduleCard(section, event));
             return !isEmptyForGuests(section, ctx);
         };
-        return { ...split, middle: split.middle.filter(draws), feed: edited?.feed ?? split.feed };
-    }, [isEditing, saveMyDate, document, ended, rsvpMoves, event.description, event.modules, ctx]);
+        const drawsFeed = (section: InvitationSection) => (asHost && !ended) || !drawsScheduleCard(section, event);
+        return { ...split, middle: split.middle.filter(draws), feed: edited?.feed ?? split.feed.filter(drawsFeed) };
+    }, [isEditing, saveMyDate, document, ended, rsvpMoves, event, asHost, ctx]);
 
     return {
         look,
