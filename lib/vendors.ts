@@ -241,17 +241,17 @@ export function vendorQuickActions(
     ];
 }
 
-export type PartnerBenefitKey = 'discount' | 'feedCard' | 'reach' | 'printPrices';
-export type ComingPartnerBenefitKey = 'inquiries' | 'printKit' | 'eventPacks';
+export type PartnerBenefitKey = 'discount' | 'feedCard' | 'reach' | 'inquiries' | 'printPrices';
+export type ComingPartnerBenefitKey = 'printKit' | 'eventPacks';
 
 // What partners get today, for the vendor page's partner block. Print prices only mean something to photographers.
 export function partnerBenefits(type: PartnerRole): PartnerBenefitKey[] {
-    const benefits: PartnerBenefitKey[] = ['discount', 'feedCard', 'reach'];
+    const benefits: PartnerBenefitKey[] = ['discount', 'feedCard', 'reach', 'inquiries'];
     return capabilitiesOfType(type).includes('PRINT_PICKS') ? [...benefits, 'printPrices'] : benefits;
 }
 
-// Partner features still being built (Jira KAN-20, KAN-22, KAN-21). Move one to partnerBenefits when it ships.
-export const COMING_PARTNER_BENEFITS: readonly ComingPartnerBenefitKey[] = ['inquiries', 'printKit', 'eventPacks'];
+// Partner features still being built (Jira KAN-22, KAN-21). Move one to partnerBenefits when it ships.
+export const COMING_PARTNER_BENEFITS: readonly ComingPartnerBenefitKey[] = ['printKit', 'eventPacks'];
 
 // Made-up print sizes, shown blurred behind the locked Print prices. Never readable, never real data.
 export const SAMPLE_PRINT_SIZES: readonly { label: string; priceCents: number }[] = [

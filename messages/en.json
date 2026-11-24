@@ -7476,7 +7476,11 @@
         "moderationMemberIsHost": "Hosts can't be removed from their event. Suspend the account instead.",
         "moderationTargetProtected": "Admin accounts can't be suspended here.",
         "collaboratorBrandingIncomplete": "This partner's card is incomplete.",
-        "partnerBrandingNoticeOutdated": "The partner notice has changed. Please review it again."
+        "partnerBrandingNoticeOutdated": "The partner notice has changed. Please review it again.",
+        "inquiryDateOutOfRange": "Pick a date from today up to three years ahead.",
+        "inquiryContactRequired": "Add a phone or an email.",
+        "inquiryConsentRequired": "Tick the box to send.",
+        "inquiryAlreadySent": "You already asked them."
     },
     "LandingPage": {
         "forBusiness": {
@@ -8444,6 +8448,7 @@
     },
     "PartnerCard": {
         "visit": "Visit website",
+        "visitShort": "Website",
         "newTab": "(opens in a new tab)",
         "roles": {
             "PLANNER": "Planner",
@@ -9898,6 +9903,22 @@
             "title": "Vendors",
             "empty": "No vendors.",
             "joined": "Joined {date}"
+        },
+        "inquiry": {
+            "ask": "Ask about my date",
+            "alreadySent": "Already sent",
+            "sheetTitle": "Ask {name}",
+            "date": "Your event date",
+            "phone": "Phone",
+            "email": "Email",
+            "note": "Message (optional)",
+            "consent": "Share my name and contact details with {name}.",
+            "dateRequired": "Pick a date.",
+            "contactRequired": "Add a phone or an email.",
+            "send": "Send",
+            "sending": "Sending…",
+            "sent": "Sent. {name} will contact you.",
+            "close": "Close"
         }
     },
     "ImageAlt": {
@@ -9925,7 +9946,8 @@
         "guestPhoto": "Guest photo",
         "photoBy": "Photo by {name}",
         "qrUploadSent": "Photos sent",
-        "qrWishSent": "Wish sent"
+        "qrWishSent": "Wish sent",
+        "inquirySent": "Inquiry sent"
     },
     "VendorPages": {
         "breadcrumb": "For business",
@@ -10433,6 +10455,21 @@
             "close": "Close",
             "topicRequired": "Pick a topic.",
             "messageRequired": "Write a message."
+        },
+        "inquiries": {
+            "title": "Guest inquiries",
+            "emptyTitle": "No inquiries yet",
+            "emptyBody": "Guests can ask about your dates from your events.",
+            "loadFailed": "Couldn't load inquiries.",
+            "new": "New",
+            "date": "Date",
+            "event": "Event",
+            "call": "Call",
+            "writeEmail": "Email",
+            "note": "Message",
+            "markDone": "Mark done",
+            "markNew": "Mark as new",
+            "close": "Close"
         }
     },
     "InvitationRenderer": {

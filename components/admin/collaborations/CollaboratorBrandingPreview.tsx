@@ -3,7 +3,7 @@
 import { useTranslations } from 'next-intl';
 
 import { FunnelSegmented } from '@/components/admin/funnel/FunnelSegmented';
-import { PartnerCardVariant } from '@/components/feed/partner/PartnerFeedCard';
+import { PartnerCardVariant } from '@/components/feed/partner/PartnerCardVariant';
 import type { PartnerBrandingCardContent } from '@/hooks/usePartnerBrandingCard';
 import type { Locale } from '@/i18n/config';
 import type { BrandingVariant } from '@/lib/api/types';

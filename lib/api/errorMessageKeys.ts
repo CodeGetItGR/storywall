@@ -43,6 +43,10 @@ export type ApiErrorMessageKey =
     | 'outreachRequestDecided'
     | 'outreachRequestPending'
     | 'partnerBrandingNoticeOutdated'
+    | 'inquiryDateOutOfRange'
+    | 'inquiryContactRequired'
+    | 'inquiryConsentRequired'
+    | 'inquiryAlreadySent'
     | 'concurrentModification'
     | 'conflict'
     | 'emailConfirmationLinkInvalid'
@@ -427,6 +431,10 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.EMAIL_CODE_NOT_REQUESTED]: 'emailCodeExpired',
     [ERROR_CODES.EMAIL_CODE_TOO_MANY_ATTEMPTS]: 'emailCodeTooManyAttempts',
     [ERROR_CODES.EMAIL_ALREADY_VERIFIED]: 'emailAlreadyVerified',
+    [ERROR_CODES.INQUIRY_DATE_OUT_OF_RANGE]: 'inquiryDateOutOfRange',
+    [ERROR_CODES.INQUIRY_CONTACT_REQUIRED]: 'inquiryContactRequired',
+    [ERROR_CODES.INQUIRY_CONSENT_REQUIRED]: 'inquiryConsentRequired',
+    [ERROR_CODES.INQUIRY_ALREADY_SENT]: 'inquiryAlreadySent',
     [ERROR_CODES.WISH_AUDIO_TOO_LARGE]: 'wishAudioTooLarge',
     [ERROR_CODES.WISH_AUDIO_NOT_AUDIO]: 'wishAudioNotAudio',
     [ERROR_CODES.WISH_AUDIO_TOO_LONG]: 'wishAudioTooLong',

@@ -3,7 +3,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 
 import { BusinessSectionIcon, type BusinessSectionKey } from '@/components/business/BusinessSectionIcon';
 
-const KEYS: BusinessSectionKey[] = ['insights', 'events', 'content', 'printPrices', 'previews', 'contact'];
+const KEYS: BusinessSectionKey[] = ['insights', 'events', 'content', 'printPrices', 'previews', 'inquiries', 'contact'];
 
 describe('BusinessSectionIcon', () => {
     afterEach(cleanup);

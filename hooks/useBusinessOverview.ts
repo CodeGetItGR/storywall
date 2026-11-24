@@ -7,6 +7,7 @@ import type { BusinessOverviewDto } from '@/lib/api/types';
 export const businessKeys = {
     overview: ['business', 'overview'] as const,
     events: ['business', 'events'] as const,
+    inquiries: ['business', 'inquiries'] as const,
 };
 
 // The business page's totals. The app's default retry policy skips 4xx, so a 403 (not a vendor) is not retried.
