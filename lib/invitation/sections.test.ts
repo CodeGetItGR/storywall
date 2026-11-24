@@ -12,5 +12,7 @@ describe('kinds of section', () => {
         expect(isSaveMyDateSectionType('feedHeOrShe')).toBe(false);
         expect(isSaveMyDateSectionType('feedDescription')).toBe(false);
         expect(isSaveMyDateSectionType('feedModule')).toBe(false);
+        expect(isFeedModeSectionType('feedPinned')).toBe(true);
+        expect(isSaveMyDateSectionType('feedPinned')).toBe(false);
     });
 });

@@ -103,6 +103,13 @@ export type FeedModuleKey = (typeof FEED_MODULE_KEYS)[number];
 // One line on a phone.
 export const FEED_PROMPT_MAX_LENGTH = 80;
 
+// Pinned photos holds this many at most (spec, Feed sections).
+export const FEED_PINNED_MAX_PHOTOS = 6;
+
+// A photo the host uploaded for the feed (plan 7b): only an upload, never a theme or event photo. The image is
+// imageRefSchema's media branch.
+const pinnedPhotoSchema = z.object({ id: idSchema, image: z.object({ source: z.literal('media'), mediaId: idSchema }).strict() }).strict();
+
 export const SECTION_DATA_SCHEMAS = {
     top: z.object({}).strict(),
     baby: z
@@ -338,6 +345,8 @@ export const SECTION_DATA_SCHEMAS = {
     feedSchedule: z.object({}).strict(),
     feedPrompt: z.object({ text: z.string().max(FEED_PROMPT_MAX_LENGTH) }).strict(),
     feedHeOrShe: z.object({}).strict(),
+    // A small row of photos the host uploads just for it (KAN-261).
+    feedPinned: z.object({ photos: z.array(pinnedPhotoSchema).max(FEED_PINNED_MAX_PHOTOS) }).strict(),
 } as const;
 
 export type SectionType = keyof typeof SECTION_DATA_SCHEMAS;
@@ -361,7 +370,7 @@ export function isFeedSectionType(type: SectionType): type is FeedSectionType {
 }
 
 // Feed mode's sections. Drawn under the stories in Feed mode, or above the posts on the one page; never in the invitation.
-export const FEED_MODE_SECTION_TYPES = ['feedSchedule', 'feedPrompt', 'feedHeOrShe'] as const satisfies readonly SectionType[];
+export const FEED_MODE_SECTION_TYPES = ['feedSchedule', 'feedPrompt', 'feedHeOrShe', 'feedPinned'] as const satisfies readonly SectionType[];
 export type FeedModeSectionType = (typeof FEED_MODE_SECTION_TYPES)[number];
 
 export function isFeedModeSectionType(type: SectionType): type is FeedModeSectionType {

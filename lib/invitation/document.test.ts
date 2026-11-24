@@ -17,8 +17,8 @@ import { themeDesignSchema } from '@/lib/invitation/theme';
 const clone = <T>(value: T): T => structuredClone(value);
 
 describe('invitation document format', () => {
-    it('covers the 30 section types of the old editor, the 4 feed blocks, the module block and the 3 Feed mode sections', () => {
-        expect(SECTION_TYPES).toHaveLength(38);
+    it('covers the 30 section types of the old editor, the 4 feed blocks, the module block and the 4 Feed mode sections', () => {
+        expect(SECTION_TYPES).toHaveLength(39);
     });
 
     it.each(SECTION_TYPES)('accepts the %s sample', (type) => {
@@ -182,5 +182,14 @@ describe('feed sections', () => {
         expect(invitationDocumentSchema.safeParse(withSection({ ...base, type: 'feedPrompt', data: { text: 'x'.repeat(81) } })).success).toBe(false);
         expect(invitationDocumentSchema.safeParse(withSection({ ...base, type: 'feedSchedule', data: { day: 1 } })).success).toBe(false);
         expect(invitationDocumentSchema.safeParse(withSection({ ...base, type: 'feedHeOrShe', data: { guess: 'HE' } })).success).toBe(false);
+    });
+
+    it('takes Pinned photos with up to six uploaded photos', () => {
+        const photo = (id: string) => ({ id, image: { source: 'media', mediaId: `img-${id}` } });
+        const pinned = (photos: unknown[]) => withSection({ ...base, type: 'feedPinned', data: { photos } });
+        expect(invitationDocumentSchema.safeParse(pinned([])).success).toBe(true);
+        expect(invitationDocumentSchema.safeParse(pinned(['1', '2', '3', '4', '5', '6'].map(photo))).success).toBe(true);
+        expect(invitationDocumentSchema.safeParse(pinned(['1', '2', '3', '4', '5', '6', '7'].map(photo))).success).toBe(false);
+        expect(invitationDocumentSchema.safeParse(pinned([{ id: 't', image: { source: 'theme', assetId: 'a' } }])).success).toBe(false);
     });
 });

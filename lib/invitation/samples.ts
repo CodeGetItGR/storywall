@@ -183,6 +183,7 @@ export const SAMPLE_SECTIONS: { [T in SectionType]: SectionOf<T> } = {
     feedSchedule: section('feedSchedule', {}),
     feedPrompt: section('feedPrompt', { text: '' }),
     feedHeOrShe: section('feedHeOrShe', {}),
+    feedPinned: section('feedPinned', { photos: [] }),
 };
 
 export const SAMPLE_THEME: ThemeDesign = {
