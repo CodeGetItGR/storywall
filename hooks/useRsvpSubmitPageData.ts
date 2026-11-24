@@ -11,9 +11,10 @@ import { useActiveEvent, useActiveMember, useEventContextLoading, useIsHost } fr
 
 // A retry after an answers failure takes the PATCH path (effectiveRsvpId is
 // already set), so the confirmation only needs to stay hidden while that
-// failure is still showing on a brand-new RSVP.
-export function computeShowConfirmation(submitted: boolean, hasExistingRsvp: boolean, hasSessionAnswersError: boolean): boolean {
-    return submitted || (hasExistingRsvp && !hasSessionAnswersError);
+// failure is still showing on a brand-new RSVP. A link to one session
+// (?session=) opens the form even after an RSVP, so the guest can answer it.
+export function computeShowConfirmation(submitted: boolean, hasExistingRsvp: boolean, hasSessionAnswersError: boolean, opensForm = false): boolean {
+    return submitted || (hasExistingRsvp && !hasSessionAnswersError && !opensForm);
 }
 
 export function useRsvpSubmitPageData() {
@@ -76,6 +77,7 @@ export function useRsvpSubmitPageData() {
         isVendor,
         isVendorRoleLoading: vendorRole.isLoading,
         onBackToWall: handleBackToWall,
+        opensForm: searchParams.has('session'),
         rsvpAvailability,
     };
 }

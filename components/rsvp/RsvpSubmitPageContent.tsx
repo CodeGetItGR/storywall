@@ -30,7 +30,7 @@ export function RsvpSubmitPageContent({ data }: { data: RsvpSubmitPageData }) {
     // A first-time RSVP whose session answers failed to save already has an
     // id (hasExistingRsvp flips true on create), but the guest still needs
     // the form — and its error — to retry. See sessionsSubmitError.
-    if (computeShowConfirmation(data.submitted, data.hasExistingRsvp, Boolean(data.sessionAnswersError))) {
+    if (computeShowConfirmation(data.submitted, data.hasExistingRsvp, Boolean(data.sessionAnswersError), data.opensForm)) {
         return <RsvpSubmittedContent data={data} />;
     }
 

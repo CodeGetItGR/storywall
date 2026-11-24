@@ -2,7 +2,9 @@
 
 import { useTranslations } from 'next-intl';
 
+import { useRsvpSessionFocus } from '@/hooks/useRsvpSessionFocus';
 import type { RsvpSessionQuestion } from '@/hooks/useRsvpSessionQuestions';
+import { rsvpSessionAnchor } from '@/lib/feedScheduleRsvp';
 import { cn } from '@/lib/utils';
 
 export function RsvpSessionQuestions({
@@ -13,6 +15,7 @@ export function RsvpSessionQuestions({
     onAnswerAction: (sessionId: string, isAttending: boolean) => void;
 }) {
     const t = useTranslations('RSVPPage');
+    const focusId = useRsvpSessionFocus(questions.length > 0);
     const unanswered = questions.some((question) => question.answer === null);
 
     return (
@@ -24,7 +27,7 @@ export function RsvpSessionQuestions({
             {/* Questions */}
             <ul className="flex flex-col gap-2">
                 {questions.map((question) => (
-                    <RsvpSessionQuestionRow key={question.id} question={question} onAnswerAction={onAnswerAction} />
+                    <RsvpSessionQuestionRow key={question.id} question={question} focused={question.id === focusId} onAnswerAction={onAnswerAction} />
                 ))}
             </ul>
         </div>
@@ -33,9 +36,12 @@ export function RsvpSessionQuestions({
 
 function RsvpSessionQuestionRow({
     question,
+    focused,
     onAnswerAction,
 }: {
     question: RsvpSessionQuestion;
+    // The session the page was opened on.
+    focused: boolean;
     onAnswerAction: (sessionId: string, isAttending: boolean) => void;
 }) {
     const tCommon = useTranslations('Common');
@@ -49,7 +55,10 @@ function RsvpSessionQuestionRow({
     }
 
     return (
-        <li className="flex items-center gap-3 rounded-xl bg-surface-muted px-4 py-3">
+        <li
+            id={rsvpSessionAnchor(question.id)}
+            className={cn('flex items-center gap-3 rounded-xl bg-surface-muted px-4 py-3', focused && 'ring-2 ring-primary')}
+        >
             {/* Session */}
             <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-semibold text-ink">{question.title}</p>

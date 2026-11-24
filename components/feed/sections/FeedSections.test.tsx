@@ -5,6 +5,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { FeedModeSection } from '@/components/feed/sections/FeedModeSection';
 import type { FeedScheduleItem } from '@/hooks/useFeedSchedule';
+import type { FeedScheduleRsvpLink } from '@/hooks/useFeedScheduleRsvp';
 import type { EventDetailResponseDto } from '@/lib/api/types';
 import type { InvitationSection } from '@/lib/invitation/sections';
 import en from '@/messages/en.json';
@@ -12,10 +13,14 @@ import { ComposerContext, type ComposerContextValue } from '@/providers/composer
 
 const schedule = vi.hoisted(() => ({ items: null as FeedScheduleItem[] | null }));
 vi.mock('@/hooks/useFeedSchedule', () => ({ useFeedSchedule: () => schedule.items }));
+const rsvp = vi.hoisted(() => ({ link: null as ((sessionId: string) => FeedScheduleRsvpLink) | null }));
+vi.mock('@/hooks/useFeedScheduleRsvp', () => ({ useFeedScheduleRsvp: () => rsvp.link }));
+vi.mock('@/hooks/useModuleCopy', () => ({ useModuleCopy: () => (key: string) => ({ name: key === 'rsvp' ? 'RSVP' : key }) }));
 
 afterEach(() => {
     cleanup();
     schedule.items = null;
+    rsvp.link = null;
 });
 
 const event = { id: 'e-1', sessions: [], schedule: { startAt: null, timezone: null } } as unknown as EventDetailResponseDto;
@@ -60,6 +65,28 @@ describe('feed sections', () => {
         cleanup();
         renderSection(<FeedModeSection media={media} event={event} section={section('feedSchedule', {})} />);
         expect(screen.queryByRole('button', { name: en.FeedPage.addToCalendar })).toBeNull();
+    });
+
+    it("puts the RSVP button on a session that takes answers, and the guest's answer once given", () => {
+        schedule.items = [
+            { id: 'church', time: '16:00', title: 'Church', place: null, state: 'done', rsvpEnabled: true },
+            { id: 'party', time: '19:00', title: 'Party', place: null, state: 'upcoming', rsvpEnabled: true },
+            { id: 'cake', time: '22:00', title: 'Cake', place: null, state: 'upcoming', rsvpEnabled: false },
+            { id: 'brunch', time: '23:00', title: 'Brunch', place: null, state: 'upcoming', rsvpEnabled: true },
+        ];
+        const answers: Record<string, FeedScheduleRsvpLink['answer']> = { party: 'attending', brunch: 'declined' };
+        rsvp.link = (sessionId) => ({ answer: answers[sessionId] ?? null, href: `/rsvp?session=${sessionId}` });
+        renderSection(<FeedModeSection media={media} event={event} section={section('feedSchedule', {})} />);
+        expect(screen.getByRole('link', { name: 'RSVP', description: 'Church' }).getAttribute('href')).toBe('/rsvp?session=church');
+        expect(screen.getByRole('link', { name: en.RSVPPage.stats.attending, description: 'Party' }).getAttribute('href')).toBe('/rsvp?session=party');
+        expect(screen.getByRole('link', { name: en.RSVPPage.stats.declined, description: 'Brunch' }).getAttribute('href')).toBe('/rsvp?session=brunch');
+        expect(screen.getAllByRole('link')).toHaveLength(3);
+    });
+
+    it("has no RSVP button for whom the form isn't", () => {
+        schedule.items = [{ id: 'church', time: '16:00', title: 'Church', place: null, state: 'upcoming', rsvpEnabled: true }];
+        renderSection(<FeedModeSection media={media} event={event} section={section('feedSchedule', {})} />);
+        expect(screen.queryByRole('link')).toBeNull();
     });
 
     it("draws nothing when there's nothing to show, or the placeholder in edit mode", () => {

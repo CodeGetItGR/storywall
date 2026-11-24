@@ -4,7 +4,7 @@ import { expect, userEvent, within } from 'storybook/test';
 
 import { withAppContext } from '@/.storybook/appContext';
 import { copyFor } from '@/.storybook/copy';
-import { storyEvent, storyHostMember, storyModules, storySession } from '@/.storybook/fixtures';
+import { storyEvent, storyHostMember, storyMember, storyModules, storySession } from '@/.storybook/fixtures';
 import { waitForOpen } from '@/.storybook/waitForOpen';
 import { FeedBlockPlaceholder } from '@/components/feed/edit/FeedBlockPlaceholder';
 import { FeedModeSection } from '@/components/feed/sections/FeedModeSection';
@@ -52,6 +52,26 @@ const longTitles = eventWith([
     storySession({ id: 'ses-party', title: 'Party', startAt: '2026-06-15T18:00:00Z', locationName: null }),
 ]);
 
+// The guest's RSVP: coming to the ceremony, not to the party, and lunch still to answer.
+const answered: Story = {
+    args: { event: today },
+    parameters: { app: { member: storyMember({ rsvpId: 'rsvp-1' }) } },
+    beforeEach({ msw }) {
+        msw.use(
+            http.get('*/api/rsvps/:rsvpId', () => HttpResponse.json({ id: 'rsvp-1', attendanceStatus: 'ATTENDING', adultCount: 1, childCount: 0 })),
+            http.get('*/api/rsvps/:rsvpId/session-responses', () =>
+                HttpResponse.json([
+                    { id: 'answer-1', rsvpId: 'rsvp-1', eventSessionId: 'ses-main', isAttending: true },
+                    { id: 'answer-2', rsvpId: 'rsvp-1', eventSessionId: 'ses-party', isAttending: false },
+                ]),
+            ),
+        );
+    },
+    play: async ({ canvasElement, globals }) => {
+        await within(canvasElement).findByRole('link', { name: copyFor(globals).RSVPPage.stats.attending });
+    },
+};
+
 const prompt = (text: string) => ({ ...createFeedModeSection('feedPrompt', () => 'prompt'), data: { text } }) as InvitationSection;
 
 const boyOrGirl = storyEvent({
@@ -93,7 +113,7 @@ const pinned = (mediaIds: string[]) =>
         data: { photos: mediaIds.map((mediaId) => ({ id: mediaId, image: { source: 'media', mediaId } })) },
     }) as InvitationSection;
 
-// Also shows FeedScheduleSection, FeedPromptSection, FeedHeOrSheSection, FeedPinnedSection and FeedPinnedPhotos.
+// Also shows FeedScheduleSection, FeedScheduleRsvp, FeedPromptSection, FeedHeOrSheSection, FeedPinnedSection and FeedPinnedPhotos.
 const meta = {
     title: 'Feed/Sections/FeedModeSection',
     component: FeedModeSection,
@@ -120,6 +140,13 @@ export const ScheduleNow: Story = { args: { event: today } };
 export const ScheduleLongTitles: Story = { args: { event: longTitles } };
 
 export const ScheduleMobile: Story = { ...ScheduleNow, globals: { viewport: { value: 'mobile' } } };
+
+export const ScheduleRsvpAnswered: Story = answered;
+
+export const ScheduleRsvpAnsweredMobile: Story = { ...answered, globals: { viewport: { value: 'mobile' } } };
+
+// Hosts have no RSVP button: the form isn't theirs.
+export const ScheduleHost: Story = { parameters: { app: { member: storyHostMember } } };
 
 export const ScheduleAddToCalendar: Story = {
     play: async ({ canvasElement, globals }) => {
