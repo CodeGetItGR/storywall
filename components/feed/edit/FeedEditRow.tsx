@@ -1,6 +1,6 @@
 'use client';
 
-import { Palette, Save, X } from 'lucide-react';
+import { Eye, Palette, Save, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import type { Ref } from 'react';
 
@@ -11,40 +11,62 @@ type FeedEditRowProps = {
     failed: boolean;
     // Absent: no Theme button (an event without Save my date, plan 8).
     onTheme?: () => void;
+    // Showing the feed as guests will see it.
+    previewing: boolean;
+    onPreview: () => void;
     onCancel: () => void;
     onSave: () => void;
     cancelRef?: Ref<HTMLButtonElement>;
 };
 
-// Smaller and tighter on phones, so all three fit at 360 in Greek, saving too.
-const BUTTON =
-    'inline-flex h-8 items-center gap-1 rounded-full px-2.5 text-[13px] whitespace-nowrap shadow-sm disabled:opacity-60 sm:h-9 sm:gap-1.5 sm:px-3.5 sm:text-sm';
-const PLAIN = cn(BUTTON, 'border border-black/10 bg-white font-medium text-ink');
+// Smaller and tighter on phones, so all four fit at 360 in Greek, saving too. Each has a 40 px tap area.
+const SHAPE =
+    'relative inline-flex h-8 items-center rounded-full text-[13px] whitespace-nowrap before:absolute before:-inset-y-1 before:inset-x-0 disabled:opacity-60 sm:h-9 sm:text-sm';
+const SHADOW = 'shadow-[0_2px_8px_rgba(36,31,26,0.14)]';
+const BUTTON = cn(SHAPE, SHADOW, 'gap-1 px-2.5 sm:gap-1.5 sm:px-3.5');
+const PLAIN = cn(BUTTON, 'border border-[#ffcfa6] bg-white font-medium text-ink');
 const ICON = 'h-3.5 w-3.5 shrink-0 sm:h-4 sm:w-4';
 
-// Edit mode's Theme, Cancel and Save, as a row under the cover (under the pill when it shows), with the save error under it.
-export function FeedEditRow({ saving, failed, onTheme, onCancel, onSave, cancelRef }: FeedEditRowProps) {
+// Edit mode's Theme, preview eye, Cancel and Save (mockup 2026-11-24): a row under the cover, the save error under it,
+// then a dashed line across the page.
+export function FeedEditRow({ saving, failed, onTheme, previewing, onPreview, onCancel, onSave, cancelRef }: FeedEditRowProps) {
     const t = useTranslations('InvitationEditor');
     const tFeed = useTranslations('FeedEditor');
+    const previewLabel = previewing ? tFeed('edit') : t('preview');
 
     return (
-        <div className="flex flex-col gap-2 px-4 pt-3 font-sans">
+        <div className="flex flex-col gap-2 border-b border-dashed border-black/15 px-4 pt-3 pb-4 font-sans">
             {/* Actions */}
             <div className="flex items-center justify-between gap-1.5 sm:gap-2">
-                {/* Theme */}
-                {onTheme ? (
+                {/* Theme and preview. Theme keeps its place while previewing, so the eye stays under the finger. */}
+                <div className="flex gap-1.5 sm:gap-2">
+                    {onTheme && (
+                        <button
+                            type="button"
+                            onClick={onTheme}
+                            disabled={saving}
+                            className={cn(
+                                BUTTON,
+                                'font-semibold text-white transition-opacity bg-gradient-brand hover:opacity-90',
+                                previewing && 'invisible',
+                            )}
+                        >
+                            <Palette className={ICON} aria-hidden="true" />
+                            {tFeed('themes')}
+                        </button>
+                    )}
                     <button
                         type="button"
-                        onClick={onTheme}
+                        onClick={onPreview}
                         disabled={saving}
-                        className={cn(BUTTON, 'font-semibold text-white transition-opacity bg-gradient-brand hover:opacity-90')}
+                        aria-pressed={previewing}
+                        aria-label={previewLabel}
+                        title={previewLabel}
+                        className={cn(SHAPE, SHADOW, 'w-8 justify-center sm:w-9', previewing ? 'bg-ink text-white' : 'bg-white text-ink')}
                     >
-                        <Palette className={ICON} aria-hidden="true" />
-                        {tFeed('themes')}
+                        <Eye className={ICON} aria-hidden="true" />
                     </button>
-                ) : (
-                    <span />
-                )}
+                </div>
 
                 {/* Cancel and Save */}
                 <div className="flex gap-1.5 sm:gap-2">
@@ -53,7 +75,7 @@ export function FeedEditRow({ saving, failed, onTheme, onCancel, onSave, cancelR
                         {t('cancel')}
                     </button>
                     <button type="button" onClick={onSave} disabled={saving} aria-busy={saving} className={PLAIN}>
-                        <Save className={ICON} aria-hidden="true" />
+                        <Save className={cn(ICON, 'text-[#17917f]')} aria-hidden="true" />
                         {saving ? t('saving') : t('save')}
                     </button>
                 </div>

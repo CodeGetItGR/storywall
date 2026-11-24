@@ -110,6 +110,12 @@ export function FeedPageContent() {
         moduleBlock,
     };
 
+    // What guests see differently from the host editing, for edit mode's preview.
+    const guestParts = {
+        cover: <FeedCoverBlock event={coverEvent} isHost={false} wishlist={moduleFlags.wishlist} />,
+        rsvp: moduleFlags.rsvp ? <FeedRsvpBlock eventId={eventId} deadline={event.schedule.rsvpDeadline ?? null} /> : null,
+    };
+
     // Feed mode's sections go to the member page only: edit mode draws its own, where a pinned photo takes no tap.
     const feedTop = <FeedTop view={top} mode={pageMode ?? 'single'} modeSwitch={modeSwitch} {...topParts} feedSection={feedSection} />;
 
@@ -139,6 +145,7 @@ export function FeedPageContent() {
                 <LazyFeedEditTop
                     event={event}
                     scope={editMode.scope}
+                    guest={guestParts}
                     onDone={finishEditing}
                     cancelRef={cancelPill}
                     fallback={feedTop}

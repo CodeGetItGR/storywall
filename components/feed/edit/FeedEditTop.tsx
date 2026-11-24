@@ -15,6 +15,7 @@ import { FeedEditInvitationSection } from '@/components/feed/edit/FeedEditInvita
 import { FeedEditRow } from '@/components/feed/edit/FeedEditRow';
 import { FeedEditThemeSheet } from '@/components/feed/edit/FeedEditThemeSheet';
 import { FeedPremiumTiles } from '@/components/feed/edit/FeedPremiumTiles';
+import { feedPreviewParts } from '@/components/feed/edit/feedPreviewParts';
 import { FeedSectionBackgroundSheet } from '@/components/feed/edit/FeedSectionBackgroundSheet';
 import { FeedLook, FeedNative } from '@/components/feed/layout/FeedLook';
 import { feedLookParts } from '@/components/feed/layout/FeedLookTop';
@@ -30,6 +31,7 @@ import type { FeedBlockToolActions } from '@/hooks/useFeedBlockHandlers';
 import { useFeedBlockSheet } from '@/hooks/useFeedBlockSheet';
 import { useFeedEditBlockTools } from '@/hooks/useFeedEditBlockTools';
 import { useFeedEditPanels } from '@/hooks/useFeedEditPanels';
+import { useFeedEditPreview } from '@/hooks/useFeedEditPreview';
 import { useFeedEditSectionPart } from '@/hooks/useFeedEditSectionPart';
 import { useFeedEditSession } from '@/hooks/useFeedEditSession';
 import { useFeedInvitationAddItems } from '@/hooks/useFeedInvitationAddItems';
@@ -41,6 +43,7 @@ import { useEditPageTheme } from '@/hooks/useFeedPageTheme';
 import { useFeedSectionBackground } from '@/hooks/useFeedSectionBackground';
 import { useFeedSectionContent } from '@/hooks/useFeedSectionContent';
 import { useFeedSectionName } from '@/hooks/useFeedSectionName';
+import { useFeedSectionPart } from '@/hooks/useFeedSectionPart';
 import { useFeedSectionPreviews } from '@/hooks/useFeedSectionPreviews';
 import { useFeedTextPresets } from '@/hooks/useFeedTextPresets';
 import { useFeedTop } from '@/hooks/useFeedTop';
@@ -56,20 +59,26 @@ import { themeColors } from '@/lib/invitation/textEditing';
 
 const MODIFIERS = [restrictToVerticalAxis];
 
-// scope: what may change (useFeedEditMode). cancelRef: the Cancel pill, which takes focus as edit mode opens.
+// The pieces a guest sees differently from the host editing.
+export type FeedGuestParts = Pick<FeedTopProps, 'cover' | 'rsvp'>;
+
+// scope: what may change (useFeedEditMode). guest: for the preview. cancelRef: the Cancel pill, which takes focus as
+// edit mode opens.
 type FeedEditTopProps = Omit<FeedTopProps, 'view' | 'modeSwitch'> & {
     event: EventDetailResponseDto;
     scope: FeedEditScope;
+    guest: FeedGuestParts;
     onDone: () => void;
     cancelRef?: Ref<HTMLButtonElement>;
 };
 
 // The top of the feed in edit mode: the same frame as the feed, Theme / Cancel / Save under the cover, every block
 // with its tools, Save my date text typed in place, the Add section rows around the host's blocks, and the Theme sheet. All
-// held until Save. Without Save my date only Feed mode's sections have tools: the rest draws as on the feed.
+// held until Save. Its eye shows it all as guests will see it, without the tools. Without Save my date only Feed mode's sections have tools: the rest draws as on the feed.
 export function FeedEditTop({
     event,
     scope,
+    guest,
     onDone,
     cancelRef,
     mode = 'single',
@@ -87,7 +96,8 @@ export function FeedEditTop({
     // The saved layout's photos plus the ones the host uploads while editing.
     const uploads = useFeedUploadedMedia(session.media);
     const sheetUploads = useMemo(() => ({ uploadImage: feedImageUploader(event.id), remember: uploads.remember }), [event.id, uploads.remember]);
-    const view = useFeedTop(event, { document: session.document, theme: session.theme, media: uploads.media });
+    const { previewing, toggle: togglePreview } = useFeedEditPreview();
+    const view = useFeedTop(event, { document: session.document, theme: session.theme, media: uploads.media, asGuest: previewing });
     useEditPageTheme(event.id, session.wallTheme, session.background, view.backdrop);
     const fonts = useInvitationFonts(true);
     const textPresets = useFeedTextPresets(fonts.data);
@@ -134,6 +144,14 @@ export function FeedEditTop({
     });
     const content = useFeedSectionContent(sheet.section, view.ctx, ownColors, blockTools);
     const menu = useFeedOpenMenu();
+    // The preview hides every tool, so whatever is open closes first.
+    const { closeAll } = panels;
+    const { close: closeMenu } = menu;
+    const onPreview = useCallback(() => {
+        closeAll();
+        closeMenu();
+        togglePreview();
+    }, [closeAll, closeMenu, togglePreview]);
 
     const tools: FeedBlockToolActions = {
         onToggleVisible: actions.toggleVisible,
@@ -148,6 +166,8 @@ export function FeedEditTop({
             saving={session.saving}
             failed={session.failed}
             onTheme={feedOnly ? undefined : panels.openTheme}
+            previewing={previewing}
+            onPreview={onPreview}
             onCancel={session.cancel}
             onSave={session.save}
             cancelRef={cancelRef}
@@ -181,7 +201,7 @@ export function FeedEditTop({
         [openAdd],
     );
     const base = view.look ? feedLookParts(view) : PLAIN_PARTS;
-    const parts: FeedTopParts = {
+    const editParts: FeedTopParts = {
         // The feed's own blocks are set on the event, not typed here: their content takes no taps.
         block: (section, content) => {
             const block = base.block(section, <div inert>{content}</div>);
@@ -212,13 +232,16 @@ export function FeedEditTop({
             ),
     };
 
+    const guestFeedSection = useFeedSectionPart(event, uploads.media);
+    const guestPieces: Partial<FeedTopProps> = { ...guest, description, feedSection: guestFeedSection, between: undefined, afterFeed: undefined };
+
     const frame = (
         <FeedTopFrame
             view={view}
             mode={mode}
             editRow={editRow}
             dateRow={dateRow}
-            parts={parts}
+            parts={previewing ? feedPreviewParts(base) : editParts}
             cover={cover}
             stories={stories}
             description={description || (!feedOnly && <FeedBlockPlaceholder name={t('sectionNames.feedDescription')} />)}
@@ -233,6 +256,7 @@ export function FeedEditTop({
                     </FeedNative>
                 )
             }
+            {...(previewing ? guestPieces : undefined)}
         />
     );
 
@@ -245,6 +269,7 @@ export function FeedEditTop({
             variant="feed"
             presets={textPresets.presets}
             onLinkAdded={panels.openSettings}
+            paused={previewing}
         >
             {/* The uploaded fonts the Style presets name */}
             {textPresets.fontFaces && <style>{textPresets.fontFaces}</style>}

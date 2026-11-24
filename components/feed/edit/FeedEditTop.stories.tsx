@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 import { useQueryClient } from '@tanstack/react-query';
 import { http, HttpResponse } from 'msw';
 import { type ReactNode, useState } from 'react';
-import { fn } from 'storybook/test';
+import { fn, userEvent, within } from 'storybook/test';
 
 import { withAppContext } from '@/.storybook/appContext';
 import { copyFor } from '@/.storybook/copy';
@@ -72,6 +72,7 @@ function EditStory({ event, sections, mode, scope }: EditArgs) {
                 event={event}
                 mode={mode}
                 scope={scope}
+                guest={{ cover: <FeedCoverBlock event={event} isHost={false} wishlist={false} />, rsvp: <Box label="RSVP" /> }}
                 onDone={fn()}
                 cover={<FeedCoverBlock event={event} isHost wishlist={false} editing />}
                 dateRow={<EventInfo date={Date.UTC(2026, 6, 4)} place="Rhodes" className="mt-3 w-full px-4" />}
@@ -150,6 +151,17 @@ export const WithoutSaveMyDate: Story = {
     render: (args, { globals }) => (
         <EditStory {...args} sections={[sectionsWith(copyFor(globals).FeedSections.prompt.placeholder)[1], createFeedModeSection('feedPinned')]} />
     ),
+};
+
+// The eye: as guests will see it, the hidden section gone with the tools.
+export const Preview: Story = {
+    render: (args, { globals }) => {
+        const [schedule, prompt, pinned] = sectionsWith(copyFor(globals).FeedSections.prompt.placeholder);
+        return <EditStory {...args} sections={[schedule, { ...prompt, visible: false }, pinned]} />;
+    },
+    play: async ({ canvasElement, globals }) => {
+        await userEvent.click(await within(canvasElement).findByRole('button', { name: copyFor(globals).InvitationEditor.preview }));
+    },
 };
 
 // Just added: nothing to show yet, so each one is drawn by its name.

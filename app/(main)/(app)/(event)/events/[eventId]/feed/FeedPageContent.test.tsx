@@ -595,6 +595,32 @@ describe('FeedPageContent edit mode', { timeout: 15_000 }, () => {
         expect(sections.at(-1)?.data).toMatchObject({ text: 'Show us your shoes' });
     });
 
+    it('previews the unsaved feed as guests will see it, then brings the tools back', async () => {
+        const modules = [...SMD, { moduleKey: 'rsvp', isAvailable: true, isEnabled: true }];
+        renderFeed(null, { flag: true, layout: savedLayout(dressCode), isHost: true, modules, startAt: '2099-06-01T15:00:00Z' });
+        fireEvent.click(await screen.findByRole('button', { name: 'edit' }));
+        const dress = await screen.findByRole('group', { name: `sectionNames.${dressCode.type}` }, LAZY_LOOK);
+        fireEvent.click(dress);
+        expect(await screen.findByRole('dialog', { name: `sectionNames.${dressCode.type}` })).toBeTruthy();
+        fireEvent.click(within(dress).getByRole('button', { name: 'hide' }));
+
+        // Everything open closes; hidden sections, tools and Add section rows go.
+        fireEvent.click(screen.getByRole('button', { name: 'preview' }));
+        expect(screen.queryByRole('group')).toBeNull();
+        expect(document.querySelector('[data-feed-block-tools]')).toBeNull();
+        expect(screen.queryByRole('button', { name: 'add' })).toBeNull();
+        await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+        expect(document.querySelector('.smd-section-dressCode, [data-section-type="dressCode"]')).toBeNull();
+        expect(screen.getByRole('button', { name: 'cancel' })).toBeTruthy();
+        expect(screen.getByRole('button', { name: 'save' })).toBeTruthy();
+        expect(api.put).not.toHaveBeenCalled();
+
+        // Back, with the change still held.
+        fireEvent.click(screen.getByRole('button', { name: 'edit' }));
+        const again = screen.getByRole('group', { name: `sectionNames.${dressCode.type}` });
+        expect(within(again).getByText('hidden')).toBeTruthy();
+    });
+
     it('asks before Cancel drops changes', async () => {
         renderFeed(null, { flag: true, layout: savedLayout(), isHost: true, modules: SMD });
         fireEvent.click(await screen.findByRole('button', { name: 'edit' }));

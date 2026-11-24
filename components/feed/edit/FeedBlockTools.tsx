@@ -44,8 +44,10 @@ export function FeedBlockTools({ section, name, controls, hasSettings, drag, act
         <div
             data-feed-block-tools
             className={cn(
-                'pointer-events-none absolute z-40 flex items-start justify-between gap-2 transition-none',
+                'pointer-events-none absolute flex items-start justify-between gap-2 transition-none',
                 isModule ? MODULE_PLACE : 'inset-x-4 top-3',
+                // Its open dropdown hangs over the next block's tools.
+                menuOpen ? 'z-50' : 'z-40',
             )}
         >
             {/* Visibility and name: from the content's left edge, centred on the first tool on the right */}

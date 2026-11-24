@@ -37,6 +37,8 @@ type InlineTextEditingProps = {
     presets?: TextStylePresetDto[];
     // The feed: after Link adds a link to a block, open that block's settings.
     onLinkAdded?: (sectionId: string) => void;
+    // The canvas shows no text to edit for now: its toolbar is away too.
+    paused?: boolean;
     // The canvas: every text in it becomes editable in place.
     children: ReactNode;
 };
@@ -55,6 +57,7 @@ export function InlineTextEditing({
     variant = 'invitation',
     presets,
     onLinkAdded,
+    paused = false,
     children,
 }: InlineTextEditingProps) {
     const t = useTranslations('InvitationEditor');
@@ -79,6 +82,7 @@ export function InlineTextEditing({
 
             {/* Text toolbar */}
             {edit.active &&
+                !paused &&
                 (variant === 'feed' ? (
                     <FeedTextToolbar
                         toolbar={toolbar}
