@@ -8,8 +8,10 @@ import {
     MIN_INK_CONTRAST,
     MIN_INK_MUTED_CONTRAST,
     readableOnInk,
+    readableOnInkText,
     relativeLuminance,
     tooDarkForInk,
+    tooDarkForInkText,
 } from '@/lib/contrast';
 
 describe('relativeLuminance', () => {
@@ -72,6 +74,20 @@ describe('readableOnInk', () => {
             expect(contrastRatio(readable, INK_COLOR)).toBeGreaterThanOrEqual(MIN_INK_CONTRAST);
             expect(contrastRatio(readable, INK_MUTED_COLOR)).toBeGreaterThanOrEqual(MIN_INK_MUTED_CONTRAST);
         }
+    });
+});
+
+describe('readableOnInkText', () => {
+    it('keeps a colour ink reads on, even when the grey labels would not', () => {
+        expect(tooDarkForInk('#FF7A59')).toBe(true);
+        expect(tooDarkForInkText('#FF7A59')).toBe(false);
+        expect(readableOnInkText('#FF7A59')).toBe('#FF7A59');
+    });
+
+    it('lightens a dark colour until ink reads on it', () => {
+        const drawn = readableOnInkText('#1B2A4A');
+        expect(drawn).not.toBe('#1B2A4A');
+        expect(tooDarkForInkText(drawn)).toBe(false);
     });
 });
 
