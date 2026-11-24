@@ -8,8 +8,8 @@ export const FEED_PAGE_SCOPE = '[data-event-scope]';
 const FEED_BACKDROP_LAYER = '[data-feed-backdrop-layer]';
 
 // Keeps a strip that sits on the page (the sticky header) lined up with the page's backdrop: where it sits on
-// the page and how wide the page is, as the variables .feed-backdrop-strip reads (components/event/feedBackdrop.css),
-// and with a cover picture fixed to the screen, where it sits on that picture's layer and how big the layer is.
+// the page and how wide the page is, as the variables .feed-backdrop-strip-fill reads
+// (components/event/feedBackdrop.css), and with a cover picture fixed to the screen, where it sits on that picture's layer and how big the layer is.
 // They follow every scroll and resize, once a frame.
 export function useFeedBackdropStrip<T extends HTMLElement>() {
     const ref = useRef<T>(null);
