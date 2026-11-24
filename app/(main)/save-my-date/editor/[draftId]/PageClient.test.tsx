@@ -55,9 +55,13 @@ async function openEditor({ signedOut = false } = {}) {
     return { ...view, color };
 }
 
-function pick(input: HTMLElement, value: string) {
-    fireEvent.change(input, { target: { value } });
+// One of the text colour's circles, by its colour.
+function pick(circles: HTMLElement, value: string) {
+    fireEvent.click(within(circles).getByRole('button', { name: value }));
 }
+
+// The circle in use.
+const picked = (circles: HTMLElement) => within(circles).getByRole('button', { pressed: true }).getAttribute('aria-label');
 
 // The save status in the top bar. The invitation has status lines of its own.
 function saveStatus() {
@@ -116,38 +120,38 @@ describe('Invitation editor page', { timeout: EDITOR_FLOW_TIMEOUT_MS }, () => {
 
     it('edits, undoes and redoes the text colour', async () => {
         const { color } = await openEditor();
-        const original = (color as HTMLInputElement).value;
+        const original = picked(color);
         expect(screen.getByRole('button', { name: 'Undo' })).toBeDisabled();
 
-        pick(color, '#112233');
-        expect(color).toHaveValue('#112233');
+        pick(color, '#B5BFA6');
+        expect(picked(color)).toBe('#B5BFA6');
         expect(saveStatus()).toHaveTextContent('Unsaved changes');
 
         fireEvent.click(screen.getByRole('button', { name: 'Undo' }));
-        expect(color).toHaveValue(original);
+        expect(picked(color)).toBe(original);
 
         fireEvent.click(screen.getByRole('button', { name: 'Redo' }));
-        expect(color).toHaveValue('#112233');
+        expect(picked(color)).toBe('#B5BFA6');
 
         fireEvent.keyDown(window, { key: 'z', ctrlKey: true });
-        expect(color).toHaveValue(original);
+        expect(picked(color)).toBe(original);
     });
 
     it('saves before the preview opens', async () => {
         const { color } = await openEditor();
-        pick(color, '#112233');
+        pick(color, '#B5BFA6');
 
         fireEvent.click(screen.getByRole('button', { name: 'Preview' }));
 
         await screen.findByRole('dialog');
         expect(backend.saves).toHaveLength(1);
-        expect(backend.saves[0]).toMatchObject({ revision: 4, document: { overrides: { textColor: '#112233' } } });
+        expect(backend.saves[0]).toMatchObject({ revision: 4, document: { overrides: { textColor: '#B5BFA6' } } });
         expect(saveStatus()).toHaveTextContent('Saved');
     });
 
     it('saves, then asks a visitor to sign in to publish', async () => {
         const { color } = await openEditor({ signedOut: true });
-        pick(color, '#112233');
+        pick(color, '#B5BFA6');
 
         fireEvent.click(screen.getByRole('button', { name: 'Publish' }));
 
@@ -161,14 +165,14 @@ describe('Invitation editor page', { timeout: EDITOR_FLOW_TIMEOUT_MS }, () => {
             'href',
             '/register?next=%2Fsave-my-date%2Feditor%2Fdraft-1%3Fpublish%3D1',
         );
-        expect(backend.stored().document.overrides.textColor).toBe('#112233');
+        expect(backend.stored().document.overrides.textColor).toBe('#B5BFA6');
     });
 
     it('stops on a conflict and loads the newer version', async () => {
         const { color } = await openEditor();
         const newer = { ...backend.stored().document, overrides: { ...backend.stored().document.overrides, textColor: '#000000' } };
         backend.saveElsewhere(newer);
-        pick(color, '#112233');
+        pick(color, '#B5BFA6');
 
         fireEvent.click(screen.getByRole('button', { name: 'Publish' }));
 
@@ -179,7 +183,7 @@ describe('Invitation editor page', { timeout: EDITOR_FLOW_TIMEOUT_MS }, () => {
         fireEvent.click(within(dialog).getByRole('button', { name: 'Load the newer version' }));
 
         await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
-        expect(screen.getByLabelText('Text color')).toHaveValue('#000000');
+        expect(picked(screen.getByLabelText('Text color'))).toBe('#000000');
         expect(screen.getByRole('button', { name: 'Undo' })).toBeDisabled();
     });
 
@@ -187,19 +191,19 @@ describe('Invitation editor page', { timeout: EDITOR_FLOW_TIMEOUT_MS }, () => {
         const { color } = await openEditor();
         expect(closeTab()).toBe(false);
 
-        pick(color, '#112233');
+        pick(color, '#B5BFA6');
         expect(closeTab()).toBe(true);
     });
 
     it('saves on back, and asks when the save fails', async () => {
         const { color } = await openEditor();
-        pick(color, '#112233');
+        pick(color, '#B5BFA6');
         fireEvent.click(screen.getByRole('button', { name: 'Back' }));
         await waitFor(() => expect(router.back).toHaveBeenCalledOnce());
         expect(backend.saves).toHaveLength(1);
 
         backend.server.use(http.put(`${TEST_API}/api/invitation-drafts/:id`, () => HttpResponse.json({ status: 400 }, { status: 400 })));
-        pick(screen.getByLabelText('Text color'), '#445566');
+        pick(screen.getByLabelText('Text color'), '#AC9FC7');
         fireEvent.click(screen.getByRole('button', { name: 'Back' }));
 
         const dialog = await screen.findByRole('dialog');
