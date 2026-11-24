@@ -48,7 +48,7 @@ export function isPlainFeedStyle(style: SectionStyle): boolean {
     );
 }
 
-function feedBlock(type: FeedSectionType): InvitationSection {
+export function feedBlock(type: FeedSectionType): InvitationSection {
     return {
         id: `feed-${type}`,
         type,

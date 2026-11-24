@@ -11,13 +11,13 @@ import { FEED_EDIT_FEATURES, type FeedEditBannerState } from '@/lib/feedEditBann
 type FeedEditBannerProps = { state: Exclude<FeedEditBannerState, null>; href: string; illustration: ReactNode };
 
 // The Overview's invitation to customize the feed: unlock Save my date, or start editing.
-// Phones: the event's own cover across the top, then what hosts can change. Desktop: the cover beside the list.
+// Phones: the event's feed in edit mode across the top, then what hosts can change. Desktop: the picture beside the list.
 export function FeedEditBanner({ state, href, illustration }: FeedEditBannerProps) {
     const t = useTranslations('FeedEditor.banner');
 
     return (
         <section className="flex flex-col overflow-hidden rounded-2xl bg-surface-muted lg:flex-row">
-            {/* Preview: the event's cover in a Save my date theme, or in its wall look */}
+            {/* Preview: the top of the event's feed in edit mode, in a Save my date theme or its wall look */}
             <div role="img" aria-label={t('previewAlt')} className="w-full shrink-0 p-3 pb-0 lg:w-80 lg:self-center lg:pr-0 lg:pb-3">
                 {illustration}
             </div>
