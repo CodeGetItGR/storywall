@@ -107,6 +107,11 @@ const sectionWith = (background: Partial<FeedSectionBackground> = {}): Story => 
     };
 };
 
+// A block with nothing of its own to edit, shown to members only.
+const membersOnlyStory: Story = {
+    render: (args, { globals }) => <Sheet {...args} title={copyFor(globals).InvitationEditor.sectionNames.dressCode} membersOnly />,
+};
+
 export const PhotoPrompt: Story = {};
 export const PhotoPromptMobile: Story = onPhone;
 
@@ -117,6 +122,9 @@ export const InvitationSectionBackgroundPhoto: Story = sectionWith({ hasPhoto: t
 export const InvitationSectionBackgroundFailed: Story = sectionWith({ failed: true });
 // A colour the text can't be read on.
 export const InvitationSectionBackgroundColor: Story = sectionWith({ color: '#7A3B2E' });
+
+export const MembersOnly: Story = membersOnlyStory;
+export const MembersOnlyMobile: Story = { ...membersOnlyStory, ...onPhone };
 
 export const PinnedPhotos: Story = pinnedStory(3);
 export const PinnedPhotosMobile: Story = { ...pinnedStory(3), ...onPhone };
