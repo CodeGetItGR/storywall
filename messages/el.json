@@ -6847,6 +6847,7 @@
         }
     },
     "FeedEditor": {
+        "addIntro": "Προσθέστε όποια ενότητα θέλετε για το ψηφιακό σας προσκλητήριο",
         "addPhoto": "Προσθήκη φωτογραφίας",
         "background": {
             "tooDark": "Πολύ σκούρο για το κείμενο. Θα εμφανιστεί μια πιο ανοιχτή απόχρωση."
@@ -6865,6 +6866,10 @@
             }
         },
         "edit": "Επεξεργασία",
+        "moduleOpen": "Άνοιγμα",
+        "premium": "Premium",
+        "premiumLess": "Λιγότερα",
+        "premiumMore": "Περισσότερα",
         "saveFailed": "Δεν ήταν δυνατή η αποθήκευση των αλλαγών. Δοκιμάστε ξανά.",
         "style": "Στιλ",
         "themes": "Θέματα"
@@ -10689,19 +10694,21 @@
             "date": "Ημερομηνία",
             "countdown": "Αντίστροφη μέτρηση",
             "locations": "Εκκλησία & Δεξίωση",
-            "parents": "Γονείς & Νονοί",
+            "parents": "Οικογένειες",
             "rsvp": "RSVP",
-            "gift": "Λίστα Δώρων / IBAN",
+            "gift": "Δώρο - Αρ. Λογαριασμού",
             "accommodation": "Διαμονή",
             "program": "Πρόγραμμα εκδήλωσης",
+            "programWedding": "Πρόγραμμα γάμου",
+            "programBaptism": "Πρόγραμμα βάπτισης",
             "programIcons": "Πρόγραμμα Timeline Icons",
             "contact": "Επικοινωνία",
-            "gallery": "Gallery / Carousel",
-            "faq": "Συχνές Ερωτήσεις",
+            "gallery": "Photo Gallery",
+            "faq": "Συχνές ερωτήσεις",
             "blank": "Κενό Section",
             "photo": "Φωτογραφία",
             "coupleNames": "Ονόματα Ζευγαριού",
-            "ourStoryProposal": "Η ιστορία μας",
+            "ourStoryProposal": "Our Story - The proposal",
             "dressCode": "Dress Code",
             "coupleContact": "Επικοινωνία Ζευγαριού",
             "weddingSponsors": "Κουμπάροι",

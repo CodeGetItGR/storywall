@@ -13,7 +13,8 @@ import { type ThemeDesign, themeDesignSchema } from '@/lib/invitation/theme';
 // document.themeId for a layout on the event's own wall theme.
 export const WALL_THEME_ID = 'wall';
 
-// The Save my date blocks a feed may hold. They need the save_my_date module.
+// The Save my date blocks a feed may hold. They need the save_my_date module. The list's types (lib/feedAddList)
+// and the older ones a saved layout may still hold (coupleNames, parentsSimple, weddingSponsorsSimple).
 export const PAID_FEED_SECTION_TYPES = [
     'coupleNames',
     'parents',
@@ -24,6 +25,15 @@ export const PAID_FEED_SECTION_TYPES = [
     'dressCode',
     'faq',
     'gallery',
+    'invitation',
+    'coupleProfiles',
+    'ourStoryProposal',
+    'program',
+    'accommodation',
+    'gift',
+    'contact',
+    'baby',
+    'parentsPhoto',
 ] as const satisfies readonly SectionType[];
 
 // Shared with the server prefetch, so it lives here rather than in the 'use client' hook.
@@ -48,7 +58,7 @@ export function isPlainFeedStyle(style: SectionStyle): boolean {
     );
 }
 
-export function feedBlock(type: FeedSectionType): InvitationSection {
+export function newFeedBlock(type: FeedSectionType): InvitationSection {
     return {
         id: `feed-${type}`,
         type,
@@ -65,7 +75,7 @@ export function feedBlock(type: FeedSectionType): InvitationSection {
 // What an event with no saved layout draws: today's feed. Each block draws only when it has
 // something to show (a description, an RSVP to ask for).
 export function defaultFeedLayout(): InvitationDocument {
-    return { schemaVersion: INVITATION_SCHEMA_VERSION, themeId: WALL_THEME_ID, overrides: {}, sections: FEED_SECTION_TYPES.map(feedBlock) };
+    return { schemaVersion: INVITATION_SCHEMA_VERSION, themeId: WALL_THEME_ID, overrides: {}, sections: FEED_SECTION_TYPES.map(newFeedBlock) };
 }
 
 export type FeedFrame = {
@@ -89,7 +99,7 @@ export function feedFrame(layout: InvitationDocument, { ended, rsvpMoves = false
     const isMiddle = (section: InvitationSection) =>
         section.type === 'feedDescription' || !isFeedSectionType(section.type) || (rsvpMoves && section.type === 'feedRsvp');
     return {
-        cover: layout.sections.find((section) => section.type === 'feedCover') ?? feedBlock('feedCover'),
+        cover: layout.sections.find((section) => section.type === 'feedCover') ?? newFeedBlock('feedCover'),
         middle: ended ? [] : layout.sections.filter((section) => section.visible && isMiddle(section)),
         rsvp: ended || rsvpMoves ? null : shown('feedRsvp'),
     };

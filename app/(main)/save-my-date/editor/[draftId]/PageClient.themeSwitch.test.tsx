@@ -101,7 +101,7 @@ describe('Invitation editor: changing the design', { timeout: 20_000 }, () => {
 
         expect(within(dialog).getByText('Your texts, photos and dates stay. Only the design changes. You can undo this.')).toBeInTheDocument();
         expect(within(dialog).getByText("This design doesn't have these sections. They'll be hidden, not deleted:")).toBeInTheDocument();
-        expect(within(dialog).getByText('Gift list / IBAN')).toBeInTheDocument();
+        expect(within(dialog).getByText('Gift - Bank account')).toBeInTheDocument();
         expect(within(dialog).getByText('FAQ')).toBeInTheDocument();
     });
 

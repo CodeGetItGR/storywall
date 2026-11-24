@@ -1,6 +1,7 @@
 import { Fragment, type ReactNode } from 'react';
 
 import type { FeedTopView } from '@/hooks/useFeedTop';
+import { type FeedAddPlace, isHostBlock } from '@/lib/feedEditing';
 import type { FeedPageMode } from '@/lib/feedMode';
 import type { InvitationSection } from '@/lib/invitation/sections';
 
@@ -19,8 +20,10 @@ export type FeedTopProps = {
     description: ReactNode;
     // null when today's rules don't ask this member to reply.
     rsvp: ReactNode | null;
-    // Edit mode's Add section row, after the middle blocks.
-    afterMiddle?: ReactNode;
+    // What a feed module block draws (plan 7c). Without it, module blocks draw nothing.
+    moduleBlock?: (section: InvitationSection) => ReactNode;
+    // Edit mode's "+ Add section" rows (plan 7c): above the first host block, after each one; with none, one row (null).
+    between?: (place: FeedAddPlace) => ReactNode;
 };
 
 // How the frame draws its pieces: plainly, or in the invitation look (FeedLookTop).
@@ -53,17 +56,28 @@ export function FeedTopFrame({
     stories,
     description,
     rsvp,
-    afterMiddle,
+    moduleBlock,
+    between,
     parts,
 }: FeedTopProps & { parts: FeedTopParts }) {
     const { frame } = view;
     const invitation = mode !== 'feed';
     // RSVP is in the middle on Save my date (lib/feedLayout feedFrame); it draws only while today's rules ask.
-    const middle = frame.middle.map((section) => {
+    const drawMiddle = (section: InvitationSection) => {
         if (section.type === 'feedDescription') return parts.block(section, description);
         if (section.type === 'feedRsvp') return rsvp ? parts.block(section, rsvp) : null;
+        if (section.type === 'feedModule') return moduleBlock ? parts.block(section, moduleBlock(section)) : null;
         return parts.invitation(section);
-    });
+    };
+    const options = { rsvpMoves: view.rsvpMoves };
+    const firstHost = between ? frame.middle.find((section) => isHostBlock(section, options)) : undefined;
+    const middle = frame.middle.map((section) => (
+        <Fragment key={section.id}>
+            {section === firstHost && between?.({ before: section.id })}
+            {drawMiddle(section)}
+            {between && isHostBlock(section, options) && between({ after: section.id })}
+        </Fragment>
+    ));
 
     return (
         <>
@@ -84,7 +98,7 @@ export function FeedTopFrame({
 
             {/* Invitation sections */}
             {invitation && middle}
-            {invitation && afterMiddle}
+            {invitation && between && !firstHost && between(null)}
 
             {/* RSVP */}
             {invitation && frame.rsvp && rsvp && parts.block(frame.rsvp, rsvp)}

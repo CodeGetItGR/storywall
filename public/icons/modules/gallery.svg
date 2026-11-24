@@ -1,0 +1,27 @@
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">
+<g transform="translate(0.5 1) scale(0.7)" stroke-width="2.143">
+<path d="M13.997 4a2 2 0 0 1 1.76 1.05l.486.9A2 2 0 0 0 18.003 7H20a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h1.997a2 2 0 0 0 1.759-1.048l.489-.904A2 2 0 0 1 10.004 4z" stroke="url(#g-modules-gallery)"/>
+<circle cx="12" cy="13" r="3" stroke="url(#g-modules-gallery)"/>
+</g>
+<g stroke-width="1.500">
+<rect x="15.5" y="15.5" width="3" height="3" rx="0.5" stroke="url(#g-modules-gallery-1)"/>
+<rect x="19.5" y="15.5" width="3" height="3" rx="0.5" stroke="url(#g-modules-gallery-1)"/>
+<rect x="15.5" y="19.5" width="3" height="3" rx="0.5" stroke="url(#g-modules-gallery-1)"/>
+<circle cx="21" cy="21" r="0.9" fill="url(#g-modules-gallery-1)" stroke="none"/>
+</g>
+<defs>
+<linearGradient id="g-modules-gallery" x1="-1.14" y1="-1.86" x2="27.86" y2="27.14" gradientUnits="userSpaceOnUse">
+<stop offset="0.2" stop-color="#C777B1"/>
+<stop offset="0.43" stop-color="#E48279"/>
+<stop offset="0.54" stop-color="#F2885C"/>
+<stop offset="0.99" stop-color="#FEC463"/>
+</linearGradient>
+<linearGradient id="g-modules-gallery-1" x1="-0.30" y1="-0.30" x2="20.00" y2="20.00" gradientUnits="userSpaceOnUse">
+<stop offset="0.2" stop-color="#C777B1"/>
+<stop offset="0.43" stop-color="#E48279"/>
+<stop offset="0.54" stop-color="#F2885C"/>
+<stop offset="0.99" stop-color="#FEC463"/>
+</linearGradient>
+
+</defs>
+</svg>

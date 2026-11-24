@@ -33,7 +33,7 @@ stubIntersectionObserver();
 
 // Where each section type's story is, from this folder. The file must use
 // storySection('<type>') from .storybook/invitation.tsx.
-const SECTION_STORIES: Record<Exclude<SectionType, FeedSectionType>, string> = {
+const SECTION_STORIES: Record<Exclude<SectionType, FeedSectionType | 'feedModule'>, string> = {
     top: 'sections/TopSection.stories.tsx',
     blank: 'sections/CustomSection.stories.tsx',
     photo: 'sections/media/PhotoSection.stories.tsx',
@@ -255,7 +255,7 @@ describe('RSVP through the whole invitation', () => {
 });
 
 describe('Section coverage', () => {
-    it.each(SECTION_TYPES.filter((type) => !isFeedSectionType(type)))('%s is drawn', (type) => {
+    it.each(SECTION_TYPES.filter((type) => !isFeedSectionType(type) && type !== 'feedModule'))('%s is drawn', (type) => {
         const section = SAMPLE_SECTIONS[type] as InvitationSection;
         const { container } = renderInvitation({ ...SAMPLE_DOCUMENT, sections: [section] });
         expect(renderedIds(container)).toEqual([section.id]);

@@ -5,17 +5,20 @@ import { useTranslations } from 'next-intl';
 
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import type { ThemeSwitchStep } from '@/hooks/useThemeSwitch';
+import { sectionNameKey } from '@/lib/invitation/sectionNames';
 import type { ThemeSwitchSection } from '@/lib/invitation/themeSwitch';
 
 type ThemeSwitchDialogProps = {
     step: ThemeSwitchStep;
+    // The draft's event type, which names the schedule (sectionNameKey).
+    eventType?: string | null;
     onConfirm: () => void;
     // Back to the picker.
     onCancel: () => void;
 };
 
 // Asks before the design changes, and says what changes with it.
-export function ThemeSwitchDialog({ step, onConfirm, onCancel }: ThemeSwitchDialogProps) {
+export function ThemeSwitchDialog({ step, eventType, onConfirm, onCancel }: ThemeSwitchDialogProps) {
     const t = useTranslations('InvitationEditor');
     const confirming = step.kind === 'confirming' ? step : null;
     const plan = confirming?.plan;
@@ -33,10 +36,14 @@ export function ThemeSwitchDialog({ step, onConfirm, onCancel }: ThemeSwitchDial
                     <p className="m-0">{t('themeSwitch.confirmBody')}</p>
 
                     {/* Sections hidden */}
-                    {plan && plan.hidden.length > 0 && <SectionList title={t('themeSwitch.hiddenTitle')} sections={plan.hidden} />}
+                    {plan && plan.hidden.length > 0 && (
+                        <SectionList title={t('themeSwitch.hiddenTitle')} sections={plan.hidden} eventType={eventType} />
+                    )}
 
                     {/* Sections shown again */}
-                    {plan && plan.restored.length > 0 && <SectionList title={t('themeSwitch.restoredTitle')} sections={plan.restored} />}
+                    {plan && plan.restored.length > 0 && (
+                        <SectionList title={t('themeSwitch.restoredTitle')} sections={plan.restored} eventType={eventType} />
+                    )}
 
                     {/* Text colour and fonts */}
                     {plan?.resetsTextLook && <p className="m-0">{t('themeSwitch.textLookReset')}</p>}
@@ -50,11 +57,11 @@ export function ThemeSwitchDialog({ step, onConfirm, onCancel }: ThemeSwitchDial
     );
 }
 
-type SectionListProps = { title: string; sections: ThemeSwitchSection[] };
+type SectionListProps = { title: string; sections: ThemeSwitchSection[]; eventType?: string | null };
 
 // The sections a switch hides or shows again, by the names the add list uses.
-function SectionList({ title, sections }: SectionListProps) {
-    const t = useTranslations('InvitationEditor.sectionNames');
+function SectionList({ title, sections, eventType }: SectionListProps) {
+    const t = useTranslations('InvitationEditor');
     const types = [...new Set(sections.map((section) => section.type))];
 
     return (
@@ -62,7 +69,7 @@ function SectionList({ title, sections }: SectionListProps) {
             <p className="m-0">{title}</p>
             <ul className="m-0 list-disc pl-5">
                 {types.map((type) => (
-                    <li key={type}>{t(type)}</li>
+                    <li key={type}>{t(sectionNameKey(type, eventType))}</li>
                 ))}
             </ul>
         </div>

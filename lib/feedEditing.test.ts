@@ -1,6 +1,8 @@
 import { produce } from 'immer';
 import { describe, expect, it } from 'vitest';
 
+import type { EventModuleResponseDto } from '@/lib/api/types';
+import { feedAddList } from '@/lib/feedAddList';
 import {
     addableFeedSectionTypes,
     appendFeedSection,
@@ -12,16 +14,19 @@ import {
     feedBlockParts,
     feedEditFrame,
     feedSettingsGroups,
+    insertFeedSection,
     isHostBlock,
+    isSaveMyDateBlock,
     moveFeedBlock,
-    noFeedUploads,
     opensBlockSettings,
     reorderFeedBlocks,
     setFeedBlockVisible,
 } from '@/lib/feedEditing';
 import { defaultFeedLayout } from '@/lib/feedLayout';
+import { feedModuleSection } from '@/lib/feedModuleBlocks';
 import type { InvitationDocument } from '@/lib/invitation/document';
 import { MAX_SECTIONS } from '@/lib/invitation/document';
+import { createSection } from '@/lib/invitation/newSection';
 import { SAMPLE_SECTIONS } from '@/lib/invitation/samples';
 import type { InvitationSection } from '@/lib/invitation/sections';
 
@@ -61,9 +66,9 @@ describe('which block may do what', () => {
         expect([details, description, rsvp, dressCode].every(canHideFeedBlock)).toBe(true);
     });
 
-    it('deletes only Save my date blocks', () => {
-        expect([cover, details, description, rsvp].some(canDeleteFeedBlock)).toBe(false);
-        expect(canDeleteFeedBlock(dressCode)).toBe(true);
+    it('deletes only Save my date blocks without Save my date', () => {
+        expect([cover, details, description, rsvp].some((section) => canDeleteFeedBlock(section, OFF))).toBe(false);
+        expect(canDeleteFeedBlock(dressCode, OFF)).toBe(true);
     });
 
     it('moves only middle blocks, and only among themselves', () => {
@@ -82,6 +87,11 @@ describe('which block may do what', () => {
         expect(canMoveFeedBlock(sections, 'dress', 1, OFF)).toBe(false);
         expect(canMoveFeedBlock(sections, 'dress', -1, OFF)).toBe(true);
         expect(feedBlockControls(sections, lockedFaq, OFF)).toEqual({ canHide: false, canDelete: false, movable: false, canMoveUp: false, canMoveDown: false });
+    });
+
+    it('tells a Save my date block from the feed blocks and module blocks', () => {
+        expect(isSaveMyDateBlock(dressCode)).toBe(true);
+        expect([cover, details, description, rsvp, feedModuleSection('playlist', () => 'm')].some(isSaveMyDateBlock)).toBe(false);
     });
 
     it('sums it up per block', () => {
@@ -147,8 +157,8 @@ describe('edits', () => {
 
     it('never deletes a feed block', () => {
         const start = layout(dressCode);
-        expect(produce(start, deleteFeedBlock('feed-feedDescription'))).toBe(start);
-        expect(ids(produce(start, deleteFeedBlock('dress')))).not.toContain('dress');
+        expect(produce(start, deleteFeedBlock('feed-feedDescription', OFF))).toBe(start);
+        expect(ids(produce(start, deleteFeedBlock('dress', OFF)))).not.toContain('dress');
     });
 
     it('appends after the last middle block', () => {
@@ -163,16 +173,9 @@ describe('edits', () => {
 });
 
 describe('what the add row offers', () => {
-    it('offers only Save my date blocks a feed may hold', () => {
-        const types = addableFeedSectionTypes(layout(), 'WEDDING');
-        expect(types.length).toBeGreaterThan(0);
-        expect(types).toContain('dressCode');
-        expect(types).not.toContain('date');
-        expect(types).not.toContain('rsvp');
-    });
-
-    it('leaves out a single-use type already on the page', () => {
-        expect(addableFeedSectionTypes(layout(dressCode), 'WEDDING')).not.toContain('dressCode');
+    it("is the event type's Add section list", () => {
+        const modules = [{ moduleKey: 'schedule', isAvailable: true } as EventModuleResponseDto];
+        expect(addableFeedSectionTypes(layout(dressCode), 'WEDDING', modules)).toEqual(feedAddList(layout(dressCode), 'WEDDING', modules));
     });
 });
 
@@ -186,12 +189,8 @@ describe('the pencil sheet', () => {
         expect(feedBlockParts('dressCode', ['cover'])).toEqual([]);
     });
 
-    it('leaves out photo uploads, following the event and a background of its own', () => {
-        expect(feedSettingsGroups(['follow', 'gallery', 'background', 'dressCode'])).toEqual(['dressCode']);
-    });
-
-    it('refuses uploads', async () => {
-        await expect(noFeedUploads(new Blob())).rejects.toThrow();
+    it('keeps the gallery settings on the feed now that it takes photos', () => {
+        expect(feedSettingsGroups(['gallery', 'follow', 'background', 'buttons'])).toEqual(['gallery', 'buttons']);
     });
 });
 
@@ -253,10 +252,10 @@ describe('RSVP as a host block', () => {
     const dress = { ...(SAMPLE_SECTIONS.dressCode as InvitationSection), id: 'dress' };
     const sections = [...defaultFeedLayout().sections, dress];
 
-    it('moves only with Save my date, and is never deleted here', () => {
+    it('moves and deletes only with Save my date', () => {
         const rsvp = sections.find((section) => section.type === 'feedRsvp')!;
         expect(feedBlockControls(sections, rsvp, { rsvpMoves: false })).toMatchObject({ movable: false, canDelete: false, canHide: true });
-        expect(feedBlockControls(sections, rsvp, { rsvpMoves: true })).toMatchObject({ movable: true, canDelete: false, canHide: true, canMoveUp: true, canMoveDown: true });
+        expect(feedBlockControls(sections, rsvp, { rsvpMoves: true })).toMatchObject({ movable: true, canDelete: true, canHide: true, canMoveUp: true, canMoveDown: true });
     });
 
     it('reorders RSVP among the host blocks with Save my date', () => {
@@ -280,5 +279,58 @@ describe('RSVP as a host block', () => {
         expect(feedEditFrame(document, { rsvpMoves: true }).middle.map((section) => section.id)).toEqual(['feed-feedDescription', 'feed-feedRsvp', 'dress']);
         expect(feedEditFrame(document, { rsvpMoves: true }).rsvp).toBeNull();
         expect(feedEditFrame(document, { rsvpMoves: false }).rsvp?.id).toBe('feed-feedRsvp');
+    });
+});
+
+describe("RSVP's ✕", () => {
+    const rsvp = defaultFeedLayout().sections.find((section) => section.type === 'feedRsvp')!;
+
+    it('shows on Save my date events only', () => {
+        expect(canDeleteFeedBlock(rsvp, { rsvpMoves: true })).toBe(true);
+        expect(canDeleteFeedBlock(rsvp, { rsvpMoves: false })).toBe(false);
+    });
+
+    it('never on the cover, details or description', () => {
+        for (const section of defaultFeedLayout().sections.filter((item) => item.type !== 'feedRsvp')) {
+            expect(canDeleteFeedBlock(section, { rsvpMoves: true })).toBe(false);
+        }
+    });
+
+    it('deletes RSVP when it moves', () => {
+        const next = produce(defaultFeedLayout(), deleteFeedBlock(rsvp.id, { rsvpMoves: true }));
+        expect(next.sections.some((section) => section.type === 'feedRsvp')).toBe(false);
+    });
+});
+
+describe('insertFeedSection', () => {
+    const options = { rsvpMoves: true };
+    const dress = { ...(SAMPLE_SECTIONS.dressCode as InvitationSection), id: 'dress' };
+    const faq = { ...(SAMPLE_SECTIONS.faq as InvitationSection), id: 'faq' };
+    const layout: InvitationDocument = { ...defaultFeedLayout(), sections: [...defaultFeedLayout().sections, dress, faq] };
+    const firstHostId = (document: InvitationDocument) => document.sections.find((section) => isHostBlock(section, options))?.id;
+    const contact = () => createSection('contact', 'WEDDING', () => 'new');
+
+    it('puts the new block right after the one it was asked from', () => {
+        const next = produce(layout, insertFeedSection(contact(), { after: 'dress' }, options));
+        const ids = next.sections.map((section) => section.id);
+        expect(ids.indexOf('new')).toBe(ids.indexOf('dress') + 1);
+    });
+
+    it('puts the new block before the first host block from the row above it', () => {
+        const first = firstHostId(layout)!;
+        const next = produce(layout, insertFeedSection(contact(), { before: first }, options));
+        expect(firstHostId(next)).toBe('new');
+        const ids = next.sections.map((section) => section.id);
+        expect(ids.indexOf(first)).toBe(ids.indexOf('new') + 1);
+    });
+
+    it('appends when asked from nowhere', () => {
+        const next = produce(layout, insertFeedSection(contact(), null, options));
+        expect(next).toEqual(produce(layout, appendFeedSection(contact(), options)));
+    });
+
+    it('appends when the block it was asked from is gone', () => {
+        const next = produce(layout, insertFeedSection(contact(), { after: 'missing' }, options));
+        expect(next).toEqual(produce(layout, appendFeedSection(contact(), options)));
     });
 });

@@ -6718,6 +6718,7 @@
         }
     },
     "FeedEditor": {
+        "addIntro": "Add any section you like to your digital invitation",
         "addPhoto": "Add photo",
         "background": {
             "tooDark": "Too dark for the text. A lighter shade will be shown."
@@ -6736,6 +6737,10 @@
             }
         },
         "edit": "Edit",
+        "moduleOpen": "Open",
+        "premium": "Premium",
+        "premiumLess": "Show less",
+        "premiumMore": "Show more",
         "saveFailed": "Couldn't save your changes. Please try again.",
         "style": "Style",
         "themes": "Themes"
@@ -10651,19 +10656,21 @@
             "date": "Date",
             "countdown": "Countdown",
             "locations": "Church & reception",
-            "parents": "Parents & godparents",
+            "parents": "Families",
             "rsvp": "RSVP",
-            "gift": "Gift list / IBAN",
+            "gift": "Gift - Bank account",
             "accommodation": "Accommodation",
             "program": "Event schedule",
+            "programWedding": "Wedding schedule",
+            "programBaptism": "Baptism schedule",
             "programIcons": "Schedule with icons",
             "contact": "Contact",
-            "gallery": "Gallery / Carousel",
+            "gallery": "Photo Gallery",
             "faq": "FAQ",
             "blank": "Blank section",
             "photo": "Photo",
             "coupleNames": "Couple's names",
-            "ourStoryProposal": "Our story",
+            "ourStoryProposal": "Our Story - The proposal",
             "dressCode": "Dress code",
             "coupleContact": "Couple contact",
             "weddingSponsors": "Wedding sponsors",

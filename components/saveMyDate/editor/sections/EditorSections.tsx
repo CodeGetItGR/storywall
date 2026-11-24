@@ -12,6 +12,7 @@ import { EditorSectionFrame } from '@/components/saveMyDate/editor/sections/Edit
 import type { SectionActions } from '@/hooks/useSectionActions';
 import { useSectionDrag } from '@/hooks/useSectionDrag';
 import type { SectionFrameActions } from '@/hooks/useSectionFrameHandlers';
+import { sectionNameKey } from '@/lib/invitation/sectionNames';
 import type { InvitationSection } from '@/lib/invitation/sections';
 
 const MODIFIERS = [restrictToVerticalAxis];
@@ -29,13 +30,15 @@ const NO_SETTINGS: SectionSettingsOpener = { hasSettings: () => false, open: () 
 type EditorSectionsProps = {
     actions: SectionActions;
     settings?: SectionSettingsOpener;
+    // The draft's event type, which names the schedule (sectionNameKey). A theme has none.
+    eventType?: string | null;
     // The invitation, drawn with each section wrapped in its tools.
     children: (wrapSection: WrapSection) => ReactNode;
 };
 
 // Adding, moving, hiding and deleting the invitation's sections on the canvas.
-export function EditorSections({ actions, settings = NO_SETTINGS, children }: EditorSectionsProps) {
-    const t = useTranslations('InvitationEditor.sectionNames');
+export function EditorSections({ actions, settings = NO_SETTINGS, eventType, children }: EditorSectionsProps) {
+    const t = useTranslations('InvitationEditor');
     const { controls, activeId, setActiveId, move, reorder, toggleVisible, addList, deleteConfirm } = actions;
     const drag = useSectionDrag(controls.length, reorder);
     const frameActions = useMemo<SectionFrameActions>(
@@ -46,7 +49,7 @@ export function EditorSections({ actions, settings = NO_SETTINGS, children }: Ed
     const wrapSection: WrapSection = (section, index, content) => (
         <EditorSectionFrame
             controls={controls[index]}
-            name={t(section.type)}
+            name={t(sectionNameKey(section.type, eventType))}
             isActive={activeId === section.id}
             hasSettings={settings.hasSettings(section)}
             actions={frameActions}
@@ -71,12 +74,12 @@ export function EditorSections({ actions, settings = NO_SETTINGS, children }: Ed
             </DndContext>
 
             {/* Add list */}
-            <AddSectionSheet open={addList.isOpen} types={addList.types} onAdd={addList.add} onClose={addList.close} />
+            <AddSectionSheet open={addList.isOpen} types={addList.types} eventType={eventType} onAdd={addList.add} onClose={addList.close} />
 
             {/* Delete confirmation */}
             <DeleteSectionDialog
                 open={deleteConfirm.isOpen}
-                sectionName={deleteConfirm.sectionType ? t(deleteConfirm.sectionType) : ''}
+                sectionName={deleteConfirm.sectionType ? t(sectionNameKey(deleteConfirm.sectionType, eventType)) : ''}
                 onDelete={deleteConfirm.confirm}
                 onCancel={deleteConfirm.cancel}
                 finalFocus={deleteConfirm.finalFocus}

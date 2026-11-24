@@ -2,7 +2,7 @@ import type { CSSProperties } from 'react';
 
 import type { EventDetailResponseDto, EventThemeFontDto } from '@/lib/api/types';
 import { eventThemeStyle } from '@/lib/eventTheme';
-import { defaultFeedLayout, feedBlock, type FeedLayoutView } from '@/lib/feedLayout';
+import { defaultFeedLayout, type FeedLayoutView, newFeedBlock } from '@/lib/feedLayout';
 import { feedPageTheme } from '@/lib/feedPageTheme';
 import { stillSection } from '@/lib/feedSectionPreview';
 import { planFeedThemeSwitch } from '@/lib/feedThemes';
@@ -113,8 +113,8 @@ export function feedEditBannerBlocks(sections: InvitationSection[], samples: Inv
 
 // Without a Save my date theme: the feed's own Description and RSVP blocks, drawn by their names.
 const WALL_BLOCKS: FeedEditBannerBlock[] = [
-    { section: feedBlock('feedDescription'), index: 0 },
-    { section: { ...feedBlock('feedRsvp'), membersOnly: true }, index: 1 },
+    { section: newFeedBlock('feedDescription'), index: 0 },
+    { section: { ...newFeedBlock('feedRsvp'), membersOnly: true }, index: 1 },
 ];
 
 type FeedEditBannerPictureInput = {
