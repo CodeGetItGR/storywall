@@ -6,6 +6,7 @@ import { ColorCircle } from '@/components/ui/color/ColorCircle';
 import { ColorMixer } from '@/components/ui/color/ColorMixer';
 import { type ColorSurface, useColorSurface } from '@/components/ui/color/ColorSurface';
 import { colorCircles, isSameColor } from '@/lib/colorCircles';
+import { cn } from '@/lib/utils';
 
 type ColorCirclesProps = {
     value: string | undefined;
@@ -18,6 +19,7 @@ type ColorCirclesProps = {
     // Set where the surface around doesn't say (ColorSurfaceProvider).
     surface?: ColorSurface;
     disabled?: boolean;
+    className?: string;
     // Mixing changes the colour as it goes; without it, only Done does.
     liveMix?: boolean;
     // A circle was tapped, or the mixer's Done.
@@ -35,6 +37,7 @@ export function ColorCircles({
     label,
     surface: ownSurface,
     disabled,
+    className,
     liveMix = true,
     onPicked,
 }: ColorCirclesProps) {
@@ -50,7 +53,7 @@ export function ColorCircles({
     );
 
     return (
-        <div role="group" aria-labelledby={labelledBy} aria-label={label} className="flex flex-wrap gap-3 p-1">
+        <div role="group" aria-labelledby={labelledBy} aria-label={label} className={cn('flex flex-wrap gap-3 p-1', className)}>
             {/* Circles */}
             {colors.map((color) => (
                 <ColorCircle key={color} color={color} selected={isSameColor(color, value)} disabled={disabled} onPick={pick} />
