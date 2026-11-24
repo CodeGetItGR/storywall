@@ -32,10 +32,10 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-// A colour circle of the docked settings panel on a wide screen, or of the open sheet on a phone.
+// A colour circle of the settings panel: the docked one, which a phone hides.
 function textColorCircle(label: string) {
-    const groups = within(document.body).getAllByRole('group', { name: label });
-    return within(groups.find((group) => group.checkVisibility()) ?? groups[0]).getByRole('button', { name: '#AC9FC7' });
+    const groups = within(document.body).getAllByRole('group', { name: label, hidden: true });
+    return within(groups.find((group) => group.checkVisibility()) ?? groups[0]).getByRole('button', { name: '#AC9FC7', hidden: true });
 }
 
 type EditorCopy = ReturnType<typeof copyFor>['InvitationEditor'];

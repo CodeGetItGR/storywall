@@ -8,6 +8,7 @@ import { useTranslations } from 'next-intl';
 import { HexColorPicker } from 'react-colorful';
 
 import { CIRCLE_CLASS } from '@/components/ui/color/ColorCircle';
+import type { ColorSurface } from '@/components/ui/color/ColorSurface';
 import { useColorMixer } from '@/hooks/useColorMixer';
 import { cn } from '@/lib/utils';
 
@@ -15,7 +16,7 @@ type ColorMixerProps = {
     value: string | undefined;
     // What the mixer opens on when no colour is set.
     start: string;
-    surface: 'dark' | 'light';
+    surface: ColorSurface;
     disabled?: boolean;
     // Each colour on the way counts, not only the one Done keeps.
     live: boolean;

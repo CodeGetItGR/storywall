@@ -5,6 +5,7 @@ import '@/components/saveMyDate/editor/editor.css';
 import { Popover } from '@base-ui/react/popover';
 
 import { ColorCircles } from '@/components/ui/color/ColorCircles';
+import { type ColorSurface, useColorSurface } from '@/components/ui/color/ColorSurface';
 import { useColorSwatch } from '@/hooks/useColorSwatch';
 import { cn } from '@/lib/utils';
 
@@ -14,15 +15,17 @@ type ColorSwatchProps = {
     label: string;
     onChange: (color: string) => void;
     themeColors?: readonly string[];
-    surface?: 'dark' | 'light';
+    // Set where the surface around doesn't say (ColorSurfaceProvider).
+    surface?: ColorSurface;
     id?: string;
     describedBy?: string;
     className?: string;
 };
 
 // One colour among other settings: a round button in it, and the circles in a popover.
-export function ColorSwatch({ value, label, onChange, themeColors, surface = 'dark', id, describedBy, className }: ColorSwatchProps) {
+export function ColorSwatch({ value, label, onChange, themeColors, surface: ownSurface, id, describedBy, className }: ColorSwatchProps) {
     const swatch = useColorSwatch();
+    const surface = useColorSurface(ownSurface);
 
     return (
         <Popover.Root open={swatch.isOpen} onOpenChange={swatch.onOpenChange}>
@@ -34,7 +37,7 @@ export function ColorSwatch({ value, label, onChange, themeColors, surface = 'da
                 title={label}
                 className={cn(
                     'relative h-9 w-9 shrink-0 rounded-full border-2 before:absolute before:-inset-1 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none',
-                    surface === 'light' ? 'border-line-strong focus-visible:ring-offset-white' : 'border-[color-mix(in_srgb,var(--smd-editor-strong,var(--ink))_60%,transparent)] focus-visible:ring-offset-(--smd-editor-panel)',
+                    ownSurface === 'light' ? 'border-line-strong focus-visible:ring-offset-white' : 'border-[color-mix(in_srgb,var(--smd-editor-strong,var(--ink))_60%,transparent)] focus-visible:ring-offset-(--smd-editor-panel)',
                     className,
                 )}
                 style={{ background: value }}

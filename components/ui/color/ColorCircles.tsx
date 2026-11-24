@@ -4,6 +4,7 @@ import { useCallback, useMemo } from 'react';
 
 import { ColorCircle } from '@/components/ui/color/ColorCircle';
 import { ColorMixer } from '@/components/ui/color/ColorMixer';
+import { type ColorSurface, useColorSurface } from '@/components/ui/color/ColorSurface';
 import { colorCircles, isSameColor } from '@/lib/colorCircles';
 
 type ColorCirclesProps = {
@@ -14,7 +15,8 @@ type ColorCirclesProps = {
     // Names the group: an element's id, or its own words.
     labelledBy?: string;
     label?: string;
-    surface?: 'dark' | 'light';
+    // Set where the surface around doesn't say (ColorSurfaceProvider).
+    surface?: ColorSurface;
     disabled?: boolean;
     // Mixing changes the colour as it goes; without it, only Done does.
     liveMix?: boolean;
@@ -31,11 +33,12 @@ export function ColorCircles({
     themeColors = NO_COLORS,
     labelledBy,
     label,
-    surface = 'dark',
+    surface: ownSurface,
     disabled,
     liveMix = true,
     onPicked,
 }: ColorCirclesProps) {
+    const surface = useColorSurface(ownSurface);
     const colors = useMemo(() => colorCircles(themeColors, value), [themeColors, value]);
 
     const pick = useCallback(
