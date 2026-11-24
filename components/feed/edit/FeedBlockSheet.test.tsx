@@ -125,6 +125,11 @@ describe('FeedBlockSheet members only', () => {
         expect(onMembersOnly).toHaveBeenCalledExactlyOnceWith(true);
     });
 
+    it('tells screen readers who sees a members only section', () => {
+        renderSheet(false);
+        expect(screen.getByRole('switch', { description: 'Only people logged in to their account see this section.' })).toBeTruthy();
+    });
+
     it("doesn't offer it on a block that can't be members only", () => {
         renderSheet(null);
         expect(screen.queryByRole('switch', { name: en.FeedLayout.membersOnly })).toBeNull();
