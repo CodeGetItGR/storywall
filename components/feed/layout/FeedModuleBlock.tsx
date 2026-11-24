@@ -11,16 +11,24 @@ import type { FeedModuleKey } from '@/lib/invitation/sections';
 import { cn } from '@/lib/utils';
 
 // href: where Open goes, the module's tool (feedModuleToolHref). underTools: in edit mode, with room for the block's
-// tools at the top of the card.
-type FeedModuleBlockProps = { module: FeedModuleKey; eventType: EventTypeConvention; href: string; available: boolean; underTools?: boolean };
+// tools at the top of the card. name: the block's own, when it isn't the module's.
+type FeedModuleBlockProps = {
+    module: FeedModuleKey;
+    eventType: EventTypeConvention;
+    href: string;
+    available: boolean;
+    name?: string;
+    underTools?: boolean;
+};
 
 const BUTTON = 'inline-flex min-h-11 items-center rounded-full bg-primary px-5 text-[14px] font-semibold text-white';
 
 // A module's compact block on the feed (spec item 16): its icon, its name, and a button that opens the tool. An
 // event that lost the module draws it in edit mode only, with the button off (Open question 7).
-export function FeedModuleBlock({ module, eventType, href, available, underTools = false }: FeedModuleBlockProps) {
+export function FeedModuleBlock({ module, eventType, href, available, name: ownName, underTools = false }: FeedModuleBlockProps) {
     const t = useTranslations('FeedEditor');
-    const name = useModuleCopy(eventType)(module).name;
+    const moduleName = useModuleCopy(eventType)(module).name;
+    const name = ownName ?? moduleName;
     const nameId = useId();
 
     return (

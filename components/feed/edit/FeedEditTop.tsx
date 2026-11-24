@@ -51,6 +51,7 @@ import { useSettingsPreview } from '@/hooks/useSettingsPreview';
 import type { EventDetailResponseDto } from '@/lib/api/types';
 import { draggableFeedBlocks, type FeedAddPlace, feedBlockControls, type FeedEditScope } from '@/lib/feedEditing';
 import { moduleOfBlock } from '@/lib/feedModuleBlocks';
+import { drawsCard, drawsScheduleCard } from '@/lib/feedSchedule';
 import { feedImageUploader } from '@/lib/invitation/editorUploads';
 import { type InvitationSection, isFeedModeSectionType } from '@/lib/invitation/sections';
 import { themeColors } from '@/lib/invitation/textEditing';
@@ -168,6 +169,7 @@ export function FeedEditTop({
             // A module block has nothing to set: its tool is set on its own page.
             hasSettings={!moduleOfBlock(section) && sheet.hasSettings(section)}
             actions={tools}
+            onCard={drawsCard(section, event)}
             active={sheet.section?.id === section.id}
             menuOpen={menu.openId === section.id}
             uploading={blockTools.uploadingId === section.id}
@@ -187,9 +189,10 @@ export function FeedEditTop({
     );
     const base = view.look ? feedLookParts(view) : PLAIN_PARTS;
     const editParts: FeedTopParts = {
-        // The feed's own blocks are set on the event, not typed here: their content takes no taps.
+        // The feed's own blocks are set on the event, not typed here: their content takes no taps, but for the empty schedule's
+        // button to its editor (leaving with changes asks first).
         block: (section, content) => {
-            const block = base.block(section, <div inert>{content}</div>);
+            const block = base.block(section, <div inert={!drawsScheduleCard(section, event)}>{content}</div>);
             return feedOnly ? block : wrap(section, block);
         },
         native: base.native,
@@ -200,9 +203,13 @@ export function FeedEditTop({
                 section,
                 base.feed(
                     section,
-                    <div inert className="pt-15">
-                        {content}
-                    </div>,
+                    drawsScheduleCard(section, event) ? (
+                        content
+                    ) : (
+                        <div inert className="pt-15">
+                            {content}
+                        </div>
+                    ),
                 ),
             ),
         // Save my date blocks read the text editor's drawing from inside InlineTextEditing, so their text is typed in place.

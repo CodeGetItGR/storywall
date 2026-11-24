@@ -22,6 +22,8 @@ type FeedEditBlockProps = {
     // Its settings are open: the wash stays on.
     active?: boolean;
     menuOpen?: boolean;
+    // The block is a white card (lib/feedSchedule drawsCard): its tools sit inside it.
+    onCard?: boolean;
     // One of its photos is on its way.
     uploading?: boolean;
     children: ReactNode;
@@ -30,7 +32,7 @@ type FeedEditBlockProps = {
 // One block of the feed while editing: dimmed when hidden, with its tools floating over its top.
 // Tapping it opens its settings; while they are open it keeps a faint coral wash (fainter on hover), under the tools.
 // Only middle blocks drag; the rest pass locked to the sortable, so they stay put.
-export function FeedEditBlock({ section, name, controls, hasSettings, actions, active = false, menuOpen = false, uploading = false, children }: FeedEditBlockProps) {
+export function FeedEditBlock({ section, name, controls, hasSettings, actions, active = false, menuOpen = false, onCard = false, uploading = false, children }: FeedEditBlockProps) {
     const { setNodeRef, style, isDragging, drag } = useSectionSortable(section.id, name, !controls.movable);
     const onTap = useFeedBlockTap(section.id, hasSettings, actions.onOpenSettings);
 
@@ -66,6 +68,7 @@ export function FeedEditBlock({ section, name, controls, hasSettings, actions, a
                     drag={drag}
                     actions={actions}
                     menuOpen={menuOpen}
+                    onCard={onCard}
                     uploading={uploading}
                 />
             </FeedNative>
