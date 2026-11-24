@@ -359,7 +359,7 @@ export const LINKABLE_SECTION_TYPES: ReadonlySet<SectionType> = new Set([
 ]);
 
 // Sections that may appear more than once in one invitation.
-export const MULTI_INSTANCE_SECTION_TYPES: ReadonlySet<SectionType> = new Set(['blank', 'photo', 'photoFrame']);
+export const MULTI_INSTANCE_SECTION_TYPES: ReadonlySet<SectionType> = new Set(['blank', 'photo', 'photoFrame', 'feedModule']);
 
 // The feed's own blocks, in their default order. Never offered in the invitation editor.
 export const FEED_SECTION_TYPES = ['feedCover', 'feedDetails', 'feedDescription', 'feedRsvp'] as const satisfies readonly SectionType[];
