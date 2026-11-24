@@ -7,13 +7,16 @@ import { useCallback } from 'react';
 import { FeedEditSheetFrame } from '@/components/feed/edit/FeedEditSheetFrame';
 import { FeedPinnedField } from '@/components/feed/edit/FeedPinnedField';
 import { FeedPromptField } from '@/components/feed/edit/FeedPromptField';
-import { type FeedSectionContent, FeedSectionContentFields } from '@/components/feed/edit/FeedSectionContentFields';
+import { FeedSectionBackgroundFields } from '@/components/feed/edit/FeedSectionBackgroundFields';
+import { FeedSectionPhotoField } from '@/components/feed/edit/FeedSectionPhotoField';
+import { FeedSectionTextColorField } from '@/components/feed/edit/FeedSectionTextColorField';
 import { SectionSettingsPanel } from '@/components/saveMyDate/editor/settings/SectionSettingsPanel';
 import { SettingsToggle } from '@/components/saveMyDate/editor/settings/SettingsControls';
+import type { FeedSectionContent } from '@/hooks/useFeedSectionContent';
 import type { SettingsScope } from '@/hooks/useSectionSettingsPanel';
 import type { PinnedPhoto } from '@/lib/feedPinned';
 import type { MediaResolver } from '@/lib/invitation/render';
-import type { SettingsGroup } from '@/lib/invitation/sectionSettings';
+import { groupsOfKind, type SettingsGroup } from '@/lib/invitation/sectionSettings';
 import type { SettingsPart } from '@/lib/settingsPreview';
 
 type FeedBlockSheetProps = {
@@ -43,7 +46,7 @@ type FeedBlockSheetProps = {
     onClose: () => void;
 };
 
-// The pencil's sheet: a feed section's own content, the event fields the block shows, who sees it, then its style. A panel at the right on
+// The pencil's sheet, in one order on every section: its own inputs, Add photo, who sees it, then all its styling. A panel at the right on
 // desktop, a sheet over the lower screen on phones; the feed above stays live either way.
 export function FeedBlockSheet({
     title,
@@ -68,6 +71,8 @@ export function FeedBlockSheet({
     onClose,
 }: FeedBlockSheetProps) {
     const t = useTranslations('FeedLayout');
+    const inputs = groupsOfKind(groups, 'inputs');
+    const style = groupsOfKind(groups, 'style');
     const body = (
         <div className="flex flex-col gap-5">
             {/* Prompt */}
@@ -85,9 +90,6 @@ export function FeedBlockSheet({
                 />
             )}
 
-            {/* Photo, text colour and background */}
-            {content && <FeedSectionContentFields {...content} />}
-
             {/* Event details */}
             {parts.length > 0 && (
                 <div className="flex flex-col gap-1.5">
@@ -97,13 +99,25 @@ export function FeedBlockSheet({
                 </div>
             )}
 
+            {/* The section's own inputs */}
+            {scope && inputs.length > 0 && <SectionSettingsPanel scope={scope} groups={inputs} />}
+
+            {/* Add photo */}
+            {content && <FeedSectionPhotoField uploading={content.uploading} failed={content.failed} onPhoto={content.onPhoto} />}
+
             {/* Who sees it */}
             {membersOnly !== null && (
                 <SettingsToggle label={t('membersOnly')} hint={t('membersOnlyNote')} checked={membersOnly} onChange={onMembersOnly} />
             )}
 
+            {/* Text colour */}
+            {content && <FeedSectionTextColorField value={content.textColor} themeColors={content.themeColors} onChange={content.onTextColor} />}
+
             {/* Style */}
-            {scope && groups.length > 0 && <SectionSettingsPanel scope={scope} groups={groups} />}
+            {scope && style.length > 0 && <SectionSettingsPanel scope={scope} groups={style} />}
+
+            {/* Background */}
+            {content && <FeedSectionBackgroundFields {...content.background} themeColors={content.themeColors} uploading={content.uploading} />}
         </div>
     );
 

@@ -18,7 +18,10 @@ export type SectionData<T extends SectionType> = Extract<InvitationSection, { ty
 export type SettingsGroup =
     | 'follow'
     | 'date'
+    | 'dateLanguage'
+    | 'dateLayout'
     | 'gallery'
+    | 'galleryLayout'
     | 'countdown'
     | 'faqItems'
     | 'faq'
@@ -29,6 +32,7 @@ export type SettingsGroup =
     | 'stayBox'
     | 'contact'
     | 'coupleContact'
+    | 'contactStyle'
     | 'locations'
     | 'dressCode'
     | 'people'
@@ -47,8 +51,8 @@ const TYPE_GROUPS: Partial<Record<SectionType, SettingsGroup[]>> = {
     program: ['programItems', 'programStyle'],
     programIcons: ['programItems', 'programStyle'],
     accommodation: ['stays', 'stayBox'],
-    contact: ['contact'],
-    coupleContact: ['coupleContact'],
+    contact: ['contact', 'contactStyle'],
+    coupleContact: ['coupleContact', 'contactStyle'],
     locations: ['locations'],
     dressCode: ['dressCode'],
     godparents: ['people'],
@@ -56,7 +60,43 @@ const TYPE_GROUPS: Partial<Record<SectionType, SettingsGroup[]>> = {
     weddingSponsors: ['people'],
 };
 
-// The groups one section's sheet shows, in order. The footer is the admin's
+// Whether a group is what the section says or how it looks.
+type SettingsGroupKind = 'inputs' | 'style';
+
+// The Save my date editor's date and gallery hold both in one group, inputs here; the feed shows them apart.
+const GROUP_KINDS: Record<SettingsGroup, SettingsGroupKind> = {
+    follow: 'inputs',
+    date: 'inputs',
+    dateLanguage: 'inputs',
+    dateLayout: 'style',
+    gallery: 'inputs',
+    galleryLayout: 'style',
+    countdown: 'style',
+    faqItems: 'inputs',
+    faq: 'style',
+    rsvp: 'style',
+    programItems: 'inputs',
+    programStyle: 'style',
+    stays: 'inputs',
+    stayBox: 'style',
+    contact: 'inputs',
+    coupleContact: 'inputs',
+    contactStyle: 'style',
+    locations: 'inputs',
+    dressCode: 'inputs',
+    people: 'inputs',
+    buttons: 'inputs',
+    footer: 'inputs',
+    background: 'style',
+    effect: 'style',
+    transition: 'style',
+};
+
+export function groupsOfKind(groups: readonly SettingsGroup[], kind: SettingsGroupKind): SettingsGroup[] {
+    return groups.filter((group) => GROUP_KINDS[group] === kind);
+}
+
+// The groups one section's sheet shows, in order: what it says, then how it looks. The footer is the admin's
 // alone; hosts see a background only when the admin left them a choice.
 export function settingsGroups(section: InvitationSection, mode: EditorMode, theme: ThemeDesign): SettingsGroup[] {
     const isAdmin = mode === 'admin';
@@ -68,7 +108,7 @@ export function settingsGroups(section: InvitationSection, mode: EditorMode, the
     if (isAdmin || hostBackgroundSlots(section, theme).length > 0) groups.push('background');
     if (isAdmin) groups.push('effect');
     if (isAdmin && !section.locked && theme.transitions.length > 0) groups.push('transition');
-    return groups;
+    return [...groupsOfKind(groups, 'inputs'), ...groupsOfKind(groups, 'style')];
 }
 
 export function hasSectionSettings(section: InvitationSection, mode: EditorMode, theme: ThemeDesign): boolean {
