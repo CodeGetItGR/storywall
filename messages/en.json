@@ -6708,6 +6708,12 @@
             }
         }
     },
+    "FeedSections": {
+        "prompt": {
+            "question": "What should guests photograph?",
+            "placeholder": "Show us your best dance move"
+        }
+    },
     "FeedLayout": {
         "invitation": "Invitation",
         "socialFeed": "Social Feed",
@@ -10675,7 +10681,9 @@
             "feedCover": "Cover",
             "feedDetails": "Details",
             "feedDescription": "Description",
-            "feedRsvp": "RSVP"
+            "feedRsvp": "RSVP",
+            "feedSchedule": "Today's schedule",
+            "feedPrompt": "Photo prompt"
         },
         "eventPhotos": {
             "title": "Event photos",

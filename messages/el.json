@@ -6837,6 +6837,12 @@
             }
         }
     },
+    "FeedSections": {
+        "prompt": {
+            "question": "Τι να φωτογραφίσουν οι καλεσμένοι;",
+            "placeholder": "Δείξτε μας την καλύτερη χορευτική σας κίνηση"
+        }
+    },
     "FeedLayout": {
         "invitation": "Πρόσκληση",
         "socialFeed": "Social Feed",
@@ -10713,7 +10719,9 @@
             "feedCover": "Εξώφυλλο",
             "feedDetails": "Λεπτομέρειες",
             "feedDescription": "Περιγραφή",
-            "feedRsvp": "RSVP"
+            "feedRsvp": "RSVP",
+            "feedSchedule": "Το πρόγραμμα της ημέρας",
+            "feedPrompt": "Ιδέα για φωτογραφία"
         },
         "eventPhotos": {
             "title": "Φωτογραφίες εκδήλωσης",
