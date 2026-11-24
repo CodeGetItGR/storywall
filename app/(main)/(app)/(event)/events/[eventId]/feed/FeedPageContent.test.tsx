@@ -600,6 +600,7 @@ describe('FeedPageContent edit mode', { timeout: 15_000 }, () => {
         renderFeed(null, { flag: true, layout: savedLayout(dressCode), isHost: true, modules, startAt: '2099-06-01T15:00:00Z' });
         fireEvent.click(await screen.findByRole('button', { name: 'edit' }));
         const dress = await screen.findByRole('group', { name: `sectionNames.${dressCode.type}` }, LAZY_LOOK);
+        expect(within(dress).getByText('Καλοκαιρινό')).toBeTruthy();
         fireEvent.click(dress);
         expect(await screen.findByRole('dialog', { name: `sectionNames.${dressCode.type}` })).toBeTruthy();
         fireEvent.click(within(dress).getByRole('button', { name: 'hide' }));
@@ -610,7 +611,7 @@ describe('FeedPageContent edit mode', { timeout: 15_000 }, () => {
         expect(document.querySelector('[data-feed-block-tools]')).toBeNull();
         expect(screen.queryByRole('button', { name: 'add' })).toBeNull();
         await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
-        expect(document.querySelector('.smd-section-dressCode, [data-section-type="dressCode"]')).toBeNull();
+        expect(screen.queryByText('Καλοκαιρινό')).toBeNull();
         expect(screen.getByRole('button', { name: 'cancel' })).toBeTruthy();
         expect(screen.getByRole('button', { name: 'save' })).toBeTruthy();
         expect(api.put).not.toHaveBeenCalled();

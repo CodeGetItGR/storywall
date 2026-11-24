@@ -13,7 +13,6 @@ import { useInvitationEditorStore } from '@/hooks/useInvitationEditorStore';
 import { useOverlayHistory } from '@/hooks/useOverlayHistory';
 import { useUnsavedChangesWarning } from '@/hooks/useUnsavedChangesWarning';
 import type { EventDetailResponseDto } from '@/lib/api/types';
-import { setFeedBackground } from '@/lib/feedEditTheme';
 import { feedLayoutKeys } from '@/lib/feedLayout';
 import { isStaleRevision, sameDocument } from '@/lib/invitation/drafts';
 
@@ -83,8 +82,6 @@ export function useFeedEditSession(event: Pick<EventDetailResponseDto, 'id' | 'e
     useInAppLeaveGuard(dirty && onLeave === null && !conflict, leaveTo);
     useUnsavedChangesWarning(dirty);
 
-    const setBackground = useCallback((color: string | undefined) => store.getState().edit(setFeedBackground(color), 'backgroundColor'), [store]);
-
     // The layout first (with the held Save my date slug), then a held wall preset. A layout that went through is
     // not sent again: after a failed theme write, Save again writes only the theme.
     // Save is ignored while a picked theme is still loading, so the pick is not lost (the grid is also disabled then).
@@ -134,10 +131,11 @@ export function useFeedEditSession(event: Pick<EventDetailResponseDto, 'id' | 'e
         heldWall,
         wallTheme: themes.wallTheme,
         switching: themes.switching,
+        pickingSolid: themes.pickingSolid,
         pickInvitation: themes.pickInvitation,
         pickWall: themes.pickWall,
+        pickSolid: themes.pickSolid,
         background: document.overrides.backgroundColor,
-        setBackground,
         dirty,
         saving: savingLayout || savingWall,
         failed,
