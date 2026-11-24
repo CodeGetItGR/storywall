@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 
 import { defaultFeedLayout } from '@/lib/feedLayout';
 import { canBeMembersOnly, setFeedBlockMembersOnly, splitMembersOnly } from '@/lib/feedMembersOnly';
+import { feedModuleSection } from '@/lib/feedModuleBlocks';
 import { SAMPLE_SECTIONS } from '@/lib/invitation/samples';
 import type { InvitationSection } from '@/lib/invitation/sections';
 
@@ -10,10 +11,10 @@ const dressCode = { ...(SAMPLE_SECTIONS.dressCode as InvitationSection), id: 'dr
 const layout = { ...defaultFeedLayout(), sections: [...defaultFeedLayout().sections, dressCode] };
 
 describe('members-only blocks', () => {
-    it('can be any invitation section but the cover, details and RSVP', () => {
+    it('can be any invitation section but the cover, details, RSVP and module blocks', () => {
         const [cover, details, description, rsvp] = layout.sections;
         expect([description, dressCode].every(canBeMembersOnly)).toBe(true);
-        expect([cover, details, rsvp].some(canBeMembersOnly)).toBe(false);
+        expect([cover, details, rsvp, feedModuleSection('playlist', () => 'm')].some(canBeMembersOnly)).toBe(false);
     });
 
     it('sets and clears the flag, never on the cover', () => {

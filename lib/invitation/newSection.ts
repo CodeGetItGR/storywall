@@ -2,7 +2,7 @@ import type { FeedSectionType, InvitationSection, SectionType } from '@/lib/invi
 import type { SectionStyle } from '@/lib/invitation/sectionStyle';
 
 // A section the host can add from the editor (the footer comes with the theme).
-export type NewSectionType = Exclude<SectionType, 'footer' | FeedSectionType>;
+export type NewSectionType = Exclude<SectionType, 'footer' | FeedSectionType | 'feedModule'>;
 
 type SectionOf<T extends SectionType> = Extract<InvitationSection, { type: T }>;
 type NewSection<T extends NewSectionType> = { name: string; data: SectionOf<T>['data']; style?: Partial<SectionStyle>; elements?: SectionOf<T>['elements'] };

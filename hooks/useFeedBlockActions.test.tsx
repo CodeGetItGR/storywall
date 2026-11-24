@@ -55,6 +55,24 @@ describe('useFeedBlockActions', () => {
         expect(store.getState().document.sections.some((section) => section.type === type)).toBe(true);
     });
 
+    it('puts what was picked at the row the list was opened from', () => {
+        const { store, result } = setup();
+        act(() => result.current.openAdd({ before: 'feed-feedDescription' }));
+        act(() => result.current.add('faq'));
+        const types = store.getState().document.sections.map((section) => section.type);
+        expect(types.indexOf('faq')).toBe(types.indexOf('feedDescription') - 1);
+    });
+
+    it("adds a module's block from its tile, and RSVP's own block", () => {
+        const { store, result } = setup();
+        act(() => result.current.openAdd({ after: 'dress' }));
+        act(() => result.current.addModule('playlist'));
+        const sections = store.getState().document.sections;
+        const at = sections.findIndex((section) => section.id === 'dress');
+        expect(sections[at + 1]).toMatchObject({ type: 'feedModule', data: { module: 'playlist' } });
+        expect(result.current.adding).toBe(false);
+    });
+
     it('leaves out the Add section row at the section limit', () => {
         expect(setup().result.current.showAdd).toBe(true);
         const full = Array.from({ length: MAX_SECTIONS - defaultFeedLayout().sections.length }, (_, index) => ({

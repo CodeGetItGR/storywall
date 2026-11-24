@@ -9,6 +9,7 @@ import type { EventDetailResponseDto } from '@/lib/api/types';
 import { isEventEnded, isModuleAvailable } from '@/lib/eventLifecycle';
 import { feedEditFrame } from '@/lib/feedEditing';
 import { type FeedFrame, feedFrame, usesInvitationLook } from '@/lib/feedLayout';
+import { moduleOfBlock } from '@/lib/feedModuleBlocks';
 import { type FeedPageBackdrop, feedPageBackdrop } from '@/lib/feedPageBackdrop';
 import type { InvitationDocument } from '@/lib/invitation/document';
 import { isEmptyForGuests } from '@/lib/invitation/gallery';
@@ -77,10 +78,16 @@ export function useFeedTop(event: EventDetailResponseDto, editing?: FeedTopEditi
     const frame = useMemo(() => {
         if (editingDocument) return feedEditFrame(editingDocument, { rsvpMoves });
         const split = feedFrame(document, { ended, rsvpMoves });
-        const draws = (section: InvitationSection) =>
-            section.type === 'feedDescription' ? Boolean(event.description) : section.type === 'feedRsvp' || !isEmptyForGuests(section, ctx);
+        const draws = (section: InvitationSection) => {
+            if (section.type === 'feedDescription') return Boolean(event.description);
+            if (section.type === 'feedRsvp') return true;
+            // A module block draws only while the event has the module.
+            const key = moduleOfBlock(section);
+            if (key) return isModuleAvailable(event.modules, key);
+            return !isEmptyForGuests(section, ctx);
+        };
         return { ...split, middle: split.middle.filter(draws) };
-    }, [editingDocument, document, ended, rsvpMoves, event.description, ctx]);
+    }, [editingDocument, document, ended, rsvpMoves, event.description, event.modules, ctx]);
 
     return {
         look,

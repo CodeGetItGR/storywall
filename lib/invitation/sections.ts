@@ -96,6 +96,10 @@ export const GALLERY_SHAPES = ['round', 'square', 'rectangle', 'roundedSquare'] 
 
 const columns = z.number().int().min(1).max(3);
 
+// The modules a feed module block may stand for (RSVP is its own block, feedRsvp).
+export const FEED_MODULE_KEYS = ['wishbook', 'playlist', 'he_or_she', 'quiz_polls', 'schedule', 'wishlist', 'gallery'] as const;
+export type FeedModuleKey = (typeof FEED_MODULE_KEYS)[number];
+
 export const SECTION_DATA_SCHEMAS = {
     top: z.object({}).strict(),
     baby: z
@@ -323,6 +327,9 @@ export const SECTION_DATA_SCHEMAS = {
     feedDetails: z.object({}).strict(),
     feedDescription: z.object({}).strict(),
     feedRsvp: z.object({}).strict(),
+    // A module's compact block on the feed (plan 7c): its icon, name and a button that opens the tool. Added from the
+    // Add section sheet's Premium tiles, Save my date events only. Stores which module, nothing else.
+    feedModule: z.object({ module: z.enum(FEED_MODULE_KEYS) }).strict(),
 } as const;
 
 export type SectionType = keyof typeof SECTION_DATA_SCHEMAS;

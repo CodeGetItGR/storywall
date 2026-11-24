@@ -1,0 +1,16 @@
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">
+<g stroke-width="1.500">
+<path d="M9 18V5l12-2v13" stroke="url(#g-modules-playlist)"/>
+<circle cx="6" cy="18" r="3" stroke="url(#g-modules-playlist)"/>
+<circle cx="18" cy="16" r="3" stroke="url(#g-modules-playlist)"/>
+</g>
+<defs>
+<linearGradient id="g-modules-playlist" x1="-0.30" y1="-0.30" x2="20.00" y2="20.00" gradientUnits="userSpaceOnUse">
+<stop offset="0.2" stop-color="#C777B1"/>
+<stop offset="0.43" stop-color="#E48279"/>
+<stop offset="0.54" stop-color="#F2885C"/>
+<stop offset="0.99" stop-color="#FEC463"/>
+</linearGradient>
+
+</defs>
+</svg>

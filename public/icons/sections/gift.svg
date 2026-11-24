@@ -1,0 +1,19 @@
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">
+<g stroke-width="1.500">
+<rect x="1.5" y="7" width="13" height="3" rx="1" stroke="url(#g-sections-gift)"/>
+<path d="M2.5 10v9a1 1 0 0 0 1 1h9a1 1 0 0 0 1-1v-9" stroke="url(#g-sections-gift)"/>
+<path d="M8 7v13" stroke="url(#g-sections-gift)"/>
+<path d="M8 7C6.5 3.5 3.5 4 4.3 5.6 5 7 8 7 8 7s3 0 3.7-1.4C12.5 4 9.5 3.5 8 7" stroke="url(#g-sections-gift)"/>
+<rect x="15.5" y="12" width="7" height="5.5" rx="1" stroke="url(#g-sections-gift)"/>
+<path d="M15.5 14h7M17 15.8h2" stroke="url(#g-sections-gift)"/>
+</g>
+<defs>
+<linearGradient id="g-sections-gift" x1="-0.30" y1="-0.30" x2="20.00" y2="20.00" gradientUnits="userSpaceOnUse">
+<stop offset="0.2" stop-color="#C777B1"/>
+<stop offset="0.43" stop-color="#E48279"/>
+<stop offset="0.54" stop-color="#F2885C"/>
+<stop offset="0.99" stop-color="#FEC463"/>
+</linearGradient>
+
+</defs>
+</svg>
