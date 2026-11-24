@@ -6709,6 +6709,10 @@
         }
     },
     "FeedSections": {
+        "schedule": {
+            "attending": "Attending",
+            "declined": "Declined"
+        },
         "prompt": {
             "question": "What should guests photograph?",
             "placeholder": "Show us your best dance move"

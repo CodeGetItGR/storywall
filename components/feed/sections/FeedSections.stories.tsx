@@ -68,7 +68,7 @@ const answered: Story = {
         );
     },
     play: async ({ canvasElement, globals }) => {
-        await within(canvasElement).findByRole('link', { name: copyFor(globals).RSVPPage.stats.attending });
+        await within(canvasElement).findByRole('link', { name: copyFor(globals).FeedSections.schedule.attending });
     },
 };
 

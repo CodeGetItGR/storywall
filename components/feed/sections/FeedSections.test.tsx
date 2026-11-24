@@ -78,8 +78,8 @@ describe('feed sections', () => {
         rsvp.link = (sessionId) => ({ answer: answers[sessionId] ?? null, href: `/rsvp?session=${sessionId}` });
         renderSection(<FeedModeSection media={media} event={event} section={section('feedSchedule', {})} />);
         expect(screen.getByRole('link', { name: 'RSVP', description: 'Church' }).getAttribute('href')).toBe('/rsvp?session=church');
-        expect(screen.getByRole('link', { name: en.RSVPPage.stats.attending, description: 'Party' }).getAttribute('href')).toBe('/rsvp?session=party');
-        expect(screen.getByRole('link', { name: en.RSVPPage.stats.declined, description: 'Brunch' }).getAttribute('href')).toBe('/rsvp?session=brunch');
+        expect(screen.getByRole('link', { name: en.FeedSections.schedule.attending, description: 'Party' }).getAttribute('href')).toBe('/rsvp?session=party');
+        expect(screen.getByRole('link', { name: en.FeedSections.schedule.declined, description: 'Brunch' }).getAttribute('href')).toBe('/rsvp?session=brunch');
         expect(screen.getAllByRole('link')).toHaveLength(3);
     });
 

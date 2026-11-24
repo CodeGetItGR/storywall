@@ -10,7 +10,7 @@ type FeedScheduleRsvpProps = FeedScheduleRsvpLink & { label: string; describedBy
 
 // A session's RSVP button: the RSVP module's name until the guest answers, then their answer. Both open the form there.
 export function FeedScheduleRsvp({ answer, href, label, describedBy }: FeedScheduleRsvpProps) {
-    const t = useTranslations('RSVPPage.stats');
+    const t = useTranslations('FeedSections.schedule');
 
     return (
         <AppLink
