@@ -22,6 +22,13 @@ export const Default: Story = {
     },
 };
 
+// One of Feed mode's sections.
+export const FromFeed: Story = {
+    args: { fromFeed: true },
+    render: (args, { globals }) => <DeleteSectionDialog {...args} sectionName={copyFor(globals).InvitationEditor.sectionNames.feedPinned} />,
+    play: Default.play,
+};
+
 // The dialog only reports the answer; the editor deletes the section.
 export const Delete: Story = {
     tags: ['visual-skip'],

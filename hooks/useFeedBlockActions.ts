@@ -3,10 +3,14 @@
 import { useCallback, useMemo, useState } from 'react';
 
 import { useDeleteSectionConfirm } from '@/hooks/useDeleteSectionConfirm';
+import { HE_OR_SHE_MODULE } from '@/hooks/useHeOrShe';
 import type { EventDetailResponseDto } from '@/lib/api/types';
+import { isModuleAvailable } from '@/lib/eventLifecycle';
 import {
+    addableFeedModeTypes,
     addableFeedSectionTypes,
     canDeleteFeedBlock,
+    type FeedAddKind,
     type FeedAddPlace,
     type HostBlockOptions,
     insertFeedSection,
@@ -15,17 +19,22 @@ import {
 } from '@/lib/feedEditing';
 import { newFeedBlock } from '@/lib/feedLayout';
 import { feedModuleSection, type TileModuleKey } from '@/lib/feedModuleBlocks';
+import { hasTimedSessions } from '@/lib/feedSchedule';
+import { createFeedModeSection } from '@/lib/feedSections';
 import { type InvitationDocument, MAX_SECTIONS } from '@/lib/invitation/document';
 import type { InvitationEditorStore } from '@/lib/invitation/editorStore';
 import { createSection, type NewSectionType } from '@/lib/invitation/newSection';
 import type { SectionEdit } from '@/lib/invitation/sectionActions';
-import type { InvitationSection } from '@/lib/invitation/sections';
+import { type FeedModeSectionType, type InvitationSection, isFeedModeSectionType } from '@/lib/invitation/sections';
 
-// What the tools on the feed's blocks do, and the Add section rows. Edit mode only opens with Save my date.
+// The Add sheet that is open, and the row it was opened from. Feed mode's sections always go last.
+export type FeedAdding = { kind: FeedAddKind; at: FeedAddPlace };
+
+// What the tools on the feed's blocks do, and the Add section rows.
 export function useFeedBlockActions(
     store: InvitationEditorStore,
     document: InvitationDocument,
-    event: Pick<EventDetailResponseDto, 'eventType' | 'modules'>,
+    event: Pick<EventDetailResponseDto, 'eventType' | 'modules' | 'sessions' | 'schedule'>,
     options: HostBlockOptions,
 ) {
     const edit = useCallback<SectionEdit>((recipe) => store.getState().edit(recipe), [store]);
@@ -37,9 +46,17 @@ export function useFeedBlockActions(
     // At the section limit nothing more fits, so the Add section rows aren't drawn. Otherwise the sheet opens even with
     // an empty list: the Premium tiles may still be there.
     const showAdd = document.sections.length < MAX_SECTIONS;
-    // The sheet is open for one place (FeedAddPlace). undefined: closed.
-    const [addingAt, setAddingAt] = useState<FeedAddPlace | undefined>(undefined);
-    const adding = addingAt !== undefined;
+    // Feed mode's sheet has only its sections, so its row goes once there are none left to add.
+    const addableFeed = useMemo(
+        () =>
+            addableFeedModeTypes(document, {
+                hasSchedule: hasTimedSessions(event),
+                hasHeOrShe: isModuleAvailable(event.modules, HE_OR_SHE_MODULE),
+            }),
+        [document, event],
+    );
+    const showAddFeed = addableFeed.length > 0;
+    const [adding, setAdding] = useState<FeedAdding | null>(null);
 
     const find = useCallback((id: string) => document.sections.find((section) => section.id === id) ?? null, [document]);
     const toggleVisible = useCallback(
@@ -59,28 +76,35 @@ export function useFeedBlockActions(
         [ask, find, options],
     );
     const openAdd = useCallback(
-        (at: FeedAddPlace = null) => {
-            if (showAdd) setAddingAt(at);
+        (kind: FeedAddKind, at: FeedAddPlace = null) => {
+            if (kind === 'feed' ? showAddFeed : showAdd) setAdding({ kind, at });
         },
-        [showAdd],
+        [showAdd, showAddFeed],
     );
-    const closeAdd = useCallback(() => setAddingAt(undefined), []);
+    const closeAdd = useCallback(() => setAdding(null), []);
     // Puts a new block at the row the sheet was opened from.
     const place = useCallback(
         (section: InvitationSection) => {
-            edit(insertFeedSection(section, addingAt ?? null, options));
-            setAddingAt(undefined);
+            edit(insertFeedSection(section, adding?.at ?? null, options));
+            setAdding(null);
         },
-        [addingAt, edit, options],
+        [adding, edit, options],
     );
-    const add = useCallback((type: NewSectionType) => place(createSection(type, event.eventType)), [event.eventType, place]);
+    const add = useCallback(
+        (type: NewSectionType | FeedModeSectionType) => {
+            if (!isFeedModeSectionType(type)) place(createSection(type, event.eventType));
+            // Each feed section once: a second tap while the sheet closes adds nothing.
+            else if (addableFeed.includes(type)) place(createFeedModeSection(type));
+        },
+        [addableFeed, event.eventType, place],
+    );
     // A Premium tile that adds: RSVP's own block, or the module's block (lib/feedModuleBlocks), in the sheet's place.
     const addModule = useCallback(
         (module: TileModuleKey) => place(module === 'rsvp' ? newFeedBlock('feedRsvp') : feedModuleSection(module)),
         [place],
     );
 
-    return { toggleVisible, reorder, askDelete, remove, addable, showAdd, adding, openAdd, closeAdd, add, addModule };
+    return { toggleVisible, reorder, askDelete, remove, addable, showAdd, addableFeed, showAddFeed, adding, openAdd, closeAdd, add, addModule };
 }
 
 export type FeedBlockActions = ReturnType<typeof useFeedBlockActions>;

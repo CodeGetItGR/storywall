@@ -6,17 +6,19 @@ import { InvitationSection } from '@/components/saveMyDate/invitation/Invitation
 import type { FeedSectionPreview } from '@/lib/feedSectionPreview';
 import type { RenderContext } from '@/lib/invitation/render';
 
+type FeedSectionPreviewPictureProps = { preview: FeedSectionPreview; ctx: RenderContext; lang: string; fontFaces: string };
+
 // A live picture of a block the host may add (plan 5's preview), drawn at twice the box's width and halved. zoom, not a
 // scale transform, so the box is only as tall as the halved block. A gallery with no photos shows empty tiles. Inert: a
 // block can draw buttons of its own (FAQ).
-export function FeedSectionPreviewPicture({ preview, ctx, lang }: { preview: FeedSectionPreview; ctx: RenderContext; lang: string }) {
+export function FeedSectionPreviewPicture({ preview, ctx, lang, fontFaces }: FeedSectionPreviewPictureProps) {
     return (
         <div aria-hidden="true" inert className="pointer-events-none overflow-hidden">
             {preview.placeholder ? (
                 <FeedGalleryPlaceholder />
             ) : (
                 <div className="[zoom:0.5]">
-                    <FeedLook ctx={ctx} lang={lang} fontFaces="">
+                    <FeedLook ctx={ctx} lang={lang} fontFaces={fontFaces}>
                         <InvitationSection section={preview.section} index={1} ctx={ctx} />
                     </FeedLook>
                 </div>

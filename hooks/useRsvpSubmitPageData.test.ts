@@ -19,6 +19,12 @@ describe('computeShowConfirmation', () => {
         expect(computeShowConfirmation(false, true, true)).toBe(false);
     });
 
+    it('opens the form, not the thanks screen, for a link to one session', () => {
+        expect(computeShowConfirmation(false, true, false, true)).toBe(false);
+        expect(computeShowConfirmation(false, true, false)).toBe(true);
+        expect(computeShowConfirmation(true, true, false, true)).toBe(true);
+    });
+
     it('keeps the form up when there is no RSVP yet', () => {
         expect(computeShowConfirmation(false, false, false)).toBe(false);
     });

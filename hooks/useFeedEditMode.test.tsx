@@ -75,9 +75,13 @@ describe('useFeedEditMode', () => {
         expect(result.current.editing).toBe(true);
     });
 
-    it('is off without Save my date', () => {
+    it('opens on every feed plan, for the feed sections only without Save my date', () => {
         const without = { ...active, modules: [] } as unknown as EventDetailResponseDto;
-        expect(renderHook(() => useFeedEditMode(without, true), { wrapper: wrap() }).result.current.canEdit).toBe(false);
+        expect(renderHook(() => useFeedEditMode(without, true), { wrapper: wrap() }).result.current).toMatchObject({
+            canEdit: true,
+            scope: 'feedSections',
+        });
+        expect(renderHook(() => useFeedEditMode(active, true), { wrapper: wrap() }).result.current.scope).toBe('all');
     });
 
     it('is settled once the role and the layout are known', () => {

@@ -5,9 +5,13 @@ import { useTranslations } from 'next-intl';
 import { useCallback } from 'react';
 
 import { FeedEditSheetFrame } from '@/components/feed/edit/FeedEditSheetFrame';
+import { FeedPinnedField } from '@/components/feed/edit/FeedPinnedField';
+import { FeedPromptField } from '@/components/feed/edit/FeedPromptField';
 import { SectionSettingsPanel } from '@/components/saveMyDate/editor/settings/SectionSettingsPanel';
 import { SettingsToggle } from '@/components/saveMyDate/editor/settings/SettingsControls';
 import type { SettingsScope } from '@/hooks/useSectionSettingsPanel';
+import type { PinnedPhoto } from '@/lib/feedPinned';
+import type { MediaResolver } from '@/lib/invitation/render';
 import type { SettingsGroup } from '@/lib/invitation/sectionSettings';
 import type { SettingsPart } from '@/lib/settingsPreview';
 
@@ -22,11 +26,21 @@ type FeedBlockSheetProps = {
     // null: the block can't be members only (the cover, details and RSVP).
     membersOnly: boolean | null;
     onMembersOnly: (membersOnly: boolean) => void;
+    // The photo prompt's line; null on every other block.
+    promptText: string | null;
+    onPromptText: (text: string) => void;
+    // Pinned photos' photos; null on every other block.
+    pinned: readonly PinnedPhoto[] | null;
+    pinnedUploading: boolean;
+    media: MediaResolver;
+    onAddPinned: (file: File) => void;
+    onRemovePinned: (photoId: string) => void;
+    onMovePinned: (activeId: string, overId: string) => void;
     onOpenPart: (part: SettingsPart) => void;
     onClose: () => void;
 };
 
-// The pencil's sheet: the event fields the block shows, who sees it, then its style. A panel at the right on
+// The pencil's sheet: a feed section's own content, the event fields the block shows, who sees it, then its style. A panel at the right on
 // desktop, a sheet over the lower screen on phones; the feed above stays live either way.
 export function FeedBlockSheet({
     title,
@@ -38,12 +52,35 @@ export function FeedBlockSheet({
     isDesktop,
     membersOnly,
     onMembersOnly,
+    promptText,
+    onPromptText,
+    pinned,
+    pinnedUploading,
+    media,
+    onAddPinned,
+    onRemovePinned,
+    onMovePinned,
     onOpenPart,
     onClose,
 }: FeedBlockSheetProps) {
     const t = useTranslations('FeedLayout');
     const body = (
         <div className="flex flex-col gap-5">
+            {/* Prompt */}
+            {promptText !== null && <FeedPromptField text={promptText} onChange={onPromptText} />}
+
+            {/* Pinned photos */}
+            {pinned !== null && (
+                <FeedPinnedField
+                    photos={pinned}
+                    media={media}
+                    uploading={pinnedUploading}
+                    onAdd={onAddPinned}
+                    onRemove={onRemovePinned}
+                    onMove={onMovePinned}
+                />
+            )}
+
             {/* Event details */}
             {parts.length > 0 && (
                 <div className="flex flex-col gap-1.5">

@@ -25,5 +25,23 @@ export const Saving: Story = { args: { saving: true } };
 
 export const SaveFailed: Story = { args: { failed: true } };
 
+// A 360 px phone, the narrowest all three must fit on (the Greek words are the longest).
+const onNarrowPhone: Story = {
+    tags: ['visual-mobile-only'],
+    parameters: { layout: 'fullscreen' },
+    decorators: [
+        (Story) => (
+            <div className="w-[360px]">
+                <Story />
+            </div>
+        ),
+    ],
+    globals: { viewport: { value: 'mobile' } },
+};
+
+export const NarrowPhone: Story = onNarrowPhone;
+
+export const NarrowPhoneSaving: Story = { ...onNarrowPhone, args: { saving: true } };
+
 // An event without Save my date: no Theme.
 export const WithoutTheme: Story = { args: { onTheme: undefined } };

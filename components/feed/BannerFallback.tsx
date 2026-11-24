@@ -1,6 +1,4 @@
-import { ImagePlus } from 'lucide-react';
-
-import { AppLink } from '@/components/ui/AppLink';
+import { AddCoverPhotoLink } from '@/components/feed/AddCoverPhotoLink';
 
 type BannerFallbackProps = {
     actionHref?: string;
@@ -18,15 +16,7 @@ export function BannerFallback({ actionHref, actionLabel }: BannerFallbackProps)
                 className="absolute inset-x-0 bottom-0 h-2/3 bg-[linear-gradient(180deg,rgba(255,255,255,0)_0%,rgba(80,72,68,0.22)_46%,rgba(46,41,39,0.56)_100%)]"
                 aria-hidden="true"
             />
-            {actionHref && actionLabel && (
-                <AppLink
-                    href={actionHref}
-                    className="absolute top-4 left-4 z-10 inline-flex min-h-9 items-center gap-2 rounded-full bg-background/80 px-3 text-xs font-semibold text-ink-muted shadow-[0_10px_24px_rgba(36,31,26,0.12)] backdrop-blur-md transition-colors hover:bg-background hover:text-primary-dark focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-                >
-                    <ImagePlus className="h-4 w-4" aria-hidden="true" />
-                    {actionLabel}
-                </AppLink>
-            )}
+            {actionHref && actionLabel && <AddCoverPhotoLink href={actionHref} label={actionLabel} className="absolute top-4 left-4 z-10" />}
         </div>
     );
 }

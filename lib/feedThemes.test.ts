@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
 import { defaultFeedLayout, PLAIN_FEED_STYLE, WALL_THEME_ID, wallThemeDesign } from '@/lib/feedLayout';
+import { feedModuleSection } from '@/lib/feedModuleBlocks';
+import { createFeedModeSection } from '@/lib/feedSections';
 import {
     FEED_BLOCK_FALLBACK_STYLE,
     invitationThemeChoice,
@@ -32,6 +34,13 @@ function themeDocument(sections: InvitationSection[]): InvitationDocument {
 
 const target = (sections: InvitationSection[]) => ({ document: themeDocument(sections), theme: SAMPLE_THEME, imageIds: new Set<string>() });
 const byType = (document: InvitationDocument, type: string) => document.sections.find((section) => section.type === type)!;
+
+// Feed mode's sections as a host filled them: a prompt, pinned photos, a hidden schedule.
+const FEED_MODE_SECTIONS = [
+    { ...createFeedModeSection('feedPrompt', () => 'prompt'), data: { text: 'Show us your best dance move' } },
+    { ...createFeedModeSection('feedPinned', () => 'pinned'), data: { photos: [{ id: 'photo-1', image: { source: 'media', mediaId: 'img-1' } }] } },
+    { ...createFeedModeSection('feedSchedule', () => 'schedule'), visible: false },
+] as InvitationSection[];
 
 describe('theme choices', () => {
     it('marks a Save my date card apart from wall presets', () => {
@@ -93,9 +102,25 @@ describe('planFeedThemeSwitch', () => {
         const next = planFeedThemeSwitch(current, target([]), new Set());
         expect(next.sections.map((section) => section.type)).toEqual(['feedRsvp', 'feedDescription', 'feedDetails', 'feedCover']);
     });
+
+    it("keeps Feed mode's sections as they are, in the plain feed style", () => {
+        const onAnotherLook = FEED_MODE_SECTIONS.map((section) => ({ ...section, style: FEED_BLOCK_FALLBACK_STYLE }) as InvitationSection);
+        const current = { ...defaultFeedLayout(), sections: [...defaultFeedLayout().sections, ...onAnotherLook] };
+        const next = planFeedThemeSwitch(current, target([styled('top', '#111111')]), new Set());
+        expect(next.sections.slice(-3)).toEqual(FEED_MODE_SECTIONS);
+        expect(next.sections.slice(-3).some((section) => section.hiddenByTheme)).toBe(false);
+    });
 });
 
 describe('planFeedWallSwitch', () => {
+    it("keeps Feed mode's sections and the module blocks", () => {
+        const playlist = feedModuleSection('playlist', () => 'playlist');
+        const current = themeDocument([...defaultFeedLayout().sections, playlist, ...FEED_MODE_SECTIONS]);
+        const next = planFeedWallSwitch(current, wallThemeDesign(null), 'WEDDING', new Set());
+        expect(next.sections.slice(-3)).toEqual(FEED_MODE_SECTIONS);
+        expect(byType(next, 'feedModule')).toMatchObject({ id: 'playlist', visible: true, data: playlist.data });
+    });
+
     it('puts the feed blocks back to the plain style on the wall theme', () => {
         const onTheme = planFeedThemeSwitch(defaultFeedLayout(), target([styled('top', '#111111')]), new Set());
         const next = planFeedWallSwitch(onTheme, wallThemeDesign(null), 'WEDDING', new Set());

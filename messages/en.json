@@ -6708,6 +6708,19 @@
             }
         }
     },
+    "FeedSections": {
+        "schedule": {
+            "attending": "Attending",
+            "declined": "Declined"
+        },
+        "prompt": {
+            "question": "What should guests photograph?",
+            "placeholder": "Show us your best dance move"
+        },
+        "pinned": {
+            "photoAlt": "Photo {number} of {count}"
+        }
+    },
     "FeedLayout": {
         "invitation": "Invitation",
         "socialFeed": "Social Feed",
@@ -10675,6 +10688,7 @@
             "drag": "Drag to move",
             "deleteTitle": "Delete this section?",
             "deleteBody": "The «{name}» section will be removed from the invitation.",
+            "deleteBodyFeed": "The «{name}» section will be removed from the feed.",
             "deleteConfirm": "Delete",
             "deleteCancel": "Cancel",
             "dragInstructions": "Press space to pick up a section. Use the arrow keys to move it, space to drop it, or escape to cancel.",
@@ -10719,7 +10733,10 @@
             "feedCover": "Cover",
             "feedDetails": "Details",
             "feedDescription": "Description",
-            "feedRsvp": "RSVP"
+            "feedRsvp": "RSVP",
+            "feedSchedule": "Today's schedule",
+            "feedPrompt": "Photo prompt",
+            "feedPinned": "Pinned photos"
         },
         "eventPhotos": {
             "title": "Event photos",

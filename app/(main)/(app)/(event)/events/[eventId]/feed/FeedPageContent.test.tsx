@@ -7,6 +7,7 @@ import { eventKeys } from '@/hooks/useEvent';
 import type { EventDetailResponseDto, FeedLayoutDto } from '@/lib/api/types';
 import { defaultFeedLayout, feedLayoutKeys } from '@/lib/feedLayout';
 import { feedPageThemeFor, feedPageThemeSnapshot, publishFeedPageTheme } from '@/lib/feedPageTheme';
+import { createFeedModeSection } from '@/lib/feedSections';
 import type { InvitationDocument } from '@/lib/invitation/document';
 import { SAMPLE_SECTIONS, SAMPLE_THEME } from '@/lib/invitation/samples';
 import type { InvitationSection } from '@/lib/invitation/sections';
@@ -77,6 +78,15 @@ vi.mock('@/components/feed/StoriesRow', () => ({ StoriesRow: () => null }));
 vi.mock('@/components/pwa/InstallAppBanner', () => ({ InstallAppBanner: () => null }));
 vi.mock('@/components/story/StoryModal', () => ({ StoryModal: () => null }));
 vi.mock('@/components/vendors/VendorProfilePrompt', () => ({ VendorProfilePrompt: () => null }));
+vi.mock('@/components/feed/guestOffer/GuestOfferCard', () => ({ GuestOfferCard: () => null }));
+// The real viewer needs an IntersectionObserver, which jsdom doesn't have.
+vi.mock('@/components/feed/post/MediaViewer', () => ({ MediaViewer: () => <div data-testid="photo-viewer" /> }));
+vi.mock('@/components/feed/HeOrShePromptCard', () => ({ HeOrShePromptCard: () => <span>fixed card</span> }));
+vi.mock('@/components/feed/sections/FeedHeOrSheSection', () => ({ FeedHeOrSheSection: () => <span>section card</span> }));
+vi.mock('@/providers/composer/ComposerContext', async (importOriginal) => ({
+    ...(await importOriginal<typeof import('@/providers/composer/ComposerContext')>()),
+    useComposer: () => ({ openPostComposer: vi.fn(), canComposePost: true }),
+}));
 vi.mock('@/components/feed/quickActions/FeedQuickActions', () => ({ FeedQuickActions: () => null }));
 
 // jsdom has no matchMedia; the edit sheet asks whether the screen is desktop-wide.
@@ -133,11 +143,12 @@ type FeedOptions = {
     modules?: { moduleKey: string; isAvailable: boolean; isEnabled: boolean }[];
     stories?: boolean;
     startAt?: string | null;
+    posts?: boolean;
 };
 
 function renderFeed(
     illustrationUrl: string | null,
-    { description = null, endAt = null, layout, flag = false, isHost = false, modules = [], stories = false, startAt = null }: FeedOptions = {},
+    { description = null, endAt = null, layout, flag = false, isHost = false, modules = [], stories = false, startAt = null, posts = false }: FeedOptions = {},
 ) {
     // staleTime: the seeded layout counts as fresh, so nothing is fetched for real.
     const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false, staleTime: Infinity } } });
@@ -166,7 +177,7 @@ function renderFeed(
         isHost,
         loadMoreRef: { current: null },
         loadingMoreLabel: '',
-        moduleFlags: { rsvp: false, stories, posts: false, wishlist: false },
+        moduleFlags: { rsvp: false, stories, posts, wishlist: false },
         posts: [],
     } as unknown as Parameters<typeof FeedPageProvider>[0]['value'];
     const wrap = (children: ReactNode) => (
@@ -308,6 +319,71 @@ describe('FeedPageContent RSVP place', { timeout: 15_000 }, () => {
     });
 });
 
+describe('FeedPageContent feed sections', { timeout: 15_000 }, () => {
+    const prompt = { ...createFeedModeSection('feedPrompt', () => 'p'), data: { text: 'Show us' } } as InvitationSection;
+    const heOrShe = createFeedModeSection('feedHeOrShe', () => 'h');
+    const pinned = {
+        ...createFeedModeSection('feedPinned', () => 'pin'),
+        data: { photos: [{ id: 'one', image: { source: 'media', mediaId: 'm-1' } }] },
+    } as InvitationSection;
+    const withPhoto = { ...savedLayout(pinned), imageUrls: { 'm-1': 'https://media.test/one.jpg' } };
+
+    it('draws them on the one page, after RSVP and above the posts', () => {
+        rsvpVisible.value = true;
+        renderFeed(null, { flag: true, layout: savedLayout(prompt), posts: true });
+        const line = screen.getByText('Show us');
+        expect(follows(screen.getByTestId('rsvp'), line)).toBe(true);
+        expect(follows(line, document.querySelector('#posts') as HTMLElement)).toBe(true);
+    });
+
+    it('draws them in Social Feed mode only, under the stories, with Save my date', async () => {
+        renderFeed(null, { flag: true, layout: savedLayout(prompt), modules: SMD, startAt: '2020-06-01T15:00:00Z', stories: true });
+        const line = await screen.findByText('Show us', {}, LAZY_LOOK);
+        expect(follows(document.querySelector('#stories') as HTMLElement, line)).toBe(true);
+        fireEvent.click(screen.getByRole('button', { name: 'invitation' }));
+        expect(screen.queryByText('Show us')).toBeNull();
+    });
+
+    it("leaves Save my date's sections out of the one page", () => {
+        renderFeed(null, { flag: true, layout: savedLayout(dressCode, prompt) });
+        expect(screen.getByText('Show us')).toBeTruthy();
+        // Without them the layout needs no invitation look, so the feed draws plainly.
+        expect(document.querySelector('.smd-invitation')).toBeNull();
+    });
+
+    it('opens a pinned photo full screen from the page, and takes no tap in edit mode', async () => {
+        renderFeed(null, { flag: true, layout: withPhoto });
+        fireEvent.click(screen.getByRole('button', { name: 'photoAlt' }));
+        expect(await screen.findByTestId('photo-viewer')).toBeTruthy();
+        cleanup();
+
+        renderFeed(null, { flag: true, layout: withPhoto, isHost: true, modules: SMD, startAt: '2020-06-01T15:00:00Z' });
+        expect(await screen.findByRole('button', { name: 'photoAlt' }, LAZY_LOOK)).toBeTruthy();
+        fireEvent.click(screen.getByRole('button', { name: 'edit' }));
+        const pinned = await screen.findByRole('group', { name: 'sectionNames.feedPinned' }, LAZY_LOOK);
+        const photo = within(pinned).getByAltText('photoAlt');
+        expect(photo.closest('button')).toBeNull();
+        expect(photo.closest('[inert]')).toBeTruthy();
+        fireEvent.click(photo);
+        expect(screen.queryByTestId('photo-viewer')).toBeNull();
+    });
+
+    it('draws the fixed Boy or Girl card only while the layout has no Boy or Girl section, shown or hidden', () => {
+        renderFeed(null, { flag: true, layout: savedLayout(), posts: true });
+        expect(screen.getByText('fixed card')).toBeTruthy();
+        cleanup();
+
+        renderFeed(null, { flag: true, layout: savedLayout({ ...heOrShe, visible: false }), posts: true });
+        expect(screen.queryByText('fixed card')).toBeNull();
+        expect(screen.queryByText('section card')).toBeNull();
+        cleanup();
+
+        renderFeed(null, { flag: true, layout: savedLayout(heOrShe), posts: true });
+        expect(screen.getByText('section card')).toBeTruthy();
+        expect(screen.queryByText('fixed card')).toBeNull();
+    });
+});
+
 describe('FeedPageContent edit mode', { timeout: 15_000 }, () => {
     it('lets the host drag and delete RSVP on a Save my date event', async () => {
         renderFeed(null, { flag: true, layout: savedLayout(dressCode), isHost: true, modules: SMD, startAt: '2099-06-01T15:00:00Z' });
@@ -326,6 +402,7 @@ describe('FeedPageContent edit mode', { timeout: 15_000 }, () => {
         const rsvp = await screen.findByRole('group', { name: 'sectionNames.feedRsvp' }, LAZY_LOOK);
         fireEvent.click(within(rsvp.querySelector('[data-feed-block-tools]') as HTMLElement).getByRole('button', { name: 'delete' }));
         const dialog = await screen.findByRole('dialog');
+        expect(within(dialog).getByText('deleteBody')).toBeTruthy();
         expect(screen.getByRole('group', { name: 'sectionNames.feedRsvp', hidden: true })).toBeTruthy();
         fireEvent.click(within(dialog).getByRole('button', { name: 'deleteConfirm' }));
         await waitFor(() => expect(screen.queryByRole('group', { name: 'sectionNames.feedRsvp' })).toBeNull());
@@ -385,11 +462,49 @@ describe('FeedPageContent edit mode', { timeout: 15_000 }, () => {
         expect(screen.queryByRole('button', { name: 'edit' })).toBeNull();
     });
 
-    it('shows no Edit without Save my date', async () => {
-        renderFeed(null, { flag: true, layout: savedLayout(), isHost: true, modules: [] });
-        // The layout is seeded, so the pill would show at once.
-        await screen.findByTestId('banner', {}, LAZY_LOOK);
-        expect(screen.queryByRole('button', { name: 'edit' })).toBeNull();
+    it('edits only the feed sections without Save my date: no Theme, no tools on the fixed blocks', async () => {
+        api.put.mockResolvedValue({ revision: 2, updatedAt: '2026-11-22T10:00:00Z' });
+        rsvpVisible.value = true;
+        const prompt = { ...createFeedModeSection('feedPrompt', () => 'p'), data: { text: 'Show us' } } as InvitationSection;
+        renderFeed(null, { description: 'Hello', flag: true, isHost: true, layout: savedLayout(dressCode, prompt), modules: [] });
+        fireEvent.click(await screen.findByRole('button', { name: 'edit' }));
+        expect(document.activeElement).toBe(await screen.findByRole('button', { name: 'cancel' }, LAZY_LOOK));
+        expect(screen.queryByRole('button', { name: 'themes' })).toBeNull();
+
+        // The fixed blocks draw as on the feed and take no taps.
+        for (const id of ['banner', 'description', 'rsvp']) expect(screen.getByTestId(id).closest('[inert]')).toBeTruthy();
+        expect(screen.getAllByRole('group').map((group) => group.getAttribute('aria-label'))).toEqual(['sectionNames.feedPrompt']);
+
+        // One Add section row, for the feed sections.
+        fireEvent.click(screen.getByRole('button', { name: 'add' }));
+        expect(screen.queryByRole('button', { name: 'sectionNames.faq' })).toBeNull();
+        fireEvent.click(await screen.findByRole('button', { name: 'sectionNames.feedPinned' }));
+        expect(await screen.findByRole('group', { name: 'sectionNames.feedPinned', hidden: true })).toBeTruthy();
+
+        // Save my date's own sections, out of sight, are saved as they were.
+        fireEvent.click(screen.getByRole('button', { name: 'save', hidden: true }));
+        await waitFor(() => expect(api.put).toHaveBeenCalledOnce());
+        const sections = api.put.mock.calls[0][1].document.sections as InvitationSection[];
+        expect(sections).toContainEqual(dressCode);
+        expect(sections.map((section) => section.type).slice(-2)).toEqual(['feedPrompt', 'feedPinned']);
+    });
+
+    it('says a feed section goes from the feed, not the invitation', async () => {
+        const prompt = { ...createFeedModeSection('feedPrompt', () => 'p'), data: { text: 'Show us' } } as InvitationSection;
+        renderFeed(null, { flag: true, isHost: true, layout: savedLayout(prompt), modules: [] });
+        fireEvent.click(await screen.findByRole('button', { name: 'edit' }));
+        const group = await screen.findByRole('group', { name: 'sectionNames.feedPrompt' }, LAZY_LOOK);
+        fireEvent.click(within(group.querySelector('[data-feed-block-tools]') as HTMLElement).getByRole('button', { name: 'delete' }));
+        expect(within(await screen.findByRole('dialog')).getByText('deleteBodyFeed')).toBeTruthy();
+    });
+
+    it('adds no stand-ins for empty fixed blocks without Save my date', async () => {
+        renderFeed(null, { flag: true, isHost: true, layout: savedLayout(), modules: [] });
+        fireEvent.click(await screen.findByRole('button', { name: 'edit' }));
+        await screen.findByRole('button', { name: 'cancel' }, LAZY_LOOK);
+        expect(screen.queryByText('sectionNames.feedDescription')).toBeNull();
+        expect(screen.queryByText('sectionNames.feedRsvp')).toBeNull();
+        expect(screen.queryByRole('group')).toBeNull();
     });
 
     it('lists every block while editing, and Cancel leaves at once with no changes', async () => {
@@ -402,11 +517,11 @@ describe('FeedPageContent edit mode', { timeout: 15_000 }, () => {
         expect(await screen.findByRole('button', { name: 'edit' })).toBeTruthy();
     });
 
-    it('names every block in its tools while editing, and nowhere once done', async () => {
+    it('names every block but the cover in its tools while editing, and nowhere once done', async () => {
         renderFeed(null, { flag: true, layout: savedLayout(dressCode), isHost: true, modules: SMD });
         fireEvent.click(await screen.findByRole('button', { name: 'edit' }));
         await screen.findByRole('group', { name: 'sectionNames.feedCover' }, LAZY_LOOK);
-        for (const type of ['feedCover', 'feedDescription', dressCode.type, 'feedRsvp']) {
+        for (const type of ['feedDescription', dressCode.type, 'feedRsvp']) {
             const group = screen.getByRole('group', { name: `sectionNames.${type}` });
             const tools = group.querySelector('[data-feed-block-tools]') as HTMLElement;
             expect(within(tools).getByText(`sectionNames.${type}`)).toHaveAttribute('aria-hidden', 'true');
@@ -418,11 +533,12 @@ describe('FeedPageContent edit mode', { timeout: 15_000 }, () => {
         expect(document.querySelector('[data-feed-block-tools]')).toBeNull();
     });
 
-    it('gives the cover no eye', async () => {
+    it('gives the cover no eye and no name on screen', async () => {
         renderFeed(null, { flag: true, layout: savedLayout(), isHost: true, modules: SMD });
         fireEvent.click(await screen.findByRole('button', { name: 'edit' }));
         const cover = await screen.findByRole('group', { name: 'sectionNames.feedCover' }, LAZY_LOOK);
         expect(within(cover).queryByRole('button', { name: 'hide' })).toBeNull();
+        expect(within(cover).queryByText('sectionNames.feedCover')).toBeNull();
     });
 
     it('hides a block and saves the layout with its revision', async () => {
@@ -437,6 +553,28 @@ describe('FeedPageContent edit mode', { timeout: 15_000 }, () => {
         const [, body] = api.put.mock.calls[0];
         expect(body.revision).toBe(1);
         expect(body.document.sections.find((section: InvitationSection) => section.type === 'feedRsvp').visible).toBe(false);
+    });
+
+    it("adds a feed section in Social Feed mode, opens its settings and saves it with the invitation's blocks", async () => {
+        api.put.mockResolvedValue({ revision: 2, updatedAt: '2026-11-22T10:00:00Z' });
+        renderFeed(null, { flag: true, layout: savedLayout(dressCode), isHost: true, modules: SMD, startAt: '2020-06-01T15:00:00Z' });
+        fireEvent.click(await screen.findByRole('button', { name: 'edit' }, LAZY_LOOK));
+        // One Add section row: the feed sections', never the invitation's.
+        const row = await screen.findByRole('button', { name: 'add' }, LAZY_LOOK);
+        fireEvent.click(row);
+        expect(await screen.findByRole('button', { name: 'sectionNames.feedPinned' })).toBeTruthy();
+        expect(screen.queryByRole('button', { name: 'sectionNames.faq' })).toBeNull();
+        fireEvent.click(screen.getByRole('button', { name: 'sectionNames.feedPrompt' }));
+
+        const prompt = await screen.findByRole('group', { name: 'sectionNames.feedPrompt', hidden: true });
+        fireEvent.click(within(prompt.querySelector('[data-feed-block-tools]') as HTMLElement).getByRole('button', { name: 'open', hidden: true }));
+        fireEvent.change(await screen.findByRole('textbox'), { target: { value: 'Show us your shoes' } });
+        fireEvent.click(screen.getByRole('button', { name: 'save', hidden: true }));
+        await waitFor(() => expect(api.put).toHaveBeenCalledOnce());
+        const sections = api.put.mock.calls[0][1].document.sections as InvitationSection[];
+        const before = savedLayout(dressCode).document as InvitationDocument;
+        expect(sections.map((section) => section.type)).toEqual([...before.sections.map((section) => section.type), 'feedPrompt']);
+        expect(sections.at(-1)?.data).toMatchObject({ text: 'Show us your shoes' });
     });
 
     it('asks before Cancel drops changes', async () => {

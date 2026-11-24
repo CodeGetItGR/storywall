@@ -14,12 +14,14 @@ afterEach(cleanup);
 
 const row = (place: FeedAddPlace) => <i>{place ? JSON.stringify(place) : 'end'}</i>;
 const addRow = (place: FeedAddPlace) => <span>{place ? JSON.stringify(place) : 'add'}</span>;
+const prompt = { ...SAMPLE_SECTIONS.feedPrompt, id: 'p' } as InvitationSection;
+const feedSectionOf = () => <span>prompt</span>;
 const moduleOf = (section: InvitationSection) => <span>module {section.id}</span>;
 
 function renderFrame(mode: FeedPageMode) {
-    const document = defaultFeedLayout();
-    const frame = feedFrame(document, { ended: false });
-    const view = { frame, sections: document.sections } as unknown as FeedTopView;
+    const layout = defaultFeedLayout();
+    const frame = { ...feedFrame(layout, { ended: false }), feed: [prompt] };
+    const view = { frame, sections: layout.sections } as unknown as FeedTopView;
     render(
         <FeedTopFrame
             view={view}
@@ -31,16 +33,17 @@ function renderFrame(mode: FeedPageMode) {
             description={<span>description</span>}
             rsvp={<span>rsvp</span>}
             between={addRow}
+            feedSection={feedSectionOf}
+            afterFeed={<span>add feed</span>}
             editRow={<span>edit row</span>}
             dateRow={<span>date</span>}
         />,
     );
-    const rows = ['{"before":"feed-feedDescription"}', '{"after":"feed-feedDescription"}'];
-    return ['cover', 'pill', 'edit row', 'date', 'stories', rows[0], 'description', rows[1], 'rsvp'].filter((text) => screen.queryByText(text));
+    return Array.from(document.body.querySelectorAll('span'), (node) => node.textContent);
 }
 
 describe('FeedTopFrame', () => {
-    it('draws the invitation: cover, switch, edit row, the middle and RSVP, without stories or the date row', () => {
+    it('draws the invitation: cover, switch, edit row, the middle and RSVP, without stories, the date row or feed sections', () => {
         expect(renderFrame('invitation')).toEqual([
             'cover',
             'pill',
@@ -52,11 +55,11 @@ describe('FeedTopFrame', () => {
         ]);
     });
 
-    it('draws the feed: cover, switch, edit row, the date row and stories', () => {
-        expect(renderFrame('feed')).toEqual(['cover', 'pill', 'edit row', 'date', 'stories']);
+    it('draws the feed: cover, switch, edit row, the date row, stories, then the feed sections', () => {
+        expect(renderFrame('feed')).toEqual(['cover', 'pill', 'edit row', 'date', 'stories', 'prompt', 'add feed']);
     });
 
-    it("draws one page without the switch or the date row, in today's order, nothing folded", () => {
+    it("draws one page without the switch or the date row, in today's order, the feed sections right above the posts", () => {
         expect(renderFrame('single')).toEqual([
             'cover',
             'edit row',
@@ -65,6 +68,8 @@ describe('FeedTopFrame', () => {
             'description',
             '{"after":"feed-feedDescription"}',
             'rsvp',
+            'prompt',
+            'add feed',
         ]);
     });
 

@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { convertState } from '@/lib/invitation/convert/convert';
 import { MediaCollector } from '@/lib/invitation/convert/media';
 import { createSection, type NewSectionType } from '@/lib/invitation/newSection';
-import { isFeedSectionType, SECTION_TYPES,sectionSchema } from '@/lib/invitation/sections';
+import { isSaveMyDateSectionType, SECTION_TYPES,sectionSchema } from '@/lib/invitation/sections';
 
 // The old editor's section factories (public/legacy/section-runtime.js in the
 // old Save my date app), copied as they are. A new section must come out
@@ -99,7 +99,7 @@ function convertOld(oldSection: Record<string, unknown>) {
     return result.document.sections[0];
 }
 
-const NEW_TYPES = SECTION_TYPES.filter((type): type is NewSectionType => type !== 'footer' && type !== 'feedModule' && !isFeedSectionType(type));
+const NEW_TYPES = SECTION_TYPES.filter((type): type is NewSectionType => type !== 'footer' && isSaveMyDateSectionType(type));
 const EVENTS: [string, Category][] = [['WEDDING', 'Γάμος'], ['BAPTISM', 'Βάπτιση'], ['BIRTHDAY', 'Γενέθλια']];
 
 describe('createSection', () => {

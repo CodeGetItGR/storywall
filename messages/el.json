@@ -6837,6 +6837,19 @@
             }
         }
     },
+    "FeedSections": {
+        "schedule": {
+            "attending": "Θα παρευρεθείτε",
+            "declined": "Δεν θα παρευρεθείτε"
+        },
+        "prompt": {
+            "question": "Τι να φωτογραφίσουν οι καλεσμένοι;",
+            "placeholder": "Δείξτε μας την καλύτερη χορευτική σας κίνηση"
+        },
+        "pinned": {
+            "photoAlt": "Φωτογραφία {number} από {count}"
+        }
+    },
     "FeedLayout": {
         "invitation": "Πρόσκληση",
         "socialFeed": "Social Feed",
@@ -10713,6 +10726,7 @@
             "drag": "Σύρετε για αλλαγή θέσης",
             "deleteTitle": "Διαγραφή ενότητας;",
             "deleteBody": "Η ενότητα «{name}» θα αφαιρεθεί από την πρόσκληση.",
+            "deleteBodyFeed": "Η ενότητα «{name}» θα αφαιρεθεί από το feed.",
             "deleteConfirm": "Διαγραφή",
             "deleteCancel": "Ακύρωση",
             "dragInstructions": "Πατήστε space για να πιάσετε μια ενότητα. Μετακινήστε τη με τα βέλη, αφήστε τη με space ή ακυρώστε με escape.",
@@ -10757,7 +10771,10 @@
             "feedCover": "Εξώφυλλο",
             "feedDetails": "Λεπτομέρειες",
             "feedDescription": "Περιγραφή",
-            "feedRsvp": "RSVP"
+            "feedRsvp": "RSVP",
+            "feedSchedule": "Το πρόγραμμα της ημέρας",
+            "feedPrompt": "Ιδέα για φωτογραφία",
+            "feedPinned": "Καρφιτσωμένες φωτογραφίες"
         },
         "eventPhotos": {
             "title": "Φωτογραφίες εκδήλωσης",

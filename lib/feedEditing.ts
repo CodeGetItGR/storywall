@@ -3,16 +3,29 @@ import type { Draft } from 'immer';
 import type { EventModuleResponseDto } from '@/lib/api/types';
 import { feedAddList } from '@/lib/feedAddList';
 import { type FeedFrame, feedFrame } from '@/lib/feedLayout';
+import type { FeedPageMode } from '@/lib/feedMode';
+import { hasFeedSection } from '@/lib/feedSections';
 import { type InvitationDocument, MAX_SECTIONS } from '@/lib/invitation/document';
 import type { NewSectionType } from '@/lib/invitation/newSection';
 import { deleteSection, type MoveDirection, setSectionVisible } from '@/lib/invitation/sectionActions';
-import { type InvitationSection, isFeedSectionType, type SectionType } from '@/lib/invitation/sections';
+import {
+    FEED_MODE_SECTION_TYPES,
+    type FeedModeSectionType,
+    type InvitationSection,
+    isFeedModeSectionType,
+    isFeedSectionType,
+    type SectionType,
+} from '@/lib/invitation/sections';
 import type { SettingsGroup } from '@/lib/invitation/sectionSettings';
 import type { SettingsPart } from '@/lib/settingsPreview';
 
 // Edit mode on the feed (KAN-245). The cover and details keep their places, RSVP too without Save my date; the host
-// orders, hides and deletes the rest.
+// orders, hides and deletes the rest, and Feed mode's sections among themselves.
 // Every edit is an Immer recipe for the old editor's store.
+
+// What edit mode may change. all: with Save my date. feedSections: without it, only Feed mode's sections; the fixed
+// blocks, the invitation's sections, themes and the background are out of reach.
+export type FeedEditScope = 'all' | 'feedSections';
 
 type DocumentDraft = Draft<InvitationDocument>;
 type Block = Pick<InvitationSection, 'id' | 'type' | 'locked'>;
@@ -22,7 +35,25 @@ export type HostBlockOptions = { rsvpMoves: boolean };
 
 // The description, every Save my date block, and RSVP with Save my date: what the host orders.
 export function isHostBlock(section: Pick<InvitationSection, 'type'>, { rsvpMoves }: HostBlockOptions): boolean {
-    return section.type === 'feedDescription' || !isFeedSectionType(section.type) || (rsvpMoves && section.type === 'feedRsvp');
+    return (
+        section.type === 'feedDescription' ||
+        (!isFeedSectionType(section.type) && !isFeedModeSectionType(section.type)) ||
+        (rsvpMoves && section.type === 'feedRsvp')
+    );
+}
+
+// One of Feed mode's sections: what the host orders under the stories.
+export function isFeedModeBlock(section: Pick<InvitationSection, 'type'>): boolean {
+    return isFeedModeSectionType(section.type);
+}
+
+type BlockGroup = (section: Pick<InvitationSection, 'type'>) => boolean;
+
+// The blocks a block moves among: the host blocks, or Feed mode's sections. The frame's fixed blocks move nowhere.
+function groupOf(section: Pick<InvitationSection, 'type'> | undefined, options: HostBlockOptions): BlockGroup | null {
+    if (!section) return null;
+    if (isHostBlock(section, options)) return (item) => isHostBlock(item, options);
+    return isFeedModeBlock(section) ? isFeedModeBlock : null;
 }
 
 // Edit mode lists every block, hidden ones too, and the middle is never dropped after the event.
@@ -32,36 +63,41 @@ export function feedEditFrame(layout: InvitationDocument, options: HostBlockOpti
         cover: feedFrame(layout, { ended: false }).cover,
         middle: layout.sections.filter((section) => isHostBlock(section, options)),
         rsvp: options.rsvpMoves ? null : find('feedRsvp'),
+        feed: layout.sections.filter(isFeedModeBlock),
     };
+}
+
+// What drags on screen, in order: only the blocks the mode draws, so the place read out while dragging counts those.
+export function draggableFeedBlocks({ middle, feed }: Pick<FeedFrame, 'middle' | 'feed'>, mode: FeedPageMode): InvitationSection[] {
+    if (mode === 'invitation') return middle;
+    return mode === 'feed' ? feed : [...middle, ...feed];
 }
 
 export function canHideFeedBlock(section: Block): boolean {
     return section.type !== 'feedCover' && !section.locked;
 }
 
-// A Save my date or module block, and RSVP when it moves (spec item 17). Never the cover, details or description.
+// A Save my date, module or Feed mode block, and RSVP when it moves (spec item 17). Never the cover, details or description.
 export function canDeleteFeedBlock(section: Block, { rsvpMoves }: HostBlockOptions): boolean {
     if (section.locked) return false;
     if (section.type === 'feedRsvp') return rsvpMoves;
     return !isFeedSectionType(section.type);
 }
 
-function middleIds(sections: readonly Block[], options: HostBlockOptions): string[] {
-    return sections.filter((section) => isHostBlock(section, options)).map((section) => section.id);
-}
-
 // A locked block keeps its place: it never moves, and nothing moves into it.
 export function canMoveFeedBlock(sections: readonly Block[], id: string, direction: MoveDirection, options: HostBlockOptions): boolean {
-    const middle = sections.filter((section) => isHostBlock(section, options));
-    const index = middle.findIndex((section) => section.id === id);
-    const target = index === -1 ? undefined : middle[index + direction];
-    return index !== -1 && !middle[index].locked && target !== undefined && !target.locked;
+    const section = sections.find((item) => item.id === id);
+    const group = groupOf(section, options);
+    if (!section || !group) return false;
+    const members = sections.filter(group);
+    const target = members[members.indexOf(section) + direction];
+    return !section.locked && target !== undefined && !target.locked;
 }
 
 export type FeedBlockControls = { canHide: boolean; canDelete: boolean; movable: boolean; canMoveUp: boolean; canMoveDown: boolean };
 
 export function feedBlockControls(sections: readonly Block[], section: Block, options: HostBlockOptions): FeedBlockControls {
-    const movable = isHostBlock(section, options) && !section.locked;
+    const movable = groupOf(section, options) !== null && !section.locked;
     return {
         canHide: canHideFeedBlock(section),
         canDelete: canDeleteFeedBlock(section, options),
@@ -71,30 +107,38 @@ export function feedBlockControls(sections: readonly Block[], section: Block, op
     };
 }
 
-// The dragged block takes the place of the one it was dropped on. The frame's fixed blocks stay where they are, so
-// only the host blocks' own slots are rewritten. A drag that would shift a locked block does nothing.
+// The dragged block takes the place of the one it was dropped on, both in the same group. Every other block stays
+// where it is, so only that group's own slots are rewritten. A drag onto another group, or one that would shift a
+// locked block, does nothing.
 export function reorderFeedBlocks(activeId: string, overId: string, options: HostBlockOptions) {
     return (draft: DocumentDraft) => {
-        const slots = draft.sections.flatMap((section, index) => (isHostBlock(section, options) ? [index] : []));
-        const middle = slots.map((slot) => draft.sections[slot]);
-        const from = middle.findIndex((section) => section.id === activeId);
-        const to = middle.findIndex((section) => section.id === overId);
+        const group = groupOf(
+            draft.sections.find((section) => section.id === activeId),
+            options,
+        );
+        if (!group) return;
+        const slots = draft.sections.flatMap((section, index) => (group(section) ? [index] : []));
+        const members = slots.map((slot) => draft.sections[slot]);
+        const from = members.findIndex((section) => section.id === activeId);
+        const to = members.findIndex((section) => section.id === overId);
         if (from === -1 || to === -1 || from === to) return;
-        const [moved] = middle.splice(from, 1);
-        middle.splice(to, 0, moved);
-        if (middle.some((section, place) => section.locked && draft.sections[slots[place]].id !== section.id)) return;
+        const [moved] = members.splice(from, 1);
+        members.splice(to, 0, moved);
+        if (members.some((section, place) => section.locked && draft.sections[slots[place]].id !== section.id)) return;
         slots.forEach((slot, place) => {
-            draft.sections[slot] = middle[place];
+            draft.sections[slot] = members[place];
         });
     };
 }
 
 export function moveFeedBlock(id: string, direction: MoveDirection, options: HostBlockOptions) {
     return (draft: DocumentDraft) => {
-        const order = middleIds(draft.sections, options);
-        const index = order.indexOf(id);
-        const target = index === -1 ? undefined : order[index + direction];
-        if (target !== undefined) reorderFeedBlocks(id, target, options)(draft);
+        const section = draft.sections.find((item) => item.id === id);
+        const group = groupOf(section, options);
+        if (!section || !group) return;
+        const members = draft.sections.filter(group);
+        const target = members[members.findIndex((item) => item.id === id) + direction];
+        if (target) reorderFeedBlocks(id, target.id, options)(draft);
     };
 }
 
@@ -113,15 +157,23 @@ export function deleteFeedBlock(id: string, options: HostBlockOptions) {
 }
 
 // A new block goes after the last host block: before RSVP when RSVP keeps its fixed place, after it when it moves.
+// A feed section goes last: the frame places it, so where it sits among the other blocks doesn't matter.
 export function appendFeedSection(section: InvitationSection, options: HostBlockOptions) {
     return (draft: DocumentDraft) => {
         if (draft.sections.length >= MAX_SECTIONS) return;
+        if (isFeedModeBlock(section)) {
+            draft.sections.push(section as Draft<InvitationSection>);
+            return;
+        }
         const lastMiddle = draft.sections.map((item) => isHostBlock(item, options)).lastIndexOf(true);
         const rsvp = draft.sections.findIndex((item) => item.type === 'feedRsvp');
         const index = lastMiddle !== -1 ? lastMiddle + 1 : rsvp !== -1 ? rsvp : draft.sections.length;
         draft.sections.splice(index, 0, section as Draft<InvitationSection>);
     };
 }
+
+// What the Add section sheet lists: invitation sections, or Feed mode's own.
+export type FeedAddKind = 'invitation' | 'feed';
 
 // Where a "+ Add section" row puts its block: after a host block, before the first one (the row above the first), or
 // null (no host blocks yet), which is where appendFeedSection puts it.
@@ -134,21 +186,28 @@ export function insertFeedSection(section: InvitationSection, place: FeedAddPlac
         if (draft.sections.length >= MAX_SECTIONS) return;
         const anchorId = place ? ('after' in place ? place.after : place.before) : null;
         const anchor = anchorId ? draft.sections.findIndex((item) => item.id === anchorId && isHostBlock(item, options)) : -1;
-        if (anchor === -1) return appendFeedSection(section, options)(draft);
+        if (anchor === -1 || isFeedModeBlock(section)) return appendFeedSection(section, options)(draft);
         const at = place && 'after' in place ? anchor + 1 : anchor;
         draft.sections.splice(at, 0, section as Draft<InvitationSection>);
     };
-}
-
-// An invitation section on the feed: not one of the feed's own blocks, not a module block.
-export function isSaveMyDateBlock(section: Pick<InvitationSection, 'type'>): boolean {
-    return !isFeedSectionType(section.type) && section.type !== 'feedModule';
 }
 
 // The feed's Add section list (lib/feedAddList): the event type's own list, minus what is on the page or covered by
 // a module the event has.
 export function addableFeedSectionTypes(document: InvitationDocument, eventType: string, modules: readonly EventModuleResponseDto[]): NewSectionType[] {
     return feedAddList(document, eventType, modules);
+}
+
+// What the event offers the feed sections that need something of it.
+// hasSchedule: a date and timed sessions. hasHeOrShe: the Boy or Girl module.
+export type FeedModeAvailability = { hasSchedule: boolean; hasHeOrShe: boolean };
+
+// The feed sections the host may add: each once; the schedule and Boy or Girl only when the event has what they draw.
+export function addableFeedModeTypes(document: InvitationDocument, { hasSchedule, hasHeOrShe }: FeedModeAvailability): FeedModeSectionType[] {
+    if (document.sections.length >= MAX_SECTIONS) return [];
+    return FEED_MODE_SECTION_TYPES.filter(
+        (type) => (type !== 'feedSchedule' || hasSchedule) && (type !== 'feedHeOrShe' || hasHeOrShe) && !hasFeedSection(document.sections, type),
+    );
 }
 
 // The event's own fields each feed block shows, edited on the event as the Settings page does.

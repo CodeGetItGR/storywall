@@ -8,7 +8,7 @@ import { useFeedLayout } from '@/hooks/useFeedLayout';
 import type { EventDetailResponseDto } from '@/lib/api/types';
 import { isEventEnded, isModuleAvailable } from '@/lib/eventLifecycle';
 import { feedEditFrame } from '@/lib/feedEditing';
-import { type FeedFrame, feedFrame, usesInvitationLook } from '@/lib/feedLayout';
+import { type FeedFrame, feedFrame, usesInvitationLook, withoutSaveMyDateSections } from '@/lib/feedLayout';
 import { moduleOfBlock } from '@/lib/feedModuleBlocks';
 import { type FeedPageBackdrop, feedPageBackdrop } from '@/lib/feedPageBackdrop';
 import type { InvitationDocument } from '@/lib/invitation/document';
@@ -47,13 +47,16 @@ export type FeedTopView = {
 export type FeedTopEditing = { document: InvitationDocument; theme: ThemeDesign; media: MediaResolver };
 
 // Everything the top of the feed draws, from the saved layout or the default one. While editing,
-// it draws the edit session: every block, hidden ones too, in the held theme.
+// it draws the edit session: every block, hidden ones too, in the held theme. Without Save my date its sections
+// stay saved but don't draw, in edit mode too, and edit mode changes only the feed sections: the rest draws as on the feed.
 export function useFeedTop(event: EventDetailResponseDto, editing?: FeedTopEditing): FeedTopView {
     const enabled = useFeedEditorEnabled();
     const locale = useLocale();
     const layout = useFeedLayout(event, { enabled });
-    const editingDocument = editing?.document;
-    const document = editingDocument ?? layout.document;
+    const saveMyDate = isModuleAvailable(event.modules, SAVE_MY_DATE_MODULE_KEY);
+    const isEditing = editing !== undefined;
+    const whole = editing?.document ?? layout.document;
+    const document = useMemo(() => (saveMyDate ? whole : withoutSaveMyDateSections(whole)), [saveMyDate, whole]);
     const theme = editing?.theme ?? layout.theme;
     const media = editing?.media ?? layout.media;
     const look = usesInvitationLook(document);
@@ -61,7 +64,7 @@ export function useFeedTop(event: EventDetailResponseDto, editing?: FeedTopEditi
     const fonts = useInvitationFonts(enabled && look);
     const ended = isEventEnded(event);
     // With Save my date, RSVP is one of the host's blocks (spec item 17). Read as useFeedMode does, flag included.
-    const rsvpMoves = enabled && isModuleAvailable(event.modules, SAVE_MY_DATE_MODULE_KEY);
+    const rsvpMoves = enabled && saveMyDate;
 
     const backdrop = useMemo(() => feedPageBackdrop(document, theme, media), [document, theme, media]);
 
@@ -76,7 +79,8 @@ export function useFeedTop(event: EventDetailResponseDto, editing?: FeedTopEditi
     );
 
     const frame = useMemo(() => {
-        if (editingDocument) return feedEditFrame(editingDocument, { rsvpMoves });
+        const edited = isEditing ? feedEditFrame(document, { rsvpMoves }) : null;
+        if (edited && saveMyDate) return edited;
         const split = feedFrame(document, { ended, rsvpMoves });
         const draws = (section: InvitationSection) => {
             if (section.type === 'feedDescription') return Boolean(event.description);
@@ -86,8 +90,8 @@ export function useFeedTop(event: EventDetailResponseDto, editing?: FeedTopEditi
             if (key) return isModuleAvailable(event.modules, key);
             return !isEmptyForGuests(section, ctx);
         };
-        return { ...split, middle: split.middle.filter(draws) };
-    }, [editingDocument, document, ended, rsvpMoves, event.description, event.modules, ctx]);
+        return { ...split, middle: split.middle.filter(draws), feed: edited?.feed ?? split.feed };
+    }, [isEditing, saveMyDate, document, ended, rsvpMoves, event.description, event.modules, ctx]);
 
     return {
         look,

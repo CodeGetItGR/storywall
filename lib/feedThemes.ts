@@ -5,7 +5,7 @@ import { eventThemeStyle, isHexColor, themeFontScopeProps } from '@/lib/eventThe
 import { defaultFeedLayout, PLAIN_FEED_STYLE, WALL_THEME_ID } from '@/lib/feedLayout';
 import type { InvitationDocument } from '@/lib/invitation/document';
 import { createSection, type NewSectionType } from '@/lib/invitation/newSection';
-import { type FeedSectionType, type InvitationSection, isFeedSectionType, type SectionType } from '@/lib/invitation/sections';
+import { type FeedSectionType, type InvitationSection, isFeedModeSectionType, isSaveMyDateSectionType, type SectionType } from '@/lib/invitation/sections';
 import type { SectionStyle } from '@/lib/invitation/sectionStyle';
 import type { ThemeDesign } from '@/lib/invitation/theme';
 import { planThemeSwitch, type ThemeSwitchTarget } from '@/lib/invitation/themeSwitch';
@@ -56,18 +56,22 @@ function withStyle(section: InvitationSection, style: SectionStyle): InvitationS
 // On the feed the theme's background covers the whole page, so every block then sits on it
 // ("auto"): the theme's own sections pick top or content images, which would draw seams between
 // blocks. Every block sits on the page's one background: the feed has no background choice per block.
+// Feed mode's sections take no theme: they stay shown, in the plain feed style.
 export function planFeedThemeSwitch(current: InvitationDocument, target: ThemeSwitchTarget, oldThemeImageIds: ReadonlySet<string>): InvitationDocument {
     const feedBlocks = defaultFeedLayout().sections.map((section) => withStyle(section, borrowedStyle(section.type as FeedSectionType, target.document)));
-    const document = { ...target.document, sections: [...target.document.sections, ...feedBlocks] };
+    const feedMode = current.sections.filter((section) => isFeedModeSectionType(section.type)).map((section) => withStyle(section, PLAIN_FEED_STYLE));
+    const document = { ...target.document, sections: [...target.document.sections, ...feedBlocks, ...feedMode] };
     const switched = planThemeSwitch(current, { ...target, document }, oldThemeImageIds).document;
-    return { ...switched, sections: switched.sections.map((section) => withStyle(section, { ...section.style, background: PAGE_BACKGROUND })) };
+    const onPage = (section: InvitationSection) =>
+        isFeedModeSectionType(section.type) ? section : withStyle(section, { ...section.style, background: PAGE_BACKGROUND });
+    return { ...switched, sections: switched.sections.map(onPage) };
 }
 
 // The layout back on the event's wall theme: feed blocks in the plain style, Save my date blocks in a
 // new block's look, without the old theme's images, frames and transitions.
 export function planFeedWallSwitch(current: InvitationDocument, wall: ThemeDesign, eventType: string, oldThemeImageIds: ReadonlySet<string>): InvitationDocument {
     const sections = current.sections.flatMap((section) => {
-        if (isFeedSectionType(section.type)) return [withStyle(section, PLAIN_FEED_STYLE)];
+        if (!isSaveMyDateSectionType(section.type)) return [withStyle(section, PLAIN_FEED_STYLE)];
         if (section.type === 'footer') return [];
         return [createSection(section.type as NewSectionType, eventType)];
     });
