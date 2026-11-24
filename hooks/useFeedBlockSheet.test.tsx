@@ -49,7 +49,7 @@ describe('useFeedBlockSheet', () => {
     it('uploads photos to the feed and remembers each one', async () => {
         const { result, uploads } = setup();
         act(() => result.current.openFor('gallery'));
-        expect(result.current.groups).toContain('gallery');
+        expect(result.current.groups).toContain('galleryLayout');
         await expect(result.current.scope!.uploadImage(new Blob())).resolves.toEqual(image);
         expect(uploads.remember).toHaveBeenCalledWith(image);
     });

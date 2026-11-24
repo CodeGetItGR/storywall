@@ -10,8 +10,9 @@ import { SettingsGroup, SettingsHint } from '@/components/saveMyDate/editor/sett
 import { useGallerySettings } from '@/hooks/useGallerySettings';
 import type { SectionOf, SettingsScope } from '@/hooks/useSectionSettingsPanel';
 
-type GallerySettingsProps = {
-    scope: SettingsScope<SectionOf<'gallery'>>;
+type GalleryScope = { scope: SettingsScope<SectionOf<'gallery'>> };
+
+type GallerySettingsProps = GalleryScope & {
     // Another place to bring photos from, next to the upload button.
     extraSource?: ReactNode;
 };
@@ -24,11 +25,7 @@ export function GallerySettings({ scope, extraSource }: GallerySettingsProps) {
 
     return (
         <SettingsGroup title={t('title')}>
-            {/* Layout */}
-            <SettingsChoices label={t('layout')} choices={settings.layouts} value={settings.layout} onChange={settings.onLayout} />
-
-            {/* Shape */}
-            {settings.hasShape && <SettingsChoices label={t('shape')} choices={settings.shapes} value={settings.shape} onChange={settings.onShape} />}
+            <GalleryLayoutFields settings={settings} />
 
             {/* Photos */}
             {gallery.isAvailable && (
@@ -39,5 +36,31 @@ export function GallerySettings({ scope, extraSource }: GallerySettingsProps) {
                 </>
             )}
         </SettingsGroup>
+    );
+}
+
+// How the photos are laid out, on its own.
+export function GalleryLayoutSettings({ scope }: GalleryScope) {
+    const t = useTranslations('InvitationEditor.photos.gallery');
+    const settings = useGallerySettings(scope);
+
+    return (
+        <SettingsGroup title={t('title')}>
+            <GalleryLayoutFields settings={settings} />
+        </SettingsGroup>
+    );
+}
+
+function GalleryLayoutFields({ settings }: { settings: ReturnType<typeof useGallerySettings> }) {
+    const t = useTranslations('InvitationEditor.photos.gallery');
+
+    return (
+        <>
+            {/* Layout */}
+            <SettingsChoices label={t('layout')} choices={settings.layouts} value={settings.layout} onChange={settings.onLayout} />
+
+            {/* Shape */}
+            {settings.hasShape && <SettingsChoices label={t('shape')} choices={settings.shapes} value={settings.shape} onChange={settings.onShape} />}
+        </>
     );
 }

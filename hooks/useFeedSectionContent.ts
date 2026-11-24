@@ -2,12 +2,24 @@
 
 import { useMemo } from 'react';
 
-import type { FeedSectionContent } from '@/components/feed/edit/FeedSectionContentFields';
+import type { FeedSectionBackground } from '@/components/feed/edit/FeedSectionBackgroundFields';
 import type { FeedFailedPhoto } from '@/hooks/useFeedSectionEdits';
 import { blockTextColor } from '@/lib/feedBlockEdits';
 import { canHaveBackground, sectionColor, sectionPhoto } from '@/lib/feedSectionBackground';
 import type { RenderContext } from '@/lib/invitation/render';
 import type { InvitationSection } from '@/lib/invitation/sections';
+
+export type FeedSectionContent = {
+    // The section's text colour now.
+    textColor: string;
+    themeColors: readonly string[];
+    uploading: boolean;
+    // The photo in the section didn't upload.
+    failed: boolean;
+    onPhoto: (file: File) => void;
+    onTextColor: (color: string) => void;
+    background: FeedSectionBackground;
+};
 
 type ContentEdits = {
     uploadingId: string | null;
