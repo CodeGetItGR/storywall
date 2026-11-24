@@ -34,7 +34,7 @@ export function ColorSwatch({ value, label, onChange, themeColors, surface = 'da
                 title={label}
                 className={cn(
                     'relative h-9 w-9 shrink-0 rounded-full border-2 before:absolute before:-inset-1 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none',
-                    surface === 'light' ? 'border-line-strong focus-visible:ring-offset-white' : 'border-white/70 focus-visible:ring-offset-(--smd-editor-panel)',
+                    surface === 'light' ? 'border-line-strong focus-visible:ring-offset-white' : 'border-[color-mix(in_srgb,var(--smd-editor-strong,var(--ink))_60%,transparent)] focus-visible:ring-offset-(--smd-editor-panel)',
                     className,
                 )}
                 style={{ background: value }}
