@@ -2,6 +2,7 @@
 
 import type { ReactNode } from 'react';
 
+import { FeedHeOrSheSection } from '@/components/feed/sections/FeedHeOrSheSection';
 import { FeedPinnedPhotos } from '@/components/feed/sections/FeedPinnedPhotos';
 import { FeedPinnedSection } from '@/components/feed/sections/FeedPinnedSection';
 import { FeedPromptSection } from '@/components/feed/sections/FeedPromptSection';
@@ -27,6 +28,8 @@ export function FeedModeSection({ event, section, media, placeholder, opensPhoto
             return <FeedScheduleSection event={event} placeholder={placeholder} />;
         case 'feedPrompt':
             return <FeedPromptSection text={section.data.text} placeholder={placeholder} />;
+        case 'feedHeOrShe':
+            return <FeedHeOrSheSection event={event} placeholder={placeholder} />;
         case 'feedPinned':
             return opensPhotos ? (
                 <FeedPinnedPhotos photos={section.data.photos} media={media} />
