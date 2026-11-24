@@ -11,18 +11,18 @@ import { FEED_EDIT_FEATURES, type FeedEditBannerState } from '@/lib/feedEditBann
 type FeedEditBannerProps = { state: Exclude<FeedEditBannerState, null>; href: string; illustration: ReactNode };
 
 // The Overview's invitation to customize the feed: unlock Save my date, or start editing.
-// Phones: the event's feed in edit mode across the top, then what hosts can change. Desktop: the picture beside the list.
+// A small picture of the event's feed in edit mode beside what hosts can change, as tall as the list.
 export function FeedEditBanner({ state, href, illustration }: FeedEditBannerProps) {
     const t = useTranslations('FeedEditor.banner');
 
     return (
-        <section className="flex flex-col overflow-hidden rounded-2xl bg-surface-muted lg:flex-row">
+        <section className="flex gap-3 overflow-hidden rounded-2xl bg-surface-muted p-3 sm:gap-4 sm:p-4">
             {/* Preview: the top of the event's feed in edit mode, in a Save my date theme or its wall look */}
-            <div role="img" aria-label={t('previewAlt')} className="w-full shrink-0 p-3 pb-0 lg:w-80 lg:self-center lg:pr-0 lg:pb-3">
+            <div role="img" aria-label={t('previewAlt')} className="w-28 shrink-0 self-stretch sm:w-36">
                 {illustration}
             </div>
 
-            <div className="flex min-w-0 flex-1 flex-col gap-4 p-4 sm:p-5 lg:p-6">
+            <div className="flex min-w-0 flex-1 flex-col gap-4 py-1 sm:py-2">
                 {/* Title */}
                 <h2 className="flex items-center gap-2 text-lg font-semibold text-ink">
                     {state === 'locked' && <Lock data-banner-lock className="h-4 w-4 shrink-0" aria-hidden="true" />}
