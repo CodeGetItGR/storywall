@@ -61,12 +61,15 @@ export function SettingsHint({ id, tone = 'muted', children }: { id?: string; to
 export const SECONDARY_BUTTON_CLASS =
     'flex h-10 items-center justify-center gap-2 rounded-[10px] bg-(--smd-editor-control) px-3 text-[13px] font-semibold text-(--smd-editor-text) hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 [&_svg]:h-4 [&_svg]:w-4';
 
-// A labelled on/off switch.
-export function SettingsToggle({ label, checked, onChange }: { label: string; checked: boolean; onChange: (checked: boolean) => void }) {
+type SettingsToggleProps = { label: string; hint?: string; checked: boolean; onChange: (checked: boolean) => void };
+
+// A labelled on/off switch, with a note under it when it needs one.
+export function SettingsToggle({ label, hint, checked, onChange }: SettingsToggleProps) {
     const id = useId();
+    const hintId = `${id}-hint`;
     const change = useCallback((event: ChangeEvent<HTMLInputElement>) => onChange(event.target.checked), [onChange]);
 
-    return (
+    const row = (
         <div className="flex min-h-10 items-center justify-between gap-3">
             <label htmlFor={id} className="text-[13px] leading-tight">
                 {label}
@@ -75,10 +78,22 @@ export function SettingsToggle({ label, checked, onChange }: { label: string; ch
                 id={id}
                 type="checkbox"
                 role="switch"
+                aria-describedby={hint ? hintId : undefined}
                 checked={checked}
                 onChange={change}
                 className="h-5 w-9 shrink-0 cursor-pointer accent-(--smd-editor-accent)"
             />
+        </div>
+    );
+    if (!hint) return row;
+
+    return (
+        <div className="flex flex-col">
+            {/* Switch */}
+            {row}
+
+            {/* Note */}
+            <SettingsHint id={hintId}>{hint}</SettingsHint>
         </div>
     );
 }
