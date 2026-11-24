@@ -9,7 +9,7 @@ import { EventDescription } from '@/components/feed/EventDescription';
 import { EventInfoSection } from '@/components/feed/EventInfoSection';
 import { FeedEmptyState } from '@/components/feed/FeedEmptyState';
 import { FeedPageSkeleton } from '@/components/feed/FeedPageSkeleton';
-import { FeedPostRenderer } from '@/components/feed/FeedPostRenderer';
+import { FeedPostList } from '@/components/feed/FeedPostList';
 import { GuestOfferCard } from '@/components/feed/guestOffer/GuestOfferCard';
 import { Header } from '@/components/feed/Header';
 import { HeOrShePromptCard } from '@/components/feed/HeOrShePromptCard';
@@ -18,7 +18,6 @@ import { FeedModeSwitch } from '@/components/feed/layout/FeedModeSwitch';
 import { FeedRsvpBlock } from '@/components/feed/layout/FeedRsvpBlock';
 import { FeedTop } from '@/components/feed/layout/FeedTop';
 import { PartnerBrandingPromptModal } from '@/components/feed/partner/PartnerBrandingPromptModal';
-import { PartnerFeedCard } from '@/components/feed/partner/PartnerFeedCard';
 import { PostModal } from '@/components/feed/PostModal';
 import { PublishQueueCards } from '@/components/feed/PublishQueueCards';
 import { FeedQuickActions } from '@/components/feed/quickActions/FeedQuickActions';
@@ -29,7 +28,6 @@ import { VendorProfilePrompt } from '@/components/vendors/VendorProfilePrompt';
 import { useFeedEditFocus } from '@/hooks/useFeedEditFocus';
 import { useFeedEditMode } from '@/hooks/useFeedEditMode';
 import { useFeedEditTrigger } from '@/hooks/useFeedEditTrigger';
-import { useFeedItems } from '@/hooks/useFeedItems';
 import { useFeedMode } from '@/hooks/useFeedMode';
 import { useFeedModuleBlockPart } from '@/hooks/useFeedModuleBlockPart';
 import { useFeedPageTheme } from '@/hooks/useFeedPageTheme';
@@ -48,7 +46,6 @@ export function FeedPageContent() {
     useHideMobileTabBarOnScroll();
     const { currentMemberRsvpId, event, eventId, isFetchingNextPage, isHost, isRoleLoading, loadMoreRef, loadingMoreLabel, moduleFlags, posts } =
         useFeedPage();
-    const feedItems = useFeedItems(posts, event.partnerBranding);
     const [storyId, setStoryId] = useState<string | null>(null);
     const shouldShowRSVP = useRsvpPromptVisible({ eventId, isHost, rsvpAvailable: moduleFlags.rsvp, rsvpId: currentMemberRsvpId });
     const top = useFeedTop(event);
@@ -174,14 +171,7 @@ export function FeedPageContent() {
                                 {posts.length === 0 ? (
                                     <FeedEmptyState />
                                 ) : (
-                                    feedItems.map((item) =>
-                                        item.kind === 'post' ? (
-                                            <FeedPostRenderer key={item.post.id} post={item.post} isLcpCandidate={item.index === 0} />
-                                        ) : (
-                                            /* Partner card */
-                                            event.partnerBranding && <PartnerFeedCard key={item.key} branding={event.partnerBranding} eventId={eventId} />
-                                        ),
-                                    )
+                                    <FeedPostList posts={posts} partnerBranding={event.partnerBranding} eventId={eventId} />
                                 )}
                                 <div ref={loadMoreRef} className="h-1" />
                                 {isFetchingNextPage && <p className="py-2 text-center text-sm text-ink-muted">{loadingMoreLabel}</p>}

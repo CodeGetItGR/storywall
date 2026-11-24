@@ -104,3 +104,36 @@ describe('PostCard sneak peek actions', () => {
         expect(screen.getByText('deletePost')).toBeTruthy();
     });
 });
+
+describe('PostCard run ends', () => {
+    afterEach(cleanup);
+
+    const classes = (props: { startsRun?: boolean; endsRun?: boolean }) => {
+        render(<PostCard post={post('TEXT')} {...props} />);
+        return screen.getByRole('article').className.split(' ');
+    };
+
+    it('is square by default', () => {
+        expect(classes({}).some((name) => name.startsWith('rounded'))).toBe(false);
+    });
+
+    it('rounds the top of the first post only', () => {
+        const names = classes({ startsRun: true });
+        expect(names).toContain('rounded-t-xl');
+        expect(names).not.toContain('rounded-b-xl');
+    });
+
+    it('rounds the bottom of the last post only', () => {
+        const names = classes({ endsRun: true });
+        expect(names).toContain('rounded-b-xl');
+        expect(names).not.toContain('rounded-t-xl');
+    });
+
+    it('rounds all four corners of a lone post', () => {
+        expect(classes({ startsRun: true, endsRun: true })).toEqual(expect.arrayContaining(['rounded-t-xl', 'rounded-b-xl']));
+    });
+
+    it('never clips, so menus and reactions can hang over the edge', () => {
+        expect(classes({ startsRun: true, endsRun: true }).some((name) => name.startsWith('overflow'))).toBe(false);
+    });
+});

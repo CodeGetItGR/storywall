@@ -6,8 +6,7 @@ import { useTranslations } from 'next-intl';
 import { PostAuthorAvatar } from '@/components/feed/post/PostAuthorAvatar';
 import { useMemberAvatarUrl } from '@/hooks/useMemberAvatarUrl';
 import type { PostResponseDto } from '@/lib/api/types';
-
-import { isPlaylistDigestPost } from './postUtils';
+import { isPlaylistDigestPost } from '@/lib/feed/playlistDigest';
 
 interface PostHeaderProps {
     post: PostResponseDto;

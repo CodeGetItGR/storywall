@@ -36,9 +36,12 @@ interface PostCardProps {
     post: PostResponseDto;
     showCommentLink?: boolean;
     isLcpCandidate?: boolean;
+    // The first and last of the posts joined in a row. Only the feed sets these.
+    startsRun?: boolean;
+    endsRun?: boolean;
 }
 
-export function PostCard({ post, showCommentLink = true, isLcpCandidate = false }: PostCardProps) {
+export function PostCard({ post, showCommentLink = true, isLcpCandidate = false, startsRun = false, endsRun = false }: PostCardProps) {
     const t = useTranslations('PostCard');
     const tRoles = useTranslations('MemberRoles');
     const [selectedMediaIndex, setSelectedMediaIndex] = useState<number | null>(null);
@@ -169,6 +172,9 @@ export function PostCard({ post, showCommentLink = true, isLcpCandidate = false 
                 'relative border-b border-event-card-line bg-event-card',
                 // The tint sits over the card colour, so it reads on every event theme.
                 isLabelled && 'bg-linear-to-b from-primary/12 to-primary/5',
+                // Rounded without clipping: the reaction menu and messages hang over the card's edges.
+                startsRun && 'rounded-t-xl',
+                endsRun && 'rounded-b-xl',
                 showHostPostBadge && 'pt-3 sm:pt-0 sm:pr-3',
             )}
             ref={viewRef}
@@ -318,7 +324,7 @@ export function PostCard({ post, showCommentLink = true, isLcpCandidate = false 
 
             {/* Comment preview */}
             {post.commentCount > 0 && (
-                <div className="border-t border-border/50 bg-[#f8f8f8] px-4 pt-3 pb-4">
+                <div className="rounded-b-[inherit] border-t border-border/50 bg-[#f8f8f8] px-4 pt-3 pb-4">
                     <CommentsList comments={post.recentComments} compact />
                     {post.commentCount > post.recentComments.length && (
                         <button

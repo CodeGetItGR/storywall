@@ -8,6 +8,7 @@ import { withAppContext } from '@/.storybook/appContext';
 import { storyPhotos, storyPost } from '@/.storybook/fixtures';
 import { STORY_THEME } from '@/.storybook/invitation';
 import { FeedBackdropLayer } from '@/components/event/FeedBackdropLayer';
+import { FeedPostList } from '@/components/feed/FeedPostList';
 import { Header } from '@/components/feed/Header';
 import { FeedLookTop } from '@/components/feed/layout/FeedLookTop';
 import { PostCard } from '@/components/feed/PostCard';
@@ -194,6 +195,14 @@ const LONG_FEED = Array.from({ length: 12 }, (_, index) => (
     <PostCard key={index} post={storyPost({ id: `post-${index}`, type: 'TEXT', media: [], content: 'What a day!' })} />
 ));
 
+// Two runs of posts, with a playlist digest between them.
+const RUN_POSTS = [
+    storyPost({ id: 'run-photo', media: [storyPhotos[0]] }),
+    storyPost({ id: 'run-text', type: 'TEXT', media: [], content: 'What a day!' }),
+    storyPost({ id: 'run-digest', type: 'PLAYLIST', author: null, media: [], content: '🎵 5 new songs were added to the playlist!' }),
+    storyPost({ id: 'run-lone', type: 'TEXT', media: [], content: 'What a day!' }),
+];
+
 const meta = {
     title: 'Feed/Layout/FeedThemedPage',
     component: ThemedPage,
@@ -240,3 +249,6 @@ export const LongFeedCoverMobile: Story = { ...LongFeedCover, globals: { viewpor
 
 // The whole page on a repeating picture, scrolled.
 export const WholePageRepeating: Story = { args: { theme: LIGHT, whole: true }, play: scrollPage };
+
+// Posts broken by a playlist digest, on the page's picture: it shows past the rounded ends of each run.
+export const PostRuns: Story = { args: { theme: COVER, children: <FeedPostList posts={RUN_POSTS} partnerBranding={null} eventId="evt-story" /> } };
