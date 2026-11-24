@@ -8,6 +8,7 @@ import type { SettingsScope } from '@/hooks/useSectionSettingsPanel';
 import { feedBlockParts, feedSettingsGroups } from '@/lib/feedEditing';
 import { canBeMembersOnly, setFeedBlockMembersOnly } from '@/lib/feedMembersOnly';
 import { pinnedPhotos } from '@/lib/feedPinned';
+import { canHaveBackground } from '@/lib/feedSectionBackground';
 import { setFeedPromptText } from '@/lib/feedSections';
 import type { InvitationDocument } from '@/lib/invitation/document';
 import type { InvitationEditorStore } from '@/lib/invitation/editorStore';
@@ -38,12 +39,13 @@ export function useFeedBlockSheet(
     const groupsOf = useCallback((section: InvitationSection) => feedSettingsGroups(settingsGroups(section, 'host', theme)), [theme]);
     const partsOf = useCallback((section: InvitationSection) => feedBlockParts(section.type, eventParts), [eventParts]);
     // A block with no style or event field still opens for its members-only setting, the photo prompt for its line and
-    // Pinned photos for its photos.
+    // Pinned photos for its photos; a Save my date section for its photo and text colour.
     const hasSettings = useCallback(
         (section: InvitationSection) =>
             groupsOf(section).length > 0 ||
             partsOf(section).length > 0 ||
             canBeMembersOnly(section) ||
+            canHaveBackground(section) ||
             section.type === 'feedPrompt' ||
             section.type === 'feedPinned',
         [groupsOf, partsOf],

@@ -44,6 +44,28 @@ function renderSheet(membersOnly: boolean | null, onMembersOnly = vi.fn(), props
     return onMembersOnly;
 }
 
+describe("FeedBlockSheet of a Save my date section", () => {
+    const content = { textColor: '#4A3B32', themeColors: ['#7A3B2E'], uploading: false, failed: false, onPhoto: vi.fn(), onTextColor: vi.fn() };
+
+    it('adds a photo and colours the text from its settings', async () => {
+        renderSheet(null, vi.fn(), { content });
+        const file = new File(['x'], 'photo.jpg', { type: 'image/jpeg' });
+        await userEvent.upload(screen.getByLabelText(en.FeedEditor.addPhoto), file);
+        expect(content.onPhoto).toHaveBeenCalledExactlyOnceWith(file);
+        expect(screen.getByRole('group', { name: en.InvitationEditor.textColor })).toBeTruthy();
+        await userEvent.click(screen.getByRole('button', { name: '#7A3B2E' }));
+        expect(content.onTextColor).toHaveBeenCalledExactlyOnceWith('#7A3B2E');
+    });
+
+    it("says when the photo didn't upload, and has none of it on other blocks", () => {
+        renderSheet(null, vi.fn(), { content: { ...content, failed: true } });
+        expect(screen.getByText(en.InvitationEditor.photos.errors.failed)).toBeTruthy();
+        cleanup();
+        renderSheet(null, vi.fn(), { content: null });
+        expect(screen.queryByLabelText(en.FeedEditor.addPhoto)).toBeNull();
+    });
+});
+
 describe('FeedBlockSheet members only', () => {
     it('turns members only on and off', async () => {
         const onMembersOnly = renderSheet(false);

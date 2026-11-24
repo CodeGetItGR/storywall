@@ -86,8 +86,19 @@ const pinnedStory = (count: number, uploading = false): Story => ({
 });
 const onPhone: Story = { args: { isDesktop: false }, globals: { viewport: { value: 'mobile' } } };
 
+// A Save my date section: a photo in it, and its text's colour. Also shows FeedSectionContentFields.
+const content = { textColor: '#4A3B32', themeColors: ['#7A3B2E', '#F5E6D3'], uploading: false, failed: false, onPhoto: fn(), onTextColor: fn() };
+const section: Story = {
+    render: (args, { globals }) => (
+        <Sheet {...args} title={copyFor(globals).InvitationEditor.sectionNames.dressCode} content={content} membersOnly={false} />
+    ),
+};
+
 export const PhotoPrompt: Story = {};
 export const PhotoPromptMobile: Story = onPhone;
+
+export const InvitationSection: Story = section;
+export const InvitationSectionMobile: Story = { ...section, ...onPhone };
 
 export const PinnedPhotos: Story = pinnedStory(3);
 export const PinnedPhotosMobile: Story = { ...pinnedStory(3), ...onPhone };

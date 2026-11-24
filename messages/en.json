@@ -6734,10 +6734,11 @@
         "addIntro": "Add any section you like to your digital invitation",
         "addPhoto": "Add photo",
         "background": {
+            "color": "Background color",
+            "image": "Background image",
             "tooDark": "Too dark for the text. A lighter shade will be shown."
         },
         "banner": {
-            "previewAlt": "Preview of your invitation",
             "startEditing": "Start editing",
             "title": "Want more customization?",
             "unlock": "Unlock",
@@ -6749,12 +6750,14 @@
                 "membersOnly": "Choose what only members see"
             }
         },
+        "design": "Design",
         "edit": "Edit",
         "moduleOpen": "Open",
         "premium": "Premium",
         "premiumLess": "Show less",
         "premiumMore": "Show more",
         "saveFailed": "Couldn't save your changes. Please try again.",
+        "solidColor": "Solid color",
         "style": "Style",
         "themes": "Themes"
     },

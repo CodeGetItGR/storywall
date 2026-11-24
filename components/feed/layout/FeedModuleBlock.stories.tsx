@@ -32,7 +32,14 @@ export const Gone: Story = { args: { available: false } };
 
 const section = feedModuleSection('playlist', () => 'module');
 const controls = { canHide: true, canDelete: true, movable: true, canMoveUp: true, canMoveDown: true };
-const actions = { onToggleVisible: fn(), onDelete: fn(), onOpenSettings: fn() };
+const actions = {
+    onToggleVisible: fn(),
+    onDelete: fn(),
+    onOpenSettings: fn(),
+    onOpenBackground: fn(),
+    onPickBackgroundPhoto: fn(),
+    onMenuOpenChange: fn(),
+};
 
 function EditModeBlock({ visible, ...args }: ComponentProps<typeof FeedModuleBlock> & { visible: boolean }) {
     return (

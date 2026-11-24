@@ -140,6 +140,14 @@ function follows(first: HTMLElement, second: HTMLElement): boolean {
 }
 const SMD = [{ moduleKey: 'save_my_date', isAvailable: true, isEnabled: true }];
 
+const toolsOf = (group: HTMLElement) => within(group.querySelector('[data-feed-block-tools]') as HTMLElement);
+
+// Picks a tool from a block's dropdown.
+async function pickTool(group: HTMLElement, tool: string) {
+    fireEvent.click(toolsOf(group).getByRole('button', { name: 'sections.options', hidden: true }));
+    fireEvent.click(await screen.findByRole('menuitem', { name: tool }));
+}
+
 type FeedOptions = {
     description?: string | null;
     endAt?: string | null;
@@ -410,10 +418,10 @@ describe('FeedPageContent edit mode', { timeout: 15_000 }, () => {
         renderFeed(null, { flag: true, layout: savedLayout(dressCode), isHost: true, modules: SMD, startAt: '2099-06-01T15:00:00Z' });
         fireEvent.click(await screen.findByRole('button', { name: 'edit' }));
         const rsvp = await screen.findByRole('group', { name: 'sectionNames.feedRsvp' }, LAZY_LOOK);
-        const tools = rsvp.querySelector('[data-feed-block-tools]') as HTMLElement;
-        expect(within(tools).getByRole('button', { name: 'drag' })).toBeTruthy();
-        expect(within(tools).getByRole('button', { name: 'delete' })).toBeTruthy();
-        expect(within(tools).queryByRole('button', { name: 'options' })).toBeNull();
+        expect(toolsOf(rsvp).getByRole('button', { name: 'drag' })).toBeTruthy();
+        // Its only tool, so no dropdown.
+        expect(toolsOf(rsvp).getByRole('button', { name: 'sections.delete' })).toBeTruthy();
+        expect(toolsOf(rsvp).queryByRole('button', { name: 'sections.options' })).toBeNull();
     });
 
     it("asks before RSVP's delete, then adds RSVP back from its tile", async () => {
@@ -421,7 +429,7 @@ describe('FeedPageContent edit mode', { timeout: 15_000 }, () => {
         renderFeed(null, { flag: true, layout: savedLayout(dressCode), isHost: true, modules, startAt: '2099-06-01T15:00:00Z' });
         fireEvent.click(await screen.findByRole('button', { name: 'edit' }));
         const rsvp = await screen.findByRole('group', { name: 'sectionNames.feedRsvp' }, LAZY_LOOK);
-        fireEvent.click(within(rsvp.querySelector('[data-feed-block-tools]') as HTMLElement).getByRole('button', { name: 'delete' }));
+        fireEvent.click(toolsOf(rsvp).getByRole('button', { name: 'sections.delete' }));
         const dialog = await screen.findByRole('dialog');
         expect(within(dialog).getByText('deleteBody')).toBeTruthy();
         expect(screen.getByRole('group', { name: 'sectionNames.feedRsvp', hidden: true })).toBeTruthy();
@@ -504,7 +512,7 @@ describe('FeedPageContent edit mode', { timeout: 15_000 }, () => {
         renderFeed(null, { flag: true, isHost: true, layout: savedLayout(prompt), modules: [] });
         fireEvent.click(await screen.findByRole('button', { name: 'edit' }));
         const group = await screen.findByRole('group', { name: 'sectionNames.feedPrompt' }, LAZY_LOOK);
-        fireEvent.click(within(group.querySelector('[data-feed-block-tools]') as HTMLElement).getByRole('button', { name: 'delete' }));
+        await pickTool(group, 'sections.delete');
         expect(within(await screen.findByRole('dialog')).getByText('deleteBodyFeed')).toBeTruthy();
     });
 
@@ -577,7 +585,7 @@ describe('FeedPageContent edit mode', { timeout: 15_000 }, () => {
         fireEvent.click(screen.getByRole('button', { name: 'sectionNames.feedPrompt' }));
 
         const prompt = await screen.findByRole('group', { name: 'sectionNames.feedPrompt', hidden: true });
-        fireEvent.click(within(prompt.querySelector('[data-feed-block-tools]') as HTMLElement).getByRole('button', { name: 'open', hidden: true }));
+        await pickTool(prompt, 'sectionSettings.open');
         fireEvent.change(await screen.findByRole('textbox'), { target: { value: 'Show us your shoes' } });
         fireEvent.click(screen.getByRole('button', { name: 'save', hidden: true }));
         await waitFor(() => expect(api.put).toHaveBeenCalledOnce());

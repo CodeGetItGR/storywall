@@ -11,11 +11,11 @@ import { FeedAddSectionSheet } from '@/components/feed/edit/FeedAddSectionSheet'
 import { FeedBlockPlaceholder } from '@/components/feed/edit/FeedBlockPlaceholder';
 import { FeedBlockSheet } from '@/components/feed/edit/FeedBlockSheet';
 import { FeedEditBlock } from '@/components/feed/edit/FeedEditBlock';
-import { FeedEditBlockButtons } from '@/components/feed/edit/FeedEditBlockButtons';
 import { FeedEditInvitationSection } from '@/components/feed/edit/FeedEditInvitationSection';
 import { FeedEditRow } from '@/components/feed/edit/FeedEditRow';
 import { FeedEditThemeSheet } from '@/components/feed/edit/FeedEditThemeSheet';
 import { FeedPremiumTiles } from '@/components/feed/edit/FeedPremiumTiles';
+import { FeedSectionBackgroundSheet } from '@/components/feed/edit/FeedSectionBackgroundSheet';
 import { FeedLook, FeedNative } from '@/components/feed/layout/FeedLook';
 import { feedLookParts } from '@/components/feed/layout/FeedLookTop';
 import { FeedTopFrame, type FeedTopParts, type FeedTopProps, PLAIN_PARTS } from '@/components/feed/layout/FeedTopFrame';
@@ -36,7 +36,10 @@ import { useFeedInvitationAddItems } from '@/hooks/useFeedInvitationAddItems';
 import { useFeedModeAddItems } from '@/hooks/useFeedModeAddItems';
 import { useFeedModuleBlockPart } from '@/hooks/useFeedModuleBlockPart';
 import { useFeedModuleTiles } from '@/hooks/useFeedModuleTiles';
+import { useFeedOpenMenu } from '@/hooks/useFeedOpenMenu';
 import { useEditPageTheme } from '@/hooks/useFeedPageTheme';
+import { useFeedSectionBackground } from '@/hooks/useFeedSectionBackground';
+import { useFeedSectionContent } from '@/hooks/useFeedSectionContent';
 import { useFeedSectionName } from '@/hooks/useFeedSectionName';
 import { useFeedSectionPreviews } from '@/hooks/useFeedSectionPreviews';
 import { useFeedTextPresets } from '@/hooks/useFeedTextPresets';
@@ -45,11 +48,11 @@ import { useFeedUploadedMedia } from '@/hooks/useFeedUploadedMedia';
 import { useSectionDrag } from '@/hooks/useSectionDrag';
 import { useSettingsPreview } from '@/hooks/useSettingsPreview';
 import type { EventDetailResponseDto } from '@/lib/api/types';
-import { blockTextColor } from '@/lib/feedBlockEdits';
 import { draggableFeedBlocks, type FeedAddPlace, feedBlockControls, type FeedEditScope } from '@/lib/feedEditing';
 import { moduleOfBlock } from '@/lib/feedModuleBlocks';
 import { feedImageUploader } from '@/lib/invitation/editorUploads';
-import { type InvitationSection, isFeedModeSectionType, isSaveMyDateSectionType } from '@/lib/invitation/sections';
+import { type InvitationSection, isFeedModeSectionType } from '@/lib/invitation/sections';
+import { themeColors } from '@/lib/invitation/textEditing';
 
 const MODIFIERS = [restrictToVerticalAxis];
 
@@ -117,11 +120,28 @@ export function FeedEditTop({
         ctx: view.ctx,
         remember: uploads.remember,
     });
+    const ownColors = useMemo(() => themeColors(session.theme), [session.theme]);
+    const background = useFeedSectionBackground({
+        document: session.document,
+        panel: panels.background,
+        open: panels.openBackground,
+        close: panels.closeBackground,
+        uploadingId: blockTools.uploadingId,
+        failed: blockTools.failed,
+        setPhoto: blockTools.setBackgroundPhoto,
+        removePhoto: blockTools.removeBackgroundPhoto,
+        setColor: blockTools.setBackgroundColor,
+    });
+    const content = useFeedSectionContent(sheet.section, view.ctx, ownColors, blockTools);
+    const menu = useFeedOpenMenu();
 
     const tools: FeedBlockToolActions = {
         onToggleVisible: actions.toggleVisible,
         onDelete: actions.askDelete,
         onOpenSettings: panels.openSettings,
+        onOpenBackground: panels.openBackground,
+        onPickBackgroundPhoto: background.pickFor,
+        onMenuOpenChange: menu.setOpen,
     };
     const editRow = (
         <FeedEditRow
@@ -143,18 +163,9 @@ export function FeedEditTop({
             // A module block has nothing to set: its tool is set on its own page.
             hasSettings={!moduleOfBlock(section) && sheet.hasSettings(section)}
             actions={tools}
-            active={sheet.section?.id === section.id}
-            buttons={
-                isSaveMyDateSectionType(section.type) && (
-                    <FeedEditBlockButtons
-                        sectionId={section.id}
-                        color={blockTextColor(section, view.ctx)}
-                        uploading={blockTools.uploadingId === section.id}
-                        onPhoto={blockTools.addPhoto}
-                        onColor={blockTools.setColor}
-                    />
-                )
-            }
+            active={sheet.section?.id === section.id || background.section?.id === section.id}
+            menuOpen={menu.openId === section.id}
+            uploading={blockTools.uploadingId === section.id}
         >
             {node}
         </FeedEditBlock>
@@ -177,15 +188,14 @@ export function FeedEditTop({
             return feedOnly ? block : wrap(section, block);
         },
         native: base.native,
-        // Feed mode's sections draw their live content; a tap opens their settings, as on every block. A short one sits
-        // at the bottom of a box as tall as its three stacked tools (12 + 3 × 32 + 2 × 8, and 4 px of tap area), so they
-        // never cover the next section's, and starts below its eye and name.
+        // Feed mode's sections draw their live content; a tap opens their settings, as on every block. It starts below
+        // the section's tools.
         feed: (section, content) =>
             wrap(
                 section,
                 base.feed(
                     section,
-                    <div inert className="flex min-h-32 flex-col justify-end pt-10">
+                    <div inert className="pt-12">
                         {content}
                     </div>,
                 ),
@@ -245,6 +255,7 @@ export function FeedEditTop({
                 collisionDetection={closestCenter}
                 modifiers={MODIFIERS}
                 accessibility={drag.accessibility}
+                onDragStart={menu.close}
                 onDragEnd={drag.onDragEnd}
             >
                 <SortableContext items={sortableIds} strategy={verticalListSortingStrategy}>
@@ -277,11 +288,25 @@ export function FeedEditTop({
                 pinned={sheet.pinned}
                 pinnedUploading={sheet.pinnedUploading}
                 media={uploads.media}
+                content={content}
                 onAddPinned={sheet.addPinned}
                 onRemovePinned={sheet.removePinned}
                 onMovePinned={sheet.movePinned}
                 onOpenPart={preview.openEditor}
                 onClose={sheet.close}
+            />
+            <FeedSectionBackgroundSheet
+                kind={background.kind}
+                isDesktop={preview.isDesktop}
+                color={background.color}
+                themeColors={ownColors}
+                hasPhoto={background.hasPhoto}
+                uploading={background.uploading}
+                failed={background.failed}
+                onColor={background.paint}
+                onPickPhoto={background.pick}
+                onRemovePhoto={background.remove}
+                onClose={panels.closeBackground}
             />
             <SettingsPartEditor
                 event={event}

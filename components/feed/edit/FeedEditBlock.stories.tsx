@@ -32,7 +32,14 @@ const meta = {
         name: 'Dress code',
         controls: { canHide: true, canDelete: true, movable: true, canMoveUp: true, canMoveDown: false },
         hasSettings: true,
-        actions: { onToggleVisible: fn(), onDelete: fn(), onOpenSettings: fn() },
+        actions: {
+            onToggleVisible: fn(),
+            onDelete: fn(),
+            onOpenSettings: fn(),
+            onOpenBackground: fn(),
+            onPickBackgroundPhoto: fn(),
+            onMenuOpenChange: fn(),
+        },
         children: <div className="h-40 bg-[#f4efe9]" />,
     },
 } satisfies Meta<typeof FeedEditBlock>;
@@ -52,6 +59,10 @@ export const Cover: Story = {
 };
 // Its settings are open.
 export const Active: Story = { args: { active: true } };
+// Its dropdown is open.
+export const Dropdown: Story = { args: { menuOpen: true, children: <div className="h-72 bg-[#f4efe9]" /> } };
+// Its background photo is on its way.
+export const UploadingPhoto: Story = { args: { uploading: true }, tags: ['visual-skip'] };
 
 // On a Save my date theme: no strip above the block, the tools float over it on the page.
 export const OnThemedPage: Story = {
