@@ -39,6 +39,7 @@ export function useFeedEditThemeGrid(event: EventDetailResponseDto, session: The
         titleColor: card.titleColor,
         headingFont: null,
         titleFontFamily: card.titleFontFamily,
+        neutralSwatch: true,
         selected: session.themeSlug === card.slug,
     }));
 

@@ -67,6 +67,7 @@ describe('feedPageTheme with a backdrop', () => {
         repeat: 'repeat-y',
         position: 'center top',
         tiled: false,
+        fixed: false,
         cardColor: '#F9F5F7',
     };
     const wall = { presetKey: 'dino', backgroundColor: '#BFE6E2', illustrationUrl: 'https://media.example/dino.webp', titleColor: null, headingFont: null };

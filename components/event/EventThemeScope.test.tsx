@@ -42,7 +42,7 @@ function renderScope() {
             <p>content</p>
         </EventThemeScope>,
     );
-    return screen.getByText('content').parentElement as HTMLElement;
+    return screen.getByText('content').closest<HTMLElement>('[data-event-scope]')!;
 }
 
 afterEach(() => {
@@ -71,16 +71,45 @@ describe('EventThemeScope', () => {
                     repeat: 'repeat-y',
                     position: 'center top',
                     tiled: false,
+                    fixed: false,
                     cardColor: '#F9F5F7',
                 },
             },
         });
         const root = renderScope();
         expect(root.className).toContain('feed-backdrop');
+        expect(root.className).not.toContain('feed-backdrop--fixed');
+        expect(root.querySelector('[data-feed-backdrop-layer]')).toBeNull();
         expect(root.style.getPropertyValue('--event-bg')).toBe('#EFE7EC');
         expect(root.style.getPropertyValue('--event-card-bg')).toBe('#F9F5F7');
         expect(root.style.getPropertyValue('--event-card-line')).toBe('color-mix(in oklab, #F9F5F7 85%, #000000)');
         expect(root.style.getPropertyValue('--feed-backdrop-mobile')).toBe('url("https://media.example/m.jpg")');
+    });
+
+    it("puts a cover picture on a layer fixed to the screen, before the page's content", () => {
+        state.event = themedEvent;
+        publishFeedPageTheme('feed', {
+            eventId: 'e-1',
+            value: {
+                theme: { ...themedEvent.theme!, backgroundColor: '#EFE7EC' },
+                backdrop: {
+                    color: '#EFE7EC',
+                    image: { desktop: 'https://media.example/d.jpg', mobile: 'https://media.example/m.jpg' },
+                    size: 'cover',
+                    repeat: 'no-repeat',
+                    position: 'center',
+                    tiled: false,
+                    fixed: true,
+                    cardColor: '#F9F5F7',
+                },
+            },
+        });
+        const root = renderScope();
+        expect(root.className).toContain('feed-backdrop--fixed');
+        const layer = root.querySelector('[data-feed-backdrop-layer]');
+        expect(layer).toHaveAttribute('aria-hidden', 'true');
+        expect(layer?.nextElementSibling).toHaveClass('feed-backdrop-content');
+        expect(layer?.nextElementSibling).toContainElement(screen.getByText('content'));
     });
 
     it('draws no backdrop for the background colour alone', () => {
