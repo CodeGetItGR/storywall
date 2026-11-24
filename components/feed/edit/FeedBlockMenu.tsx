@@ -5,9 +5,11 @@ import { ChevronDown, Droplet, ImageIcon, LoaderCircle, Settings2, X } from 'luc
 import { useTranslations } from 'next-intl';
 import { type ChangeEvent, useCallback, useRef } from 'react';
 
+import { FEED_TOOL_CLASS } from '@/components/feed/edit/feedToolClass';
 import { SectionToolButton } from '@/components/saveMyDate/editor/sections/SectionToolButton';
 import type { FeedBackgroundKind, FeedBlockTool } from '@/lib/feedBlockMenu';
 import { PHOTO_ACCEPT } from '@/lib/invitation/photoUpload';
+import { cn } from '@/lib/utils';
 
 type FeedBlockMenuProps = {
     tools: FeedBlockTool[];
@@ -69,7 +71,7 @@ export function FeedBlockMenu({ tools, hasPhoto, uploading, open, onOpenChange, 
                         <SectionToolButton
                             label={open ? t('close') : t('sections.options')}
                             aria-busy={uploading || undefined}
-                            className="relative z-10 data-popup-open:[&_svg]:rotate-180"
+                            className={cn(FEED_TOOL_CLASS, 'z-10 data-popup-open:[&_svg]:rotate-180')}
                         />
                     }
                 >
@@ -82,8 +84,8 @@ export function FeedBlockMenu({ tools, hasPhoto, uploading, open, onOpenChange, 
 
                 {/* Tools: in the block itself, so the pill slides out from behind the chevron */}
                 <Menu.Portal container={place}>
-                    <Menu.Positioner side="bottom" align="center" sideOffset={-20} collisionPadding={12}>
-                        <Menu.Popup className="motion-popover flex w-10 flex-col divide-y divide-black/10 overflow-hidden rounded-full bg-white pb-1 shadow-[0_6px_20px_rgba(0,0,0,0.18)] outline-none data-[side=bottom]:pt-5 data-[side=top]:pt-1 data-[side=top]:pb-5">
+                    <Menu.Positioner side="bottom" align="center" sideOffset={-16} collisionPadding={12}>
+                        <Menu.Popup className="motion-popover flex w-8 flex-col divide-y divide-black/10 rounded-full bg-white pb-1 shadow-[0_6px_20px_rgba(0,0,0,0.18)] outline-none data-[side=bottom]:pt-4 data-[side=top]:pt-1 data-[side=top]:pb-4">
                             {tools.map((tool) => (
                                 <MenuTool key={tool} tool={tool} label={labels[tool]} onRun={run} />
                             ))}
@@ -108,7 +110,7 @@ function SingleTool({ tool, label, onRun }: ToolProps) {
     const Icon = ICONS[tool];
 
     return (
-        <SectionToolButton label={label} onClick={run}>
+        <SectionToolButton label={label} onClick={run} className={FEED_TOOL_CLASS}>
             <Icon aria-hidden="true" />
         </SectionToolButton>
     );
@@ -124,9 +126,9 @@ function MenuTool({ tool, label, onRun }: ToolProps) {
             title={label}
             label={label}
             onClick={run}
-            className="grid h-10 w-10 cursor-pointer place-items-center text-[#2b2d31] outline-none data-highlighted:bg-[#f2f2f2] focus-visible:shadow-[inset_0_0_0_2px_var(--smd-editor-accent)]"
+            className="relative grid h-10 w-8 cursor-pointer place-items-center text-[#2b2d31] outline-none before:absolute before:inset-y-0 before:-inset-x-1 last:rounded-b-full data-highlighted:bg-[#f2f2f2] focus-visible:shadow-[inset_0_0_0_2px_var(--smd-editor-accent)]"
         >
-            <Icon className={tool === 'color' ? 'h-4.5 w-4.5 fill-current' : 'h-4.5 w-4.5'} aria-hidden="true" />
+            <Icon className={tool === 'color' ? 'h-4 w-4 fill-current' : 'h-4 w-4'} aria-hidden="true" />
         </Menu.Item>
     );
 }

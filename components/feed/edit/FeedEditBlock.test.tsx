@@ -115,7 +115,7 @@ describe('FeedEditBlock name', () => {
     it('draws every tool 32 px, with a 40 px tap area', () => {
         renderBlock();
         const { sections } = en.InvitationEditor;
-        for (const name of [sections.hide, sections.drag]) {
+        for (const name of [sections.hide, sections.drag, sections.options]) {
             const tool = screen.getByRole('button', { name });
             expect(tool).toHaveClass('h-8', 'w-8', 'before:-inset-1', '[&_svg]:h-4');
             expect(tool).not.toHaveClass('h-10');
