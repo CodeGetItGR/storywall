@@ -279,6 +279,21 @@ describe('FeedPageContent layout', { timeout: 15_000 }, () => {
         expect(window.localStorage.getItem('storywall.feedMode.e-1')).toContain('"mode":"feed"');
     });
 
+    it('draws the switch once, under the cover, also after a scroll', async () => {
+        const frames = vi.spyOn(window, 'requestAnimationFrame').mockImplementation((run) => {
+            run(0);
+            return 0;
+        });
+        renderFeed(null, { description: 'Hello', flag: true, layout: savedLayout(dressCode), modules: SMD, startAt: '2099-06-01T15:00:00Z' });
+        const half = await screen.findByRole('button', { name: 'socialFeed' }, LAZY_LOOK);
+        vi.spyOn(Element.prototype, 'getBoundingClientRect').mockReturnValue(new DOMRect(0, -400, 100, 40));
+        fireEvent.scroll(document);
+        expect(screen.getAllByRole('button', { name: 'socialFeed' })).toEqual([half]);
+        expect(half.closest('.invisible')).toBeNull();
+        vi.mocked(Element.prototype.getBoundingClientRect).mockRestore();
+        frames.mockRestore();
+    });
+
     it('keeps the phone tab bar away on Invitation, and its room with it', async () => {
         renderFeed(null, { description: 'Hello', flag: true, layout: savedLayout(dressCode), modules: SMD, startAt: '2099-06-01T15:00:00Z' });
         const socialFeed = await screen.findByRole('button', { name: 'socialFeed' }, LAZY_LOOK);

@@ -31,7 +31,6 @@ import { useFeedEditMode } from '@/hooks/useFeedEditMode';
 import { useFeedEditTrigger } from '@/hooks/useFeedEditTrigger';
 import { useFeedItems } from '@/hooks/useFeedItems';
 import { useFeedMode } from '@/hooks/useFeedMode';
-import { useFeedModeSwitchPin } from '@/hooks/useFeedModeSwitchPin';
 import { useFeedModuleBlockPart } from '@/hooks/useFeedModuleBlockPart';
 import { useFeedPageTheme } from '@/hooks/useFeedPageTheme';
 import { useFeedSectionPart } from '@/hooks/useFeedSectionPart';
@@ -66,18 +65,16 @@ export function FeedPageContent() {
     useHideMobileTabBar(tabBarAway, 'feed-invitation');
     // No switch while editing: the host edits the mode they were in.
     const hasSwitch = feedMode.mode !== null && !editMode.editing;
-    const { ref: pinRef, pinned } = useFeedModeSwitchPin(hasSwitch);
     // The Overview's Start editing (?edit=blocks) opens the invitation.
     const startFromLink = useCallback(() => {
         if (feedMode.available) feedMode.select('invitation');
         startEditing();
     }, [feedMode, startEditing]);
     useFeedEditTrigger({ settled: editMode.settled, canEdit: editMode.canEdit, start: startFromLink });
-    const pill = hasSwitch && feedMode.mode && <FeedModeSwitch mode={feedMode.mode} onSelect={feedMode.select} />;
-    const modeSwitch = pill && (
-        // Centred on the cover's bottom edge, half over it. While a copy is pinned under the header, it keeps its space.
-        <div ref={pinRef} className={cn('relative z-10 -mt-5 flex justify-center', pinned && 'invisible')}>
-            {pill}
+    const modeSwitch = hasSwitch && feedMode.mode && (
+        // Centred on the cover's bottom edge, half over it. It scrolls away with the cover.
+        <div className="relative z-10 -mt-5 flex justify-center">
+            <FeedModeSwitch mode={feedMode.mode} onSelect={feedMode.select} />
         </div>
     );
     const topParts = {
@@ -133,11 +130,7 @@ export function FeedPageContent() {
     return (
         <div className="mx-auto flex w-full flex-col lg:max-w-2xl" data-tab-bar-away={tabBarAway || undefined}>
             {/* Header */}
-            <Header
-                countdownTime={event.schedule.startAt ? new Date(event.schedule.startAt).getTime() : 0}
-                eventId={eventId}
-                pinned={pinned ? pill : undefined}
-            />
+            <Header countdownTime={event.schedule.startAt ? new Date(event.schedule.startAt).getTime() : 0} eventId={eventId} />
             {/* Install */}
             <InstallAppBanner />
             {/* Invitation blocks, stories and RSVP */}
