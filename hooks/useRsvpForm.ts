@@ -53,7 +53,7 @@ export function useRsvpForm({
     const isStaleRsvp = existingRsvpError instanceof ApiError && existingRsvpError.status === 404;
     const effectiveRsvpId = isStaleRsvp ? null : rsvpId;
     const hasExistingRsvp = Boolean(existingRsvp && effectiveRsvpId);
-    const sessionQuestions = useRsvpSessionQuestions(eventId, modules, effectiveRsvpId);
+    const sessionQuestions = useRsvpSessionQuestions(eventId, modules);
     const hasUnansweredSessions = computeHasUnansweredSessions(attending, sessionQuestions.allAnswered);
     const hydratedRef = useRef(false);
 

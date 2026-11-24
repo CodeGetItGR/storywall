@@ -22,10 +22,8 @@ vi.mock('@/hooks/useEventSessions', () => ({
 }));
 
 const mutateAsync = vi.fn();
-let savedAnswers: { eventSessionId: string; isAttending: boolean }[] = [];
 vi.mock('@/hooks/useRsvps', () => ({
     useCreateRsvpSessionResponse: () => ({ mutateAsync }),
-    useRsvpSessionResponses: (rsvpId: string | null) => ({ data: rsvpId ? savedAnswers : undefined }),
 }));
 
 beforeEach(() => {
@@ -33,7 +31,6 @@ beforeEach(() => {
     sessionsData = defaultSessions;
     sessionsIsPending = false;
     sessionsFetchStatus = 'idle';
-    savedAnswers = [];
     mutateAsync.mockReset().mockResolvedValue({});
 });
 
@@ -65,19 +62,6 @@ describe('useRsvpSessionQuestions', () => {
         expect(mutateAsync).toHaveBeenCalledTimes(2);
         expect(mutateAsync).toHaveBeenCalledWith({ rsvpId: 'rsvp-1', eventSessionId: 'ceremony', isAttending: true });
         expect(mutateAsync).toHaveBeenCalledWith({ rsvpId: 'rsvp-1', eventSessionId: 'reception', isAttending: true });
-    });
-
-    it('starts from the answers the guest already gave, which they can change', () => {
-        savedAnswers = [
-            { eventSessionId: 'ceremony', isAttending: true },
-            { eventSessionId: 'reception', isAttending: false },
-        ];
-        const { result } = renderHook(() => useRsvpSessionQuestions('e1', [], 'rsvp-1'));
-        expect(result.current.questions.map((q) => q.answer)).toEqual([true, false]);
-        expect(result.current.allAnswered).toBe(true);
-
-        act(() => result.current.onAnswer('ceremony', false));
-        expect(result.current.questions.map((q) => q.answer)).toEqual([false, false]);
     });
 
     it('is not answered while the sessions list is still loading', () => {

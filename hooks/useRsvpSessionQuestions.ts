@@ -2,7 +2,7 @@ import { useLocale } from 'next-intl';
 import { useCallback, useMemo, useState } from 'react';
 
 import { useEventSessions } from '@/hooks/useEventSessions';
-import { useCreateRsvpSessionResponse, useRsvpSessionResponses } from '@/hooks/useRsvps';
+import { useCreateRsvpSessionResponse } from '@/hooks/useRsvps';
 import { isNotFoundError, isRsvpNotAttendingError, isSessionRsvpNotEnabledError } from '@/lib/api/errors';
 import type { EventModuleResponseDto } from '@/lib/api/types';
 import { formatShortDateTime } from '@/lib/datetime';
@@ -21,17 +21,11 @@ export type AttendingStatus = 'attending' | 'not-attending';
 // Only sessions the host opened (rsvpEnabled) are asked, and only while both
 // rsvp and schedule are available. See plan-owned-modules-fe-integration.md §7.
 // Every question needs an answer: a missing one is reported as "no answer", so
-// the form doesn't send a "coming" RSVP until all are given. A guest changing
-// their RSVP starts from the answers they already gave.
-export function useRsvpSessionQuestions(
-    eventId: string | null,
-    modules: EventModuleResponseDto[] | null | undefined,
-    rsvpId: string | null = null,
-) {
+// the form doesn't send a "coming" RSVP until all are given.
+export function useRsvpSessionQuestions(eventId: string | null, modules: EventModuleResponseDto[] | null | undefined) {
     const locale = useLocale();
     const isAvailable = isModuleAvailable(modules, 'rsvp') && isModuleAvailable(modules, 'schedule');
     const sessionsQuery = useEventSessions(isAvailable ? eventId : null);
-    const savedAnswers = useRsvpSessionResponses(isAvailable ? rsvpId : null).data;
     const createResponse = useCreateRsvpSessionResponse(eventId ?? '');
     const [answers, setAnswers] = useState<Record<string, boolean>>({});
 
@@ -46,9 +40,9 @@ export function useRsvpSessionQuestions(
                 id: session.id,
                 title: session.title,
                 when: session.startAt ? formatShortDateTime(session.startAt, locale) : null,
-                answer: answers[session.id] ?? savedAnswers?.find((saved) => saved.eventSessionId === session.id)?.isAttending ?? null,
+                answer: answers[session.id] ?? null,
             })),
-        [answers, locale, openSessions, savedAnswers],
+        [answers, locale, openSessions],
     );
 
     const onAnswer = useCallback((sessionId: string, isAttending: boolean) => {
