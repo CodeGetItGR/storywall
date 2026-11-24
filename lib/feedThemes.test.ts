@@ -125,6 +125,26 @@ describe('planFeedThemeSwitch', () => {
         expect(next.sections.slice(-3)).toEqual(FEED_MODE_SECTIONS);
         expect(next.sections.slice(-3).some((section) => section.hiddenByTheme)).toBe(false);
     });
+
+    it('keeps a module block shown, with its module, in the plain feed style', () => {
+        const playlist = feedModuleSection('playlist', () => 'playlist');
+        const onAnotherLook = { ...playlist, style: FEED_BLOCK_FALLBACK_STYLE } as InvitationSection;
+        const current = { ...defaultFeedLayout(), sections: [...defaultFeedLayout().sections, onAnotherLook] };
+        const next = planFeedThemeSwitch(current, target([styled('top', '#111111')]), new Set());
+        expect(byType(next, 'feedModule')).toEqual(playlist);
+    });
+
+    it('shows a module block an earlier switch hid, and leaves one the host hid', () => {
+        const hidden = { ...feedModuleSection('playlist', () => 'playlist'), visible: false };
+        const switchTo = (block: InvitationSection) =>
+            byType(planFeedThemeSwitch({ ...defaultFeedLayout(), sections: [...defaultFeedLayout().sections, block] }, target([]), new Set()), 'feedModule');
+        const restored = switchTo({ ...hidden, hiddenByTheme: true });
+        expect(restored.visible).toBe(true);
+        expect(restored.hiddenByTheme).toBeUndefined();
+        const kept = switchTo(hidden);
+        expect(kept.visible).toBe(false);
+        expect(kept.hiddenByTheme).toBeUndefined();
+    });
 });
 
 describe('planFeedWallSwitch', () => {
