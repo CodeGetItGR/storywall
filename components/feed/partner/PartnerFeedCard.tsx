@@ -20,7 +20,7 @@ export function PartnerFeedCard({ branding, eventId }: { branding: PartnerBrandi
     const askPartner = useCallback(() => openForCard(branding.displayName), [openForCard, branding.displayName]);
     const action = branding.inquiry ? (
         // Same height and padding as the card's visit button, which it sits next to.
-        <AskDatesButton state={branding.inquiry} onAskAction={askPartner} className="h-10 px-4" />
+        <AskDatesButton state={branding.inquiry} onAskAction={askPartner} className="h-10 px-3 whitespace-nowrap" />
     ) : undefined;
     // Next to the ask button, the short visit label keeps both on one row on a phone.
     const cardContent = action ? { ...content, visitLabel: t('visitShort') } : content;

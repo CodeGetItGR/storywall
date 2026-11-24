@@ -6,6 +6,7 @@ import { PartnerCardLabel } from '@/components/feed/partner/PartnerCardLabel';
 import { PartnerCardLink } from '@/components/feed/partner/PartnerCardLink';
 import { PartnerLogo } from '@/components/feed/partner/PartnerLogo';
 import type { PartnerBrandingCardContent } from '@/hooks/usePartnerBrandingCard';
+import { cn } from '@/lib/utils';
 
 // The feed's width: the full screen on phones, the feed column on desktop.
 const FEED_COVER_SIZES = '(min-width: 1024px) 672px, 100vw';
@@ -57,7 +58,7 @@ export function PartnerFeatureCard({
                 {action && (
                     <div className="flex flex-wrap items-center gap-2 px-4 pt-3 pb-4">
                         <PartnerCardLink href={content.href} newTabLabel={content.newTabLabel} className="group inline-flex">
-                            <VisitButton label={content.visitLabel} />
+                            <VisitButton label={content.visitLabel} className="px-3" />
                         </PartnerCardLink>
                         {action}
                     </div>
@@ -67,9 +68,15 @@ export function PartnerFeatureCard({
     );
 }
 
-function VisitButton({ label }: { label: string }) {
+// className tightens the padding when it shares a row with the ask button.
+function VisitButton({ label, className = 'px-4' }: { label: string; className?: string }) {
     return (
-        <span className="inline-flex min-h-10 items-center gap-1.5 rounded-full bg-ink px-4 text-sm font-semibold text-white transition-opacity group-hover:opacity-90">
+        <span
+            className={cn(
+                'inline-flex min-h-10 items-center gap-1.5 rounded-full bg-ink text-sm font-semibold whitespace-nowrap text-white transition-opacity group-hover:opacity-90',
+                className,
+            )}
+        >
             {label}
             <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
         </span>
