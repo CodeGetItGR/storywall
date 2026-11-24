@@ -3,6 +3,7 @@ import type { Draft } from 'immer';
 import type { EventModuleResponseDto } from '@/lib/api/types';
 import { feedAddList } from '@/lib/feedAddList';
 import { type FeedFrame, feedFrame } from '@/lib/feedLayout';
+import type { FeedPageMode } from '@/lib/feedMode';
 import { hasFeedSection } from '@/lib/feedSections';
 import { type InvitationDocument, MAX_SECTIONS } from '@/lib/invitation/document';
 import type { NewSectionType } from '@/lib/invitation/newSection';
@@ -60,6 +61,12 @@ export function feedEditFrame(layout: InvitationDocument, options: HostBlockOpti
         rsvp: options.rsvpMoves ? null : find('feedRsvp'),
         feed: layout.sections.filter(isFeedModeBlock),
     };
+}
+
+// What drags on screen, in order: only the blocks the mode draws, so the place read out while dragging counts those.
+export function draggableFeedBlocks({ middle, feed }: Pick<FeedFrame, 'middle' | 'feed'>, mode: FeedPageMode): InvitationSection[] {
+    if (mode === 'invitation') return middle;
+    return mode === 'feed' ? feed : [...middle, ...feed];
 }
 
 export function canHideFeedBlock(section: Block): boolean {
@@ -160,6 +167,9 @@ export function appendFeedSection(section: InvitationSection, options: HostBlock
         draft.sections.splice(index, 0, section as Draft<InvitationSection>);
     };
 }
+
+// What the Add section sheet lists: invitation sections, or Feed mode's own.
+export type FeedAddKind = 'invitation' | 'feed';
 
 // Where a "+ Add section" row puts its block: after a host block, before the first one (the row above the first), or
 // null (no host blocks yet), which is where appendFeedSection puts it.

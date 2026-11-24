@@ -6,6 +6,7 @@ import type { SettingsEdit } from '@/hooks/useSectionSettings';
 import type { SettingsScope } from '@/hooks/useSectionSettingsPanel';
 import { feedBlockParts, feedSettingsGroups } from '@/lib/feedEditing';
 import { canBeMembersOnly, setFeedBlockMembersOnly } from '@/lib/feedMembersOnly';
+import { setFeedPromptText } from '@/lib/feedSections';
 import type { InvitationDocument } from '@/lib/invitation/document';
 import type { InvitationEditorStore } from '@/lib/invitation/editorStore';
 import type { ImageUploader, UploadedImage } from '@/lib/invitation/editorUploads';
@@ -34,9 +35,10 @@ export function useFeedBlockSheet(
     const [openId, setOpenId] = useState<string | null>(null);
     const groupsOf = useCallback((section: InvitationSection) => feedSettingsGroups(settingsGroups(section, 'host', theme)), [theme]);
     const partsOf = useCallback((section: InvitationSection) => feedBlockParts(section.type, eventParts), [eventParts]);
-    // A block with no style or event field still opens for its members-only setting.
+    // A block with no style or event field still opens for its members-only setting, and the photo prompt for its line.
     const hasSettings = useCallback(
-        (section: InvitationSection) => groupsOf(section).length > 0 || partsOf(section).length > 0 || canBeMembersOnly(section),
+        (section: InvitationSection) =>
+            groupsOf(section).length > 0 || partsOf(section).length > 0 || canBeMembersOnly(section) || section.type === 'feedPrompt',
         [groupsOf, partsOf],
     );
 
@@ -93,10 +95,19 @@ export function useFeedBlockSheet(
         [openId, store],
     );
 
+    // The photo prompt's line. Null on every other block.
+    const promptText = section?.type === 'feedPrompt' ? section.data.text : null;
+    const setPromptText = useCallback(
+        (text: string) => {
+            if (openId) store.getState().edit(setFeedPromptText(openId, text), settingMergeKey(openId, 'text'));
+        },
+        [openId, store],
+    );
+
     const openFor = useCallback((id: string) => setOpenId(id), []);
     const close = useCallback(() => setOpenId(null), []);
 
-    return { section, groups, parts, scope, hasSettings, groupsOf, membersOnly, setMembersOnly, openFor, close };
+    return { section, groups, parts, scope, hasSettings, groupsOf, membersOnly, setMembersOnly, promptText, setPromptText, openFor, close };
 }
 
 export type FeedBlockSheetState = ReturnType<typeof useFeedBlockSheet>;

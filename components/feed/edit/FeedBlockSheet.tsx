@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import { useCallback } from 'react';
 
 import { FeedEditSheetFrame } from '@/components/feed/edit/FeedEditSheetFrame';
+import { FeedPromptField } from '@/components/feed/edit/FeedPromptField';
 import { SectionSettingsPanel } from '@/components/saveMyDate/editor/settings/SectionSettingsPanel';
 import { SettingsToggle } from '@/components/saveMyDate/editor/settings/SettingsControls';
 import type { SettingsScope } from '@/hooks/useSectionSettingsPanel';
@@ -22,11 +23,14 @@ type FeedBlockSheetProps = {
     // null: the block can't be members only (the cover, details and RSVP).
     membersOnly: boolean | null;
     onMembersOnly: (membersOnly: boolean) => void;
+    // The photo prompt's line; null on every other block.
+    promptText: string | null;
+    onPromptText: (text: string) => void;
     onOpenPart: (part: SettingsPart) => void;
     onClose: () => void;
 };
 
-// The pencil's sheet: the event fields the block shows, who sees it, then its style. A panel at the right on
+// The pencil's sheet: a feed section's own content, the event fields the block shows, who sees it, then its style. A panel at the right on
 // desktop, a sheet over the lower screen on phones; the feed above stays live either way.
 export function FeedBlockSheet({
     title,
@@ -38,12 +42,17 @@ export function FeedBlockSheet({
     isDesktop,
     membersOnly,
     onMembersOnly,
+    promptText,
+    onPromptText,
     onOpenPart,
     onClose,
 }: FeedBlockSheetProps) {
     const t = useTranslations('FeedLayout');
     const body = (
         <div className="flex flex-col gap-5">
+            {/* Prompt */}
+            {promptText !== null && <FeedPromptField text={promptText} onChange={onPromptText} />}
+
             {/* Event details */}
             {parts.length > 0 && (
                 <div className="flex flex-col gap-1.5">

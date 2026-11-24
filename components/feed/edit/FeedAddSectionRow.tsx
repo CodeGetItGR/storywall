@@ -5,12 +5,12 @@ import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 import { useCallback } from 'react';
 
-import type { NewSectionType } from '@/lib/invitation/newSection';
+import type { SectionType } from '@/lib/invitation/sections';
 
-type FeedAddSectionRowProps = { type: NewSectionType; name: string; onAdd: (type: NewSectionType) => void; onPreview: (type: NewSectionType) => void };
+type FeedAddSectionRowProps<T extends SectionType> = { type: T; name: string; onAdd: (type: T) => void; onPreview: (type: T) => void };
 
 // One section in the Add section list (spec item 11): its icon and name add it; the eye at the far right previews it.
-export function FeedAddSectionRow({ type, name, onAdd, onPreview }: FeedAddSectionRowProps) {
+export function FeedAddSectionRow<T extends SectionType>({ type, name, onAdd, onPreview }: FeedAddSectionRowProps<T>) {
     const t = useTranslations('InvitationEditor');
     const add = useCallback(() => onAdd(type), [onAdd, type]);
     const preview = useCallback(() => onPreview(type), [onPreview, type]);

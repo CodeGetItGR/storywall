@@ -80,7 +80,7 @@ vi.mock('@/components/story/StoryModal', () => ({ StoryModal: () => null }));
 vi.mock('@/components/vendors/VendorProfilePrompt', () => ({ VendorProfilePrompt: () => null }));
 vi.mock('@/components/feed/guestOffer/GuestOfferCard', () => ({ GuestOfferCard: () => null }));
 // The real viewer needs an IntersectionObserver, which jsdom doesn't have.
-vi.mock('@/components/feed/post/MediaViewer', () => ({ MediaViewer: () => <div role="dialog" /> }));
+vi.mock('@/components/feed/post/MediaViewer', () => ({ MediaViewer: () => <div data-testid="photo-viewer" /> }));
 vi.mock('@/components/feed/HeOrShePromptCard', () => ({ HeOrShePromptCard: () => <span>fixed card</span> }));
 vi.mock('@/components/feed/sections/FeedHeOrSheSection', () => ({ FeedHeOrSheSection: () => <span>section card</span> }));
 vi.mock('@/providers/composer/ComposerContext', async (importOriginal) => ({
@@ -354,14 +354,18 @@ describe('FeedPageContent feed sections', { timeout: 15_000 }, () => {
     it('opens a pinned photo full screen from the page, and takes no tap in edit mode', async () => {
         renderFeed(null, { flag: true, layout: withPhoto });
         fireEvent.click(screen.getByRole('button', { name: 'photoAlt' }));
-        expect(await screen.findByRole('dialog')).toBeTruthy();
+        expect(await screen.findByTestId('photo-viewer')).toBeTruthy();
         cleanup();
 
         renderFeed(null, { flag: true, layout: withPhoto, isHost: true, modules: SMD, startAt: '2020-06-01T15:00:00Z' });
         expect(await screen.findByRole('button', { name: 'photoAlt' }, LAZY_LOOK)).toBeTruthy();
         fireEvent.click(screen.getByRole('button', { name: 'edit' }));
-        await screen.findByRole('group', { name: 'sectionNames.feedCover' }, LAZY_LOOK);
-        expect(screen.queryByRole('button', { name: 'photoAlt' })).toBeNull();
+        const pinned = await screen.findByRole('group', { name: 'sectionNames.feedPinned' }, LAZY_LOOK);
+        const photo = within(pinned).getByAltText('photoAlt');
+        expect(photo.closest('button')).toBeNull();
+        expect(photo.closest('[inert]')).toBeTruthy();
+        fireEvent.click(photo);
+        expect(screen.queryByTestId('photo-viewer')).toBeNull();
     });
 
     it('draws the fixed Boy or Girl card only while the layout has no Boy or Girl section, shown or hidden', () => {
@@ -509,6 +513,28 @@ describe('FeedPageContent edit mode', { timeout: 15_000 }, () => {
         const [, body] = api.put.mock.calls[0];
         expect(body.revision).toBe(1);
         expect(body.document.sections.find((section: InvitationSection) => section.type === 'feedRsvp').visible).toBe(false);
+    });
+
+    it("adds a feed section in Social Feed mode, opens its settings and saves it with the invitation's blocks", async () => {
+        api.put.mockResolvedValue({ revision: 2, updatedAt: '2026-11-22T10:00:00Z' });
+        renderFeed(null, { flag: true, layout: savedLayout(dressCode), isHost: true, modules: SMD, startAt: '2020-06-01T15:00:00Z' });
+        fireEvent.click(await screen.findByRole('button', { name: 'edit' }, LAZY_LOOK));
+        // One Add section row: the feed sections', never the invitation's.
+        const row = await screen.findByRole('button', { name: 'add' }, LAZY_LOOK);
+        fireEvent.click(row);
+        expect(await screen.findByRole('button', { name: 'sectionNames.feedPinned' })).toBeTruthy();
+        expect(screen.queryByRole('button', { name: 'sectionNames.faq' })).toBeNull();
+        fireEvent.click(screen.getByRole('button', { name: 'sectionNames.feedPrompt' }));
+
+        const prompt = await screen.findByRole('group', { name: 'sectionNames.feedPrompt', hidden: true });
+        fireEvent.click(within(prompt.querySelector('[data-feed-block-tools]') as HTMLElement).getByRole('button', { name: 'open', hidden: true }));
+        fireEvent.change(await screen.findByRole('textbox'), { target: { value: 'Show us your shoes' } });
+        fireEvent.click(screen.getByRole('button', { name: 'save', hidden: true }));
+        await waitFor(() => expect(api.put).toHaveBeenCalledOnce());
+        const sections = api.put.mock.calls[0][1].document.sections as InvitationSection[];
+        const before = savedLayout(dressCode).document as InvitationDocument;
+        expect(sections.map((section) => section.type)).toEqual([...before.sections.map((section) => section.type), 'feedPrompt']);
+        expect(sections.at(-1)?.data).toMatchObject({ text: 'Show us your shoes' });
     });
 
     it('asks before Cancel drops changes', async () => {

@@ -11,6 +11,7 @@ import {
     canHideFeedBlock,
     canMoveFeedBlock,
     deleteFeedBlock,
+    draggableFeedBlocks,
     feedBlockControls,
     feedBlockParts,
     feedEditFrame,
@@ -23,6 +24,7 @@ import {
     setFeedBlockVisible,
 } from '@/lib/feedEditing';
 import { defaultFeedLayout } from '@/lib/feedLayout';
+import type { FeedPageMode } from '@/lib/feedMode';
 import { feedModuleSection } from '@/lib/feedModuleBlocks';
 import { createFeedModeSection } from '@/lib/feedSections';
 import type { InvitationDocument } from '@/lib/invitation/document';
@@ -45,6 +47,17 @@ function layout(...extra: InvitationSection[]): InvitationDocument {
 }
 
 const ids = (document: InvitationDocument) => document.sections.map((section) => section.id);
+
+describe('draggableFeedBlocks', () => {
+    it('holds only what the mode draws', () => {
+        const prompt = createFeedModeSection('feedPrompt', () => 'prompt');
+        const frame = feedEditFrame(layout(dressCode, prompt), { rsvpMoves: true });
+        const idsIn = (mode: FeedPageMode) => draggableFeedBlocks(frame, mode).map((section) => section.id);
+        expect(idsIn('invitation')).toEqual(['feed-feedDescription', 'feed-feedRsvp', 'dress']);
+        expect(idsIn('feed')).toEqual(['prompt']);
+        expect(idsIn('single')).toEqual(['feed-feedDescription', 'feed-feedRsvp', 'dress', 'prompt']);
+    });
+});
 
 describe('feedEditFrame', () => {
     it('lists every block, hidden ones too', () => {

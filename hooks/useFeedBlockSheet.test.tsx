@@ -1,8 +1,10 @@
 import { act, renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
+import { useStore } from 'zustand';
 
 import { useFeedBlockSheet } from '@/hooks/useFeedBlockSheet';
 import { defaultFeedLayout, wallThemeDesign } from '@/lib/feedLayout';
+import { createFeedModeSection } from '@/lib/feedSections';
 import { createInvitationEditorStore } from '@/lib/invitation/editorStore';
 import { SAMPLE_SECTIONS } from '@/lib/invitation/samples';
 import type { InvitationSection } from '@/lib/invitation/sections';
@@ -13,14 +15,18 @@ const theme = wallThemeDesign(null);
 const media = () => undefined;
 const allParts: SettingsPart[] = ['cover', 'title', 'date', 'location', 'description'];
 const gallery = { ...(SAMPLE_SECTIONS.gallery as InvitationSection), id: 'gallery' };
+const prompt = createFeedModeSection('feedPrompt', () => 'prompt');
 const image = { mediaId: 'm1', url: 'https://cdn.example/m1.jpg', width: 10, height: 10 };
 
 function setup() {
     const base = defaultFeedLayout();
-    const store = createInvitationEditorStore({ ...base, sections: [...base.sections, dressCode, gallery] });
+    const store = createInvitationEditorStore({ ...base, sections: [...base.sections, dressCode, gallery, prompt] });
     const uploads = { uploadImage: vi.fn().mockResolvedValue(image), remember: vi.fn() };
-    const hook = renderHook(() => useFeedBlockSheet(store, store.getState().document, theme, media, [], allParts, uploads));
-    return { ...hook, uploads };
+    const hook = renderHook(() => {
+        const document = useStore(store, (state) => state.document);
+        return useFeedBlockSheet(store, document, theme, media, [], allParts, uploads);
+    });
+    return { ...hook, store, uploads };
 }
 
 describe('useFeedBlockSheet', () => {
@@ -51,6 +57,23 @@ describe('useFeedBlockSheet', () => {
         const { result } = setup();
         const rsvp = defaultFeedLayout().sections[3];
         expect(result.current.hasSettings(rsvp)).toBe(result.current.groupsOf(rsvp).length > 0);
+    });
+
+    it("opens the photo prompt for its line, and keeps what's typed", () => {
+        const { result } = setup();
+        expect(result.current.promptText).toBeNull();
+        act(() => result.current.openFor('prompt'));
+        expect(result.current.promptText).toBe('');
+        expect(result.current.membersOnly).toBeNull();
+        act(() => result.current.setPromptText('Show us'));
+        expect(result.current.promptText).toBe('Show us');
+    });
+
+    it("gives today's schedule and Boy or Girl no pencil: they draw the event's own content", () => {
+        const { result } = setup();
+        expect(result.current.hasSettings(createFeedModeSection('feedSchedule'))).toBe(false);
+        expect(result.current.hasSettings(createFeedModeSection('feedHeOrShe'))).toBe(false);
+        expect(result.current.hasSettings(prompt)).toBe(true);
     });
 
     it('closes', () => {

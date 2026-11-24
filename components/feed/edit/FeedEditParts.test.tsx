@@ -30,6 +30,8 @@ function renderSheet(props: { isDesktop: boolean; onOpenPart?: (part: SettingsPa
             isDesktop={props.isDesktop}
             membersOnly={null}
             onMembersOnly={vi.fn()}
+            promptText={null}
+            onPromptText={vi.fn()}
             onOpenPart={props.onOpenPart ?? vi.fn()}
             onClose={props.onClose ?? vi.fn()}
         />,

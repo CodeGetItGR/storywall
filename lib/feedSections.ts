@@ -39,3 +39,9 @@ export function setFeedPromptText(id: string, text: string) {
 export function hasFeedSection(sections: readonly Pick<InvitationSection, 'type'>[], type: FeedModeSectionType): boolean {
     return sections.some((section) => section.type === type);
 }
+
+// The Add sheet's live picture of a feed section: the prompt with its placeholder line.
+export function feedPreviewSection(type: FeedModeSectionType, promptPlaceholder: string): InvitationSection {
+    const section = createFeedModeSection(type, () => `preview-${type}`);
+    return section.type === 'feedPrompt' ? { ...section, data: { text: promptPlaceholder } } : section;
+}

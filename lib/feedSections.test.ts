@@ -2,7 +2,7 @@ import { produce } from 'immer';
 import { describe, expect, it } from 'vitest';
 
 import { defaultFeedLayout, PLAIN_FEED_STYLE } from '@/lib/feedLayout';
-import { createFeedModeSection, hasFeedSection, setFeedPromptText } from '@/lib/feedSections';
+import { createFeedModeSection, feedPreviewSection, hasFeedSection, setFeedPromptText } from '@/lib/feedSections';
 import { invitationDocumentSchema } from '@/lib/invitation/document';
 import { FEED_MODE_SECTION_TYPES } from '@/lib/invitation/sections';
 
@@ -19,6 +19,11 @@ describe('feed sections', () => {
         expect(createFeedModeSection('feedSchedule', () => 'id-2').data).toEqual({});
         expect(createFeedModeSection('feedHeOrShe', () => 'id-3').data).toEqual({});
         expect(createFeedModeSection('feedPinned', () => 'id-4').data).toEqual({ photos: [] });
+    });
+
+    it("draws the Add sheet's picture of the prompt with the placeholder line", () => {
+        expect(feedPreviewSection('feedPrompt', 'Show us').data).toEqual({ text: 'Show us' });
+        expect(feedPreviewSection('feedSchedule', 'Show us').data).toEqual({});
     });
 
     it('makes sections the document takes', () => {

@@ -1,30 +1,27 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
+import type { ReactNode } from 'react';
 
-import { FeedSectionPreviewPicture } from '@/components/feed/edit/FeedSectionPreviewPicture';
 import { Modal } from '@/components/ui/modal';
-import type { FeedSectionPreview } from '@/lib/feedSectionPreview';
-import type { RenderContext } from '@/lib/invitation/render';
 
-type FeedSectionPreviewDialogProps = { preview: FeedSectionPreview | null; name: string; ctx: RenderContext; lang: string; onClose: () => void };
+// picture: the section's live picture. Null: closed.
+type FeedSectionPreviewDialogProps = { name: string; picture: ReactNode | null; onClose: () => void };
 
 // The eye's popup (spec item 11): a small window centred on the screen, animated in, with the block's live preview.
-export function FeedSectionPreviewDialog({ preview, name, ctx, lang, onClose }: FeedSectionPreviewDialogProps) {
+export function FeedSectionPreviewDialog({ name, picture, onClose }: FeedSectionPreviewDialogProps) {
     const t = useTranslations('InvitationEditor');
 
     return (
-        <Modal open={preview !== null} onClose={onClose} size="sm" ariaLabel={name} closeLabel={t('close')}>
+        <Modal open={picture !== null} onClose={onClose} size="sm" ariaLabel={name} closeLabel={t('close')}>
             <Modal.Body className="flex flex-col gap-3 p-4">
                 {/* Name */}
                 <h3 className="pr-10 text-[15px] font-semibold text-ink">{name}</h3>
 
                 {/* Preview */}
-                {preview && (
+                {picture !== null && (
                     // As tall as the section, up to 60% of the screen; a taller one scrolls.
-                    <div className="max-h-[60vh] overflow-y-auto overscroll-contain rounded-xl bg-surface-muted">
-                        <FeedSectionPreviewPicture preview={preview} ctx={ctx} lang={lang} />
-                    </div>
+                    <div className="max-h-[60vh] overflow-y-auto overscroll-contain rounded-xl bg-surface-muted">{picture}</div>
                 )}
             </Modal.Body>
         </Modal>

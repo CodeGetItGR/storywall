@@ -6,7 +6,7 @@ import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { useTranslations } from 'next-intl';
 import { type ReactNode, type Ref, useCallback, useMemo } from 'react';
 
-import { FeedEditAddBetween } from '@/components/feed/edit/FeedAddBetween';
+import { FeedAddBetween, FeedEditAddBetween } from '@/components/feed/edit/FeedAddBetween';
 import { FeedAddSectionSheet } from '@/components/feed/edit/FeedAddSectionSheet';
 import { FeedBlockPlaceholder } from '@/components/feed/edit/FeedBlockPlaceholder';
 import { FeedBlockSheet } from '@/components/feed/edit/FeedBlockSheet';
@@ -30,8 +30,11 @@ import type { FeedBlockToolActions } from '@/hooks/useFeedBlockHandlers';
 import { useFeedBlockSheet } from '@/hooks/useFeedBlockSheet';
 import { useFeedEditBlockTools } from '@/hooks/useFeedEditBlockTools';
 import { useFeedEditPanels } from '@/hooks/useFeedEditPanels';
+import { useFeedEditSectionPart } from '@/hooks/useFeedEditSectionPart';
 import { useFeedEditSession } from '@/hooks/useFeedEditSession';
 import { useFeedEditThemeGrid } from '@/hooks/useFeedEditThemeGrid';
+import { useFeedInvitationAddItems } from '@/hooks/useFeedInvitationAddItems';
+import { useFeedModeAddItems } from '@/hooks/useFeedModeAddItems';
 import { useFeedModuleBlockPart } from '@/hooks/useFeedModuleBlockPart';
 import { useFeedModuleTiles } from '@/hooks/useFeedModuleTiles';
 import { useEditPageTheme } from '@/hooks/useFeedPageTheme';
@@ -44,7 +47,7 @@ import { useSectionDrag } from '@/hooks/useSectionDrag';
 import { useSettingsPreview } from '@/hooks/useSettingsPreview';
 import type { EventDetailResponseDto } from '@/lib/api/types';
 import { blockTextColor } from '@/lib/feedBlockEdits';
-import { type FeedAddPlace, feedBlockControls } from '@/lib/feedEditing';
+import { draggableFeedBlocks, type FeedAddPlace, feedBlockControls } from '@/lib/feedEditing';
 import { moduleOfBlock } from '@/lib/feedModuleBlocks';
 import { feedImageUploader } from '@/lib/invitation/editorUploads';
 import { type InvitationSection, isSaveMyDateSectionType } from '@/lib/invitation/sections';
@@ -57,7 +60,7 @@ type FeedEditTopProps = Omit<FeedTopProps, 'view'> & { event: EventDetailRespons
 // The top of the feed in edit mode: the same frame as the feed, Theme / Cancel / Save under the cover, every block
 // with its tools, Save my date text typed in place, the Add section rows around the host's blocks, and the Theme sheet. All
 // held until Save.
-export function FeedEditTop({ event, onDone, cancelRef, mode, modeSwitch, dateRow, cover, stories, description, rsvp }: FeedEditTopProps) {
+export function FeedEditTop({ event, onDone, cancelRef, mode = 'single', modeSwitch, dateRow, cover, stories, description, rsvp }: FeedEditTopProps) {
     const t = useTranslations('InvitationEditor');
     const { blockName } = useFeedSectionName(event.eventType);
     const moduleBlock = useFeedModuleBlockPart(event);
@@ -71,6 +74,8 @@ export function FeedEditTop({ event, onDone, cancelRef, mode, modeSwitch, dateRo
     const textPresets = useFeedTextPresets(fonts.data);
     const hostOptions = useMemo(() => ({ rsvpMoves: view.rsvpMoves }), [view.rsvpMoves]);
     const actions = useFeedBlockActions(session.store, session.document, event, hostOptions);
+    const addingInvitation = actions.adding?.kind === 'invitation';
+    const addingFeed = actions.adding?.kind === 'feed';
     const sectionPreviews = useFeedSectionPreviews({
         types: actions.addable,
         themeSlug: session.themeSlug,
@@ -78,15 +83,18 @@ export function FeedEditTop({ event, onDone, cancelRef, mode, modeSwitch, dateRo
         theme: session.theme,
         media: uploads.media,
         eventType: event.eventType,
-        enabled: actions.adding,
+        enabled: addingInvitation,
     });
-    const tiles = useFeedModuleTiles(session.document, event, actions.adding);
+    const invitationItems = useFeedInvitationAddItems(sectionPreviews, event.eventType);
+    const feedItems = useFeedModeAddItems(event, actions.addableFeed, uploads.media, addingFeed);
+    const feedSection = useFeedEditSectionPart(event, uploads.media);
+    const tiles = useFeedModuleTiles(session.document, event, addingInvitation);
     const preview = useSettingsPreview(event, true, true);
     const sheet = useFeedBlockSheet(session.store, session.document, session.theme, uploads.media, fonts.data, preview.parts, sheetUploads);
     const panels = useFeedEditPanels(sheet.openFor, sheet.close, actions.openAdd);
     const themeGrid = useFeedEditThemeGrid(event, session);
-    const middleIds = view.frame.middle.map((section) => section.id);
-    const drag = useSectionDrag(middleIds.length, actions.reorder);
+    const sortableIds = draggableFeedBlocks(view.frame, mode).map((section) => section.id);
+    const drag = useSectionDrag(sortableIds.length, actions.reorder);
     const blockTools = useFeedEditBlockTools({
         eventId: event.id,
         store: session.store,
@@ -151,7 +159,18 @@ export function FeedEditTop({ event, onDone, cancelRef, mode, modeSwitch, dateRo
         // The feed's own blocks are set on the event, not typed here: their content takes no taps.
         block: (section, content) => wrap(section, base.block(section, <div inert>{content}</div>)),
         native: base.native,
-        feed: base.feed,
+        // Feed mode's sections draw their live content; a tap opens their settings, as on every block. A short one sits
+        // at the bottom of a box as tall as its three stacked tools, so they never cover the next section's.
+        feed: (section, content) =>
+            wrap(
+                section,
+                base.feed(
+                    section,
+                    <div inert className="flex min-h-40 flex-col justify-end">
+                        {content}
+                    </div>,
+                ),
+            ),
         // Save my date blocks read the text editor's drawing from inside InlineTextEditing, so their text is typed in place.
         invitation: (section) =>
             wrap(
@@ -177,8 +196,15 @@ export function FeedEditTop({ event, onDone, cancelRef, mode, modeSwitch, dateRo
             description={description || <FeedBlockPlaceholder name={t('sectionNames.feedDescription')} />}
             rsvp={rsvp ?? <FeedBlockPlaceholder name={t('sectionNames.feedRsvp')} />}
             moduleBlock={moduleBlock}
-            // Feed mode's own list arrives with its sections (plan 8): the frame draws these in Invitation mode only.
             between={actions.showAdd ? addRow : undefined}
+            feedSection={feedSection}
+            afterFeed={
+                actions.showAddFeed && (
+                    <FeedNative className="font-sans">
+                        <FeedAddBetween onAdd={panels.openAddFeed} />
+                    </FeedNative>
+                )
+            }
         />
     );
 
@@ -203,7 +229,7 @@ export function FeedEditTop({ event, onDone, cancelRef, mode, modeSwitch, dateRo
                 accessibility={drag.accessibility}
                 onDragEnd={drag.onDragEnd}
             >
-                <SortableContext items={middleIds} strategy={verticalListSortingStrategy}>
+                <SortableContext items={sortableIds} strategy={verticalListSortingStrategy}>
                     {/* Its own stacking context: the tools stay under the feed's sticky header. */}
                     <div className="isolate">
                         {view.look ? (
@@ -228,6 +254,8 @@ export function FeedEditTop({ event, onDone, cancelRef, mode, modeSwitch, dateRo
                 isDesktop={preview.isDesktop}
                 membersOnly={sheet.membersOnly}
                 onMembersOnly={sheet.setMembersOnly}
+                promptText={sheet.promptText}
+                onPromptText={sheet.setPromptText}
                 onOpenPart={preview.openEditor}
                 onClose={sheet.close}
             />
@@ -255,17 +283,18 @@ export function FeedEditTop({ event, onDone, cancelRef, mode, modeSwitch, dateRo
                 onClose={panels.closeTheme}
             />
 
-            {/* Add section */}
+            {/* Add section: the invitation's, then Feed mode's own */}
             <FeedAddSectionSheet
-                open={actions.adding}
-                eventType={event.eventType}
-                previews={sectionPreviews}
+                kind="invitation"
+                open={addingInvitation}
+                items={invitationItems}
                 tiles={
                     tiles.length > 0 && <FeedPremiumTiles tiles={tiles} eventId={event.id} eventType={event.eventType} onAdd={actions.addModule} />
                 }
                 onAdd={actions.add}
                 onClose={actions.closeAdd}
             />
+            <FeedAddSectionSheet kind="feed" open={addingFeed} items={feedItems} tiles={null} onAdd={actions.add} onClose={actions.closeAdd} />
 
             {/* Delete */}
             <DeleteSectionDialog
