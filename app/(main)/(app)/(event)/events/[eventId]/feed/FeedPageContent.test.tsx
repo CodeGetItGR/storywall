@@ -56,6 +56,12 @@ vi.mock('next-intl', () => ({
     useLocale: () => 'en',
 }));
 vi.mock('@/hooks/useGiftAccount', () => ({ useGiftAccount: () => ({ isLoading: true, data: undefined }) }));
+const tabBar = vi.hoisted(() => ({ away: false }));
+vi.mock('@/hooks/useHideMobileTabBar', () => ({
+    useHideMobileTabBar: (active: boolean) => {
+        tabBar.away = active;
+    },
+}));
 vi.mock('@/hooks/useHideMobileTabBarOnScroll', () => ({ useHideMobileTabBarOnScroll: () => undefined }));
 vi.mock('@/hooks/useRsvpPromptVisible', () => ({ useRsvpPromptVisible: () => rsvpVisible.value }));
 vi.mock('@/components/feed/ComposerCard', () => ({ ComposerCard: () => null }));
@@ -133,6 +139,14 @@ function follows(first: HTMLElement, second: HTMLElement): boolean {
     return Boolean(first.compareDocumentPosition(second) & Node.DOCUMENT_POSITION_FOLLOWING);
 }
 const SMD = [{ moduleKey: 'save_my_date', isAvailable: true, isEnabled: true }];
+
+const toolsOf = (group: HTMLElement) => within(group.querySelector('[data-feed-block-tools]') as HTMLElement);
+
+// Picks a tool from a block's dropdown.
+async function pickTool(group: HTMLElement, tool: string) {
+    fireEvent.click(toolsOf(group).getByRole('button', { name: 'sections.options', hidden: true }));
+    fireEvent.click(await screen.findByRole('menuitem', { name: tool }));
+}
 
 type FeedOptions = {
     description?: string | null;
@@ -265,6 +279,36 @@ describe('FeedPageContent layout', { timeout: 15_000 }, () => {
         expect(window.localStorage.getItem('storywall.feedMode.e-1')).toContain('"mode":"feed"');
     });
 
+    it('draws the switch once, under the cover, also after a scroll', async () => {
+        const frames = vi.spyOn(window, 'requestAnimationFrame').mockImplementation((run) => {
+            run(0);
+            return 0;
+        });
+        renderFeed(null, { description: 'Hello', flag: true, layout: savedLayout(dressCode), modules: SMD, startAt: '2099-06-01T15:00:00Z' });
+        const half = await screen.findByRole('button', { name: 'socialFeed' }, LAZY_LOOK);
+        vi.spyOn(Element.prototype, 'getBoundingClientRect').mockReturnValue(new DOMRect(0, -400, 100, 40));
+        fireEvent.scroll(document);
+        expect(screen.getAllByRole('button', { name: 'socialFeed' })).toEqual([half]);
+        expect(half.closest('.invisible')).toBeNull();
+        vi.mocked(Element.prototype.getBoundingClientRect).mockRestore();
+        frames.mockRestore();
+    });
+
+    it('keeps the phone tab bar away on Invitation, and its room with it', async () => {
+        renderFeed(null, { description: 'Hello', flag: true, layout: savedLayout(dressCode), modules: SMD, startAt: '2099-06-01T15:00:00Z' });
+        const socialFeed = await screen.findByRole('button', { name: 'socialFeed' }, LAZY_LOOK);
+        expect(tabBar.away).toBe(true);
+        expect(document.querySelector('[data-tab-bar-away]')).toBeTruthy();
+        fireEvent.click(socialFeed);
+        expect(tabBar.away).toBe(false);
+        expect(document.querySelector('[data-tab-bar-away]')).toBeNull();
+    });
+
+    it('keeps the tab bar on the one page', () => {
+        renderFeed(null, { description: 'Hello', flag: true, layout: savedLayout(dressCode) });
+        expect(tabBar.away).toBe(false);
+    });
+
     it('shows the date row in Social Feed mode only', async () => {
         renderFeed(null, { flag: true, layout: savedLayout(dressCode), modules: SMD, startAt: '2020-06-01T15:00:00Z' });
         expect(await screen.findByTestId('date-row', {}, LAZY_LOOK)).toBeTruthy();
@@ -389,10 +433,10 @@ describe('FeedPageContent edit mode', { timeout: 15_000 }, () => {
         renderFeed(null, { flag: true, layout: savedLayout(dressCode), isHost: true, modules: SMD, startAt: '2099-06-01T15:00:00Z' });
         fireEvent.click(await screen.findByRole('button', { name: 'edit' }));
         const rsvp = await screen.findByRole('group', { name: 'sectionNames.feedRsvp' }, LAZY_LOOK);
-        const tools = rsvp.querySelector('[data-feed-block-tools]') as HTMLElement;
-        expect(within(tools).getByRole('button', { name: 'drag' })).toBeTruthy();
-        expect(within(tools).getByRole('button', { name: 'delete' })).toBeTruthy();
-        expect(within(tools).queryByRole('button', { name: 'options' })).toBeNull();
+        expect(toolsOf(rsvp).getByRole('button', { name: 'drag' })).toBeTruthy();
+        // Its only tool, so no dropdown.
+        expect(toolsOf(rsvp).getByRole('button', { name: 'sections.delete' })).toBeTruthy();
+        expect(toolsOf(rsvp).queryByRole('button', { name: 'sections.options' })).toBeNull();
     });
 
     it("asks before RSVP's delete, then adds RSVP back from its tile", async () => {
@@ -400,7 +444,7 @@ describe('FeedPageContent edit mode', { timeout: 15_000 }, () => {
         renderFeed(null, { flag: true, layout: savedLayout(dressCode), isHost: true, modules, startAt: '2099-06-01T15:00:00Z' });
         fireEvent.click(await screen.findByRole('button', { name: 'edit' }));
         const rsvp = await screen.findByRole('group', { name: 'sectionNames.feedRsvp' }, LAZY_LOOK);
-        fireEvent.click(within(rsvp.querySelector('[data-feed-block-tools]') as HTMLElement).getByRole('button', { name: 'delete' }));
+        fireEvent.click(toolsOf(rsvp).getByRole('button', { name: 'sections.delete' }));
         const dialog = await screen.findByRole('dialog');
         expect(within(dialog).getByText('deleteBody')).toBeTruthy();
         expect(screen.getByRole('group', { name: 'sectionNames.feedRsvp', hidden: true })).toBeTruthy();
@@ -413,12 +457,12 @@ describe('FeedPageContent edit mode', { timeout: 15_000 }, () => {
         expect(await screen.findByRole('group', { name: 'sectionNames.feedRsvp' })).toBeTruthy();
     });
 
-    it('keeps the pill while editing, with Theme, Cancel and Save under it', async () => {
+    it('hides the pill while editing, with the edit row under the cover', async () => {
         renderFeed(null, { flag: true, layout: savedLayout(dressCode), isHost: true, modules: SMD, startAt: '2099-06-01T15:00:00Z' });
         fireEvent.click(await screen.findByRole('button', { name: 'edit' }, LAZY_LOOK));
         const cancel = await screen.findByRole('button', { name: 'cancel' }, LAZY_LOOK);
-        const pill = screen.getAllByRole('button', { name: 'invitation' })[0];
-        expect(pill.compareDocumentPosition(cancel) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+        expect(screen.queryByRole('button', { name: 'invitation' })).toBeNull();
+        expect(screen.queryByRole('button', { name: 'socialFeed' })).toBeNull();
         const cover = screen.getByRole('group', { name: 'sectionNames.feedCover' });
         expect(cover.contains(cancel)).toBe(false);
     });
@@ -431,17 +475,6 @@ describe('FeedPageContent edit mode', { timeout: 15_000 }, () => {
         fireEvent.click(await screen.findByRole('button', { name: 'edit' }));
         expect(screen.getByTestId('banner')).toBeTruthy();
         expect(await screen.findByRole('group', { name: 'sectionNames.feedCover' }, LAZY_LOOK)).toBeTruthy();
-    });
-
-    it('keeps edit mode and its changes when switching modes', async () => {
-        renderFeed(null, { flag: true, isHost: true, layout: savedLayout(), modules: SMD, startAt: '2099-06-01T15:00:00Z' });
-        fireEvent.click(await screen.findByRole('button', { name: 'edit' }, LAZY_LOOK));
-        const rsvp = await screen.findByRole('group', { name: 'sectionNames.feedRsvp' }, LAZY_LOOK);
-        fireEvent.click(within(rsvp).getByRole('button', { name: 'hide' }));
-        fireEvent.click(screen.getAllByRole('button', { name: 'socialFeed' })[0]);
-        expect(screen.queryByRole('group', { name: 'sectionNames.feedRsvp' })).toBeNull();
-        fireEvent.click(screen.getAllByRole('button', { name: 'invitation' })[0]);
-        expect(within(await screen.findByRole('group', { name: 'sectionNames.feedRsvp' })).getByRole('button', { name: 'show' })).toBeTruthy();
     });
 
     it('moves focus to Cancel in edit mode, and back to Edit after', async () => {
@@ -494,7 +527,7 @@ describe('FeedPageContent edit mode', { timeout: 15_000 }, () => {
         renderFeed(null, { flag: true, isHost: true, layout: savedLayout(prompt), modules: [] });
         fireEvent.click(await screen.findByRole('button', { name: 'edit' }));
         const group = await screen.findByRole('group', { name: 'sectionNames.feedPrompt' }, LAZY_LOOK);
-        fireEvent.click(within(group.querySelector('[data-feed-block-tools]') as HTMLElement).getByRole('button', { name: 'delete' }));
+        await pickTool(group, 'sections.delete');
         expect(within(await screen.findByRole('dialog')).getByText('deleteBodyFeed')).toBeTruthy();
     });
 
@@ -567,7 +600,7 @@ describe('FeedPageContent edit mode', { timeout: 15_000 }, () => {
         fireEvent.click(screen.getByRole('button', { name: 'sectionNames.feedPrompt' }));
 
         const prompt = await screen.findByRole('group', { name: 'sectionNames.feedPrompt', hidden: true });
-        fireEvent.click(within(prompt.querySelector('[data-feed-block-tools]') as HTMLElement).getByRole('button', { name: 'open', hidden: true }));
+        await pickTool(prompt, 'sectionSettings.open');
         fireEvent.change(await screen.findByRole('textbox'), { target: { value: 'Show us your shoes' } });
         fireEvent.click(screen.getByRole('button', { name: 'save', hidden: true }));
         await waitFor(() => expect(api.put).toHaveBeenCalledOnce());
@@ -575,6 +608,33 @@ describe('FeedPageContent edit mode', { timeout: 15_000 }, () => {
         const before = savedLayout(dressCode).document as InvitationDocument;
         expect(sections.map((section) => section.type)).toEqual([...before.sections.map((section) => section.type), 'feedPrompt']);
         expect(sections.at(-1)?.data).toMatchObject({ text: 'Show us your shoes' });
+    });
+
+    it('previews the unsaved feed as guests will see it, then brings the tools back', async () => {
+        const modules = [...SMD, { moduleKey: 'rsvp', isAvailable: true, isEnabled: true }];
+        renderFeed(null, { flag: true, layout: savedLayout(dressCode), isHost: true, modules, startAt: '2099-06-01T15:00:00Z' });
+        fireEvent.click(await screen.findByRole('button', { name: 'edit' }));
+        const dress = await screen.findByRole('group', { name: `sectionNames.${dressCode.type}` }, LAZY_LOOK);
+        expect(within(dress).getByText('Καλοκαιρινό')).toBeTruthy();
+        fireEvent.click(dress);
+        expect(await screen.findByRole('dialog', { name: `sectionNames.${dressCode.type}` })).toBeTruthy();
+        fireEvent.click(within(dress).getByRole('button', { name: 'hide' }));
+
+        // Everything open closes; hidden sections, tools and Add section rows go.
+        fireEvent.click(screen.getByRole('button', { name: 'preview' }));
+        expect(screen.queryByRole('group')).toBeNull();
+        expect(document.querySelector('[data-feed-block-tools]')).toBeNull();
+        expect(screen.queryByRole('button', { name: 'add' })).toBeNull();
+        await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+        expect(screen.queryByText('Καλοκαιρινό')).toBeNull();
+        expect(screen.getByRole('button', { name: 'cancel' })).toBeTruthy();
+        expect(screen.getByRole('button', { name: 'save' })).toBeTruthy();
+        expect(api.put).not.toHaveBeenCalled();
+
+        // Back, with the change still held.
+        fireEvent.click(screen.getByRole('button', { name: 'edit' }));
+        const again = screen.getByRole('group', { name: `sectionNames.${dressCode.type}` });
+        expect(within(again).getByText('hidden')).toBeTruthy();
     });
 
     it('asks before Cancel drops changes', async () => {

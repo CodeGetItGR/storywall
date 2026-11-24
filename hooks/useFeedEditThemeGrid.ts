@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 
 import type { ThemeRadioOption } from '@/components/manage/ThemePresetRadioGroup';
 import type { FeedEditSession } from '@/hooks/useFeedEditSession';
@@ -9,16 +9,19 @@ import { useThemePicker } from '@/hooks/useThemePicker';
 import { useNoThemeCard, useWallThemeOptions } from '@/hooks/useWallThemeOptions';
 import type { EventDetailResponseDto } from '@/lib/api/types';
 import { themePreviewTitle } from '@/lib/eventTheme';
-import { presetAsEventTheme } from '@/lib/feedEditTheme';
+import { presetAsEventTheme, type WallPick } from '@/lib/feedEditTheme';
 import { invitationThemeChoice, readThemeChoice } from '@/lib/feedThemes';
 import { isCatalogueEventType } from '@/lib/invitation/themeCatalogue';
 
-type ThemeGridSession = Pick<FeedEditSession, 'themeSlug' | 'heldWall' | 'switching' | 'saving' | 'pickInvitation' | 'pickWall'>;
+type ThemeGridSession = Pick<
+    FeedEditSession,
+    'themeSlug' | 'heldWall' | 'background' | 'switching' | 'pickingSolid' | 'saving' | 'pickInvitation' | 'pickWall' | 'pickSolid'
+>;
 
 // Edit mode's theme cards: the wall themes, then the event type's Save my date themes, with the held pick
 // marked. A pick goes to the session and is saved with the rest. An event that can't pick wall themes (no
 // `theme` module) still gets "No theme", drawn in its current wall look: it takes the feed back to that look
-// and leaves the event's theme as it is.
+// and leaves the event's theme as it is. While a solid colour shows on it, "No theme" isn't the one picked.
 export function useFeedEditThemeGrid(event: EventDetailResponseDto, session: ThemeGridSession) {
     const picker = useThemePicker(event, true);
     const onWall = session.themeSlug === '';
@@ -26,10 +29,12 @@ export function useFeedEditThemeGrid(event: EventDetailResponseDto, session: The
     const themeCards = useInvitationThemeCards(event.eventType, { enabled: isCatalogueEventType(event.eventType) });
     const held = onWall ? session.heldWall : undefined;
     const ownLook = useNoThemeCard(event.theme, onWall);
+    const hasSolid = session.background !== undefined;
 
     const wallOptions: ThemeRadioOption[] = picker.available
         ? wallCards.map((option) => (held ? { ...option, selected: option.presetId === held.presetId } : option))
         : [ownLook];
+    const plainFirst = wallOptions.map((option) => (option.presetId === null && hasSolid ? { ...option, selected: false } : option));
     const invitationOptions: ThemeRadioOption[] = themeCards.cards.map((card) => ({
         id: invitationThemeChoice(card.slug),
         presetId: invitationThemeChoice(card.slug),
@@ -44,8 +49,13 @@ export function useFeedEditThemeGrid(event: EventDetailResponseDto, session: The
     }));
 
     const { available, presets, isApplied } = picker;
-    const { pickInvitation, pickWall } = session;
+    const { pickInvitation, pickWall, pickSolid } = session;
     const ownTheme = event.theme;
+    // "No theme": without wall themes it is the event's own wall look, already applied.
+    const plain = useMemo<WallPick>(
+        () => (available ? { presetId: null, theme: null, applied: isApplied(null) } : { presetId: null, theme: ownTheme, applied: true }),
+        [available, isApplied, ownTheme],
+    );
     const select = useCallback(
         (choice: string | null) => {
             const slug = readThemeChoice(choice);
@@ -53,20 +63,19 @@ export function useFeedEditThemeGrid(event: EventDetailResponseDto, session: The
                 void pickInvitation(slug);
                 return;
             }
-            // Without wall themes "No theme" is the event's own wall look, already applied: nothing is held for it.
-            if (!available) {
-                if (choice === null) void pickWall(null, ownTheme, true);
+            if (choice === null) {
+                void pickWall(plain);
                 return;
             }
-            const preset = choice === null ? null : presets.find((item) => item.id === choice);
             // An applied theme that is no longer offered can't be picked again.
-            if (preset === undefined) return;
-            void pickWall(choice, preset ? presetAsEventTheme(preset) : null, isApplied(choice));
+            const preset = available ? presets.find((item) => item.id === choice) : undefined;
+            if (preset) void pickWall({ presetId: choice, theme: presetAsEventTheme(preset), applied: isApplied(choice) });
         },
-        [available, isApplied, ownTheme, pickInvitation, pickWall, presets],
+        [available, isApplied, pickInvitation, pickWall, plain, presets],
     );
+    const selectSolid = useCallback((color: string) => pickSolid(color, plain), [pickSolid, plain]);
 
-    const options = [...wallOptions, ...invitationOptions];
+    const options = [...plainFirst, ...invitationOptions];
     return {
         options,
         fontFaces: themeCards.fontFaces,
@@ -75,6 +84,9 @@ export function useFeedEditThemeGrid(event: EventDetailResponseDto, session: The
         hasInvitationThemes: invitationOptions.length > 0,
         // The session ignores picks while one loads or Save is on its way; the cards say so by being disabled.
         disabled: session.switching || session.saving || picker.isLoading,
+        // Mixing goes on while the plain look loads for it.
+        solidDisabled: (session.switching && !session.pickingSolid) || session.saving || picker.isLoading,
         select,
+        selectSolid,
     };
 }

@@ -42,6 +42,17 @@ describe('FeedEditInvitationSection', () => {
         expect(message).not.toHaveAttribute('role');
     });
 
+    it('leaves room for its tools', () => {
+        const { container } = render(
+            <div className="smd-invitation">
+                <FeedEditInvitationSection section={BABY} index={index} ctx={ctx} />
+            </div>,
+        );
+        const wrapper = container.querySelector('section')?.parentElement;
+        expect(wrapper).toHaveClass('[&>section]:pt-(--feed-tools-room)!');
+        expect(wrapper?.style.getPropertyValue('--feed-tools-room')).toBe('72px');
+    });
+
     it("types a Save my date block's text in place in edit mode", () => {
         const store = createInvitationEditorStore(SAMPLE_DOCUMENT);
         render(

@@ -10,10 +10,10 @@ vi.mock('@/hooks/useAppConfig', () => ({ useAppConfig: () => ({ data: undefined 
 
 afterEach(cleanup);
 
-function renderBlock(available: boolean) {
-    render(
+function renderBlock(available: boolean, underTools?: boolean) {
+    return render(
         <NextIntlClientProvider locale="en" messages={en}>
-            <FeedModuleBlock module="playlist" eventType="WEDDING" href="/events/e1/tools/playlist" available={available} />
+            <FeedModuleBlock module="playlist" eventType="WEDDING" href="/events/e1/tools/playlist" available={available} underTools={underTools} />
         </NextIntlClientProvider>,
     );
 }
@@ -23,6 +23,13 @@ describe('FeedModuleBlock', () => {
         renderBlock(true);
         expect(screen.getByText(en.Modules.playlist.name)).toBeTruthy();
         expect(screen.getByRole('link', { name: en.FeedEditor.moduleOpen }).getAttribute('href')).toBe('/events/e1/tools/playlist');
+    });
+
+    it("leaves room for its tools while editing only", () => {
+        const { container, unmount } = renderBlock(true, true);
+        expect(container.firstElementChild).toHaveClass('pt-18');
+        unmount();
+        expect(renderBlock(true).container.firstElementChild).not.toHaveClass('pt-18');
     });
 
     it('has no working button once the module is gone', () => {

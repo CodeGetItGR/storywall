@@ -3,6 +3,7 @@ import type { CSSProperties } from 'react';
 import type { EventThemeFontDto } from '@/lib/api/types';
 import { eventThemeStyle, isHexColor, themeFontScopeProps } from '@/lib/eventTheme';
 import { defaultFeedLayout, PLAIN_FEED_STYLE, WALL_THEME_ID } from '@/lib/feedLayout';
+import { ownSectionBackground } from '@/lib/feedSectionBackground';
 import type { InvitationDocument } from '@/lib/invitation/document';
 import { createSection, type NewSectionType } from '@/lib/invitation/newSection';
 import { type FeedSectionType, type InvitationSection, isFeedModeSectionType, isSaveMyDateSectionType, type SectionType } from '@/lib/invitation/sections';
@@ -50,20 +51,28 @@ function withStyle(section: InvitationSection, style: SectionStyle): InvitationS
     return { ...section, style } as InvitationSection;
 }
 
+// A theme change leaves every section on the page, except where the host gave it a colour or photo of its own.
+function keepOwnBackgrounds(current: InvitationDocument, themeImageIds: ReadonlySet<string>) {
+    const own = new Map(current.sections.map((section) => [section.id, ownSectionBackground(section, themeImageIds)]));
+    return (section: InvitationSection, background: SectionStyle['background']) =>
+        withStyle(section, { ...section.style, background: own.get(section.id) ?? background });
+}
+
 // The layout on a Save my date theme. The theme's own invitation has no feed blocks, so they are
 // added to it with their borrowed looks; then the editor's switch restyles every block the host has,
 // and hides the Save my date blocks the theme has no kind for.
 // On the feed the theme's background covers the whole page, so every block then sits on it
 // ("auto"): the theme's own sections pick top or content images, which would draw seams between
-// blocks. Every block sits on the page's one background: the feed has no background choice per block.
+// blocks. Only a colour or photo the host gave a section of their own stays with it.
 // Feed mode's sections take no theme: they stay shown, in the plain feed style.
 export function planFeedThemeSwitch(current: InvitationDocument, target: ThemeSwitchTarget, oldThemeImageIds: ReadonlySet<string>): InvitationDocument {
     const feedBlocks = defaultFeedLayout().sections.map((section) => withStyle(section, borrowedStyle(section.type as FeedSectionType, target.document)));
     const feedMode = current.sections.filter((section) => isFeedModeSectionType(section.type)).map((section) => withStyle(section, PLAIN_FEED_STYLE));
     const document = { ...target.document, sections: [...target.document.sections, ...feedBlocks, ...feedMode] };
     const switched = planThemeSwitch(current, { ...target, document }, oldThemeImageIds).document;
+    const keepOwn = keepOwnBackgrounds(current, oldThemeImageIds);
     const onPage = (section: InvitationSection) =>
-        isFeedModeSectionType(section.type) ? section : withStyle(section, { ...section.style, background: PAGE_BACKGROUND });
+        isFeedModeSectionType(section.type) ? section : keepOwn(section, PAGE_BACKGROUND);
     return { ...switched, sections: switched.sections.map(onPage) };
 }
 
@@ -76,7 +85,9 @@ export function planFeedWallSwitch(current: InvitationDocument, wall: ThemeDesig
         return [createSection(section.type as NewSectionType, eventType)];
     });
     const template: InvitationDocument = { ...current, themeId: WALL_THEME_ID, overrides: {}, sections };
-    return planThemeSwitch(current, { document: template, theme: wall, imageIds: new Set() }, oldThemeImageIds).document;
+    const switched = planThemeSwitch(current, { document: template, theme: wall, imageIds: new Set() }, oldThemeImageIds).document;
+    const keepOwn = keepOwnBackgrounds(current, oldThemeImageIds);
+    return { ...switched, sections: switched.sections.map((section) => keepOwn(section, section.style.background)) };
 }
 
 type ThemeCardTitle = {

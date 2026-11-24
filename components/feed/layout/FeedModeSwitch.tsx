@@ -16,9 +16,10 @@ const HALVES: readonly { mode: FeedMode; label: 'invitation' | 'socialFeed'; Ico
 ];
 
 // The Invitation | Social Feed pill (look A1): two halves with an icon each, a coral thumb under the chosen one.
+// 40 px tall; each half is 32 px to look at and 40 px to tap.
 export function FeedModeSwitch({ mode, onSelect, className }: FeedModeSwitchProps) {
     return (
-        <div className={cn('relative inline-grid grid-cols-2 rounded-full bg-white p-1 font-sans shadow-[0_6px_20px_rgba(0,0,0,0.14)]', className)}>
+        <div className={cn('relative inline-grid h-10 grid-cols-2 rounded-full bg-white p-1 font-sans shadow-[0_6px_20px_rgba(0,0,0,0.14)]', className)}>
             {/* Thumb */}
             <span
                 aria-hidden="true"
@@ -49,11 +50,11 @@ function FeedModeHalf({ mode, label, Icon, pressed, onSelect }: FeedModeHalfProp
             aria-pressed={pressed}
             onClick={select}
             className={cn(
-                'relative z-10 flex min-h-10 items-center justify-center gap-1.5 rounded-full px-4 text-sm font-medium transition-colors',
+                'relative z-10 flex h-8 items-center justify-center gap-1 rounded-full px-3 text-[13px] font-medium transition-colors before:absolute before:inset-x-0 before:-inset-y-1',
                 pressed ? 'text-primary-foreground' : 'text-ink-muted hover:text-ink',
             )}
         >
-            <Icon className="h-4 w-4" aria-hidden="true" />
+            <Icon className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
             {t(label)}
         </button>
     );

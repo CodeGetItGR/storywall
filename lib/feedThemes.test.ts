@@ -85,6 +85,21 @@ describe('planFeedThemeSwitch', () => {
         for (const section of next.sections) expect(section.style.background).toEqual(PAGE);
     });
 
+    it("keeps the host's own colour or photo with its section, never a theme image", () => {
+        const own = styled('faq', '#B5BFA6');
+        const photo = withBackground('dressCode', { kind: 'image', image: { source: 'media', mediaId: 'mine' } });
+        const themePhoto = withBackground('contact', { kind: 'image', image: { source: 'media', mediaId: 'theme-1' } });
+        const current = { ...defaultFeedLayout(), sections: [...defaultFeedLayout().sections, own, photo, themePhoto] };
+        const next = planFeedThemeSwitch(current, target([styled('faq', '#111111'), styled('dressCode', '#222222'), styled('contact', '#333333')]), new Set(['theme-1']));
+        expect(byType(next, 'faq').style.background).toEqual({ kind: 'color', color: '#B5BFA6' });
+        expect(byType(next, 'dressCode').style.background).toEqual({ kind: 'image', image: { source: 'media', mediaId: 'mine' } });
+        expect(byType(next, 'contact').style.background).toEqual(PAGE);
+        const wall = planFeedWallSwitch(current, wallThemeDesign(null), 'WEDDING', new Set(['theme-1']));
+        expect(byType(wall, 'faq').style.background).toEqual({ kind: 'color', color: '#B5BFA6' });
+        expect(byType(wall, 'dressCode').style.background).toEqual({ kind: 'image', image: { source: 'media', mediaId: 'mine' } });
+        expect(byType(wall, 'contact').style.background).toEqual(PAGE);
+    });
+
     it('puts a block the theme hides on the page too, so showing it again draws no seam', () => {
         const dressCode = withBackground('dressCode', { kind: 'theme', slot: 'top' });
         const current = { ...defaultFeedLayout(), sections: [...defaultFeedLayout().sections, dressCode] };
@@ -129,7 +144,7 @@ describe('planFeedWallSwitch', () => {
     });
 
     it("keeps a Save my date block, shown, in a new block's look", () => {
-        const dressCode = styled('dressCode', '#666666');
+        const dressCode = withBackground('dressCode', { kind: 'theme', slot: 'top' });
         const current = themeDocument([...defaultFeedLayout().sections, dressCode]);
         const next = planFeedWallSwitch(current, wallThemeDesign(null), 'WEDDING', new Set());
         const kept = byType(next, 'dressCode');

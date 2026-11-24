@@ -6,6 +6,9 @@ import type { InvitationDocument } from '@/lib/invitation/document';
 // A wall preset picked in edit mode, written to the event on Save. presetId null: "No theme".
 export type HeldWall = { presetId: string | null; theme: EventThemeDto | null };
 
+// A wall preset as picked. applied: it is the one already on the event, so nothing is held for it.
+export type WallPick = HeldWall & { applied: boolean };
+
 // The event theme a preset would apply, for drawing it before it is saved.
 export function presetAsEventTheme(preset: ThemePresetDto): EventThemeDto {
     return {

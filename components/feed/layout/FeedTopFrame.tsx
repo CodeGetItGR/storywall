@@ -22,7 +22,7 @@ export type FeedTopProps = {
     rsvp: ReactNode | null;
     // What a feed module block draws (plan 7c). Without it, module blocks draw nothing.
     moduleBlock?: (section: InvitationSection) => ReactNode;
-    // Edit mode's "+ Add section" rows (plan 7c): above the first host block, after each one; with none, one row (null).
+    // Edit mode's "+ Add section" rows (plan 7c): one after each host block; with none, one row (null).
     between?: (place: FeedAddPlace) => ReactNode;
     // Draws one of Feed mode's sections (FeedModeSection), given by the page.
     feedSection?: (section: InvitationSection) => ReactNode;
@@ -79,10 +79,9 @@ export function FeedTopFrame({
         return parts.invitation(section);
     };
     const options = { rsvpMoves: view.rsvpMoves };
-    const firstHost = between ? frame.middle.find((section) => isHostBlock(section, options)) : undefined;
+    const hasHostBlocks = frame.middle.some((section) => isHostBlock(section, options));
     const middle = frame.middle.map((section) => (
         <Fragment key={section.id}>
-            {section === firstHost && between?.({ before: section.id })}
             {drawMiddle(section)}
             {between && isHostBlock(section, options) && between({ after: section.id })}
         </Fragment>
@@ -117,7 +116,7 @@ export function FeedTopFrame({
 
             {/* Invitation sections */}
             {invitation && middle}
-            {invitation && between && !firstHost && between(null)}
+            {invitation && between && !hasHostBlocks && between(null)}
 
             {/* RSVP */}
             {invitation && frame.rsvp && rsvp && parts.block(frame.rsvp, rsvp)}

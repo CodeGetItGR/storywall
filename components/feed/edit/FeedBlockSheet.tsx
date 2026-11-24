@@ -7,6 +7,7 @@ import { useCallback } from 'react';
 import { FeedEditSheetFrame } from '@/components/feed/edit/FeedEditSheetFrame';
 import { FeedPinnedField } from '@/components/feed/edit/FeedPinnedField';
 import { FeedPromptField } from '@/components/feed/edit/FeedPromptField';
+import { type FeedSectionContent, FeedSectionContentFields } from '@/components/feed/edit/FeedSectionContentFields';
 import { SectionSettingsPanel } from '@/components/saveMyDate/editor/settings/SectionSettingsPanel';
 import { SettingsToggle } from '@/components/saveMyDate/editor/settings/SettingsControls';
 import type { SettingsScope } from '@/hooks/useSectionSettingsPanel';
@@ -33,6 +34,8 @@ type FeedBlockSheetProps = {
     pinned: readonly PinnedPhoto[] | null;
     pinnedUploading: boolean;
     media: MediaResolver;
+    // A Save my date section's photo, text colour and background; null on every other block.
+    content?: FeedSectionContent | null;
     onAddPinned: (file: File) => void;
     onRemovePinned: (photoId: string) => void;
     onMovePinned: (activeId: string, overId: string) => void;
@@ -57,6 +60,7 @@ export function FeedBlockSheet({
     pinned,
     pinnedUploading,
     media,
+    content = null,
     onAddPinned,
     onRemovePinned,
     onMovePinned,
@@ -80,6 +84,9 @@ export function FeedBlockSheet({
                     onMove={onMovePinned}
                 />
             )}
+
+            {/* Photo, text colour and background */}
+            {content && <FeedSectionContentFields {...content} />}
 
             {/* Event details */}
             {parts.length > 0 && (

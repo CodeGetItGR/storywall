@@ -43,18 +43,19 @@ export type FeedTopView = {
     backdrop: FeedPageBackdrop | null;
 };
 
-// What edit mode draws: the document being edited and the theme it shows (a held pick included).
-export type FeedTopEditing = { document: InvitationDocument; theme: ThemeDesign; media: MediaResolver };
+// What edit mode draws: the document being edited and the theme it shows (a held pick included). asGuest: only the
+// blocks guests will see.
+export type FeedTopEditing = { document: InvitationDocument; theme: ThemeDesign; media: MediaResolver; asGuest?: boolean };
 
 // Everything the top of the feed draws, from the saved layout or the default one. While editing,
-// it draws the edit session: every block, hidden ones too, in the held theme. Without Save my date its sections
+// it draws the edit session: every block, hidden ones too (unless it previews as a guest), in the held theme. Without Save my date its sections
 // stay saved but don't draw, in edit mode too, and edit mode changes only the feed sections: the rest draws as on the feed.
 export function useFeedTop(event: EventDetailResponseDto, editing?: FeedTopEditing): FeedTopView {
     const enabled = useFeedEditorEnabled();
     const locale = useLocale();
     const layout = useFeedLayout(event, { enabled });
     const saveMyDate = isModuleAvailable(event.modules, SAVE_MY_DATE_MODULE_KEY);
-    const isEditing = editing !== undefined;
+    const isEditing = editing !== undefined && !editing.asGuest;
     const whole = editing?.document ?? layout.document;
     const document = useMemo(() => (saveMyDate ? whole : withoutSaveMyDateSections(whole)), [saveMyDate, whole]);
     const theme = editing?.theme ?? layout.theme;
@@ -73,6 +74,7 @@ export function useFeedTop(event: EventDetailResponseDto, editing?: FeedTopEditi
             ...buildRenderContext(document, theme, media),
             labels: INVITATION_LABELS[locale === 'en' ? 'en' : 'el'],
             pageBackdrop: backdrop !== null,
+            ownBackgrounds: true,
             centerText: true,
         }),
         [document, theme, media, locale, backdrop],

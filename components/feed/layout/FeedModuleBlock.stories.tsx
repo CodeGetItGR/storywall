@@ -32,14 +32,19 @@ export const Gone: Story = { args: { available: false } };
 
 const section = feedModuleSection('playlist', () => 'module');
 const controls = { canHide: true, canDelete: true, movable: true, canMoveUp: true, canMoveDown: true };
-const actions = { onToggleVisible: fn(), onDelete: fn(), onOpenSettings: fn() };
+const actions = {
+    onToggleVisible: fn(),
+    onDelete: fn(),
+    onOpenSettings: fn(),
+    onMenuOpenChange: fn(),
+};
 
 function EditModeBlock({ visible, ...args }: ComponentProps<typeof FeedModuleBlock> & { visible: boolean }) {
     return (
         <DndContext>
             <SortableContext items={['module']}>
                 <FeedEditBlock section={{ ...section, visible }} name="Playlist" controls={controls} hasSettings={false} actions={actions}>
-                    <FeedModuleBlock {...args} />
+                    <FeedModuleBlock {...args} underTools />
                 </FeedEditBlock>
             </SortableContext>
         </DndContext>

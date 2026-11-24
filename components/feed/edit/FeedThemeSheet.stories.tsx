@@ -30,11 +30,13 @@ const INVITATION_THEMES: ThemeRadioOption[] = [
     selected: false,
 }));
 
+type ThemeSheetProps = { look: EventThemeDto | null; onWall: boolean; isDesktop: boolean; solidColor?: string };
+
 // The Theme sheet of an event without the theme module: "No theme" in the event's current wall look,
 // then the Save my date themes. `onWall`: the feed is on the wall look, so "No theme" is the current card.
-function ThemeSheet({ look, onWall, isDesktop }: { look: EventThemeDto | null; onWall: boolean; isDesktop: boolean }) {
+function ThemeSheet({ look, onWall, isDesktop, solidColor }: ThemeSheetProps) {
     const none = useNoThemeCard(look, onWall);
-    const options = [none, ...INVITATION_THEMES.map((theme, index) => ({ ...theme, selected: !onWall && index === 0 }))];
+    const options = [{ ...none, selected: none.selected && solidColor === undefined }, ...INVITATION_THEMES.map((theme, index) => ({ ...theme, selected: !onWall && index === 0 }))];
     return (
         <FeedThemeSheet
             open
@@ -43,10 +45,11 @@ function ThemeSheet({ look, onWall, isDesktop }: { look: EventThemeDto | null; o
             fontFaces=""
             hasInvitationThemes={false}
             disabled={false}
+            solidDisabled={false}
             previewTitle="Anna & Nikos"
-            background={undefined}
+            solidColor={solidColor}
             onSelect={fn()}
-            onBackground={fn()}
+            onSolidColor={fn()}
             onClose={fn()}
         />
     );
@@ -70,6 +73,11 @@ export const NoThemeUnselected: Story = { args: { onWall: false } };
 
 // An event with no wall theme at all: "No theme" is the plain look.
 export const NoThemePlain: Story = { args: { look: null } };
+
+// The feed in one colour: no card is the current one.
+export const SolidColor: Story = { args: { solidColor: '#AC9FC7' } };
+// A mixed colour too dark for the text.
+export const SolidColorMobile: Story = { args: { solidColor: '#7A3B2E', isDesktop: false }, globals: { viewport: { value: 'mobile' } } };
 
 // The phone sheet.
 export const NoThemeSelectedMobile: Story = { args: { isDesktop: false }, globals: { viewport: { value: 'mobile' } } };

@@ -32,6 +32,13 @@ describe('FeedModeSwitch', () => {
         expect(onSelect).toHaveBeenCalledExactlyOnceWith('feed');
     });
 
+    it('is 40 px tall, each half 32 px to look at and 40 px to tap', () => {
+        renderSwitch('invitation');
+        const half = screen.getByRole('button', { name: en.FeedLayout.invitation });
+        expect(half.parentElement).toHaveClass('h-10', 'p-1');
+        expect(half).toHaveClass('h-8', 'text-[13px]', 'before:-inset-y-1');
+    });
+
     it('names the second half Social Feed, in both languages', () => {
         expect(en.FeedLayout.socialFeed).toBe('Social Feed');
         expect(el.FeedLayout.socialFeed).toBe('Social Feed');

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { INK_COLOR, readableOnInk } from '@/lib/contrast';
+import { INK_COLOR, readableOnInk, readableOnInkText } from '@/lib/contrast';
 import { defaultFeedLayout, wallThemeDesign } from '@/lib/feedLayout';
 import type { InvitationElement } from '@/lib/invitation/elements';
 import {
@@ -275,6 +275,42 @@ describe('a feed page that draws the theme background itself', () => {
         expect(sectionBackground(auto, 2, ctx).hasThemeImage).toBe(true);
         expect(sectionBackground(pickedTop, 1, ctx).hasThemeImage).toBe(true);
         expect(sectionBackground(coloured, 1, ctx).style.background).toBe('#112233');
+    });
+});
+
+describe("a feed section's own background", () => {
+    const feedLook = { ...ctx, ownBackgrounds: true, pageBackdrop: true };
+    const withBackground = (background: InvitationSection['style']['background'], section: InvitationSection = blank) =>
+        ({ ...section, style: { ...section.style, background, textContrast: 'auto' } }) as InvitationSection;
+    const photo = withBackground({ kind: 'image', image: { source: 'media', mediaId: 'mine' } });
+
+    it('is drawn over the page, the backdrop and the feed colour', () => {
+        const coloured = withBackground({ kind: 'color', color: '#B5BFA6' });
+        for (const look of [feedLook, { ...feedLook, pageBackdrop: false, backgroundColor: '#FFEEDD' }]) {
+            expect(sectionBackground(coloured, 0, look).style).toEqual({ background: '#b5bfa6' });
+            expect(sectionBackground(photo, 0, look).style).toMatchObject({ backgroundImage: 'url("https://cdn.test/mine")', backgroundSize: 'cover' });
+            expect(sectionBackgroundPhotos(photo, 0, look)).toEqual({ desktop: 'https://cdn.test/mine', mobile: 'https://cdn.test/mine' });
+            expect(sectionBackgroundPhotos(coloured, 0, look)).toBeUndefined();
+        }
+    });
+
+    it('shows the page for a photo that cannot be found', () => {
+        expect(sectionBackground(photo, 0, { ...feedLook, media: () => undefined }).style).toEqual({ background: 'transparent' });
+    });
+
+    it('is drawn lighter when ink cannot be read on it, and the text gives way to ink', () => {
+        const navy = withBackground({ kind: 'color', color: '#1B2A4A' });
+        const { style, contrast } = sectionShell(navy, 0, { ...feedLook, textColor: '#FFFFFF' });
+        expect(style.background).toBe(readableOnInkText('#1b2a4a'));
+        expect(style.color).toBe(INK_COLOR);
+        expect(contrast).toBe('normal');
+    });
+
+    it('is for Save my date sections only, and only where the feed asks', () => {
+        const cover = withBackground({ kind: 'color', color: '#B5BFA6' }, defaultFeedLayout().sections[0]);
+        expect(sectionBackground(cover, 0, feedLook).style).toEqual({ background: 'transparent' });
+        const coloured = withBackground({ kind: 'color', color: '#B5BFA6' });
+        expect(sectionBackground(coloured, 0, { ...feedLook, ownBackgrounds: undefined }).style).toEqual({ background: 'transparent' });
     });
 });
 

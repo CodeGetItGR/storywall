@@ -64,10 +64,10 @@ describe('useFeedBlockActions', () => {
 
     it('puts what was picked at the row the list was opened from', () => {
         const { store, result } = setup();
-        act(() => result.current.openAdd('invitation', { before: 'feed-feedDescription' }));
+        act(() => result.current.openAdd('invitation', { after: 'feed-feedDescription' }));
         act(() => result.current.add('faq'));
         const types = store.getState().document.sections.map((section) => section.type);
-        expect(types.indexOf('faq')).toBe(types.indexOf('feedDescription') - 1);
+        expect(types.indexOf('faq')).toBe(types.indexOf('feedDescription') + 1);
     });
 
     it("adds a module's block from its tile, and RSVP's own block", () => {

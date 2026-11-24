@@ -40,5 +40,5 @@ export function useFeedEditPanels(
         openAddSection('feed');
     }, [closeOthers, openAddSection]);
 
-    return { themeOpen, openTheme, closeTheme, openSettings, openAdd, openAddFeed };
+    return { themeOpen, openTheme, closeTheme, openSettings, openAdd, openAddFeed, closeAll: closeOthers };
 }

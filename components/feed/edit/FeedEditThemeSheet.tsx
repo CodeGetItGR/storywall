@@ -19,10 +19,11 @@ export function FeedEditThemeSheet({ event, session, open, isDesktop, onClose }:
             fontFaces={grid.fontFaces}
             hasInvitationThemes={grid.hasInvitationThemes}
             disabled={grid.disabled}
+            solidDisabled={grid.solidDisabled}
             previewTitle={grid.previewTitle}
-            background={session.background}
+            solidColor={session.background}
             onSelect={grid.select}
-            onBackground={session.setBackground}
+            onSolidColor={grid.selectSolid}
             onClose={onClose}
         />
     );

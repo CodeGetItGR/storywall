@@ -2,12 +2,14 @@ import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 import { useQueryClient } from '@tanstack/react-query';
 import { http, HttpResponse } from 'msw';
 import { type ReactNode, useState } from 'react';
-import { fn } from 'storybook/test';
+import { fn, userEvent, within } from 'storybook/test';
 
 import { withAppContext } from '@/.storybook/appContext';
 import { copyFor } from '@/.storybook/copy';
 import { storyEvent, storyHostMember, storyModules, storyPhotos } from '@/.storybook/fixtures';
+import { waitForOpen } from '@/.storybook/waitForOpen';
 import { FeedEditTop } from '@/components/feed/edit/FeedEditTop';
+import { EventDescription } from '@/components/feed/EventDescription';
 import { EventInfo } from '@/components/feed/EventInfo';
 import { FeedCoverBlock } from '@/components/feed/layout/FeedCoverBlock';
 import type { EventDetailResponseDto, FeedLayoutDto } from '@/lib/api/types';
@@ -16,18 +18,13 @@ import { defaultFeedLayout, feedLayoutKeys } from '@/lib/feedLayout';
 import type { FeedPageMode } from '@/lib/feedMode';
 import { feedModuleSection } from '@/lib/feedModuleBlocks';
 import { createFeedModeSection } from '@/lib/feedSections';
+import { createSection } from '@/lib/invitation/newSection';
 import { SAMPLE_SECTIONS } from '@/lib/invitation/samples';
 import type { InvitationSection } from '@/lib/invitation/sections';
-import { cn } from '@/lib/utils';
 import { FeedEditorFlagProvider } from '@/providers/FeedEditorFlagProvider';
 
 // Stand-ins for today's feed blocks; their own stories cover how they look.
-const Box = ({ label, className }: { label: string; className?: string }) => (
-    <div className={cn('mx-4 my-3 rounded-xl bg-surface-muted p-4 text-sm text-ink', className)}>{label}</div>
-);
-
-// Clear of the block's tools.
-const UNDER_TOOLS = 'py-12 text-center';
+const Box = ({ label }: { label: string }) => <div className="mx-4 my-3 rounded-xl bg-surface-muted p-4 text-sm text-ink">{label}</div>;
 
 const PHOTOS: Record<string, string> = {
     florals: '/images/post-florals.png',
@@ -45,14 +42,14 @@ const sectionsWith = (promptText: string): InvitationSection[] => [
 ];
 
 // The saved layout, already in the cache when edit mode opens.
-function Saved({ event, sections, children }: { event: EventDetailResponseDto; sections: InvitationSection[]; children: ReactNode }) {
+function Saved({ event, sections, sectionsFirst, children }: Pick<EditArgs, 'event' | 'sections' | 'sectionsFirst'> & { children: ReactNode }) {
     const queryClient = useQueryClient();
     useState(() => {
         const base = defaultFeedLayout();
         const layout: FeedLayoutDto = {
             themeSlug: null,
             revision: 1,
-            document: { ...base, sections: [...base.sections, ...sections] },
+            document: { ...base, sections: sectionsFirst ? [base.sections[0], ...sections, ...base.sections.slice(1)] : [...base.sections, ...sections] },
             design: null,
             imageUrls: PHOTOS,
             updatedAt: '2026-06-01T10:00:00Z',
@@ -63,21 +60,30 @@ function Saved({ event, sections, children }: { event: EventDetailResponseDto; s
     return <FeedEditorFlagProvider enabled>{children}</FeedEditorFlagProvider>;
 }
 
-type EditArgs = { event: EventDetailResponseDto; sections: InvitationSection[]; mode: FeedPageMode; scope: FeedEditScope };
+type EditArgs = {
+    event: EventDetailResponseDto;
+    sections: InvitationSection[];
+    // The sections come right after the cover, above the feed's own blocks.
+    sectionsFirst?: boolean;
+    mode: FeedPageMode;
+    scope: FeedEditScope;
+};
 
-function EditStory({ event, sections, mode, scope }: EditArgs) {
+function EditStory({ event, sections, sectionsFirst, mode, scope }: EditArgs) {
     return (
-        <Saved event={event} sections={sections}>
+        <Saved event={event} sections={sections} sectionsFirst={sectionsFirst}>
             <FeedEditTop
                 event={event}
                 mode={mode}
                 scope={scope}
+                guest={{ cover: <FeedCoverBlock event={event} isHost={false} wishlist={false} />, rsvp: <Box label="RSVP" /> }}
                 onDone={fn()}
                 cover={<FeedCoverBlock event={event} isHost wishlist={false} editing />}
                 dateRow={<EventInfo date={Date.UTC(2026, 6, 4)} place="Rhodes" className="mt-3 w-full px-4" />}
                 stories={<Box label="Stories" />}
-                description={<Box label="Description" className={mode === 'invitation' ? UNDER_TOOLS : undefined} />}
-                rsvp={<Box label="RSVP" className={mode === 'invitation' ? UNDER_TOOLS : undefined} />}
+                description={<EventDescription eventId={event.id} description={event.description ?? ''} keepShown />}
+                // In Invitation mode it has tools: none here, so it is drawn by its name.
+                rsvp={mode === 'invitation' ? null : <Box label="RSVP" />}
             />
         </Saved>
     );
@@ -127,6 +133,48 @@ export const InvitationMode: Story = {
     parameters: { app: { event: withModules, member: storyHostMember } },
 };
 
+// A section with nothing in it yet is barely taller than its tools: they keep off Add section and the description's own.
+export const InvitationModeShortSection: Story = {
+    args: {
+        mode: 'invitation',
+        sections: [{ ...createSection('gallery', 'WEDDING', () => 'gallery'), data: { title: '', images: [], layout: 'grid', shape: 'roundedSquare' } } as InvitationSection],
+        sectionsFirst: true,
+    },
+};
+
+// The same, its dropdown open.
+export const InvitationModeShortSectionMenu: Story = {
+    ...InvitationModeShortSection,
+    play: async ({ canvasElement, globals }) => {
+        const { options } = copyFor(globals).InvitationEditor.sections;
+        await userEvent.click((await within(canvasElement).findAllByRole('button', { name: options }))[0]);
+        await waitForOpen('menu');
+    },
+};
+
+// Save my date sections start below their tools, a full-width photo too.
+export const InvitationModeSections: Story = {
+    args: {
+        mode: 'invitation',
+        sections: [
+            SAMPLE_SECTIONS.coupleNames,
+            { ...SAMPLE_SECTIONS.photo, data: { photo: { source: 'media', mediaId: 'florals' }, imageY: 50 } },
+            SAMPLE_SECTIONS.footer,
+        ] as InvitationSection[],
+    },
+};
+
+// A description starts below its eye and name.
+export const InvitationModeDescription: Story = {
+    args: {
+        mode: 'invitation',
+        event: storyEvent({
+            modules: withSaveMyDate.modules,
+            description: 'Join us for a summer wedding by the sea. Dinner starts at sunset, and the dancing goes on until the morning boat.',
+        }),
+    },
+};
+
 const withoutSaveMyDate = storyEvent({ modules: storyModules(['posts', 'stories', 'rsvp']) });
 
 // A cover photo, at 360 px.
@@ -150,6 +198,17 @@ export const WithoutSaveMyDate: Story = {
     render: (args, { globals }) => (
         <EditStory {...args} sections={[sectionsWith(copyFor(globals).FeedSections.prompt.placeholder)[1], createFeedModeSection('feedPinned')]} />
     ),
+};
+
+// The eye: as guests will see it, the hidden section gone with the tools.
+export const Preview: Story = {
+    render: (args, { globals }) => {
+        const [schedule, prompt, pinned] = sectionsWith(copyFor(globals).FeedSections.prompt.placeholder);
+        return <EditStory {...args} sections={[schedule, { ...prompt, visible: false }, pinned]} />;
+    },
+    play: async ({ canvasElement, globals }) => {
+        await userEvent.click(await within(canvasElement).findByRole('button', { name: copyFor(globals).InvitationEditor.preview }));
+    },
 };
 
 // Just added: nothing to show yet, so each one is drawn by its name.

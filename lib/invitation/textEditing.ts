@@ -316,13 +316,17 @@ function uniqueBy<T>(values: T[], key: (value: T) => string): T[] {
 
 const HEX = /^#[0-9a-f]{6}$/i;
 
+// The theme's own colours.
+export function themeColors({ colors }: Pick<ThemeDesign, 'colors'>): string[] {
+    return [colors.primary, colors.secondary, colors.text].filter((color) => HEX.test(color));
+}
+
 // The theme's colours, the ones already used in the invitation, then the old editor's own.
 export function textColorSwatches(document: InvitationDocument, theme: ThemeDesign): string[] {
     const used = [document.overrides.textColor, ...allTextStyles(document).map((style) => style.color)]
         .filter((color): color is string => Boolean(color && HEX.test(color)))
         .slice(0, RECENT_LIMIT);
-    const themeColors = [theme.colors.primary, theme.colors.secondary, theme.colors.text].filter((color) => HEX.test(color));
-    return uniqueBy([...themeColors, ...used, ...BASE_TEXT_COLORS], (color) => color.toLowerCase());
+    return uniqueBy([...themeColors(theme), ...used, ...BASE_TEXT_COLORS], (color) => color.toLowerCase());
 }
 
 export function fontLabel(value: string): string {

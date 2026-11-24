@@ -48,7 +48,6 @@ describe('FeedTopFrame', () => {
             'cover',
             'pill',
             'edit row',
-            '{"before":"feed-feedDescription"}',
             'description',
             '{"after":"feed-feedDescription"}',
             'rsvp',
@@ -64,7 +63,6 @@ describe('FeedTopFrame', () => {
             'cover',
             'edit row',
             'stories',
-            '{"before":"feed-feedDescription"}',
             'description',
             '{"after":"feed-feedDescription"}',
             'rsvp',
@@ -120,7 +118,6 @@ describe('FeedTopFrame', () => {
         );
         expect(Array.from(container.querySelectorAll('span, i'), (node) => node.textContent)).toEqual([
             'cover',
-            '{"before":"a"}',
             'a',
             '{"after":"a"}',
             'b',

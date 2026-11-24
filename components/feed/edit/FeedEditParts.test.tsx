@@ -72,7 +72,7 @@ describe('FeedBlockSheet', () => {
 
 describe('FeedEditRow', () => {
     it('shows the save error under the row only after a failed save', () => {
-        const props = { saving: false, onCancel: vi.fn(), onSave: vi.fn() };
+        const props = { saving: false, previewing: false, onPreview: vi.fn(), onCancel: vi.fn(), onSave: vi.fn() };
         const { rerender } = renderIn(<FeedEditRow {...props} failed={false} />);
         expect(screen.queryByRole('alert')).toBeNull();
 

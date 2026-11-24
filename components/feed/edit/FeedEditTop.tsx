@@ -11,11 +11,11 @@ import { FeedAddSectionSheet } from '@/components/feed/edit/FeedAddSectionSheet'
 import { FeedBlockPlaceholder } from '@/components/feed/edit/FeedBlockPlaceholder';
 import { FeedBlockSheet } from '@/components/feed/edit/FeedBlockSheet';
 import { FeedEditBlock } from '@/components/feed/edit/FeedEditBlock';
-import { FeedEditBlockButtons } from '@/components/feed/edit/FeedEditBlockButtons';
 import { FeedEditInvitationSection } from '@/components/feed/edit/FeedEditInvitationSection';
 import { FeedEditRow } from '@/components/feed/edit/FeedEditRow';
 import { FeedEditThemeSheet } from '@/components/feed/edit/FeedEditThemeSheet';
 import { FeedPremiumTiles } from '@/components/feed/edit/FeedPremiumTiles';
+import { feedPreviewParts } from '@/components/feed/edit/feedPreviewParts';
 import { FeedLook, FeedNative } from '@/components/feed/layout/FeedLook';
 import { feedLookParts } from '@/components/feed/layout/FeedLookTop';
 import { FeedTopFrame, type FeedTopParts, type FeedTopProps, PLAIN_PARTS } from '@/components/feed/layout/FeedTopFrame';
@@ -30,14 +30,18 @@ import type { FeedBlockToolActions } from '@/hooks/useFeedBlockHandlers';
 import { useFeedBlockSheet } from '@/hooks/useFeedBlockSheet';
 import { useFeedEditBlockTools } from '@/hooks/useFeedEditBlockTools';
 import { useFeedEditPanels } from '@/hooks/useFeedEditPanels';
+import { useFeedEditPreview } from '@/hooks/useFeedEditPreview';
 import { useFeedEditSectionPart } from '@/hooks/useFeedEditSectionPart';
 import { useFeedEditSession } from '@/hooks/useFeedEditSession';
 import { useFeedInvitationAddItems } from '@/hooks/useFeedInvitationAddItems';
 import { useFeedModeAddItems } from '@/hooks/useFeedModeAddItems';
 import { useFeedModuleBlockPart } from '@/hooks/useFeedModuleBlockPart';
 import { useFeedModuleTiles } from '@/hooks/useFeedModuleTiles';
+import { useFeedOpenMenu } from '@/hooks/useFeedOpenMenu';
 import { useEditPageTheme } from '@/hooks/useFeedPageTheme';
+import { useFeedSectionContent } from '@/hooks/useFeedSectionContent';
 import { useFeedSectionName } from '@/hooks/useFeedSectionName';
+import { useFeedSectionPart } from '@/hooks/useFeedSectionPart';
 import { useFeedSectionPreviews } from '@/hooks/useFeedSectionPreviews';
 import { useFeedTextPresets } from '@/hooks/useFeedTextPresets';
 import { useFeedTop } from '@/hooks/useFeedTop';
@@ -45,32 +49,37 @@ import { useFeedUploadedMedia } from '@/hooks/useFeedUploadedMedia';
 import { useSectionDrag } from '@/hooks/useSectionDrag';
 import { useSettingsPreview } from '@/hooks/useSettingsPreview';
 import type { EventDetailResponseDto } from '@/lib/api/types';
-import { blockTextColor } from '@/lib/feedBlockEdits';
 import { draggableFeedBlocks, type FeedAddPlace, feedBlockControls, type FeedEditScope } from '@/lib/feedEditing';
 import { moduleOfBlock } from '@/lib/feedModuleBlocks';
 import { feedImageUploader } from '@/lib/invitation/editorUploads';
-import { type InvitationSection, isFeedModeSectionType, isSaveMyDateSectionType } from '@/lib/invitation/sections';
+import { type InvitationSection, isFeedModeSectionType } from '@/lib/invitation/sections';
+import { themeColors } from '@/lib/invitation/textEditing';
 
 const MODIFIERS = [restrictToVerticalAxis];
 
-// scope: what may change (useFeedEditMode). cancelRef: the Cancel pill, which takes focus as edit mode opens.
-type FeedEditTopProps = Omit<FeedTopProps, 'view'> & {
+// The pieces a guest sees differently from the host editing.
+export type FeedGuestParts = Pick<FeedTopProps, 'cover' | 'rsvp'>;
+
+// scope: what may change (useFeedEditMode). guest: for the preview. cancelRef: the Cancel pill, which takes focus as
+// edit mode opens.
+type FeedEditTopProps = Omit<FeedTopProps, 'view' | 'modeSwitch'> & {
     event: EventDetailResponseDto;
     scope: FeedEditScope;
+    guest: FeedGuestParts;
     onDone: () => void;
     cancelRef?: Ref<HTMLButtonElement>;
 };
 
 // The top of the feed in edit mode: the same frame as the feed, Theme / Cancel / Save under the cover, every block
 // with its tools, Save my date text typed in place, the Add section rows around the host's blocks, and the Theme sheet. All
-// held until Save. Without Save my date only Feed mode's sections have tools: the rest draws as on the feed.
+// held until Save. Its eye shows it all as guests will see it, without the tools. Without Save my date only Feed mode's sections have tools: the rest draws as on the feed.
 export function FeedEditTop({
     event,
     scope,
+    guest,
     onDone,
     cancelRef,
     mode = 'single',
-    modeSwitch,
     dateRow,
     cover,
     stories,
@@ -80,12 +89,13 @@ export function FeedEditTop({
     const t = useTranslations('InvitationEditor');
     const feedOnly = scope === 'feedSections';
     const { blockName } = useFeedSectionName(event.eventType);
-    const moduleBlock = useFeedModuleBlockPart(event);
     const session = useFeedEditSession(event, onDone);
     // The saved layout's photos plus the ones the host uploads while editing.
     const uploads = useFeedUploadedMedia(session.media);
     const sheetUploads = useMemo(() => ({ uploadImage: feedImageUploader(event.id), remember: uploads.remember }), [event.id, uploads.remember]);
-    const view = useFeedTop(event, { document: session.document, theme: session.theme, media: uploads.media });
+    const { previewing, toggle: togglePreview } = useFeedEditPreview();
+    const moduleBlock = useFeedModuleBlockPart(event, !previewing);
+    const view = useFeedTop(event, { document: session.document, theme: session.theme, media: uploads.media, asGuest: previewing });
     useEditPageTheme(event.id, session.wallTheme, session.background, view.backdrop);
     const fonts = useInvitationFonts(true);
     const textPresets = useFeedTextPresets(fonts.data);
@@ -118,17 +128,31 @@ export function FeedEditTop({
         ctx: view.ctx,
         remember: uploads.remember,
     });
+    const ownColors = useMemo(() => themeColors(session.theme), [session.theme]);
+    const content = useFeedSectionContent(sheet.section, view.ctx, ownColors, blockTools);
+    const menu = useFeedOpenMenu();
+    // The preview hides every tool, so whatever is open closes first.
+    const { closeAll } = panels;
+    const { close: closeMenu } = menu;
+    const onPreview = useCallback(() => {
+        closeAll();
+        closeMenu();
+        togglePreview();
+    }, [closeAll, closeMenu, togglePreview]);
 
     const tools: FeedBlockToolActions = {
         onToggleVisible: actions.toggleVisible,
         onDelete: actions.askDelete,
         onOpenSettings: panels.openSettings,
+        onMenuOpenChange: menu.setOpen,
     };
     const editRow = (
         <FeedEditRow
             saving={session.saving}
             failed={session.failed}
             onTheme={feedOnly ? undefined : panels.openTheme}
+            previewing={previewing}
+            onPreview={onPreview}
             onCancel={session.cancel}
             onSave={session.save}
             cancelRef={cancelRef}
@@ -145,22 +169,13 @@ export function FeedEditTop({
             hasSettings={!moduleOfBlock(section) && sheet.hasSettings(section)}
             actions={tools}
             active={sheet.section?.id === section.id}
-            buttons={
-                isSaveMyDateSectionType(section.type) && (
-                    <FeedEditBlockButtons
-                        sectionId={section.id}
-                        color={blockTextColor(section, view.ctx)}
-                        uploading={blockTools.uploadingId === section.id}
-                        onPhoto={blockTools.addPhoto}
-                        onColor={blockTools.setColor}
-                    />
-                )
-            }
+            menuOpen={menu.openId === section.id}
+            uploading={blockTools.uploadingId === section.id}
         >
             {node}
         </FeedEditBlock>
     );
-    // "+ Add section" above, between and after the host's blocks; none at the section limit.
+    // "+ Add section" after each of the host's blocks; none at the section limit.
     const { openAdd } = panels;
     const addRow = useCallback(
         (place: FeedAddPlace) => (
@@ -171,22 +186,21 @@ export function FeedEditTop({
         [openAdd],
     );
     const base = view.look ? feedLookParts(view) : PLAIN_PARTS;
-    const parts: FeedTopParts = {
+    const editParts: FeedTopParts = {
         // The feed's own blocks are set on the event, not typed here: their content takes no taps.
         block: (section, content) => {
             const block = base.block(section, <div inert>{content}</div>);
             return feedOnly ? block : wrap(section, block);
         },
         native: base.native,
-        // Feed mode's sections draw their live content; a tap opens their settings, as on every block. A short one sits
-        // at the bottom of a box as tall as its three stacked tools (12 + 3 × 32 + 2 × 8, and 4 px of tap area), so they
-        // never cover the next section's, and starts below its eye and name.
+        // Feed mode's sections draw their live content; a tap opens their settings, as on every block. It starts
+        // well below the section's tools.
         feed: (section, content) =>
             wrap(
                 section,
                 base.feed(
                     section,
-                    <div inert className="flex min-h-32 flex-col justify-end pt-10">
+                    <div inert className="pt-15">
                         {content}
                     </div>,
                 ),
@@ -203,18 +217,29 @@ export function FeedEditTop({
             ),
     };
 
+    const guestFeedSection = useFeedSectionPart(event, uploads.media);
+    // The description starts 24 px down on the feed and a placeholder 12: the rest is room for their tools (FEED_TOOLS_ROOM).
+    const placeholder = (name: string) => (
+        <div className="pt-15">
+            <FeedBlockPlaceholder name={name} />
+        </div>
+    );
+    const editedDescription = description ? <div className="pt-12">{description}</div> : placeholder(t('sectionNames.feedDescription'));
+    const shownDescription = feedOnly ? description : editedDescription;
+
+    const guestPieces: Partial<FeedTopProps> = { ...guest, description, feedSection: guestFeedSection, between: undefined, afterFeed: undefined };
+
     const frame = (
         <FeedTopFrame
             view={view}
             mode={mode}
-            modeSwitch={modeSwitch}
             editRow={editRow}
             dateRow={dateRow}
-            parts={parts}
+            parts={previewing ? feedPreviewParts(base) : editParts}
             cover={cover}
             stories={stories}
-            description={description || (!feedOnly && <FeedBlockPlaceholder name={t('sectionNames.feedDescription')} />)}
-            rsvp={rsvp ?? (feedOnly ? null : <FeedBlockPlaceholder name={t('sectionNames.feedRsvp')} />)}
+            description={shownDescription}
+            rsvp={rsvp ?? (feedOnly ? null : placeholder(t('sectionNames.feedRsvp')))}
             moduleBlock={moduleBlock}
             between={actions.showAdd && !feedOnly ? addRow : undefined}
             feedSection={feedSection}
@@ -225,6 +250,7 @@ export function FeedEditTop({
                     </FeedNative>
                 )
             }
+            {...(previewing ? guestPieces : undefined)}
         />
     );
 
@@ -237,6 +263,7 @@ export function FeedEditTop({
             variant="feed"
             presets={textPresets.presets}
             onLinkAdded={panels.openSettings}
+            paused={previewing}
         >
             {/* The uploaded fonts the Style presets name */}
             {textPresets.fontFaces && <style>{textPresets.fontFaces}</style>}
@@ -247,6 +274,7 @@ export function FeedEditTop({
                 collisionDetection={closestCenter}
                 modifiers={MODIFIERS}
                 accessibility={drag.accessibility}
+                onDragStart={menu.close}
                 onDragEnd={drag.onDragEnd}
             >
                 <SortableContext items={sortableIds} strategy={verticalListSortingStrategy}>
@@ -279,6 +307,7 @@ export function FeedEditTop({
                 pinned={sheet.pinned}
                 pinnedUploading={sheet.pinnedUploading}
                 media={uploads.media}
+                content={content}
                 onAddPinned={sheet.addPinned}
                 onRemovePinned={sheet.removePinned}
                 onMovePinned={sheet.movePinned}
