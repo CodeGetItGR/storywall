@@ -98,7 +98,9 @@ export function FeedBlockSheet({
             )}
 
             {/* Who sees it */}
-            {membersOnly !== null && <SettingsToggle label={t('membersOnly')} checked={membersOnly} onChange={onMembersOnly} />}
+            {membersOnly !== null && (
+                <SettingsToggle label={t('membersOnly')} hint={t('membersOnlyNote')} checked={membersOnly} onChange={onMembersOnly} />
+            )}
 
             {/* Style */}
             {scope && groups.length > 0 && <SectionSettingsPanel scope={scope} groups={groups} />}
