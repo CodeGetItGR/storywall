@@ -58,21 +58,26 @@ function keepOwnBackgrounds(current: InvitationDocument, themeImageIds: Readonly
         withStyle(section, { ...section.style, background: own.get(section.id) ?? background });
 }
 
+// Feed mode's sections and the module blocks: the app's own look, whatever the theme.
+function takesNoTheme(section: InvitationSection): boolean {
+    return isFeedModeSectionType(section.type) || section.type === 'feedModule';
+}
+
 // The layout on a Save my date theme. The theme's own invitation has no feed blocks, so they are
 // added to it with their borrowed looks; then the editor's switch restyles every block the host has,
 // and hides the Save my date blocks the theme has no kind for.
 // On the feed the theme's background covers the whole page, so every block then sits on it
 // ("auto"): the theme's own sections pick top or content images, which would draw seams between
 // blocks. Only a colour or photo the host gave a section of their own stays with it.
-// Feed mode's sections take no theme: they stay shown, in the plain feed style.
+// Feed mode's sections and the module blocks take no theme: they stay shown, in the plain feed style.
 export function planFeedThemeSwitch(current: InvitationDocument, target: ThemeSwitchTarget, oldThemeImageIds: ReadonlySet<string>): InvitationDocument {
     const feedBlocks = defaultFeedLayout().sections.map((section) => withStyle(section, borrowedStyle(section.type as FeedSectionType, target.document)));
-    const feedMode = current.sections.filter((section) => isFeedModeSectionType(section.type)).map((section) => withStyle(section, PLAIN_FEED_STYLE));
-    const document = { ...target.document, sections: [...target.document.sections, ...feedBlocks, ...feedMode] };
+    const plain = current.sections.filter(takesNoTheme).map((section) => withStyle(section, PLAIN_FEED_STYLE));
+    const document = { ...target.document, sections: [...target.document.sections, ...feedBlocks, ...plain] };
     const switched = planThemeSwitch(current, { ...target, document }, oldThemeImageIds).document;
     const keepOwn = keepOwnBackgrounds(current, oldThemeImageIds);
     const onPage = (section: InvitationSection) =>
-        isFeedModeSectionType(section.type) ? section : keepOwn(section, PAGE_BACKGROUND);
+        takesNoTheme(section) ? section : keepOwn(section, PAGE_BACKGROUND);
     return { ...switched, sections: switched.sections.map(onPage) };
 }
 

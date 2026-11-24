@@ -26,6 +26,11 @@ export function feedModuleToolHref(eventId: string, module: FeedModuleKey): stri
     return TOOL[module](eventId);
 }
 
+// The Schedule tool on its edit view, for the hosts' card on a schedule with no sessions.
+export function feedScheduleEditorHref(eventId: string): string {
+    return routes.events.tools.schedule(eventId, { section: 'schedule' });
+}
+
 export function moduleOfBlock(section: Pick<InvitationSection, 'type' | 'data'>): FeedModuleKey | null {
     return section.type === 'feedModule' ? (section.data as { module: FeedModuleKey }).module : null;
 }
