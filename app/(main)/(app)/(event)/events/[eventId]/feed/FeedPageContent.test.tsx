@@ -95,7 +95,7 @@ vi.mock('@/components/feed/HeOrShePromptCard', () => ({ HeOrShePromptCard: () =>
 vi.mock('@/components/feed/sections/FeedHeOrSheSection', () => ({ FeedHeOrSheSection: () => <span>section card</span> }));
 vi.mock('@/providers/composer/ComposerContext', async (importOriginal) => ({
     ...(await importOriginal<typeof import('@/providers/composer/ComposerContext')>()),
-    useComposer: () => ({ openPostComposer: vi.fn(), canComposePost: true }),
+    useComposer: () => ({ openPostComposer: vi.fn(), openPostWithFiles: vi.fn(), canComposePost: true }),
 }));
 vi.mock('@/components/feed/quickActions/FeedQuickActions', () => ({ FeedQuickActions: () => null }));
 

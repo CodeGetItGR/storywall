@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 import { http, HttpResponse } from 'msw';
+import type { CSSProperties } from 'react';
 import { expect, userEvent, within } from 'storybook/test';
 
 import { withAppContext } from '@/.storybook/appContext';
@@ -9,8 +10,11 @@ import { waitForOpen } from '@/.storybook/waitForOpen';
 import { FeedBlockPlaceholder } from '@/components/feed/edit/FeedBlockPlaceholder';
 import { FeedModeSection } from '@/components/feed/sections/FeedModeSection';
 import type { EventDetailResponseDto, EventSessionResponseDto, HeOrSheViewDto } from '@/lib/api/types';
+import { eventThemeStyle } from '@/lib/eventTheme';
+import { feedPageTheme } from '@/lib/feedPageTheme';
 import { createFeedModeSection } from '@/lib/feedSections';
 import type { InvitationSection } from '@/lib/invitation/sections';
+import { pageToneProps, pageToneStyle } from '@/lib/pageTone';
 
 function eventWith(sessions: EventSessionResponseDto[]): EventDetailResponseDto {
     const event = storyEvent({ sessions });
@@ -163,14 +167,56 @@ export const PhotoPrompt: Story = {
 
 export const PhotoPromptMobile: Story = { ...PhotoPrompt, globals: { viewport: { value: 'mobile' } } };
 
-// A viewer who can't post sees the line without the plus.
-export const PhotoPromptReadOnly: Story = {
+// A line at the length limit, with a word too long for one row.
+export const PhotoPromptLong: Story = {
+    render: (args) => <FeedModeSection {...args} section={prompt(`Show us your best dance move ${'a'.repeat(51)}`)} />,
+};
+
+// Guests who can't post: no section and no gap.
+export const PhotoPromptCantPost: Story = {
     ...PhotoPrompt,
+    tags: ['visual-skip'],
     parameters: { app: { composer: { canComposePost: false } } },
     play: async ({ canvasElement }) => {
         await expect(within(canvasElement).queryByRole('button')).toBeNull();
     },
 };
+
+// The host editing while nobody can post yet, as on a draft event.
+export const PhotoPromptInEditor: Story = {
+    tags: ['visual-skip'],
+    parameters: { app: { composer: { canComposePost: false } } },
+    render: (args, { globals }) => <FeedModeSection {...args} section={prompt(copyFor(globals).FeedSections.prompt.placeholder)} inEditor />,
+    play: async ({ canvasElement }) => {
+        await expect(await within(canvasElement).findByRole('button')).toBeVisible();
+    },
+};
+
+// On an event theme's page: its colour behind the slot, and the cards' colour in it.
+const promptOn = (color: string): Story => ({
+    ...PhotoPrompt,
+    decorators: [
+        (Story) => {
+            const { cardColor, tone } = feedPageTheme(null, color, null);
+            return (
+                <div
+                    data-event-scope=""
+                    {...pageToneProps(tone)}
+                    style={{ ...eventThemeStyle(color, { cardColor, toned: Boolean(tone) }), ...pageToneStyle(tone) } as CSSProperties}
+                    className="bg-event py-4"
+                >
+                    <Story />
+                </div>
+            );
+        },
+    ],
+});
+
+export const PhotoPromptLightTheme: Story = { ...promptOn('#DFE9E4') };
+
+export const PhotoPromptMiddleColor: Story = { ...promptOn('#FF7A59') };
+
+export const PhotoPromptDarkPage: Story = { ...promptOn('#1B2A4A') };
 
 export const PinnedPhotos: Story = { args: { section: pinned(['florals', 'cake', 'flowers']), opensPhotos: true } };
 

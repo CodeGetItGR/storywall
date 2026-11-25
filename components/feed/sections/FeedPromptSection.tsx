@@ -1,33 +1,39 @@
 'use client';
 
-import { Plus } from 'lucide-react';
+import Image from 'next/image';
+import { useTranslations } from 'next-intl';
 import type { ReactNode } from 'react';
 
-import { useComposer } from '@/providers/composer/ComposerContext';
+import { useFeedPhotoPrompt } from '@/hooks/useFeedPhotoPrompt';
 
-// The host's photo prompt: one line with a plus. Tapping it opens the post composer; posts aren't tagged with it.
-export function FeedPromptSection({ text, placeholder = null }: { text: string; placeholder?: ReactNode }) {
-    const { openPostComposer, canComposePost } = useComposer();
+type FeedPromptSectionProps = { text: string; placeholder?: ReactNode; inEditor?: boolean };
+
+// The host's photo prompt: a dashed photo slot. A tap picks photos, then opens the post composer with them; posts
+// aren't tagged with it. A viewer who can't post sees nothing, except the host in the editor.
+export function FeedPromptSection({ text, placeholder = null, inEditor = false }: FeedPromptSectionProps) {
+    const t = useTranslations('FeedEditor');
+    const { canPost, accept, inputRef, pick, onFiles } = useFeedPhotoPrompt();
     if (!text.trim()) return placeholder;
-
-    const line = <span className="min-w-0 flex-1 text-left text-sm font-medium wrap-break-word text-ink">{text}</span>;
+    if (!canPost && !inEditor) return null;
 
     return (
-        <div className="px-4 py-3 font-sans">
-            {canComposePost ? (
-                <button
-                    type="button"
-                    onClick={openPostComposer}
-                    className="flex w-full items-center gap-3 rounded-3xl border border-event-card-line bg-event-card px-4 py-3 focus-ring"
-                >
-                    {line}
-                    <span aria-hidden="true" className="flex size-8 shrink-0 items-center justify-center rounded-full bg-(image:--logo) text-white">
-                        <Plus className="size-4" />
-                    </span>
-                </button>
-            ) : (
-                <p className="flex w-full items-center rounded-3xl bg-event-card px-4 py-3">{line}</p>
-            )}
+        <div className="relative px-4 py-3 font-sans">
+            {/* Photo slot */}
+            <button
+                type="button"
+                onClick={pick}
+                className="flex w-full flex-col items-center gap-3 rounded-3xl border-2 border-dashed border-[#f2885c]/50 bg-event-card px-6 py-7 text-center focus-ring"
+            >
+                <Image src="/icons/camera.svg" alt={t('addPhoto')} width={34} height={28} className="h-auto w-[34px]" unoptimized />
+                <span className="max-w-full text-lg font-semibold text-balance wrap-break-word text-ink">{text}</span>
+                {/* The icon's alt already names the action */}
+                <span aria-hidden="true" className="flex h-11 items-center rounded-full bg-(image:--logo) px-6 text-sm font-semibold text-white">
+                    {t('addPhoto')}
+                </span>
+            </button>
+
+            {/* Photo picker: opened by the slot's button only */}
+            <input ref={inputRef} type="file" accept={accept} multiple className="sr-only" onChange={onFiles} aria-hidden="true" tabIndex={-1} />
         </div>
     );
 }
