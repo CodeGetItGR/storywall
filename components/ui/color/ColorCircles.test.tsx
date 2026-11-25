@@ -29,6 +29,11 @@ function Circles({ start, onChange }: { start?: string; onChange: (color: string
 const more = en.InvitationEditor.moreColors;
 
 describe('ColorCircles', () => {
+    it('offers no white of its own', () => {
+        render(<Circles onChange={vi.fn()} />);
+        expect(screen.queryByRole('button', { name: '#FFFFFF' })).toBeNull();
+    });
+
     it('picks a circle and marks it', async () => {
         const onChange = vi.fn();
         render(<Circles onChange={onChange} />);

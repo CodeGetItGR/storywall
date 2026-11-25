@@ -47,7 +47,7 @@ function ThemeSheet({ look, onWall, isDesktop, solidColor }: ThemeSheetProps) {
             disabled={false}
             solidDisabled={false}
             previewTitle="Anna & Nikos"
-            solidColor={solidColor}
+            solidColor={solidColor ?? (onWall && look === null ? '#FFFFFF' : undefined)}
             onSelect={fn()}
             onSolidColor={fn()}
             onClose={fn()}
@@ -71,13 +71,19 @@ export const NoThemeSelected: Story = {};
 // On a Save my date theme: "No theme" takes the feed back to the event's own wall look.
 export const NoThemeUnselected: Story = { args: { onWall: false } };
 
-// An event with no wall theme at all: "No theme" is the plain look.
+// An event with no wall theme at all: "No theme" is the plain look, so white is picked with it.
 export const NoThemePlain: Story = { args: { look: null } };
 
 // The feed in one colour: no card is the current one.
 export const SolidColor: Story = { args: { solidColor: '#AC9FC7' } };
 // A mixed colour too dark for the text.
 export const SolidColorMobile: Story = { args: { solidColor: '#7A3B2E', isDesktop: false }, globals: { viewport: { value: 'mobile' } } };
+
+// A mixed colour on the desktop panel: white, the four, the mixed one and "+" on one row.
+export const SolidColorMixed: Story = { args: { solidColor: '#7A3B2E' } };
+
+// White and "No theme" picked, on a phone.
+export const NoThemePlainMobile: Story = { args: { look: null, isDesktop: false }, globals: { viewport: { value: 'mobile' } } };
 
 // The phone sheet.
 export const NoThemeSelectedMobile: Story = { args: { isDesktop: false }, globals: { viewport: { value: 'mobile' } } };

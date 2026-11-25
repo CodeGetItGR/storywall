@@ -43,3 +43,6 @@ export const Light: Story = {
         </div>
     ),
 };
+
+// White on a white panel keeps a visible edge.
+export const LightWhite: Story = { ...Light, args: { surface: 'light', themeColors: ['#FFFFFF'], value: '#FFFFFF' } };
