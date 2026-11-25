@@ -24,7 +24,7 @@ export function FeedScheduleTimeline({ event, heading, days, className }: FeedSc
     const rsvpName = useModuleCopy(event.eventType)('rsvp').name;
 
     return (
-        <section className={cn('px-4 py-3 font-sans', className)}>
+        <section className={cn('on-page px-4 py-3 font-sans', className)}>
             {/* Heading */}
             <h2 className="text-sm font-semibold text-ink">{heading}</h2>
 

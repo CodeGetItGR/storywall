@@ -15,7 +15,7 @@ export function Countdown({ eventId, time, className }: { eventId: string; time:
     if (hasFinished) {
         return (
             <div className={cn(className, 'flex shrink-0 items-center')}>
-                <span className="abhaya-body text-[1.4rem] font-bold text-black xxs:text-[1.55rem] xs:text-[1.75rem] sm:text-[1.95rem] md:text-[2.1rem] lg:text-[2.2rem]">
+                <span className="abhaya-body text-[1.4rem] font-bold text-(--page-ink,#000) xxs:text-[1.55rem] xs:text-[1.75rem] sm:text-[1.95rem] md:text-[2.1rem] lg:text-[2.2rem]">
                     {t('started')}
                 </span>
                 {shouldCelebrate && <CountdownFireworks onCompleteAction={onCelebrationComplete} />}

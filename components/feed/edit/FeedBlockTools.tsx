@@ -65,7 +65,7 @@ export function FeedBlockTools({ section, name, controls, hasSettings, drag, act
                 )}
                 {/* The block's group already carries its name for screen readers. */}
                 {showsName && (
-                    <span aria-hidden="true" className="pointer-events-none min-w-0 truncate text-[13px] text-ink">
+                    <span aria-hidden="true" className="on-page pointer-events-none min-w-0 truncate text-[13px] text-ink">
                         {name}
                     </span>
                 )}

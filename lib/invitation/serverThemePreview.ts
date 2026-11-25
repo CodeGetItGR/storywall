@@ -24,5 +24,5 @@ export async function loadPreviewInvitation(params: PreviewParams): Promise<Them
     if (slug === null) return null;
     if (slug) return fetchThemePreview(slug);
     const { style, lang } = previewDateOptions(params);
-    return { document: previewDocument(style, lang), theme: PREVIEW_THEME, media: previewMedia };
+    return { document: previewDocument(style, lang), theme: PREVIEW_THEME, media: previewMedia, pageTone: null };
 }

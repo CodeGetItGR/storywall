@@ -155,7 +155,14 @@ describe('useFeedTop on a Save my date theme', () => {
     it('has none on the wall theme', () => {
         const { result } = renderHook(() => useFeedTop(event), { wrapper });
         expect(result.current.backdrop).toBeNull();
-        expect(result.current.ctx.pageBackdrop).toBe(false);
+        expect(result.current.ctx.pageBackdrop).toBeFalsy();
+    });
+
+    it('puts white text on a picture the backend says is dark', () => {
+        const pageTone = { mean: 0.03, dark: 0.01, light: 0.08 };
+        const { result } = renderHook(() => useFeedTop(event), { wrapper: wrapperWith({ ...saved, pageTone }) });
+        expect(result.current.backdrop?.pictureTone).toEqual(pageTone);
+        expect(result.current.ctx.textColor).toBe('#FFFFFF');
     });
 
     it('follows the theme held in edit mode', () => {

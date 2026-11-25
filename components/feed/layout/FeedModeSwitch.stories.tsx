@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { expect, fn, userEvent, within } from 'storybook/test';
 
 import { copyFor } from '@/.storybook/copy';
+import { onDarkPage, onMiddlePage } from '@/.storybook/pageTone';
 import { FeedModeSwitch } from '@/components/feed/layout/FeedModeSwitch';
 import type { FeedMode } from '@/lib/feedMode';
 
@@ -44,6 +45,10 @@ export const HostNarrow: Story = {
         ),
     ],
 };
+
+// Over a dark page and a middle colour: the pill and the pencil stay white.
+export const HostOnDarkPage: Story = { args: { canEdit: true }, decorators: [onDarkPage] };
+export const HostOnMiddlePage: Story = { args: { canEdit: true }, decorators: [onMiddlePage] };
 
 // The thumb slides to the tapped half.
 export const Switching: Story = {

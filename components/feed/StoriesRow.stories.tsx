@@ -4,6 +4,7 @@ import { fn } from 'storybook/test';
 
 import { withAppContext } from '@/.storybook/appContext';
 import { guestAuthor, STORY_GUEST_MEMBER_ID, storyAuthor, storyEvent, storyStory } from '@/.storybook/fixtures';
+import { onDarkPage, onMiddlePage } from '@/.storybook/pageTone';
 import { StoriesRow } from '@/components/feed/StoriesRow';
 import type { StoryResponseDto } from '@/lib/api/types';
 
@@ -68,3 +69,8 @@ export const Loading: Story = {
         );
     },
 };
+
+// On a dark page and on a middle colour.
+export const OnDarkPage: Story = { ...WithYourStory, decorators: [onDarkPage] };
+export const OnMiddlePage: Story = { ...WithYourStory, decorators: [onMiddlePage] };
+export const EmptyOnDarkPage: Story = { ...Empty, decorators: [onDarkPage] };

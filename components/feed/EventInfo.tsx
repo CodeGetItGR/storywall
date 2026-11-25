@@ -52,7 +52,7 @@ export function EventInfo({
     );
 
     return (
-        <div className={cn(className, 'flex items-center justify-between gap-3')}>
+        <div className={cn(className, 'on-page flex items-center justify-between gap-3')}>
             {/* Date */}
             {onDateClick ? (
                 <button

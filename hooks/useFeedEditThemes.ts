@@ -9,13 +9,14 @@ import { type HeldWall, replaceFeedDocument, setFeedBackground, type WallPick } 
 import { type FeedLayoutView, wallThemeDesign } from '@/lib/feedLayout';
 import { planFeedThemeSwitch, planFeedWallSwitch } from '@/lib/feedThemes';
 import type { InvitationEditorStore } from '@/lib/invitation/editorStore';
+import type { PhotoTone } from '@/lib/invitation/photoContrast';
 import type { MediaResolver } from '@/lib/invitation/render';
 import type { ThemeDesign } from '@/lib/invitation/theme';
 import { invitationThemeKeys } from '@/lib/invitation/themeCatalogue';
 import { readThemePreview } from '@/lib/invitation/themePreview';
 import { themeImageIds } from '@/lib/invitation/themeSwitch';
 
-type ThemeLook = { theme: ThemeDesign; media: MediaResolver };
+type ThemeLook = { theme: ThemeDesign; media: MediaResolver; pageTone: PhotoTone | null };
 
 // The theme edit mode shows, held until Save. A Save my date theme lives in the editor store (its slug and the
 // planned document); its design and images are kept here per theme, like the old editor's. A wall preset is held
@@ -31,7 +32,7 @@ export function useFeedEditThemes(
 ) {
     const queryClient = useQueryClient();
     const [looks, setLooks] = useState<Record<string, ThemeLook>>(() =>
-        opened.themeSlug ? { [opened.themeSlug]: { theme: opened.theme, media: opened.media } } : {},
+        opened.themeSlug ? { [opened.themeSlug]: { theme: opened.theme, media: opened.media, pageTone: opened.pageTone } } : {},
     );
     const [heldWall, setHeldWall] = useState<HeldWall | undefined>(undefined);
     const [switching, setSwitching] = useState(false);
@@ -92,7 +93,7 @@ export function useFeedEditThemes(
                 const document = planFeedThemeSwitch(store.getState().document, { ...preview, imageIds: themeImageIds(target.assetUrls) }, oldIds);
                 // The host's own photos keep resolving through the saved layout's images.
                 const media: MediaResolver = (mediaId) => preview.media(mediaId) ?? opened.media(mediaId);
-                setLooks((current) => ({ ...current, [slug]: { theme: preview.theme, media } }));
+                setLooks((current) => ({ ...current, [slug]: { theme: preview.theme, media, pageTone: preview.pageTone } }));
                 setHeldWall(undefined);
                 store.getState().switchTheme(slug, replaceFeedDocument(document));
             }),
@@ -146,7 +147,9 @@ export function useFeedEditThemes(
 
     const wallTheme = heldWall ? heldWall.theme : event.theme;
     const wallLook = useMemo(() => wallThemeDesign(wallTheme), [wallTheme]);
-    const look = themeSlug ? (looks[themeSlug] ?? { theme: opened.theme, media: opened.media }) : { theme: wallLook, media: opened.media };
+    const look: ThemeLook = themeSlug
+        ? (looks[themeSlug] ?? { theme: opened.theme, media: opened.media, pageTone: opened.pageTone })
+        : { theme: wallLook, media: opened.media, pageTone: null };
 
-    return { theme: look.theme, media: look.media, heldWall, wallTheme, switching, pickingSolid, isSwitching, pickInvitation, pickWall, pickSolid };
+    return { ...look, heldWall, wallTheme, switching, pickingSolid, isSwitching, pickInvitation, pickWall, pickSolid };
 }

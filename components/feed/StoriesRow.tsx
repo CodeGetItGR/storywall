@@ -67,11 +67,11 @@ export function StoriesRow({ eventId, onOpenStoryAction }: StoriesRowProps) {
                             <Plus className="h-3 w-3" strokeWidth={3} aria-hidden="true" />
                         </span>
                     </button>
-                    <span className="max-w-14 truncate text-center text-[11px] leading-tight font-medium text-ink-muted">{tAvatar('yourStory')}</span>
+                    <span className="on-page max-w-14 truncate text-center text-[11px] leading-tight font-medium text-ink-muted">{tAvatar('yourStory')}</span>
                 </div>
             ) : null}
 
-            {hasStartItems && <div className="h-14 w-px shrink-0 self-center bg-border" aria-hidden="true" />}
+            {hasStartItems && <div className="on-page h-14 w-px shrink-0 self-center bg-border" aria-hidden="true" />}
 
             {/* Schedule story */}
             {hasScheduleStory && <ScheduleStoryAvatar />}

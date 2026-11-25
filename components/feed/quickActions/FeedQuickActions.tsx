@@ -25,7 +25,7 @@ export function FeedQuickActions({ event, isHost }: { event: EventDetailResponse
         if (actions.length === 0) return null;
         return (
             // At most five, so they always fit one row: spread evenly whatever the count.
-            <ul className="mt-3 flex justify-evenly px-2">
+            <ul className="on-page mt-3 flex justify-evenly px-2">
                 {actions.map((action) => (
                     <FeedActionItem key={action.key} action={action} />
                 ))}
@@ -37,7 +37,7 @@ export function FeedQuickActions({ event, isHost }: { event: EventDetailResponse
         // A vendor's row is longer than a phone screen: it scrolls sideways, and an edge with more tiles past it fades out.
         <ul
             ref={track}
-            className="mt-3 no-scrollbar flex items-start gap-1 overflow-x-auto px-2"
+            className="on-page mt-3 no-scrollbar flex items-start gap-1 overflow-x-auto px-2"
             style={mask ? { maskImage: mask, WebkitMaskImage: mask } : undefined}
         >
             {/* Vendor tools: the feed's tile says just RSVP */}

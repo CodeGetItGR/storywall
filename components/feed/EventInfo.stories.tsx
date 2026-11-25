@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 
+import { onDarkPage, onMiddlePage } from '@/.storybook/pageTone';
 import { EventInfo } from '@/components/feed/EventInfo';
 
 const meta = {
@@ -27,3 +28,7 @@ export const NoPlace: Story = {
 export const LongPlace: Story = {
     args: { place: 'Agios Nikolaos church, Oia, Santorini, Cyclades, Greece' },
 };
+
+// On a dark page and on a middle colour.
+export const OnDarkPage: Story = { decorators: [onDarkPage] };
+export const OnMiddlePage: Story = { decorators: [onMiddlePage] };

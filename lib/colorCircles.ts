@@ -17,11 +17,6 @@ export function isSameColor(first: string | undefined, second: string | undefine
     return plain !== '' && plain === plainColor(second);
 }
 
-// One of the app's four.
-export function isOwnColor(color: string): boolean {
-    return SOLID_COLORS.some((own) => isSameColor(own, color));
-}
-
 // The circles to show: the theme's colours, the app's four, then the colour in use when it's none of them. Each once.
 export function colorCircles(themeColors: readonly string[], value: string | undefined): string[] {
     const colors = [...themeColors, ...SOLID_COLORS, ...(value ? [value] : [])].map(plainColor).filter(Boolean);

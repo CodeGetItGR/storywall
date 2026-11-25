@@ -6736,8 +6736,7 @@
         "addPhoto": "Add photo",
         "background": {
             "color": "Background color",
-            "image": "Background image",
-            "tooDark": "Too dark for the text. A lighter shade will be shown."
+            "image": "Background image"
         },
         "banner": {
             "startEditing": "Start editing",

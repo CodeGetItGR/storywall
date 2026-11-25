@@ -76,7 +76,7 @@ export const NoThemePlain: Story = { args: { look: null } };
 
 // The feed in one colour: no card is the current one.
 export const SolidColor: Story = { args: { solidColor: '#AC9FC7' } };
-// A mixed colour too dark for the text.
+// A dark mixed colour, drawn as picked.
 export const SolidColorMobile: Story = { args: { solidColor: '#7A3B2E', isDesktop: false }, globals: { viewport: { value: 'mobile' } } };
 
 // A mixed colour on the desktop panel: white, the four, the mixed one and "+" on one row.

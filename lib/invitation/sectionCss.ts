@@ -11,6 +11,7 @@ import {
     textStyleCss,
 } from '@/lib/invitation/render';
 import type { InvitationSection } from '@/lib/invitation/sections';
+import { readableTextOn } from '@/lib/pageTone';
 
 // Styles of a section's own fields and the CSS variables some sections set,
 // ported from the old renderer's tb(), wedartDateTextBlock() and section
@@ -86,6 +87,11 @@ export function countdownVars(data: CountdownData, contrast: TextContrast, ctx: 
     });
 }
 
+// Text on a fill of its own, where the section's text is white or black for the page behind it (.smd-page-text).
+function textOnFill(fill: string | undefined): string | undefined {
+    return fill && /^#[0-9a-f]{6}$/i.test(fill) ? readableTextOn(fill) : undefined;
+}
+
 type FaqData = Extract<InvitationSection, { type: 'faq' }>['data'];
 
 export function faqVars(data: FaqData, contrast: TextContrast, ctx: RenderContext): CSSProperties | undefined {
@@ -98,6 +104,7 @@ export function faqVars(data: FaqData, contrast: TextContrast, ctx: RenderContex
         '--faq-q-color': resolveTextColor(contrast, style.questionColor, ctx),
         '--faq-a-color': resolveTextColor(contrast, style.answerColor, ctx),
         '--faq-fill-color': style.fillColor,
+        '--faq-fill-text': textOnFill(style.fillColor),
         '--faq-border-color': style.borderColor,
         '--faq-border-width': px(style.borderWidth),
     });
@@ -118,6 +125,7 @@ export function rsvpVars(data: RsvpData, contrast: TextContrast, ctx: RenderCont
         '--rsvp-label-color': resolveTextColor(contrast, style.labelColor, ctx),
         '--rsvp-label-size': px(style.labelSize),
         '--rsvp-field-fill-color': style.fieldFillColor,
+        '--rsvp-field-text': textOnFill(style.fieldFillColor),
         '--rsvp-field-border-color': style.fieldBorderColor,
         '--rsvp-field-border-width': px(style.fieldBorderWidth),
         '--rsvp-field-radius': px(style.fieldRadius),
@@ -136,6 +144,7 @@ export function stayVars(data: AccommodationData): CSSProperties | undefined {
         '--stay-border-width': px(style.borderWidth),
         '--stay-border-color': style.borderColor,
         '--stay-fill-color': style.fillColor,
+        '--stay-fill-text': textOnFill(style.fillColor),
     });
 }
 

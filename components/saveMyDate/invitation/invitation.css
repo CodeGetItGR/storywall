@@ -105,6 +105,20 @@
 .smd-invitation .smd-photo-tint { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
 .smd-invitation .section:has(> .smd-photo-tint-text-light) { color: #fff !important; --site-text: #fff !important; --site-muted: #fff !important; }
 
+/* The feed on a dark page (KAN-278): the section's text changed colour to read on it, so text on a fill inside the
+   section follows that fill, and the fills that let the page through stay dark under white text. */
+.smd-invitation .section.smd-page-text .faq-item { color: var(--faq-fill-text, inherit); --site-text: var(--faq-fill-text, inherit); --site-muted: var(--faq-fill-text, inherit); }
+.smd-invitation .section.smd-page-text .stay-item { color: var(--stay-fill-text, inherit); --site-text: var(--stay-fill-text, inherit); --site-muted: var(--stay-fill-text, inherit); }
+.smd-invitation .section.smd-page-text :is(.rsvp-form :is(input, select, textarea), .rsvp-option, .rsvp-thankyou-card) { color: var(--rsvp-field-text, #241f1a); --site-text: var(--rsvp-field-text, #241f1a); --site-muted: var(--rsvp-field-text, #241f1a); }
+.smd-invitation .section.smd-page-text .program-icons-node { color: var(--program-icon-color, var(--program-color, #241f1a)); }
+.smd-invitation .section.smd-page-text :is(.faq-chevron, .gift-copy-btn) { color: currentColor; }
+.smd-invitation .section.smd-page-text :is(.rsvp-status.ok, .rsvp-status.error) { color: inherit; }
+.smd-invitation .section.smd-page-text-light .faq-item { background: var(--faq-fill-color, rgba(0, 0, 0, 0.2)); border-color: var(--faq-border-color, rgba(255, 255, 255, 0.25)); }
+.smd-invitation .section.smd-page-text-light .stay-item { background: var(--stay-fill-color, rgba(0, 0, 0, 0.2)); border-color: var(--stay-border-color, rgba(255, 255, 255, 0.25)); }
+
+/* Faded text is full strength on a dark or middle page: fading it would leave it under 4.5:1. */
+:is([data-page-tone] .smd-invitation, .smd-invitation .smd-page-text) :is(.date-cal-label, .date-calendar-heading span, .dress-code-note, .faq-a, .parents-grid small, .couple-profile-role, .couple-profile-family-label, .story-block-subtitle, .stay-address, .stay-contact-row, .program-label) { opacity: 1; }
+
 /* Phones: sections keep a narrow side gutter; the countdown sets its own. */
 @container smd-invitation (max-width: 599px) {
     .smd-invitation .section { padding-left: var(--section-side-pad-mobile, 10px); padding-right: var(--section-side-pad-mobile, 10px); }
