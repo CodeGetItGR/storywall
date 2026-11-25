@@ -70,9 +70,6 @@ export const BACKGROUND_MODES = ['cover', 'repeat', 'texture'] as const;
 export type BackgroundMode = (typeof BACKGROUND_MODES)[number];
 export type BackgroundSlot = (typeof THEME_BACKGROUND_SLOTS)[number];
 
-// The old editor's colours for a button that has none of its own (wedartOpenThemeStyle).
-export const DEFAULT_BUTTON_TEXT = '#24332f';
-
 // A font pairing from GET /api/invitation-typography-presets (InvitationTypographyPresetOptionDto).
 export type TypographyPresetOption = { id: string; name: string; titleFont: string; bodyFont: string; buttonFont: string | null };
 

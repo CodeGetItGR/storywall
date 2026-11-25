@@ -8,9 +8,10 @@ import { ThemeStylePanel } from '@/components/saveMyDate/editor/themeStyle/Theme
 import { useInvitationEditorStore } from '@/hooks/useInvitationEditorStore';
 import { invitationTypographyPresetKeys } from '@/hooks/useInvitationTypographyPresets';
 import { useThemeStyle } from '@/hooks/useThemeStyle';
+import { DEFAULT_BUTTON_TEXT } from '@/lib/invitation/buttonText';
 import type { InvitationEditorStore } from '@/lib/invitation/editorStore';
 import type { ThemeDesign } from '@/lib/invitation/theme';
-import { DEFAULT_BUTTON_TEXT, type TypographyPresetOption } from '@/lib/invitation/themeEditing';
+import type { TypographyPresetOption } from '@/lib/invitation/themeEditing';
 import { PREVIEW_THEME, previewDocument } from '@/lib/saveMyDatePreview';
 import en from '@/messages/en.json';
 
@@ -63,6 +64,11 @@ describe('ThemeStylePanel', () => {
 
         await pickColor('Button fill', '#CFB98C');
         expect(screen.getAllByRole('button', { name: 'Reset' })).toHaveLength(1);
+    });
+
+    it('shows light text on a dark button', () => {
+        renderPanel({ ...PREVIEW_THEME, colors: { ...PREVIEW_THEME.colors, buttonBg: '#2f2b2d', buttonText: undefined } });
+        expect(screen.getByRole('button', { name: 'Button text color' })).toHaveStyle({ background: '#FFFFFF' });
     });
 
     it('resets a button colour back to the main colour', () => {
