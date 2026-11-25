@@ -8,7 +8,7 @@ import { isEventWritable, isModuleAvailable } from '@/lib/eventLifecycle';
 import type { FeedEditScope } from '@/lib/feedEditing';
 import { useFeedEditorEnabled } from '@/providers/FeedEditorFlagProvider';
 
-// Whether the feed shows the Edit pill, and whether edit mode is on. Hosts and co-hosts only, on a writable event
+// Whether the feed shows the Edit pencil, and whether edit mode is on. Hosts and co-hosts only, on a writable event
 // on any feed plan, once the saved layout is in. `scope`: what edit mode may change (Save my date opens all of it).
 // `settled`: the role and the layout are known, so a request to edit (?edit=blocks) can be answered.
 export function useFeedEditMode(event: Pick<EventDetailResponseDto, 'id' | 'theme' | 'status' | 'modules'>, isHost: boolean, isRoleLoading = false) {
