@@ -3,7 +3,7 @@
 import { useCallback, useState } from 'react';
 
 import { ComposerCard } from '@/components/feed/ComposerCard';
-import { FeedEditPill } from '@/components/feed/edit/FeedEditPill';
+import { FeedEditPillRow } from '@/components/feed/edit/FeedEditPillRow';
 import { LazyFeedEditTop } from '@/components/feed/edit/LazyFeedEditTop';
 import { EventDescription } from '@/components/feed/EventDescription';
 import { EventInfoSection } from '@/components/feed/EventInfoSection';
@@ -64,20 +64,23 @@ export function FeedPageContent() {
     // The invitation takes the whole phone: the switch to Social Feed brings the tab bar back.
     const tabBarAway = pageMode === 'invitation';
     useHideMobileTabBar(tabBarAway, 'feed-invitation');
-    // No switch while editing: the host edits the mode they were in.
-    const hasSwitch = feedMode.mode !== null && !editMode.editing;
     // The Overview's Start editing (?edit=blocks) opens the invitation.
     const startFromLink = useCallback(() => {
         if (feedMode.available) feedMode.select('invitation');
         startEditing();
     }, [feedMode, startEditing]);
     useFeedEditTrigger({ settled: editMode.settled, canEdit: editMode.canEdit, start: startFromLink });
-    const modeSwitch = hasSwitch && feedMode.mode && (
-        // Centred on the cover's bottom edge, half over it. It scrolls away with the cover.
-        <div className="relative z-10 -mt-5 flex justify-center">
-            <FeedModeSwitch mode={feedMode.mode} onSelect={feedMode.select} />
-        </div>
-    );
+    const modeSwitch =
+        feedMode.mode &&
+        (editMode.editing ? (
+            // No switch while editing: the host edits the mode they were in. Its room stays, so nothing jumps.
+            <div className="h-5" />
+        ) : (
+            // Centred on the cover's bottom edge, half over it. It scrolls away with the cover.
+            <div className="relative z-10 -mt-5 flex justify-center">
+                <FeedModeSwitch mode={feedMode.mode} onSelect={feedMode.select} />
+            </div>
+        ));
     const topParts = {
         cover: (
             <FeedCoverBlock
@@ -86,7 +89,6 @@ export function FeedPageContent() {
                 wishlist={moduleFlags.wishlist}
                 clearPill={Boolean(modeSwitch)}
                 editing={editMode.editing}
-                corner={editMode.canEdit && !editMode.editing ? <FeedEditPill ref={editPill} onClick={startEditing} /> : undefined}
             />
         ),
         // Social Feed mode only (FeedTopFrame); signed-out visitors get it under the cover (KAN-246).
@@ -110,12 +112,21 @@ export function FeedPageContent() {
 
     // What guests see differently from the host editing, for edit mode's preview.
     const guestParts = {
-        cover: <FeedCoverBlock event={coverEvent} isHost={false} wishlist={moduleFlags.wishlist} />,
+        cover: <FeedCoverBlock event={coverEvent} isHost={false} wishlist={moduleFlags.wishlist} clearPill={Boolean(modeSwitch)} />,
         rsvp: moduleFlags.rsvp ? <FeedRsvpBlock eventId={eventId} deadline={event.schedule.rsvpDeadline ?? null} /> : null,
     };
 
     // Feed mode's sections go to the member page only: edit mode draws its own, where a pinned photo takes no tap.
-    const feedTop = <FeedTop view={top} mode={pageMode ?? 'single'} modeSwitch={modeSwitch} {...topParts} feedSection={feedSection} />;
+    const feedTop = (
+        <FeedTop
+            view={top}
+            mode={pageMode ?? 'single'}
+            modeSwitch={modeSwitch}
+            editRow={editMode.canEdit && <FeedEditPillRow editing={editMode.editing} pillRef={editPill} onEdit={startEditing} />}
+            {...topParts}
+            feedSection={feedSection}
+        />
+    );
 
     function openStoryModal(nextStoryId: string) {
         setStoryId(nextStoryId);
@@ -144,6 +155,7 @@ export function FeedPageContent() {
                     cancelRef={cancelPill}
                     fallback={feedTop}
                     mode={pageMode}
+                    modeSwitch={modeSwitch}
                     {...topParts}
                 />
             ) : (

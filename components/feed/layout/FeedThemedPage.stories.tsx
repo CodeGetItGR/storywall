@@ -5,7 +5,8 @@ import type { CSSProperties, ReactNode } from 'react';
 import { within } from 'storybook/test';
 
 import { withAppContext } from '@/.storybook/appContext';
-import { storyPhotos, storyPost } from '@/.storybook/fixtures';
+import { storyHostMember, storyPhotos, storyPost } from '@/.storybook/fixtures';
+import { hostPanelHandlers } from '@/.storybook/handlers';
 import { STORY_THEME } from '@/.storybook/invitation';
 import { FeedBackdropLayer } from '@/components/event/FeedBackdropLayer';
 import { FeedPostList } from '@/components/feed/FeedPostList';
@@ -57,6 +58,20 @@ const COVER: ThemeDesign = {
         top: { desktop: { mediaId: 'page-dark' }, mode: 'cover', stableRepeat: false },
         content: { desktop: { mediaId: 'page-tall' }, mode: 'cover', stableRepeat: false },
     },
+};
+// A dark picture that fills the screen, a busy one tiled over the page, and a theme with a colour and no picture.
+const DARK: ThemeDesign = {
+    ...STORY_THEME,
+    backgrounds: { ...STORY_THEME.backgrounds, content: { desktop: { mediaId: 'page-dark' }, mode: 'cover', stableRepeat: false } },
+};
+const BUSY: ThemeDesign = {
+    ...STORY_THEME,
+    backgrounds: { ...STORY_THEME.backgrounds, content: { desktop: { mediaId: 'page-tall' }, mode: 'texture', stableRepeat: false } },
+};
+const SOLID: ThemeDesign = {
+    ...STORY_THEME,
+    colors: { ...STORY_THEME.colors, secondary: '#dfe9e4' },
+    backgrounds: { ...STORY_THEME.backgrounds, content: { mode: 'cover', stableRepeat: false } },
 };
 const PAGE_IMAGES: Record<string, string> = {
     'page-light': '/storybook-assets/light-photo.jpg',
@@ -254,3 +269,23 @@ export const WholePageRepeating: Story = { args: { theme: LIGHT, whole: true }, 
 
 // Posts with a playlist digest between them, on the page's picture: it shows around the cards.
 export const PostsWithDigest: Story = { args: { theme: COVER, children: <FeedPostList items={withPartnerCards(DIGEST_POSTS, null)} partnerBranding={null} eventId="evt-story" endsWithPost /> } };
+
+// The host's side panel on every kind of theme: a white curtain lets the theme through behind its text.
+const hostPanel: Pick<Story, 'parameters' | 'beforeEach' | 'globals'> = {
+    parameters: { app: { member: storyHostMember } },
+    globals: { viewport: { value: 'desktop' } },
+    beforeEach({ msw }) {
+        msw.use(...hostPanelHandlers());
+    },
+};
+
+export const HostPanelLight: Story = { ...hostPanel, tags: ['visual-desktop-only'], args: { theme: LIGHT, whole: true } };
+export const HostPanelBusy: Story = { ...hostPanel, tags: ['visual-desktop-only'], args: { theme: BUSY, whole: true } };
+export const HostPanelDark: Story = { ...hostPanel, tags: ['visual-desktop-only'], args: { theme: DARK, whole: true } };
+export const HostPanelSolid: Story = { ...hostPanel, tags: ['visual-desktop-only'], args: { theme: SOLID, whole: true } };
+export const HostPanelCoverScrolled: Story = {
+    ...hostPanel,
+    tags: ['visual-desktop-only'],
+    args: { theme: COVER, document: PICKED_LAYOUT, whole: true },
+    play: scrollPage,
+};

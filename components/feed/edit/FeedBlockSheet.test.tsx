@@ -5,6 +5,12 @@ import type { ComponentProps } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { FeedBlockSheet } from '@/components/feed/edit/FeedBlockSheet';
+import type { SettingsScope } from '@/hooks/useSectionSettingsPanel';
+import { feedSettingsGroups } from '@/lib/feedEditing';
+import { draftImageUploader } from '@/lib/invitation/editorUploads';
+import { SAMPLE_SECTIONS, SAMPLE_THEME } from '@/lib/invitation/samples';
+import type { InvitationSection } from '@/lib/invitation/sections';
+import { settingsGroups } from '@/lib/invitation/sectionSettings';
 import en from '@/messages/en.json';
 
 // next/font only works when Next compiles the file.
@@ -113,6 +119,77 @@ describe("FeedBlockSheet of a Save my date section", () => {
     it('says when a lighter shade will be drawn', () => {
         renderSheet(null, vi.fn(), { content: { ...content, background: { ...background, color: '#3A2A20' } } });
         expect(screen.getByText(tooDark)).toBeTruthy();
+    });
+});
+
+describe('FeedBlockSheet order', () => {
+    const content = {
+        textColor: '#4A3B32',
+        themeColors: [],
+        uploading: false,
+        failed: false,
+        onPhoto: vi.fn(),
+        onTextColor: vi.fn(),
+        background: { color: undefined, hasPhoto: false, failed: false, onColor: vi.fn(), onPickPhoto: vi.fn(), onRemovePhoto: vi.fn() },
+    };
+    const settings = en.InvitationEditor.sectionSettings;
+    const [addPhoto, membersOnly] = [en.FeedEditor.addPhoto, en.FeedLayout.membersOnly];
+    const [textColor, background] = [en.InvitationEditor.textColor, en.FeedEditor.background];
+
+    function renderSection(section: InvitationSection) {
+        const scope: SettingsScope = {
+            section,
+            edit: vi.fn(),
+            mode: 'host',
+            isAdmin: false,
+            theme: SAMPLE_THEME,
+            media: noMedia,
+            fonts: [],
+            uploadImage: draftImageUploader('draft-1'),
+            addUploaded: vi.fn(),
+            event: null,
+            eventSamples: null,
+            eventFieldLinks: null,
+        };
+        const groups = feedSettingsGroups(settingsGroups(section, 'host', SAMPLE_THEME));
+        renderSheet(false, vi.fn(), { scope, groups, content });
+    }
+
+    // Each text's place in the sheet, which must only grow.
+    function expectInOrder(texts: string[]) {
+        const all = screen.getByRole('dialog').textContent ?? '';
+        let from = -1;
+        for (const text of texts) {
+            const at = all.indexOf(text, from + 1);
+            expect(at, text).toBeGreaterThan(from);
+            from = at;
+        }
+    }
+
+    it.each<[string, InvitationSection, string, string]>([
+        ['contact', SAMPLE_SECTIONS.contact, settings.contactLinks.tiktok, settings.iconTitleColor],
+        ['couple contact', SAMPLE_SECTIONS.coupleContact, settings.contactLinks.tiktok, settings.iconTitleColor],
+        ['FAQ', SAMPLE_SECTIONS.faq, settings.addQuestion, settings.fill],
+        ['date', SAMPLE_SECTIONS.date, settings.language, settings.dateLayout],
+    ])('shows a %s section\'s inputs, Add photo, Members only, then its styling', (_, section, input, style) => {
+        renderSection(section);
+        expectInOrder([input, addPhoto, membersOnly, textColor, style, background.image, background.color]);
+    });
+
+    it("shows the gallery's layout with the styling", () => {
+        renderSection(SAMPLE_SECTIONS.gallery);
+        expectInOrder([addPhoto, membersOnly, textColor, en.InvitationEditor.photos.gallery.layout, background.image]);
+    });
+
+    it('names the contact links by their label alone', () => {
+        renderSection(SAMPLE_SECTIONS.contact);
+        const field = screen.getByRole('textbox', { name: settings.contactLinks.facebook });
+        expect(field.previousElementSibling?.querySelector('svg')?.getAttribute('aria-hidden')).toBe('true');
+    });
+
+    it("puts the event's rows and the prompt before Members only", () => {
+        renderSheet(false, vi.fn(), { parts: ['date'], partLabels: { date: 'Event date' } as never, promptText: '' });
+        expectInOrder([en.FeedSections.prompt.question, 'Event date', membersOnly]);
     });
 });
 

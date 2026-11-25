@@ -4,7 +4,7 @@ import { Pencil } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import type { Ref } from 'react';
 
-// The cover's Edit pill: hosts and co-hosts only.
+// The feed's Edit pill: hosts and co-hosts only.
 export function FeedEditPill({ onClick, ref }: { onClick: () => void; ref?: Ref<HTMLButtonElement> }) {
     const t = useTranslations('FeedEditor');
 
