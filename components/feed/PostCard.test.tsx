@@ -116,7 +116,7 @@ describe('PostCard corners', () => {
     it('is square on phones and a rounded card of its own on desktop', () => {
         const names = classes();
         expect(names.some((name) => name.startsWith('rounded'))).toBe(false);
-        expect(names).toEqual(expect.arrayContaining(['lg:my-4', 'lg:rounded-xl', 'lg:border']));
+        expect(names).toEqual(expect.arrayContaining(['lg:mx-2', 'lg:my-4', 'lg:rounded-xl', 'lg:border']));
     });
 
     it('rounds the top of the first card on phones', () => {

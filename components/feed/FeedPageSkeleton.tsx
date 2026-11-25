@@ -45,7 +45,7 @@ export function FeedPageSkeleton() {
                             </div>
                         </div>
                     </div>
-                    <div className="mt-4 flex flex-col">
+                    <div className="mt-4 flex flex-col lg:px-2">
                         <PostSkeleton withMedia />
                         <PostSkeleton />
                     </div>

@@ -175,8 +175,8 @@ export function PostCard({ post, showCommentLink = true, isLcpCandidate = false,
                 // The tint sits over the card colour, so it reads on every event theme.
                 isLabelled && 'bg-linear-to-b from-primary/12 to-primary/5',
                 // Phones: full width, joined to the next post. Desktop: a card of its own, rounded without clipping, since
-                // the reaction menu and messages hang over its edges.
-                'lg:my-4 lg:rounded-xl lg:border',
+                // the reaction menu and messages hang over its edges, and as wide as the music and vendor cards.
+                'lg:mx-2 lg:my-4 lg:rounded-xl lg:border',
                 isFirst && 'rounded-t-xl',
                 endsPage && 'border-b-0 lg:mb-0 lg:rounded-b-none lg:border-b-0',
                 // Its own colour continues behind the tab bar, or its comments' below.
