@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 import type { ComponentProps, CSSProperties } from 'react';
-import { expect, within } from 'storybook/test';
+import { expect, waitFor, within } from 'storybook/test';
 
 import { FeedBackdropLayer } from '@/components/event/FeedBackdropLayer';
 import { Header } from '@/components/feed/Header';
@@ -63,14 +63,14 @@ function ThemedHeader({ backdrop, ...props }: ComponentProps<typeof Header> & { 
     );
 }
 
-// Scrolls a block under the header, then checks its line shows.
+// Scrolls a block under the header, then checks its line shows. With reduced motion, as in the visual check, every
+// style change is a 1ms transition (app/globals.css), so the line reads 0 until that ends.
 const scrollUnder = async ({ canvasElement }: { canvasElement: HTMLElement }) => {
     const page = await within(canvasElement).findByTestId('page');
     page.scrollTop = 150;
     page.dispatchEvent(new Event('scroll'));
-    await new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)));
     const fill = page.querySelector('.feed-backdrop-strip-fill')!;
-    await expect(getComputedStyle(fill, '::after').opacity).toBe('1');
+    await waitFor(() => expect(getComputedStyle(fill, '::after').opacity).toBe('1'));
 };
 
 // The story clock is fixed at 2026-06-15 12:00 UTC (see preview.tsx).
