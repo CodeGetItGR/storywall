@@ -499,6 +499,31 @@ describe('FeedPageContent edit mode', { timeout: 15_000 }, () => {
         expect(screen.queryByRole('button', { name: 'edit' })).toBeNull();
     });
 
+    it.each([
+        ['invitation', SMD, '2099-06-01T15:00:00Z'],
+        ['feed', SMD, '2020-06-01T15:00:00Z'],
+        ['one page', [], null],
+    ])('draws the pill under the cover and the switch, on the %s', async (_, modules, startAt) => {
+        renderFeed(null, { flag: true, layout: savedLayout(), isHost: true, modules, startAt, stories: true });
+        const edit = await screen.findByRole('button', { name: 'edit' }, LAZY_LOOK);
+        const banner = screen.getByTestId('banner');
+        expect(banner.closest('section')!.contains(edit)).toBe(false);
+        expect(follows(banner, edit)).toBe(true);
+        const half = screen.queryByRole('button', { name: 'invitation' });
+        expect(half !== null).toBe(modules.length > 0);
+        if (half) expect(follows(half, edit)).toBe(true);
+        const stories = document.querySelector('#stories');
+        if (stories) expect(follows(edit, stories as HTMLElement)).toBe(true);
+    });
+
+    it("holds the switch's room while editing", async () => {
+        renderFeed(null, { flag: true, layout: savedLayout(), isHost: true, modules: SMD });
+        fireEvent.click(await screen.findByRole('button', { name: 'edit' }, LAZY_LOOK));
+        const cancel = await screen.findByRole('button', { name: 'cancel' }, LAZY_LOOK);
+        const room = document.querySelector('.h-5:empty') as HTMLElement;
+        expect(follows(room, cancel)).toBe(true);
+    });
+
     it('edits only the feed sections without Save my date: no Theme, no tools on the fixed blocks', async () => {
         api.put.mockResolvedValue({ revision: 2, updatedAt: '2026-11-22T10:00:00Z' });
         rsvpVisible.value = true;

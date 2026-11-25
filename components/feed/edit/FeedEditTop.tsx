@@ -63,7 +63,7 @@ export type FeedGuestParts = Pick<FeedTopProps, 'cover' | 'rsvp'>;
 
 // scope: what may change (useFeedEditMode). guest: for the preview. cancelRef: the Cancel pill, which takes focus as
 // edit mode opens.
-type FeedEditTopProps = Omit<FeedTopProps, 'view' | 'modeSwitch'> & {
+type FeedEditTopProps = Omit<FeedTopProps, 'view' | 'editRow'> & {
     event: EventDetailResponseDto;
     scope: FeedEditScope;
     guest: FeedGuestParts;
@@ -81,6 +81,7 @@ export function FeedEditTop({
     onDone,
     cancelRef,
     mode = 'single',
+    modeSwitch,
     dateRow,
     cover,
     stories,
@@ -240,6 +241,7 @@ export function FeedEditTop({
         <FeedTopFrame
             view={view}
             mode={mode}
+            modeSwitch={modeSwitch}
             editRow={editRow}
             dateRow={dateRow}
             parts={previewing ? feedPreviewParts(base) : editParts}

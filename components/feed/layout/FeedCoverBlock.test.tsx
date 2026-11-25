@@ -5,7 +5,6 @@ import type { ComponentProps } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { storyEvent, storyPhotos } from '@/.storybook/fixtures';
-import { FeedEditPill } from '@/components/feed/edit/FeedEditPill';
 import { FeedCoverBlock } from '@/components/feed/layout/FeedCoverBlock';
 import en from '@/messages/en.json';
 
@@ -13,8 +12,6 @@ vi.mock('@/hooks/useFeedCoverBlock', () => ({
     useFeedCoverBlock: () => ({ pageLoaded: false, onIllustrationError: vi.fn(), giftHref: '/gifts', giftName: 'Gifts' }),
 }));
 vi.mock('@/components/common/ProtectedImage', () => ({ ProtectedImage: () => null }));
-
-const pill = <FeedEditPill onClick={vi.fn()} />;
 
 function renderCover(props: Partial<ComponentProps<typeof FeedCoverBlock>> = {}) {
     render(
@@ -32,34 +29,19 @@ const session = (key: 'mainSession' | 'secondarySession') => screen.queryByRole(
 afterEach(cleanup);
 
 describe('FeedCoverBlock Add cover photo', () => {
-    it('sits beside the Edit pill, once, on a line of their own', () => {
-        renderCover({ corner: pill });
-        const edit = screen.getByRole('button', { name: en.FeedEditor.edit });
-        expect(addPhoto()?.previousElementSibling).toBe(edit);
-        expect(addPhoto()).not.toHaveClass('absolute');
-        // Clear of the session buttons, wrapping where the two don't fit.
-        expect(addPhoto()?.parentElement).toHaveClass('flex-wrap', 'right-16');
-    });
-
-    it('has the whole line without session buttons', () => {
-        renderCover({ corner: pill, event: storyEvent({ sessions: [] }) });
-        expect(addPhoto()?.parentElement).toHaveClass('right-5');
-    });
-
-    it('stays in the corner without the Edit pill', () => {
+    it('sits in the corner', () => {
         renderCover();
         expect(addPhoto()).toHaveClass('absolute', 'top-4', 'left-4');
     });
 
     it.each([
-        ['with a cover photo', { event: storyEvent({ coverMedia: storyPhotos[0] }), corner: pill }],
+        ['with a cover photo', { event: storyEvent({ coverMedia: storyPhotos[0] }) }],
         [
             'on a theme with art',
             {
                 event: storyEvent({
                     theme: { presetKey: 'x', backgroundColor: '#FFFFFF', illustrationUrl: '/a.webp', titleColor: null, headingFont: null },
                 }),
-                corner: pill,
             },
         ],
         ['to a guest', { isHost: false }],

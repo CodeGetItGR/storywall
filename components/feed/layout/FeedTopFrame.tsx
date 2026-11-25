@@ -11,7 +11,7 @@ export type FeedTopProps = {
     mode?: FeedPageMode;
     // The Invitation | Social Feed pill, under the cover.
     modeSwitch?: ReactNode;
-    // Edit mode's Theme, Cancel and Save, under the cover (and under the pill when it shows).
+    // The host's Edit pill, or edit mode's Theme, Cancel and Save: under the cover, or under the switch when it shows.
     editRow?: ReactNode;
     // Social Feed mode's date + place row, under the pill.
     dateRow?: ReactNode;
@@ -52,7 +52,7 @@ export const PLAIN_PARTS: FeedTopParts = {
 
 // The top of the feed in its fixed frame. Invitation: cover, switch, the host's blocks (RSVP among them on Save my
 // date), RSVP last otherwise. Social Feed: cover, switch, the date row, stories, feed sections (posts follow on the
-// page). One page: everything, nothing folded, the feed sections last. Edit mode's row sits under the switch, or under the cover without one.
+// page). One page: everything, nothing folded, the feed sections last. The edit row sits under the switch, or under the cover without one.
 export function FeedTopFrame({
     view,
     mode = 'single',
@@ -102,7 +102,7 @@ export function FeedTopFrame({
             {/* Invitation | Social Feed switch */}
             {modeSwitch && parts.native(modeSwitch)}
 
-            {/* Theme, Cancel and Save */}
+            {/* Edit, or Theme, Cancel and Save */}
             {editRow && parts.native(editRow)}
 
             {/* Date and place */}
