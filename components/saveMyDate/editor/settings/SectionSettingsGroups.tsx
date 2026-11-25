@@ -9,7 +9,7 @@ import { EffectSettings, TransitionSettings } from '@/components/saveMyDate/edit
 import { FaqItemsSettings } from '@/components/saveMyDate/editor/settings/FaqItemsSettings';
 import { FollowEventSettings } from '@/components/saveMyDate/editor/settings/FollowEventSettings';
 import { FooterSettings } from '@/components/saveMyDate/editor/settings/FooterSettings';
-import { GalleryLayoutSettings, GallerySettings } from '@/components/saveMyDate/editor/settings/GallerySettings';
+import { GalleryLayoutSettings, GalleryPhotosSettings, GallerySettings } from '@/components/saveMyDate/editor/settings/GallerySettings';
 import { LinkButtonsSettings } from '@/components/saveMyDate/editor/settings/LinkButtonsSettings';
 import { LocationsSettings } from '@/components/saveMyDate/editor/settings/LocationsSettings';
 import { PeopleSettings } from '@/components/saveMyDate/editor/settings/PeopleSettings';
@@ -72,6 +72,10 @@ function SettingsGroupContent({ scope, group }: { scope: SettingsScope; group: S
         case 'gallery': {
             const gallery = scopeOf(scope, 'gallery');
             return gallery && <GallerySettings scope={gallery} />;
+        }
+        case 'galleryPhotos': {
+            const gallery = scopeOf(scope, 'gallery');
+            return gallery && <GalleryPhotosSettings scope={gallery} />;
         }
         case 'galleryLayout': {
             const gallery = scopeOf(scope, 'gallery');

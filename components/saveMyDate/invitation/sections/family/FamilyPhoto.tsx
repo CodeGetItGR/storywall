@@ -17,15 +17,18 @@ type FamilyPhotoProps = {
 export function FamilyPhoto({ photo, name, sectionId, path, ctx }: FamilyPhotoProps) {
     const src = resolveImage(photo, ctx);
     const camera = ctx.canvasTools?.photo;
+    const tools = ctx.canvasTools?.personPhoto;
     if (!src && !camera) return null;
 
-    return (
+    const slot = photoFieldSlot(sectionId, path);
+    const shape = (
         <div className="family-photo">
             {/* Photo */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
             {src && <img src={src} alt={name.trim() || ctx.labels.photoAlt} />}
             {/* Camera */}
-            {camera?.(photoFieldSlot(sectionId, path), Boolean(src))}
+            {camera?.(slot, Boolean(src))}
         </div>
     );
+    return tools ? tools(slot, Boolean(src), shape) : shape;
 }

@@ -211,7 +211,7 @@ describe('the pencil sheet', () => {
     });
 
     it("keeps the gallery's layout, and shows the date's language and layout apart", () => {
-        expect(feedSettingsGroups(['gallery', 'follow', 'background', 'buttons'])).toEqual(['galleryLayout', 'buttons']);
+        expect(feedSettingsGroups(['gallery', 'follow', 'background', 'buttons'])).toEqual(['galleryPhotos', 'galleryLayout', 'buttons']);
         expect(feedSettingsGroups(['date'])).toEqual(['dateLanguage', 'dateLayout']);
     });
 });

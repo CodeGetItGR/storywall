@@ -14,6 +14,23 @@
     text-align: start;
 }
 
+/* The people's photos: two to a row on phones too, and smaller than on the standalone invitation. */
+.smd-invitation.feed-look :is(.family-parents, .family-godparents-list, .couple-profiles-grid) {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 24px 16px;
+    max-width: 440px;
+    align-items: start;
+    margin-inline: auto;
+}
+.smd-invitation.feed-look .family-parents > .family-title { grid-column: 1 / -1; justify-self: center; margin-bottom: 0; }
+.smd-invitation.feed-look .family-parents > .family-person { width: 100%; margin: 0; }
+.smd-invitation.feed-look .family-godparents-list > .family-godparent:only-child,
+.smd-invitation.feed-look .family-godparents-list > .family-godparent:nth-child(odd):last-child { grid-column: 1 / -1; width: calc(50% - 8px); justify-self: center; }
+.smd-invitation.feed-look .family-photo { max-width: 200px; }
+/* Names fit half a phone's width; a size the host picked still wins. */
+.smd-invitation.feed-look :is(.family-person, .family-godparent, .couple-profile-block) h2 { font-size: clamp(20px, 6cqw, 34px); overflow-wrap: anywhere; }
+
 /* Today's feed blocks keep today's look. invitation.css is unlayered, so its element rules beat
    every Tailwind utility; undo them here so the blocks' own classes apply again. */
 .smd-invitation .feed-native {
