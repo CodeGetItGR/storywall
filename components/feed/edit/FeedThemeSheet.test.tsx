@@ -77,6 +77,17 @@ describe('FeedThemeSheet', () => {
         expect(onSolidColor).toHaveBeenCalledExactlyOnceWith('#AC9FC7');
     });
 
+    it('offers white first, picked with "No theme"', () => {
+        const { onSolidColor } = renderSheet('#FFFFFF');
+        const circles = screen.getByRole('group', { name: 'solidColor' });
+        const white = screen.getByRole('button', { name: '#FFFFFF' });
+        expect(circles.firstElementChild).toBe(white);
+        expect(white).toHaveAttribute('aria-pressed', 'true');
+        expect(screen.getByRole('radio', { name: /No theme/ })).toBeChecked();
+        fireEvent.click(white);
+        expect(onSolidColor).toHaveBeenCalledExactlyOnceWith('#FFFFFF');
+    });
+
     it('warns while the colour is too dark for the text', () => {
         renderSheet('#000000');
         expect(screen.getByRole('status').textContent).toBe('background.tooDark');

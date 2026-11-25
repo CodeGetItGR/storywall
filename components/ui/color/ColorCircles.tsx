@@ -13,6 +13,8 @@ type ColorCirclesProps = {
     onChange: (color: string) => void;
     // The theme's own colours, shown first.
     themeColors?: readonly string[];
+    // What the mixer opens on when no colour is set; the first circle unless given.
+    mixerStart?: string;
     // Names the group: an element's id, or its own words.
     labelledBy?: string;
     label?: string;
@@ -33,6 +35,7 @@ export function ColorCircles({
     value,
     onChange,
     themeColors = NO_COLORS,
+    mixerStart,
     labelledBy,
     label,
     surface: ownSurface,
@@ -56,11 +59,11 @@ export function ColorCircles({
         <div role="group" aria-labelledby={labelledBy} aria-label={label} className={cn('flex flex-wrap gap-3 p-1', className)}>
             {/* Circles */}
             {colors.map((color) => (
-                <ColorCircle key={color} color={color} selected={isSameColor(color, value)} disabled={disabled} onPick={pick} />
+                <ColorCircle key={color} color={color} selected={isSameColor(color, value)} surface={surface} disabled={disabled} onPick={pick} />
             ))}
 
             {/* Mixer */}
-            <ColorMixer value={value} start={colors[0]} surface={surface} disabled={disabled} live={liveMix} onChange={onChange} onPicked={onPicked} />
+            <ColorMixer value={value} start={mixerStart ?? colors[0]} surface={surface} disabled={disabled} live={liveMix} onChange={onChange} onPicked={onPicked} />
         </div>
     );
 }
