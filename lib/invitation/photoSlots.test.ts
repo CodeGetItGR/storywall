@@ -2,7 +2,7 @@ import { produce } from 'immer';
 import { describe, expect, it } from 'vitest';
 
 import type { InvitationDocument } from '@/lib/invitation/document';
-import { isPhotoField, photoFieldSlot, photoFrameSlot, photoSlotKey, setSlotPhoto } from '@/lib/invitation/photoSlots';
+import { isPhotoField, photoFieldSlot, photoFrameSlot, photoSlotKey, removeFieldPhoto, setSlotPhoto } from '@/lib/invitation/photoSlots';
 import { sampleDraftDocument } from '@/lib/invitation/sampleDraft';
 import type { InvitationSection } from '@/lib/invitation/sections';
 
@@ -30,6 +30,20 @@ describe('photo slots', () => {
     it('gives each slot its own key', () => {
         expect(photoSlotKey(photoFieldSlot('s-1', 'parentA.photo'))).toBe('field:s-1:parentA.photo');
         expect(photoSlotKey(photoFrameSlot('el-1'))).toBe('frame:el-1');
+    });
+
+    it("takes a person's photo out of its field, and leaves everything else", () => {
+        const document = sampleDraftDocument();
+        const couple = sectionOf(document, 'coupleProfiles');
+        const filled = produce(document, setSlotPhoto(photoFieldSlot(couple.id, 'partnerA.photo'), PHOTO, SIZE));
+        const next = produce(filled, removeFieldPhoto(couple.id, 'partnerA.photo'));
+        const { photo: _gone, ...rest } = couple.data.partnerA;
+        expect(sectionOf(next, 'coupleProfiles').data).toEqual({ ...couple.data, partnerA: rest });
+
+        // A text field, an item that is gone and a section that is gone are left alone.
+        expect(produce(document, removeFieldPhoto(couple.id, 'partnerA.name'))).toBe(document);
+        expect(produce(document, removeFieldPhoto(sectionOf(document, 'godparents').id, 'godparents.gone.photo'))).toBe(document);
+        expect(produce(document, removeFieldPhoto('gone', 'partnerA.photo'))).toBe(document);
     });
 
     it('puts a photo in a section field', () => {

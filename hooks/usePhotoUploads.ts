@@ -3,14 +3,26 @@
 import { useCallback, useMemo, useState } from 'react';
 
 import { useAuth } from '@/hooks/useAuth';
+import { type PhotoIssue, type PhotoUploadOptions, usePhotoSlotUploads } from '@/hooks/usePhotoSlotUploads';
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
 import type { InvitationEditorStore } from '@/lib/invitation/editorStore';
-import { galleryHasNoRoom, type PhotoSlot, photoSlotKey, setSlotPhoto } from '@/lib/invitation/photoSlots';
-import { PHOTO_COMPRESSION, photoFileProblem, type PhotoProblem, photoUploadPercent, photoUploadProblem } from '@/lib/invitation/photoUpload';
-import { createPhotoUploadStore } from '@/lib/invitation/photoUploadStore';
+import type { PhotoSlot } from '@/lib/invitation/photoSlots';
+import type { PhotoProblem } from '@/lib/invitation/photoUpload';
+import type { PhotoUploadStore } from '@/lib/invitation/photoUploadStore';
 import type { InvitationDraftImageDto } from '@/lib/invitation/programIconUpload';
 import { routes } from '@/lib/routes';
+
+// What a photo slot needs of the editor around it.
+export type PhotoUploadSlots = {
+    uploads: PhotoUploadStore;
+    upload: (slot: PhotoSlot, file: File, options?: PhotoUploadOptions) => Promise<void>;
+    // True when a file may be picked now.
+    canPick: () => boolean;
+    report: (problem: PhotoProblem | null, sectionId?: string) => void;
+    // Shown at the photo's own place, on the feed. The Save my date editor shows it under its top bar instead.
+    issue?: PhotoIssue | null;
+};
 
 type PhotoUploadsOptions = {
     draftId: string;
@@ -21,63 +33,17 @@ type PhotoUploadsOptions = {
     claim: () => Promise<boolean>;
 };
 
-type PhotoUploadOptions = { queued?: boolean };
-
-// Smaller before sending; the original goes when the browser can't make it smaller.
-async function compressPhoto(file: File, onProgress: (percent: number) => void): Promise<File> {
-    try {
-        const { default: imageCompression } = await import('browser-image-compression');
-        return await imageCompression(file, { ...PHOTO_COMPRESSION, onProgress });
-    } catch {
-        return file;
-    }
-}
-
-// The host's photo uploads in the editor: a file is checked, made smaller, sent to
-// the draft and put in its slot as one undoable edit. A visitor signs in first,
+// The host's photo uploads in the Save my date editor, sent to the draft. A visitor signs in first,
 // since the server takes photos only from an account.
 export function usePhotoUploads({ draftId, store, addUploaded, claim }: PhotoUploadsOptions) {
     const { isAuthenticated } = useAuth();
-    const [uploads] = useState(createPhotoUploadStore);
-    const [problem, setProblem] = useState<PhotoProblem | null>(null);
     const [isSignInOpen, setIsSignInOpen] = useState(false);
 
-    // A queued upload already waits in the list under its key (several photos picked at
-    // once). It keeps the notice an earlier photo of the same pick raised.
-    const upload = useCallback(
-        async (slot: PhotoSlot, file: File, { queued = false }: PhotoUploadOptions = {}) => {
-            const key = photoSlotKey(slot);
-            if (!queued && uploads.getState().uploads[key]) return;
-            const found = photoFileProblem(file);
-            if (found || !queued) setProblem(found);
-            if (found) {
-                uploads.getState().clear(key);
-                return;
-            }
-
-            const progress = uploads.getState().set;
-            progress(key, { percent: 0 });
-            try {
-                if (!(await claim())) throw new Error('claim');
-                const small = await compressPhoto(file, (percent) => progress(key, { percent: photoUploadPercent('compressing', percent) }));
-                progress(key, { percent: photoUploadPercent('sending', 100) });
-                const body = new FormData();
-                body.append('file', small, file.name);
-                const saved = await api.postForm<InvitationDraftImageDto>(endpoints.invitationDrafts.images(draftId), body);
-                addUploaded(saved.mediaId, saved.url);
-                if (galleryHasNoRoom(store.getState().document, slot)) {
-                    setProblem('galleryFull');
-                    return;
-                }
-                store.getState().edit(setSlotPhoto(slot, { source: 'media', mediaId: saved.mediaId }, saved));
-            } catch (error) {
-                setProblem(photoUploadProblem(error));
-            } finally {
-                uploads.getState().clear(key);
-            }
-        },
-        [addUploaded, claim, draftId, store, uploads],
-    );
+    const prepare = useCallback(async () => {
+        if (!(await claim())) throw new Error('claim');
+    }, [claim]);
+    const send = useCallback((body: FormData) => api.postForm<InvitationDraftImageDto>(endpoints.invitationDrafts.images(draftId), body), [draftId]);
+    const { uploads, upload, report, issue } = usePhotoSlotUploads({ store, prepare, send, addUploaded });
 
     // Opens the file picker, or the sign-in pop-up for a visitor.
     const canPick = useCallback(() => {
@@ -86,16 +52,14 @@ export function usePhotoUploads({ draftId, store, addUploaded, claim }: PhotoUpl
         return false;
     }, [isAuthenticated]);
 
-    const dismissProblem = useCallback(() => setProblem(null), []);
-    // A problem found before any upload starts, such as a full gallery; null clears the last one.
-    const report = useCallback((found: PhotoProblem | null) => setProblem(found), []);
+    const dismissProblem = useCallback(() => report(null), [report]);
     const closeSignIn = useCallback(() => setIsSignInOpen(false), []);
 
-    const slots = useMemo(() => ({ uploads, upload, canPick, report }), [canPick, report, upload, uploads]);
+    const slots = useMemo<PhotoUploadSlots>(() => ({ uploads, upload, canPick, report }), [canPick, report, upload, uploads]);
 
     return {
         slots,
-        problem,
+        problem: issue?.problem ?? null,
         dismissProblem,
         signIn: {
             open: isSignInOpen,
@@ -107,5 +71,4 @@ export function usePhotoUploads({ draftId, store, addUploaded, claim }: PhotoUpl
     };
 }
 
-export type PhotoUploadSlots = ReturnType<typeof usePhotoUploads>['slots'];
 export type EditorSignInState = ReturnType<typeof usePhotoUploads>['signIn'];

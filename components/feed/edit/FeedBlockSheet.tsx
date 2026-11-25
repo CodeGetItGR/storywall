@@ -103,7 +103,9 @@ export function FeedBlockSheet({
             {scope && inputs.length > 0 && <SectionSettingsPanel scope={scope} groups={inputs} />}
 
             {/* Add photo */}
-            {content && <FeedSectionPhotoField uploading={content.uploading} failed={content.failed} onPhoto={content.onPhoto} />}
+            {content && !groups.includes('galleryPhotos') && (
+                <FeedSectionPhotoField uploading={content.uploading} failed={content.failed} onPhoto={content.onPhoto} />
+            )}
 
             {/* Who sees it */}
             {membersOnly !== null && (
