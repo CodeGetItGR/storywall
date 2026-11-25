@@ -10,21 +10,29 @@ import type { EventDetailResponseDto } from '@/lib/api/types';
 import { defaultFeedLayout, feedFrame } from '@/lib/feedLayout';
 import type { FeedPageMode } from '@/lib/feedMode';
 import { planFeedThemeSwitch } from '@/lib/feedThemes';
+import { FEED_BLOCK_FALLBACK_STYLE } from '@/lib/feedThemeStyles';
 import type { FeedTopArt } from '@/lib/feedTopArt';
 import type { InvitationDocument } from '@/lib/invitation/document';
 import { INVITATION_LABELS } from '@/lib/invitation/labels';
 import { buildRenderContext } from '@/lib/invitation/render';
 import { SAMPLE_SECTIONS } from '@/lib/invitation/samples';
+import type { InvitationSection } from '@/lib/invitation/sections';
 import type { ThemeDesign } from '@/lib/invitation/theme';
+
+const NO_PICTURE = { mode: 'cover', stableRepeat: false } as const;
+
+// The frame, on a page of one colour.
+const FRAMED = { ...SAMPLE_SECTIONS.photoFrame, style: FEED_BLOCK_FALLBACK_STYLE } as InvitationSection;
 
 const THEME: ThemeDesign = {
     ...STORY_THEME,
+    backgrounds: { top: NO_PICTURE, content: NO_PICTURE, extra: NO_PICTURE },
     art: { main: { image: { mediaId: 'm-leaf' }, scale: 1, animation: 'none' } },
 };
 
 // The layout right after the host picks the theme, with or without a photo in its frame.
 function pickedLayout(photo: string | undefined): InvitationDocument {
-    const target = { document: { ...defaultFeedLayout(), themeId: 'story-theme', sections: [SAMPLE_SECTIONS.photoFrame] }, theme: THEME, imageIds: new Set<string>() };
+    const target = { document: { ...defaultFeedLayout(), themeId: 'story-theme', sections: [FRAMED] }, theme: THEME, imageIds: new Set<string>() };
     const picked = planFeedThemeSwitch(defaultFeedLayout(), target, new Set());
     if (!photo) return picked;
     const sections = picked.sections.map((section) => ({
@@ -34,7 +42,7 @@ function pickedLayout(photo: string | undefined): InvitationDocument {
     return { ...picked, sections } as InvitationDocument;
 }
 
-type PageProps = { event: EventDetailResponseDto; photo?: string; mode: FeedPageMode; color?: string };
+type PageProps = { event: EventDetailResponseDto; photo?: string; mode: FeedPageMode };
 
 const coverOf = (event: EventDetailResponseDto) =>
     function Cover(topArt: FeedTopArt | null) {
@@ -42,12 +50,12 @@ const coverOf = (event: EventDetailResponseDto) =>
     };
 
 // The invitation's top as guests see it.
-function Page({ event, photo, mode, color }: PageProps) {
+function Page({ event, photo, mode }: PageProps) {
     const locale = useLocale() === 'en' ? 'en' : 'el';
     const document = pickedLayout(photo);
-    const ctx = { ...buildRenderContext(document, THEME, storyInvitationMedia), labels: INVITATION_LABELS[locale], centerText: true };
+    const ctx = { ...buildRenderContext(document, THEME, storyInvitationMedia), labels: INVITATION_LABELS[locale], ownBackgrounds: true, centerText: true };
     return (
-        <div className="mx-auto min-h-screen max-w-2xl pb-8" style={{ background: color }}>
+        <div className="mx-auto min-h-screen max-w-2xl pb-8">
             <FeedLookTop
                 view={{
                     look: true,
@@ -77,7 +85,7 @@ const event = storyEvent();
 const meta = {
     title: 'Feed/Layout/FeedThemeFrame',
     component: Page,
-    args: { event, photo: 'm-framed', mode: 'invitation', color: '#efe7ec' },
+    args: { event, photo: 'm-framed', mode: 'invitation' },
     parameters: { layout: 'fullscreen', app: { event, member: storyHostMember } },
     decorators: [withAppContext],
 } satisfies Meta<typeof Page>;
