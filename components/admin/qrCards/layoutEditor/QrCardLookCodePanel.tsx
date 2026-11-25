@@ -22,6 +22,7 @@ export function QrCardLookCodePanel({ look, codeHint }: { look: QrCardLookState;
                 hint={codeHint}
                 hintLive={false}
                 invalid={Boolean(look.errors.codeColor || look.errors.codeContrast)}
+                onColorAction={look.handleCodeColorPick}
                 onChangeAction={look.handleChange}
             >
                 {look.errors.codeContrast && (

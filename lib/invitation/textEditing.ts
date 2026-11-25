@@ -44,12 +44,6 @@ export type FontOption = { value: string; label: string };
 export const TEXT_SIZES = [14, 16, 18, 20, 24, 28, 32, 40, 48, 56, 68, 80, 96, 120] as const;
 export const LINE_HEIGHTS = [1.1, 1.3, 1.5, 1.7, 1.9, 2.2] as const;
 
-// The old editor's own colours, after the theme's and the ones in use.
-export const BASE_TEXT_COLORS = [
-    '#2f2b2d', '#ffffff', '#000000', '#b8dfd3', '#efe7ec', '#c98f88',
-    '#9bb7d4', '#c7b08b', '#8aa58d', '#d8b4c8', '#d6c36f', '#7f7f7f',
-] as const;
-
 // The fonts the old editor offered, by the CSS value it stored.
 export const INVITATION_FONTS: readonly FontOption[] = [
     { value: 'Georgia,serif', label: 'Georgia' },
@@ -76,7 +70,6 @@ export const THEME_FONT = 'inherit';
 export const NEW_TEXT_SIZES: Record<TextRole, number> = { title: 32, subtitle: 22, paragraph: 16 };
 
 export const MAX_ELEMENTS = 100;
-const RECENT_LIMIT = 10;
 
 export function textTargetKey(target: TextTarget): string {
     return target.kind === 'field' ? `field:${target.sectionId}:${target.path}` : `element:${target.elementId}`;
@@ -319,14 +312,6 @@ const HEX = /^#[0-9a-f]{6}$/i;
 // The theme's own colours.
 export function themeColors({ colors }: Pick<ThemeDesign, 'colors'>): string[] {
     return [colors.primary, colors.secondary, colors.text].filter((color) => HEX.test(color));
-}
-
-// The theme's colours, the ones already used in the invitation, then the old editor's own.
-export function textColorSwatches(document: InvitationDocument, theme: ThemeDesign): string[] {
-    const used = [document.overrides.textColor, ...allTextStyles(document).map((style) => style.color)]
-        .filter((color): color is string => Boolean(color && HEX.test(color)))
-        .slice(0, RECENT_LIMIT);
-    return uniqueBy([...themeColors(theme), ...used, ...BASE_TEXT_COLORS], (color) => color.toLowerCase());
 }
 
 export function fontLabel(value: string): string {

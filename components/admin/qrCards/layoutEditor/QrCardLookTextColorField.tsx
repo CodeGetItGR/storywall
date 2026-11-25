@@ -18,6 +18,7 @@ export function QrCardLookTextColorField({ look }: { look: QrCardLookState }) {
             swatchValue={look.textColorInputValue}
             hint={look.errors.textColor ? t('textColorInvalid') : undefined}
             invalid={Boolean(look.errors.textColor)}
+            onColorAction={look.handleTextColorPick}
             onChangeAction={look.handleChange}
         />
     );

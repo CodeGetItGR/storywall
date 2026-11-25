@@ -11,7 +11,7 @@ function SettingsPanel() {
     const t = useTranslations('InvitationEditor');
     return (
         <EditorDockedPanel title={t('settings')}>
-            <TextColorSetting value="#4f4a3f" onChange={fn()} />
+            <TextColorSetting value="#4f4a3f" themeColors={[]} onChange={fn()} />
         </EditorDockedPanel>
     );
 }

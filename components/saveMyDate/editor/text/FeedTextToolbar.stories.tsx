@@ -5,7 +5,7 @@ import { withEditorChrome } from '@/.storybook/editor';
 import { FeedTextToolbar } from '@/components/saveMyDate/editor/text/FeedTextToolbar';
 import { STORY_PRESETS } from '@/components/saveMyDate/editor/text/TextStyleMenu.stories';
 import type { TextToolbarState } from '@/hooks/useTextToolbar';
-import { BASE_TEXT_COLORS, INVITATION_FONTS, TEXT_SIZES, THEME_FONT } from '@/lib/invitation/textEditing';
+import { INVITATION_FONTS, TEXT_SIZES, THEME_FONT } from '@/lib/invitation/textEditing';
 
 const toolbar: TextToolbarState = {
     font: THEME_FONT,
@@ -14,7 +14,7 @@ const toolbar: TextToolbarState = {
     size: 20,
     sizes: [...TEXT_SIZES],
     color: '#2f2b2d',
-    swatches: [...BASE_TEXT_COLORS],
+    themeColors: ['#b8dfd3', '#efe7ec', '#2f2b2d'],
     bold: false,
     italic: true,
     align: 'center',

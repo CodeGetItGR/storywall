@@ -88,7 +88,7 @@ describe('Invitation editor: publish', { timeout: EDITOR_FLOW_TIMEOUT_MS }, () =
 
     it('saves, asks for the link the first time, then publishes', async () => {
         const color = await openEditor();
-        fireEvent.change(color, { target: { value: '#112233' } });
+        fireEvent.click(within(color).getByRole('button', { name: '#B5BFA6' }));
 
         const sheet = await openPublishSheet();
         expect(backend.saves).toHaveLength(1);

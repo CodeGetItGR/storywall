@@ -302,9 +302,9 @@ describe('ThemePresetDrawer while saving', () => {
 describe('ThemePresetDrawer colour inputs', () => {
     it('gives each colour picker and hex input its own accessible name', () => {
         state({ draft: draftWith({ titleColor: '#7A1F3D' }), titleColorInputValue: '#7a1f3d' });
-        const { container } = render(<ThemePresetDrawer preset={PRESET} sortOrder={0} eventTypes={EVENT_TYPES} onCloseAction={vi.fn()} />);
-        const pickers = container.querySelectorAll('input[type="color"]');
-        expect([...pickers].map((picker) => picker.getAttribute('aria-label'))).toEqual(['backgroundColor', 'titleColor']);
+        renderDrawer();
+        expect(screen.getByRole('button', { name: 'backgroundColor' })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: 'titleColor' })).toBeInTheDocument();
         expect(screen.getByRole('textbox', { name: 'backgroundColorHex' })).toHaveValue('#BFE6E2');
         expect(screen.getByRole('textbox', { name: 'titleColorHex' })).toHaveValue('#7A1F3D');
     });

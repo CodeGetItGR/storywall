@@ -1,33 +1,27 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { type ChangeEvent, useCallback, useId } from 'react';
+import { useId } from 'react';
 
-import { colorInputValue } from '@/lib/invitation/colorInput';
+import { ColorCircles } from '@/components/ui/color/ColorCircles';
 
 type TextColorSettingProps = {
     value: string;
+    themeColors: readonly string[];
     onChange: (color: string) => void;
 };
 
-// The invitation's text colour. Dragging through colours is one undo step.
-export function TextColorSetting({ value, onChange }: TextColorSettingProps) {
+// The invitation's text colour. Mixing a colour is one undo step.
+export function TextColorSetting({ value, themeColors, onChange }: TextColorSettingProps) {
     const t = useTranslations('InvitationEditor');
-    const id = useId();
-    const change = useCallback((event: ChangeEvent<HTMLInputElement>) => onChange(event.target.value), [onChange]);
+    const labelId = useId();
 
     return (
-        <div className="flex items-center justify-between gap-3">
-            <label htmlFor={id} className="font-medium">
+        <div className="flex flex-col gap-2">
+            <span id={labelId} className="font-medium">
                 {t('textColor')}
-            </label>
-            <input
-                id={id}
-                type="color"
-                value={colorInputValue(value)}
-                onChange={change}
-                className="h-9 w-12 shrink-0 cursor-pointer rounded-lg border border-current/20 bg-transparent p-0.5"
-            />
+            </span>
+            <ColorCircles value={value} themeColors={themeColors} labelledBy={labelId} onChange={onChange} />
         </div>
     );
 }

@@ -17,7 +17,7 @@ function toolbarState(overrides: Partial<TextToolbarState> = {}): TextToolbarSta
         size: 20,
         sizes: [16, 20, 24],
         color: '#2f2b2d',
-        swatches: ['#2f2b2d'],
+        themeColors: ['#2f2b2d'],
         bold: false,
         italic: true,
         align: 'center',
