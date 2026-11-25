@@ -51,7 +51,10 @@ export function DraftPayBar({
         // offsets count from; pull back over it so the bar rests on the 4rem tab bar,
         // and pull the page end in by the same amount so it still does at the bottom.
         // Tablets have no tab bar, so the bar rests on the bottom edge until lg puts it inline.
-        <div className="sticky bottom-[calc(4rem-var(--tab-bar-h))] z-30 -mx-4 mb-[calc(4rem-var(--tab-bar-h))] border-t border-primary/20 bg-primary-light/90 px-4 py-3 shadow-[0_-8px_20px_-16px_rgba(18,20,28,0.35)] backdrop-blur md:bottom-0 md:mb-0 lg:static lg:mx-0 lg:mt-4 lg:mb-0 lg:border-border/70 lg:bg-transparent lg:px-0 lg:pt-4 lg:pb-0 lg:shadow-none lg:backdrop-blur-none">
+        <div
+            data-draft-pay-bar
+            className="sticky bottom-[calc(4rem-var(--tab-bar-h))] z-30 -mx-4 mb-[calc(4rem-var(--tab-bar-h))] border-t border-primary/20 bg-primary-light/90 px-4 py-3 shadow-[0_-8px_20px_-16px_rgba(18,20,28,0.35)] backdrop-blur md:bottom-0 md:mb-0 lg:static lg:mx-0 lg:mt-4 lg:mb-0 lg:border-border/70 lg:bg-transparent lg:px-0 lg:pt-4 lg:pb-0 lg:shadow-none lg:backdrop-blur-none"
+        >
             {/* Error */}
             {error && (
                 <p role="alert" className="mb-2 text-sm text-rose-600">
