@@ -1,10 +1,12 @@
 import { describe, expect, it } from 'vitest';
 
+import { replaceFeedDocument } from '@/lib/feedEditTheme';
 import { defaultFeedLayout, wallThemeDesign } from '@/lib/feedLayout';
 import { lacksThemeFrame, themeFrame } from '@/lib/feedThemeFrame';
 import { planFeedThemeSwitch, planFeedWallSwitch } from '@/lib/feedThemes';
 import { FEED_BLOCK_FALLBACK_STYLE } from '@/lib/feedThemeStyles';
 import { type InvitationDocument, MAX_SECTIONS } from '@/lib/invitation/document';
+import { createInvitationEditorStore } from '@/lib/invitation/editorStore';
 import { createSection, type NewSectionType } from '@/lib/invitation/newSection';
 import type { PhotoFrameElement } from '@/lib/invitation/photoFrame';
 import { buildRenderContext } from '@/lib/invitation/render';
@@ -160,6 +162,20 @@ describe('a theme without frames', () => {
         const order = (document: InvitationDocument) => document.sections.map((section) => section.id);
         const current = layout(filled(), createSection('faq', 'WEDDING'));
         expect(order(switchTo(toWall(current), ROUND_THEME))).toEqual(order(current));
+    });
+});
+
+describe('undo', () => {
+    it('brings back the old frame in one step, with its photo', () => {
+        const start = layout(filled());
+        const store = createInvitationEditorStore(start, 'old');
+        const document = switchTo(start, ROUND_THEME, [holding('top', { frameId: 'fr-heart' })]);
+        store.getState().switchTheme('new', replaceFeedDocument(document));
+        expect(frameOf(framedPhotos(store.getState().document)[0])).toMatchObject({ frameId: 'fr-heart', photo: PHOTO });
+        store.getState().undo();
+        expect(store.getState().document).toEqual(start);
+        store.getState().redo();
+        expect(frameOf(framedPhotos(store.getState().document)[0]).frameId).toBe('fr-heart');
     });
 });
 
