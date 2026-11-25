@@ -23,6 +23,10 @@ function renderCover(props: Partial<ComponentProps<typeof FeedCoverBlock>> = {})
     );
 }
 
+const TOP_ART = { src: '/art.webp', scale: 1.2, animation: 'none' as const };
+const artAlt = en.InvitationRenderer.mainArtAlt;
+const WALL_ART = { presetKey: 'x', backgroundColor: '#FFFFFF', illustrationUrl: '/a.webp', titleColor: null, headingFont: null };
+
 const addPhoto = () => screen.queryByRole('link', { name: en.FeedPage.addCoverPhoto });
 const session = (key: 'mainSession' | 'secondarySession') => screen.queryByRole('link', { name: en.FeedPage[key] });
 
@@ -48,6 +52,32 @@ describe('FeedCoverBlock Add cover photo', () => {
     ])('is not offered %s', (_, props) => {
         renderCover(props);
         expect(addPhoto()).toBeNull();
+    });
+});
+
+describe("FeedCoverBlock with a theme's top illustration", () => {
+    it('draws it with the title and the buttons, and offers no cover photo', () => {
+        renderCover({ topArt: TOP_ART });
+        expect(screen.getByRole('img', { name: artAlt })).toHaveAttribute('src', '/art.webp');
+        expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(storyEvent().title);
+        expect(session('mainSession')).toBeTruthy();
+        expect(addPhoto()).toBeNull();
+    });
+
+    it('wins over the wall theme\'s illustration', () => {
+        renderCover({ topArt: TOP_ART, event: storyEvent({ theme: WALL_ART }) });
+        expect(screen.getByRole('img', { name: artAlt })).toBeTruthy();
+    });
+
+    it('gives way to a cover photo', () => {
+        renderCover({ topArt: TOP_ART, event: storyEvent({ coverMedia: storyPhotos[0] }) });
+        expect(screen.queryByRole('img', { name: artAlt })).toBeNull();
+    });
+
+    it('draws no buttons while editing', () => {
+        renderCover({ topArt: TOP_ART, editing: true });
+        expect(screen.getByRole('img', { name: artAlt })).toBeTruthy();
+        expect(screen.queryAllByRole('link')).toEqual([]);
     });
 });
 

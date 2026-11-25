@@ -40,6 +40,7 @@ import { useHideMobileTabBarOnScroll } from '@/hooks/useHideMobileTabBarOnScroll
 import { useRsvpPromptVisible } from '@/hooks/useRsvpPromptVisible';
 import { type FeedPageMode, feedPlaceHref } from '@/lib/feedMode';
 import { hasFeedSection } from '@/lib/feedSections';
+import type { FeedTopArt } from '@/lib/feedTopArt';
 import { cn } from '@/lib/utils';
 
 import { useFeedPage } from './FeedPageContext';
@@ -86,9 +87,10 @@ export function FeedPageContent() {
             </div>
         ));
     const topParts = {
-        cover: (
+        cover: (topArt: FeedTopArt | null) => (
             <FeedCoverBlock
                 event={coverEvent}
+                topArt={topArt}
                 isHost={isHost}
                 wishlist={moduleFlags.wishlist}
                 clearPill={Boolean(modeSwitch)}
@@ -116,7 +118,9 @@ export function FeedPageContent() {
 
     // What guests see differently from the host editing, for edit mode's preview.
     const guestParts = {
-        cover: <FeedCoverBlock event={coverEvent} isHost={false} wishlist={moduleFlags.wishlist} clearPill={Boolean(modeSwitch)} />,
+        cover: (topArt: FeedTopArt | null) => (
+            <FeedCoverBlock event={coverEvent} topArt={topArt} isHost={false} wishlist={moduleFlags.wishlist} clearPill={Boolean(modeSwitch)} />
+        ),
         rsvp: moduleFlags.rsvp ? <FeedRsvpBlock eventId={eventId} deadline={event.schedule.rsvpDeadline ?? null} /> : null,
     };
 

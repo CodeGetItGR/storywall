@@ -9,6 +9,7 @@ import type { EventDetailResponseDto, FeedLayoutDto } from '@/lib/api/types';
 import { defaultFeedLayout, feedLayoutKeys, wallThemeDesign } from '@/lib/feedLayout';
 import { feedModuleSection } from '@/lib/feedModuleBlocks';
 import { createFeedModeSection } from '@/lib/feedSections';
+import { createSection } from '@/lib/invitation/newSection';
 import { SAMPLE_SECTIONS, SAMPLE_THEME } from '@/lib/invitation/samples';
 import type { InvitationSection } from '@/lib/invitation/sections';
 import { FeedEditorFlagProvider } from '@/providers/FeedEditorFlagProvider';
@@ -216,5 +217,33 @@ describe('useFeedTop and a schedule with no sessions', () => {
     it("leaves the host's card out after the event", () => {
         viewer.isHost = true;
         expect(idsOf(eventWith({ schedule: { startAt: '2020-01-01T00:00:00Z', timezone: 'Europe/Athens', endAt: '2020-01-02T00:00:00Z' } }))).toEqual([]);
+    });
+});
+
+describe("useFeedTop and the theme's framed photo", () => {
+    const base = defaultFeedLayout();
+    const PHOTO = { source: 'media', mediaId: 'mine' };
+    const framed = (photo: unknown) => {
+        const section = createSection('photoFrame', 'WEDDING', () => 'framed');
+        return { ...section, elements: section.elements.map((element) => ({ ...element, frameId: 'fr-oval', photo })) } as InvitationSection;
+    };
+    const open = { ...smdEvent, schedule: { endAt: null } } as unknown as EventDetailResponseDto;
+    const media = (id: string) => `/${id}`;
+    const draws = (section: InvitationSection, { theme = SAMPLE_THEME, asGuest = false }) => {
+        const document = { ...base, sections: [...base.sections, section] };
+        const { result } = renderHook(() => useFeedTop(open, { document, theme, media, asGuest }), { wrapper });
+        return result.current.frame.middle.some((item) => item.id === 'framed');
+    };
+
+    it('shows the host its empty place, and guests nothing until a photo is in it', () => {
+        expect(draws(framed(undefined), {})).toBe(true);
+        expect(draws(framed(undefined), { asGuest: true })).toBe(false);
+        expect(draws(framed(PHOTO), { asGuest: true })).toBe(true);
+    });
+
+    it('shows nobody anything on a theme without its frame', () => {
+        const theme = { ...SAMPLE_THEME, frames: [] };
+        expect(draws(framed(PHOTO), { theme })).toBe(false);
+        expect(draws(framed(PHOTO), { theme, asGuest: true })).toBe(false);
     });
 });

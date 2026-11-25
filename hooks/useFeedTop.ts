@@ -12,6 +12,7 @@ import { type FeedFrame, feedFrame, usesInvitationLook, withoutSaveMyDateSection
 import { moduleOfBlock } from '@/lib/feedModuleBlocks';
 import { feedBackdropSurface, type FeedPageBackdrop, feedPageBackdrop } from '@/lib/feedPageBackdrop';
 import { drawsScheduleCard } from '@/lib/feedSchedule';
+import { lacksThemeFrame } from '@/lib/feedThemeFrame';
 import type { InvitationDocument } from '@/lib/invitation/document';
 import { isEmptyForGuests } from '@/lib/invitation/gallery';
 import { INVITATION_LABELS } from '@/lib/invitation/labels';
@@ -88,7 +89,8 @@ export function useFeedTop(event: EventDetailResponseDto, editing?: FeedTopEditi
 
     const frame = useMemo(() => {
         const edited = isEditing ? feedEditFrame(document, { rsvpMoves }) : null;
-        if (edited && saveMyDate) return edited;
+        // Edit mode draws everything, but for a framed photo with no frame on this theme.
+        if (edited && saveMyDate) return { ...edited, middle: edited.middle.filter((section) => !lacksThemeFrame(section, ctx)) };
         const split = feedFrame(document, { ended, rsvpMoves });
         const draws = (section: InvitationSection) => {
             if (section.type === 'feedDescription') return Boolean(event.description);

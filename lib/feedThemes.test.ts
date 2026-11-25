@@ -4,13 +4,13 @@ import { defaultFeedLayout, PLAIN_FEED_STYLE, WALL_THEME_ID, wallThemeDesign } f
 import { feedModuleSection } from '@/lib/feedModuleBlocks';
 import { createFeedModeSection } from '@/lib/feedSections';
 import {
-    FEED_BLOCK_FALLBACK_STYLE,
     invitationThemeChoice,
     planFeedThemeSwitch,
     planFeedWallSwitch,
     readThemeChoice,
     themeCardTitleLook,
 } from '@/lib/feedThemes';
+import { FEED_BLOCK_FALLBACK_STYLE } from '@/lib/feedThemeStyles';
 import type { InvitationDocument } from '@/lib/invitation/document';
 import { createSection, type NewSectionType } from '@/lib/invitation/newSection';
 import { SAMPLE_THEME } from '@/lib/invitation/samples';
@@ -26,13 +26,16 @@ function withBackground(type: NewSectionType, background: SectionStyle['backgrou
     return { ...createSection(type, 'WEDDING'), style: { ...FEED_BLOCK_FALLBACK_STYLE, background } } as InvitationSection;
 }
 
+// The framed photo's own switches are in lib/feedThemeFrame.test.ts.
+const NO_FRAMES = { ...SAMPLE_THEME, frames: [] };
+
 const PAGE = { kind: 'theme', slot: 'auto' } as const;
 
 function themeDocument(sections: InvitationSection[]): InvitationDocument {
     return { ...defaultFeedLayout(), themeId: 'rose-garden', sections };
 }
 
-const target = (sections: InvitationSection[]) => ({ document: themeDocument(sections), theme: SAMPLE_THEME, imageIds: new Set<string>() });
+const target = (sections: InvitationSection[]) => ({ document: themeDocument(sections), theme: NO_FRAMES, imageIds: new Set<string>() });
 const byType = (document: InvitationDocument, type: string) => document.sections.find((section) => section.type === type)!;
 
 // Feed mode's sections as a host filled them: a prompt, pinned photos, a hidden schedule.

@@ -3,8 +3,8 @@ import type { ReactNode } from 'react';
 import { ProtectedImage } from '@/components/common/ProtectedImage';
 import { BannerFallback } from '@/components/feed/BannerFallback';
 import { BannerOverlay } from '@/components/feed/BannerOverlay';
+import { BannerTitle } from '@/components/feed/BannerTitle';
 import { BANNER_IMAGE_SIZES, BANNER_THUMBNAIL_SIZES } from '@/lib/feed/bannerImage';
-import { cn } from '@/lib/utils';
 
 export function Banner({
     image,
@@ -55,14 +55,7 @@ export function Banner({
                         <div className="flex h-full flex-col items-end justify-between gap-2">{actions}</div>
                     </div>
                 </div>
-                <h1
-                    className={cn(
-                        'on-page event-heading px-5 pt-3 text-center alegreya-light text-4xl leading-tight text-balance text-event-title',
-                        clearPill && 'pb-9',
-                    )}
-                >
-                    {title}
-                </h1>
+                <BannerTitle title={title} clearPill={clearPill} />
             </div>
         );
     }

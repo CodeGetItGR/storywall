@@ -7,7 +7,7 @@ import type { FeedTopView } from '@/hooks/useFeedTop';
 import type { FeedAddPlace } from '@/lib/feedEditing';
 import { defaultFeedLayout, feedFrame } from '@/lib/feedLayout';
 import type { FeedPageMode } from '@/lib/feedMode';
-import { SAMPLE_SECTIONS } from '@/lib/invitation/samples';
+import { SAMPLE_SECTIONS, SAMPLE_THEME } from '@/lib/invitation/samples';
 import type { InvitationSection } from '@/lib/invitation/sections';
 
 afterEach(cleanup);
@@ -159,5 +159,33 @@ describe('FeedTopFrame', () => {
             />,
         );
         expect(screen.getAllByText(/end|before|after/).map((node) => node.textContent)).toEqual(['end']);
+    });
+});
+
+describe("the theme's top illustration", () => {
+    const layout = defaultFeedLayout();
+    const ctx = { theme: SAMPLE_THEME, media: (id: string) => `/${id}` };
+    const view = { frame: feedFrame(layout, { ended: false }), sections: layout.sections, ctx } as unknown as FeedTopView;
+    const coverOf = (mode: FeedPageMode) => {
+        render(
+            <FeedTopFrame
+                view={view}
+                mode={mode}
+                parts={PLAIN_PARTS}
+                cover={(topArt) => <span>{topArt?.src ?? 'no art'}</span>}
+                stories={null}
+                description={null}
+                rsvp={null}
+            />,
+        );
+        return document.querySelector('span')?.textContent;
+    };
+
+    it.each<[FeedPageMode, string]>([
+        ['invitation', '/m-main-art'],
+        ['feed', 'no art'],
+        ['single', 'no art'],
+    ])('goes to the cover in %s mode: %s', (mode, shown) => {
+        expect(coverOf(mode)).toBe(shown);
     });
 });
