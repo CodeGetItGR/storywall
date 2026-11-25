@@ -1,18 +1,20 @@
 import type { CSSProperties } from 'react';
 
-import { contrastRatio, INK_COLOR, MIN_INK_CONTRAST, readableOnInk, readableOnInkText } from '@/lib/contrast';
+import { INK_COLOR, MIN_INK_CONTRAST } from '@/lib/contrast';
 import { activeEffect, revealsBackground, type SectionEffect } from '@/lib/invitation/backgroundEffects';
 import type { CanvasTools } from '@/lib/invitation/canvasTools';
 import { colorInputValue } from '@/lib/invitation/colorInput';
 import type { InvitationDocument } from '@/lib/invitation/document';
 import type { InvitationElement } from '@/lib/invitation/elements';
 import { INVITATION_LABELS, type InvitationLabels, invitationLanguage } from '@/lib/invitation/labels';
+import type { PhotoTone } from '@/lib/invitation/photoContrast';
 import type { ImageRef, TextStyle } from '@/lib/invitation/primitives';
 import type { RsvpSender } from '@/lib/invitation/rsvp';
 import { type InvitationSection, isSaveMyDateSectionType } from '@/lib/invitation/sections';
 import type { TextRenderer } from '@/lib/invitation/textEditing';
 import type { ThemeDesign } from '@/lib/invitation/theme';
 import { PHOTO_SHAPES } from '@/lib/invitation/theme';
+import { contrastOn, readableTextOn } from '@/lib/pageTone';
 
 // Pure rules the invitation renderer follows. Each one is ported from the old
 // renderer (save-my-date public/legacy) and keeps its behaviour exactly, so
@@ -29,12 +31,17 @@ export type RenderContext = {
     bodyFont: string;
     buttonFont?: string;
     textColor: string;
-    // The customizable feed's one background colour (overrides.backgroundColor), made readable for ink
-    // text. Every section shows it instead of its own background.
+    // The customizable feed's one background colour (overrides.backgroundColor). Every section shows it instead of
+    // its own background.
     backgroundColor?: string;
     // The customizable feed draws the theme's content background behind the whole page (lib/feedPageBackdrop.ts):
     // sections left on the "auto" background show the page through.
     pageBackdrop?: boolean;
+    // The theme's text colour, while textColor is another one that reads on the feed's page: text on a section's own
+    // background starts from it.
+    themeTextColor?: string;
+    // The host picked the text colour: it stays on any background.
+    hostTextColor?: boolean;
     // The customizable feed lets a Save my date section keep a colour or photo of its own (KAN-269), over the page's.
     ownBackgrounds?: boolean;
     // The customizable feed draws every text centred: its toolbar has no alignment (spec item 9).
@@ -66,10 +73,29 @@ export const DEFAULT_SECONDARY = '#efe7ec';
 
 const HEX_COLOR = /^#[0-9a-fA-F]{6}$/;
 
-// A theme text colour that can't be read on the feed's background colour gives way to ink.
-function textColorOn(background: string | undefined, color: string): string {
+// A theme text colour that can't be read on the feed's background gives way to ink, white or black.
+function textColorOn(background: string | PhotoTone | null | undefined, color: string): string {
     if (!background || !HEX_COLOR.test(color)) return color;
-    return contrastRatio(color, background) < MIN_INK_CONTRAST ? INK_COLOR : color;
+    return contrastOn(background, color) < MIN_INK_CONTRAST ? readableTextOn(background) : color;
+}
+
+// The invitation's text colour on a feed page of one colour or picture.
+function pageTextColors(
+    page: string | PhotoTone | null | undefined,
+    hostText: string | undefined,
+    themeText: string,
+): Pick<RenderContext, 'textColor' | 'themeTextColor' | 'hostTextColor'> {
+    if (hostText) return { textColor: hostText, hostTextColor: true };
+    const textColor = textColorOn(page, themeText);
+    return textColor === themeText ? { textColor } : { textColor, themeTextColor: themeText };
+}
+
+// The context of a feed drawn on a Save my date theme's backdrop. A picture ink reads on (or one not measured yet)
+// keeps the theme's text colour.
+export function onPageBackdrop(ctx: RenderContext, page: string | PhotoTone | null): RenderContext {
+    const light = page !== null && typeof page !== 'string' && readableTextOn(page) === INK_COLOR;
+    const text = pageTextColors(light ? null : page, ctx.hostTextColor ? ctx.textColor : undefined, ctx.themeTextColor ?? ctx.textColor);
+    return { ...ctx, ...text, pageBackdrop: true };
 }
 
 export function buildRenderContext(
@@ -81,14 +107,16 @@ export function buildRenderContext(
 ): RenderContext {
     const forcePreset = Boolean(document.overrides.typographyPresetId && hostPreset);
     const dateSection = document.sections.find((section) => section.type === 'date');
-    const backgroundColor = document.overrides.backgroundColor ? readableOnInk(document.overrides.backgroundColor) : undefined;
+    const backgroundColor = document.overrides.backgroundColor;
+    const themeText = theme.colors.text ?? DEFAULT_TEXT_COLOR;
+    const hostText = document.overrides.textColor;
     return {
         theme,
         media,
         titleFont: forcePreset && hostPreset ? hostPreset.titleFont : theme.fonts.title,
         bodyFont: forcePreset && hostPreset ? hostPreset.bodyFont : theme.fonts.body,
         buttonFont: forcePreset && hostPreset ? hostPreset.buttonFont : theme.fonts.button,
-        textColor: document.overrides.textColor ?? textColorOn(backgroundColor, theme.colors.text ?? DEFAULT_TEXT_COLOR),
+        ...pageTextColors(backgroundColor, hostText, themeText),
         backgroundColor,
         presetMode: forcePreset || Boolean(theme.typographyPresetId),
         forcePreset,
@@ -168,8 +196,7 @@ function themeSlot(section: InvitationSection, index: number, ctx: RenderContext
     return index % 2 ? 'content' : 'top';
 }
 
-// On the feed, the colour or photo the host gave a Save my date section. The colour is drawn light enough for ink;
-// a photo that can't be found leaves the page showing.
+// On the feed, the colour or photo the host gave a Save my date section. A photo that can't be found leaves the page showing.
 type OwnBackground = { color: string; url?: never } | { url: string; color?: never };
 
 function ownBackground(section: InvitationSection, ctx: RenderContext): OwnBackground | undefined {
@@ -177,7 +204,7 @@ function ownBackground(section: InvitationSection, ctx: RenderContext): OwnBackg
     const { background } = section.style;
     if (background.kind === 'color') {
         const color = colorInputValue(background.color, '');
-        return color ? { color: readableOnInkText(color) } : undefined;
+        return color ? { color } : undefined;
     }
     const url = background.kind === 'image' ? resolveImage(background.image, ctx) : undefined;
     return url ? { url } : undefined;
@@ -256,14 +283,23 @@ export function sectionBackgroundPhotos(section: InvitationSection, index: numbe
 
 export type SectionPhotoTint = { photos: SectionPhotos; textColor: string };
 
+// The colour of text with none of its own, on the page or on the section's own background.
+function sectionTextColor(own: OwnBackground | undefined, ctx: RenderContext): string {
+    if (!own || ctx.hostTextColor) return ctx.textColor;
+    return textColorOn(own.color, ctx.themeTextColor ?? ctx.textColor);
+}
+
 // What the browser needs to keep text on a photo readable: the photos and the
 // colour of text that has none of its own. A host who picked the text
 // contrast by hand gets no tint, and a photo section's photo is its content,
 // not a background.
 export function sectionPhotoTint(section: InvitationSection, index: number, ctx: RenderContext): SectionPhotoTint | undefined {
     if (section.style.textContrast !== 'auto' || section.type === 'photo') return undefined;
+    const own = ownBackground(section, ctx);
+    // The text already has a colour that reads on the page's picture.
+    if (!own && showsPage(ctx) && ctx.themeTextColor) return undefined;
     const photos = sectionBackgroundPhotos(section, index, ctx);
-    return photos ? { photos, textColor: ctx.textColor } : undefined;
+    return photos ? { photos, textColor: own ? sectionTextColor(own, ctx) : ctx.textColor } : undefined;
 }
 
 // A solid colour behind the section, or '' when it shows an image.
@@ -296,7 +332,8 @@ export type TextContrast = 'normal' | 'light' | 'base';
 export function sectionTextContrast(section: InvitationSection, index: number, ctx: RenderContext): TextContrast {
     const manual = section.style.textContrast;
     if (manual === 'light' || manual === 'base') return manual;
-    if (!ctx.theme.autoTextContrast) return 'normal';
+    // On the feed the text colour itself follows the background (sectionTextColor).
+    if (!ctx.theme.autoTextContrast || ctx.ownBackgrounds || ctx.backgroundColor || showsPage(ctx)) return 'normal';
     const color = solidBackgroundColor(section, index, ctx);
     return color && isDarkColor(color) ? 'light' : 'normal';
 }
@@ -351,9 +388,11 @@ export function sectionShell(section: InvitationSection, index: number, ctx: Ren
     const background = sectionBackground(section, index, ctx);
     const effect = activeEffect(section.style);
     const surface = effect && revealsBackground(effect.type) ? { style: { background: 'transparent' }, hasThemeImage: false } : background;
-    // Text with no colour of its own has to read on the section's own colour too.
-    const textColor = textColorOn(ownBackground(section, ctx)?.color, ctx.textColor);
+    const own = ownBackground(section, ctx);
+    const textColor = sectionTextColor(own, ctx);
     const baseText = resolveTextColor(contrast, textColor, ctx) || textColor;
+    // The text changed colour to read here (the fills inside the section follow, invitation.css).
+    const changed = contrast === 'normal' && textColor !== (ctx.themeTextColor ?? ctx.textColor);
     const { minHeight, paddingY } = section.style;
     const style: Record<string, unknown> = {
         ...surface.style,
@@ -379,6 +418,8 @@ export function sectionShell(section: InvitationSection, index: number, ctx: Ren
         section.type === 'photoFrame' && 'photo-frame',
         surface.hasThemeImage && 'has-theme-bg',
         contrast === 'light' && 'wedart-text-contrast-light',
+        changed && 'smd-page-text',
+        changed && textColor === '#FFFFFF' && 'smd-page-text-light',
         ctx.transitionAdjacent.has(section.id) && 'wedart-transition-adjacent',
         effect && 'wedart-bg-effect-active',
     ]

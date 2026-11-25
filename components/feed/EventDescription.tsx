@@ -63,7 +63,7 @@ export function EventDescription({ eventId, description, className, keepShown = 
                         <Sparkles className="h-4 w-4" aria-hidden="true" />
                     </div>
                     <div className="min-w-0 flex-1">
-                        <p className="text-[15px] leading-7 text-pretty text-ink-muted">{description}</p>
+                        <p className="on-page text-[15px] leading-7 text-pretty text-ink-muted">{description}</p>
                     </div>
                 </div>
             </div>

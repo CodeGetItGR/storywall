@@ -1,4 +1,5 @@
 import { type InvitationDocument, upgradeInvitationDocument } from '@/lib/invitation/document';
+import type { PhotoTone } from '@/lib/invitation/photoContrast';
 import type { MediaResolver } from '@/lib/invitation/render';
 import { type ThemeDesign, themeDesignSchema } from '@/lib/invitation/theme';
 
@@ -20,9 +21,11 @@ export type InvitationThemePublicDto = {
     document: unknown;
     // Image id to URL for every image the design and document use. The URLs may expire.
     assetUrls: Record<string, string>;
+    // How light the design's page picture is; null without one or until measured, and absent before guestwall-be KAN-278.
+    pageTone?: PhotoTone | null;
 };
 
-export type ThemePreview = { document: InvitationDocument; theme: ThemeDesign; media: MediaResolver };
+export type ThemePreview = { document: InvitationDocument; theme: ThemeDesign; media: MediaResolver; pageTone: PhotoTone | null };
 
 // The backend's slug rule (InvitationThemeRequestDto).
 const THEME_SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
@@ -47,5 +50,6 @@ export function readThemePreview(dto: InvitationThemePublicDto): ThemePreview {
         document: upgradeInvitationDocument(dto.document),
         theme: themeDesignSchema.parse(dto.design),
         media: (mediaId) => assetUrls[mediaId],
+        pageTone: dto.pageTone ?? null,
     };
 }

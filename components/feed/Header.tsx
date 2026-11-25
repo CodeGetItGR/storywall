@@ -21,7 +21,7 @@ export function Header({ countdownTime, eventId }: { countdownTime: number; even
             {/* Header */}
             <div className="relative flex items-center justify-between gap-4 p-4 pb-2">
                 <AppLink href={routes.landing} className="rounded-lg">
-                    <Logo direction="row" wordmarkClassName="h-7 w-auto xxs:h-6 xs:h-8 sm:h-8" />
+                    <Logo direction="row" wordmarkClassName="on-page-wordmark h-7 w-auto xxs:h-6 xs:h-8 sm:h-8" />
                 </AppLink>
                 {/* Countdown */}
                 <Countdown eventId={eventId} time={countdownTime} className="sm:ml-2" />

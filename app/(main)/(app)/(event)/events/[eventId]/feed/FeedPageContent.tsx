@@ -196,7 +196,7 @@ export function FeedPageContent() {
                                     )
                                 )}
                                 <div ref={loadMoreRef} className="h-1" />
-                                {isFetchingNextPage && <p className="py-2 text-center text-sm text-ink-muted">{loadingMoreLabel}</p>}
+                                {isFetchingNextPage && <p className="on-page py-2 text-center text-sm text-ink-muted">{loadingMoreLabel}</p>}
                             </div>
                         </div>
                     )}

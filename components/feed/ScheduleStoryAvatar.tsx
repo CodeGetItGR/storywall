@@ -22,7 +22,7 @@ export function ScheduleStoryAvatar() {
             aria-label={scheduleName}
         >
             <ScheduleStoryDateBadge date={activeEvent.schedule.startAt} locale={locale} />
-            <span className="max-w-14 truncate text-center text-[11px] leading-tight font-medium text-ink-muted">{scheduleName}</span>
+            <span className="on-page max-w-14 truncate text-center text-[11px] leading-tight font-medium text-ink-muted">{scheduleName}</span>
         </AppLink>
     );
 }

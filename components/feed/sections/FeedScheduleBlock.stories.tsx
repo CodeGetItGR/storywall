@@ -9,6 +9,7 @@ import { fn } from 'storybook/test';
 
 import { withAppContext } from '@/.storybook/appContext';
 import { storyEvent, storyHostMember, storyMember, storyModules, storySession } from '@/.storybook/fixtures';
+import { onDarkPage, onMiddlePage } from '@/.storybook/pageTone';
 import { FeedEditBlock } from '@/components/feed/edit/FeedEditBlock';
 import { FeedTop } from '@/components/feed/layout/FeedTop';
 import { useFeedEditSectionPart } from '@/hooks/useFeedEditSectionPart';
@@ -183,8 +184,13 @@ export const SeveralDaysGuestMobile: Story = { ...SeveralDaysGuest, globals: mob
 export const SeveralDaysHost: Story = { args: { event: severalDays }, parameters: host };
 export const SeveralDaysHostMobile: Story = { ...SeveralDaysHost, globals: mobile };
 
-// On a light page picture, as a Save my date theme draws one. Dark ones are KAN-278.
+// On a light page picture, as a Save my date theme draws one.
 export const OnThemePicture: Story = { args: { event: severalDays, backdrop: true } };
+
+// On a dark page and on a middle colour.
+export const OnDarkPage: Story = { args: { event: severalDays }, decorators: [onDarkPage] };
+export const OnDarkPageMobile: Story = { ...OnDarkPage, globals: mobile };
+export const OnMiddlePage: Story = { args: { event: severalDays }, decorators: [onMiddlePage] };
 
 // Today's schedule in Social Feed mode, with no sessions.
 export const TodayNoneGuest: Story = { args: { event: none, mode: 'feed' } };

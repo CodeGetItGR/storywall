@@ -11,7 +11,7 @@ export function FeedAddBetween({ onAdd }: { onAdd: () => void }) {
     const t = useTranslations('InvitationEditor.sections');
 
     return (
-        <div className="flex items-center gap-3 px-4 py-2">
+        <div className="on-page flex items-center gap-3 px-4 py-2">
             {/* Dotted line */}
             <span aria-hidden="true" className="h-px flex-1 border-t border-dashed border-ink/25" />
             {/* Add section */}

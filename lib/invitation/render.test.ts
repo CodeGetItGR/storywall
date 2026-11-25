@@ -1,15 +1,17 @@
 import { describe, expect, it } from 'vitest';
 
-import { INK_COLOR, readableOnInk, readableOnInkText } from '@/lib/contrast';
+import { INK_COLOR } from '@/lib/contrast';
 import { defaultFeedLayout, wallThemeDesign } from '@/lib/feedLayout';
 import type { InvitationElement } from '@/lib/invitation/elements';
 import {
     buildRenderContext,
     customSectionLayout,
     isDarkColor,
+    onPageBackdrop,
     resolveFont,
     sectionBackground,
     sectionBackgroundPhotos,
+    sectionPhotoTint,
     sectionShell,
     sectionTextContrast,
     textStyleCss,
@@ -204,9 +206,12 @@ describe('the feed background colour', () => {
         expect(sectionBackgroundPhotos(photo, 4, feed)).toBeUndefined();
     });
 
-    it('is drawn lightened when ink text cannot be read on it', () => {
+    it('is drawn as picked, with text that reads on it', () => {
         const feed = buildRenderContext(document('#000000'), wallThemeDesign(null), photoUrl);
-        expect(feed.backgroundColor).toBe(readableOnInk('#000000'));
+        expect(feed.backgroundColor).toBe('#000000');
+        expect(feed.textColor).toBe('#FFFFFF');
+        const wall = wallThemeDesign(null);
+        expect(buildRenderContext(document('#FF7A59'), wall, photoUrl).textColor).toBe(wall.colors.text);
     });
 
     it('falls back to ink for a theme text colour that cannot be read on it', () => {
@@ -261,14 +266,16 @@ describe('a feed page that draws the theme background itself', () => {
         }
     });
 
-    it('reads the automatic text contrast off the page colour when the content slot has no image', () => {
+    it('gives the text a colour that reads on the page colour when the content slot has no image', () => {
         const plain = {
             ...SAMPLE_THEME,
             autoTextContrast: true,
             backgrounds: { ...SAMPLE_THEME.backgrounds, content: { mode: 'cover', stableRepeat: false } },
         } as ThemeDesign;
-        const darkPage = { ...buildRenderContext(SAMPLE_DOCUMENT, { ...plain, colors: { ...plain.colors, secondary: '#111111' } }, media), pageBackdrop: true };
-        expect(sectionTextContrast(auto, 2, darkPage)).toBe('light');
+        const dark = buildRenderContext(SAMPLE_DOCUMENT, { ...plain, colors: { ...plain.colors, secondary: '#111111' } }, media);
+        const darkPage = onPageBackdrop(dark, '#111111');
+        expect(sectionTextContrast(auto, 2, darkPage)).toBe('normal');
+        expect(sectionShell(auto, 2, darkPage).style.color).toBe('#FFFFFF');
     });
 
     it('changes nothing without it', () => {
@@ -298,11 +305,11 @@ describe("a feed section's own background", () => {
         expect(sectionBackground(photo, 0, { ...feedLook, media: () => undefined }).style).toEqual({ background: 'transparent' });
     });
 
-    it('is drawn lighter when ink cannot be read on it, and the text gives way to ink', () => {
+    it('is drawn as picked, and its text reads on it', () => {
         const navy = withBackground({ kind: 'color', color: '#1B2A4A' });
-        const { style, contrast } = sectionShell(navy, 0, { ...feedLook, textColor: '#FFFFFF' });
-        expect(style.background).toBe(readableOnInkText('#1b2a4a'));
-        expect(style.color).toBe(INK_COLOR);
+        const { style, contrast } = sectionShell(navy, 0, feedLook);
+        expect(style.background).toBe('#1b2a4a');
+        expect(style.color).toBe('#FFFFFF');
         expect(contrast).toBe('normal');
     });
 
@@ -311,6 +318,39 @@ describe("a feed section's own background", () => {
         expect(sectionBackground(cover, 0, feedLook).style).toEqual({ background: 'transparent' });
         const coloured = withBackground({ kind: 'color', color: '#B5BFA6' });
         expect(sectionBackground(coloured, 0, { ...feedLook, ownBackgrounds: undefined }).style).toEqual({ background: 'transparent' });
+    });
+});
+
+describe('the text on a feed page', () => {
+    const own = (color: string) =>
+        ({ ...blank, style: { ...blank.style, background: { kind: 'color', color }, textContrast: 'auto' } }) as InvitationSection;
+    const shown = { ...blank, style: { ...blank.style, background: { kind: 'theme', slot: 'auto' }, textContrast: 'auto' } } as InvitationSection;
+    const dark = { mean: 0.03, dark: 0.01, light: 0.08 };
+    const onDark = { ...onPageBackdrop(ctx, dark), ownBackgrounds: true };
+
+    it('is white on a dark picture, with no shade over the picture', () => {
+        const shell = sectionShell(shown, 0, onDark);
+        expect(shell.style.color).toBe('#FFFFFF');
+        expect(shell.className).toContain('smd-page-text-light');
+        expect(sectionPhotoTint(shown, 0, onDark)).toBeUndefined();
+    });
+
+    it('keeps the theme colour on a light picture, or one not measured yet', () => {
+        expect(onPageBackdrop(ctx, { mean: 0.8, dark: 0.7, light: 0.9 }).textColor).toBe(ctx.textColor);
+        expect(onPageBackdrop(ctx, null)).toEqual({ ...ctx, pageBackdrop: true });
+    });
+
+    it("goes back to the theme's colour on a light background of the section's own", () => {
+        const shell = sectionShell(own('#FFFFFF'), 0, onDark);
+        expect(shell.style.color).toBe(ctx.textColor);
+        expect(shell.className).not.toContain('smd-page-text');
+    });
+
+    it("never changes the host's own colour", () => {
+        const mine = { ...SAMPLE_DOCUMENT, overrides: { ...SAMPLE_DOCUMENT.overrides, textColor: '#7A1F3D' } };
+        const look = { ...onPageBackdrop(buildRenderContext(mine, SAMPLE_THEME, media), dark), ownBackgrounds: true };
+        expect(look.textColor).toBe('#7A1F3D');
+        expect(sectionShell(own('#1B2A4A'), 0, look).style.color).toBe('#7A1F3D');
     });
 });
 

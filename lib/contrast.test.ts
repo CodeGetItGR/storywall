@@ -3,15 +3,12 @@ import { describe, expect, it } from 'vitest';
 import {
     contrastRatio,
     INK_COLOR,
-    INK_MUTED_COLOR,
     lightTone,
+    luminanceContrast,
     MIN_INK_CONTRAST,
-    MIN_INK_MUTED_CONTRAST,
-    readableOnInk,
-    readableOnInkText,
+    mixColors,
     relativeLuminance,
     tooDarkForInk,
-    tooDarkForInkText,
 } from '@/lib/contrast';
 
 describe('relativeLuminance', () => {
@@ -62,32 +59,17 @@ describe('tooDarkForInk', () => {
     });
 });
 
-describe('readableOnInk', () => {
-    it('keeps a colour ink already reads on', () => {
-        expect(readableOnInk('#F5E6D3')).toBe('#F5E6D3');
-    });
-
-    it('lightens a dark colour until ink and muted ink read on it', () => {
-        for (const dark of ['#000000', '#1B2A4A', '#7A1F3D', '#1A1A40']) {
-            const readable = readableOnInk(dark);
-            expect(readable).not.toBe(dark);
-            expect(contrastRatio(readable, INK_COLOR)).toBeGreaterThanOrEqual(MIN_INK_CONTRAST);
-            expect(contrastRatio(readable, INK_MUTED_COLOR)).toBeGreaterThanOrEqual(MIN_INK_MUTED_CONTRAST);
-        }
+describe('luminanceContrast', () => {
+    it('is what contrastRatio works out from the colours', () => {
+        expect(luminanceContrast(relativeLuminance('#1B2A4A'), 1)).toBeCloseTo(contrastRatio('#1B2A4A', '#FFFFFF'), 10);
     });
 });
 
-describe('readableOnInkText', () => {
-    it('keeps a colour ink reads on, even when the grey labels would not', () => {
-        expect(tooDarkForInk('#FF7A59')).toBe(true);
-        expect(tooDarkForInkText('#FF7A59')).toBe(false);
-        expect(readableOnInkText('#FF7A59')).toBe('#FF7A59');
-    });
-
-    it('lightens a dark colour until ink reads on it', () => {
-        const drawn = readableOnInkText('#1B2A4A');
-        expect(drawn).not.toBe('#1B2A4A');
-        expect(tooDarkForInkText(drawn)).toBe(false);
+describe('mixColors', () => {
+    it('moves from the first colour to the second', () => {
+        expect(mixColors('#000000', '#FFFFFF', 0).toUpperCase()).toBe('#000000');
+        expect(mixColors('#000000', '#FFFFFF', 0.5).toUpperCase()).toBe('#808080');
+        expect(mixColors('#000000', '#FFFFFF', 1).toUpperCase()).toBe('#FFFFFF');
     });
 });
 

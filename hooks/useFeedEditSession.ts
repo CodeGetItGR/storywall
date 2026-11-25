@@ -128,6 +128,7 @@ export function useFeedEditSession(event: Pick<EventDetailResponseDto, 'id' | 'e
         themeSlug,
         theme: themes.theme,
         media: themes.media,
+        pageTone: themes.pageTone,
         heldWall,
         wallTheme: themes.wallTheme,
         switching: themes.switching,

@@ -1,8 +1,9 @@
 import type { CSSProperties } from 'react';
 
-import { lightTone, readableOnInk } from '@/lib/contrast';
+import { lightTone } from '@/lib/contrast';
 import { WALL_THEME_ID } from '@/lib/feedLayout';
 import type { InvitationDocument } from '@/lib/invitation/document';
+import type { PhotoTone } from '@/lib/invitation/photoContrast';
 import { cssUrl, DEFAULT_SECONDARY, type MediaResolver } from '@/lib/invitation/render';
 import type { ThemeDesign } from '@/lib/invitation/theme';
 import { cn } from '@/lib/utils';
@@ -13,7 +14,7 @@ export const FEED_CARD_LIGHTEN = 0.6;
 // What a Save my date theme draws behind the whole feed page (spec option T1): its content background down the
 // page or fixed to the screen, or its secondary colour, and the light tone the post cards sit on.
 export type FeedPageBackdrop = {
-    // The page colour, behind the image and on its own where the theme has none, made readable for ink.
+    // The page colour, behind the image and on its own where the theme has none.
     color: string;
     image: { desktop: string; mobile: string } | null;
     size: string;
@@ -26,6 +27,8 @@ export type FeedPageBackdrop = {
     // instead of a background that scrolls with the page.
     fixed: boolean;
     cardColor: string;
+    // How light the picture is; null without one, or while the backend hasn't measured it.
+    pictureTone?: PhotoTone | null;
 };
 
 // A picture as wide as the page, repeating down it: a stable repeat, made to line up with itself.
@@ -57,10 +60,15 @@ const FIXED = {
 };
 
 // null on the wall theme, and when the host picked the feed's own background colour (that colour wins).
-export function feedPageBackdrop(document: InvitationDocument, theme: ThemeDesign, media: MediaResolver): FeedPageBackdrop | null {
+export function feedPageBackdrop(
+    document: InvitationDocument,
+    theme: ThemeDesign,
+    media: MediaResolver,
+    pictureTone: PhotoTone | null = null,
+): FeedPageBackdrop | null {
     if (document.themeId === WALL_THEME_ID || document.overrides.backgroundColor) return null;
     const slot = theme.backgrounds.content;
-    const color = readableOnInk(theme.colors.secondary || DEFAULT_SECONDARY);
+    const color = theme.colors.secondary || DEFAULT_SECONDARY;
     const desktop = slot.desktop ? media(slot.desktop.mediaId) : undefined;
     const mobile = slot.mobile ? media(slot.mobile.mediaId) : undefined;
     const wide = desktop ?? mobile;
@@ -71,7 +79,13 @@ export function feedPageBackdrop(document: InvitationDocument, theme: ThemeDesig
         image: wide ? { desktop: wide, mobile: mobile ?? wide } : null,
         ...drawn,
         cardColor: lightTone(color, FEED_CARD_LIGHTEN),
+        pictureTone: wide ? pictureTone : null,
     };
+}
+
+// What is behind the page's text on a backdrop: its picture (null while its tone isn't known), or its colour.
+export function feedBackdropSurface(backdrop: FeedPageBackdrop): PhotoTone | string | null {
+    return backdrop.image ? (backdrop.pictureTone ?? null) : backdrop.color;
 }
 
 // The page's classes for a backdrop (components/event/feedBackdrop.css); none without one.

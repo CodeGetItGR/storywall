@@ -62,7 +62,7 @@ describe("FeedBlockSheet of a Save my date section", () => {
         background,
     };
     const group = (name: string) => within(screen.getByRole('group', { name }));
-    const { image, color, tooDark } = en.FeedEditor.background;
+    const { image, color } = en.FeedEditor.background;
     const failed = en.InvitationEditor.photos.errors.failed;
 
     it('adds a photo and colours the text from its settings', async () => {
@@ -111,14 +111,8 @@ describe("FeedBlockSheet of a Save my date section", () => {
         expect(background.onColor).toHaveBeenLastCalledWith('#7A3B2E');
         cleanup();
         renderSheet(null, vi.fn(), { content: { ...content, background: { ...background, color: '#B5BFA6' } } });
-        expect(screen.queryByText(tooDark)).toBeNull();
         await userEvent.click(screen.getByRole('button', { name: byDefault }));
         expect(background.onColor).toHaveBeenLastCalledWith(undefined);
-    });
-
-    it('says when a lighter shade will be drawn', () => {
-        renderSheet(null, vi.fn(), { content: { ...content, background: { ...background, color: '#3A2A20' } } });
-        expect(screen.getByText(tooDark)).toBeTruthy();
     });
 });
 

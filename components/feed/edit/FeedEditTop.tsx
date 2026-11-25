@@ -97,7 +97,13 @@ export function FeedEditTop({
     const sheetUploads = useMemo(() => ({ uploadImage: feedImageUploader(event.id), remember: uploads.remember }), [event.id, uploads.remember]);
     const { previewing, toggle: togglePreview } = useFeedEditPreview();
     const moduleBlock = useFeedModuleBlockPart(event, !previewing);
-    const view = useFeedTop(event, { document: session.document, theme: session.theme, media: uploads.media, asGuest: previewing });
+    const view = useFeedTop(event, {
+        document: session.document,
+        theme: session.theme,
+        media: uploads.media,
+        pageTone: session.pageTone,
+        asGuest: previewing,
+    });
     useEditPageTheme(event.id, session.wallTheme, session.background, view.backdrop);
     const fonts = useInvitationFonts(true);
     const textPresets = useFeedTextPresets(fonts.data);
