@@ -10,20 +10,22 @@ import { ThemeToggleRow } from '@/components/saveMyDate/editor/themeStyle/ThemeT
 import type { ThemeStyle } from '@/hooks/useThemeStyle';
 import { useThemeStyleControls } from '@/hooks/useThemeStyleControls';
 import { THEME_BACKGROUND_SLOTS } from '@/lib/invitation/sectionStyle';
+import { themeColors } from '@/lib/invitation/textEditing';
 
 // The theme's style in the admin's theme editor: colours, backgrounds, fonts, photo shape and buttons.
 export function ThemeStylePanel({ style }: { style: ThemeStyle }) {
     const t = useTranslations('InvitationEditor');
     const controls = useThemeStyleControls(style);
     const { design } = style;
+    const ownColors = themeColors(design);
 
     return (
         <div className="flex flex-col gap-6">
             {/* Colours */}
             <SettingsGroup>
-                <ThemeColorRow label={t('themeStyle.mainColor')} value={design.colors.primary} onChange={controls.setPrimary} />
-                <ThemeColorRow label={t('themeStyle.secondColor')} value={design.colors.secondary} onChange={controls.setSecondary} />
-                <ThemeColorRow label={t('textColor')} value={design.colors.text} onChange={controls.setText} />
+                <ThemeColorRow label={t('themeStyle.mainColor')} value={design.colors.primary} themeColors={ownColors} onChange={controls.setPrimary} />
+                <ThemeColorRow label={t('themeStyle.secondColor')} value={design.colors.secondary} themeColors={ownColors} onChange={controls.setSecondary} />
+                <ThemeColorRow label={t('textColor')} value={design.colors.text} themeColors={ownColors} onChange={controls.setText} />
                 <ThemeToggleRow label={t('themeStyle.autoContrast')} checked={design.autoTextContrast} onChange={style.setAutoContrast} />
             </SettingsGroup>
 
@@ -59,12 +61,14 @@ export function ThemeStylePanel({ style }: { style: ThemeStyle }) {
                 <ThemeColorRow
                     label={t('themeStyle.buttonFill')}
                     value={style.buttonBgShown}
+                    themeColors={ownColors}
                     onChange={controls.setButtonBg}
                     onReset={design.colors.buttonBg ? controls.resetButtonBg : undefined}
                 />
                 <ThemeColorRow
                     label={t('themeStyle.buttonText')}
                     value={style.buttonTextShown}
+                    themeColors={ownColors}
                     onChange={controls.setButtonText}
                     onReset={design.colors.buttonText ? controls.resetButtonText : undefined}
                 />

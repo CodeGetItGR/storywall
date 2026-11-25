@@ -97,7 +97,7 @@ export function FeedTextToolbar({ toolbar, anchor, canAdd, presets, text, onPres
                 {/* Colour: this text only (the block's droplet colours all of them) */}
                 <TextColorPicker
                     value={toolbar.color}
-                    swatches={toolbar.swatches}
+                    themeColors={toolbar.themeColors}
                     onPick={toolbar.pickColor}
                     scopes={COLOR_SCOPES}
                     className={docked ? DOCKED_COLOR : undefined}

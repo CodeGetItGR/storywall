@@ -165,11 +165,12 @@ describe('QrCardLayoutEditor', () => {
 
         // One colour starts as the card's text colour.
         fireEvent.click(screen.getByRole('radio', { name: 'logoColorOptions.one' }));
-        fireEvent.change(screen.getByLabelText('color'), { target: { value: '#ffffff' } });
+        fireEvent.click(screen.getByRole('button', { name: 'color' }));
+        fireEvent.click(await screen.findByRole('button', { name: '#AC9FC7' }));
 
         fireEvent.click(screen.getByRole('button', { name: 'save' }));
         await vi.waitFor(() => expect(patch.mutateAsync).toHaveBeenCalled());
-        expect(patch.mutateAsync.mock.calls[0][0].input.layout.logo).toEqual({ x: 30, y: 129.7, width: 45, color: '#FFFFFF' });
+        expect(patch.mutateAsync.mock.calls[0][0].input.layout.logo).toEqual({ x: 30, y: 129.7, width: 45, color: '#AC9FC7' });
         // The tiles got shorter to make room for it.
         expect(patch.mutateAsync.mock.calls[0][0].input.layout.features).toEqual({ x: 8, y: 79, width: 89, height: 49.7 });
     });

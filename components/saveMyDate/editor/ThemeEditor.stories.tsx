@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
-import { expect, fireEvent, fn, userEvent, waitFor, within } from 'storybook/test';
+import { expect, fn, userEvent, waitFor, within } from 'storybook/test';
 
 import { withAppContext } from '@/.storybook/appContext';
 import { copyFor } from '@/.storybook/copy';
@@ -28,15 +28,30 @@ type EditorCopy = ReturnType<typeof copyFor>['InvitationEditor'];
 // Waits as long as waitForOpen: a busy runner can take more than the default second.
 const SLOW = { timeout: 10_000 };
 
-// The docked panel's input on a wide screen, or the open sheet's on a phone.
-function visibleInput(label: string) {
-    const inputs = within(document.body).getAllByLabelText(label);
-    return inputs.find((input) => input.checkVisibility()) ?? inputs[0];
+const CIRCLE = '#AC9FC7';
+
+// Opens the colour's circles and picks one; the popover closes by itself.
+async function pickMainColor(swatch: HTMLElement) {
+    const body = within(document.body);
+    await userEvent.click(swatch);
+    await userEvent.click(await body.findByRole('button', { name: CIRCLE }, SLOW));
+    await waitFor(() => expect(body.queryByRole('button', { name: CIRCLE, hidden: true })).not.toBeInTheDocument(), SLOW);
 }
 
+// In the docked panel on a wide screen, or in the settings sheet on a phone, which is closed again.
 async function changeMainColor(canvasElement: HTMLElement, copy: EditorCopy) {
-    fireEvent.input(visibleInput(copy.themeStyle.mainColor), { target: { value: '#7a1f3d' } });
-    await waitFor(() => expect(within(canvasElement).getByRole('button', { name: copy.undo })).toBeEnabled(), SLOW);
+    const canvas = within(canvasElement);
+    const docked = canvas.queryByRole('button', { name: copy.themeStyle.mainColor });
+    if (docked) {
+        await pickMainColor(docked);
+    } else {
+        await userEvent.click(canvas.getByRole('button', { name: copy.settings }));
+        const sheet = await waitForOpen('dialog');
+        await pickMainColor(within(sheet).getByRole('button', { name: copy.themeStyle.mainColor }));
+        await userEvent.click(within(sheet).getByRole('button', { name: copy.close }));
+        await waitFor(() => expect(sheet).not.toBeInTheDocument(), SLOW);
+    }
+    await waitFor(() => expect(canvas.getByRole('button', { name: copy.undo })).toBeEnabled(), SLOW);
 }
 
 // A draft theme saves as you go: no Save button.
@@ -91,6 +106,31 @@ export const StyleSheet: Story = {
         await userEvent.click(within(canvasElement).getByRole('button', { name: copy.settings }));
         const sheet = await waitForOpen('dialog');
         await expect(within(sheet).getByLabelText(copy.themeStyle.mainColor)).toBeInTheDocument();
+    },
+};
+
+// On the phone sheet a colour's circles are light too.
+export const StyleSheetColors: Story = {
+    tags: ['visual-mobile-only'],
+    globals: { viewport: { value: 'mobile' } },
+    play: async ({ canvasElement, globals }) => {
+        const copy = copyFor(globals).InvitationEditor;
+        await userEvent.click(within(canvasElement).getByRole('button', { name: copy.settings }));
+        const sheet = await waitForOpen('dialog');
+        await userEvent.click(within(sheet).getByRole('button', { name: copy.themeStyle.mainColor }));
+        await within(document.body).findByRole('button', { name: CIRCLE }, SLOW);
+    },
+};
+
+// And so is their mixer.
+export const StyleSheetMixer: Story = {
+    tags: ['visual-mobile-only'],
+    globals: { viewport: { value: 'mobile' } },
+    play: async (context) => {
+        await StyleSheetColors.play?.(context);
+        const copy = copyFor(context.globals).InvitationEditor;
+        await userEvent.click(within(document.body).getByRole('button', { name: copy.moreColors }));
+        await within(document.body).findByRole('button', { name: copy.sectionSettings.done }, SLOW);
     },
 };
 

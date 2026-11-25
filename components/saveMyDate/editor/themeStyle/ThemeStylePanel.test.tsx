@@ -41,21 +41,27 @@ function renderPanel(initial: ThemeDesign = PREVIEW_THEME) {
     return { theme: () => currentStore!.getState().theme! };
 }
 
+// Picks a circle in the popover of the field with this label.
+async function pickColor(label: string, color: string) {
+    fireEvent.click(screen.getByRole('button', { name: label }));
+    fireEvent.click(await screen.findByRole('button', { name: color }));
+}
+
 describe('ThemeStylePanel', () => {
     afterEach(cleanup);
 
-    it('changes the main colour', () => {
+    it('changes the main colour', async () => {
         const { theme } = renderPanel();
-        fireEvent.change(screen.getByLabelText('Main color'), { target: { value: '#112233' } });
-        expect(theme().colors.primary).toBe('#112233');
+        await pickColor('Main color', '#CFB98C');
+        expect(theme().colors.primary).toBe('#CFB98C');
     });
 
-    it('shows the button defaults and offers Reset only for a colour of its own', () => {
+    it('shows the button defaults and offers Reset only for a colour of its own', async () => {
         renderPanel({ ...PREVIEW_THEME, colors: { ...PREVIEW_THEME.colors, buttonBg: undefined, buttonText: undefined } });
-        expect(screen.getByLabelText('Button text color')).toHaveValue(DEFAULT_BUTTON_TEXT);
+        expect(screen.getByRole('button', { name: 'Button text color' })).toHaveStyle({ background: DEFAULT_BUTTON_TEXT });
         expect(screen.queryByRole('button', { name: 'Reset' })).not.toBeInTheDocument();
 
-        fireEvent.change(screen.getByLabelText('Button fill'), { target: { value: '#445566' } });
+        await pickColor('Button fill', '#CFB98C');
         expect(screen.getAllByRole('button', { name: 'Reset' })).toHaveLength(1);
     });
 
@@ -63,7 +69,7 @@ describe('ThemeStylePanel', () => {
         const { theme } = renderPanel({ ...PREVIEW_THEME, colors: { ...PREVIEW_THEME.colors, buttonBg: '#445566' } });
         fireEvent.click(screen.getByRole('button', { name: 'Reset' }));
         expect(theme().colors.buttonBg).toBeUndefined();
-        expect(screen.getByLabelText('Button fill')).toHaveValue(PREVIEW_THEME.colors.primary.toLowerCase());
+        expect(screen.getByRole('button', { name: 'Button fill' })).toHaveStyle({ background: PREVIEW_THEME.colors.primary });
     });
 
     it('applies a font style and goes back to Custom when a font is picked by hand', () => {

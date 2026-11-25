@@ -190,10 +190,7 @@ export function useQrCardLayoutEditor({
         [changeField],
     );
     const handleFieldBoldChange = useCallback((bold: boolean) => changeField({ bold }), [changeField]);
-    const handleFieldColorChange = useCallback(
-        (event: ChangeEvent<HTMLInputElement>) => changeField({ color: event.currentTarget.value.toUpperCase() }),
-        [changeField],
-    );
+    const handleFieldColorChange = useCallback((color: string) => changeField({ color }), [changeField]);
     const handleFieldTextChange = useCallback(
         (event: ChangeEvent<HTMLInputElement>) => {
             const [part, textLocale] = event.currentTarget.name.split('.') as [FieldTextPart, string];
@@ -213,10 +210,7 @@ export function useQrCardLayoutEditor({
         },
         [textColor],
     );
-    const handleLogoColorChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {
-        const color = event.currentTarget.value.toUpperCase();
-        setLayout((current) => setLogoColor(current, color));
-    }, []);
+    const handleLogoColorChange = useCallback((color: string) => setLayout((current) => setLogoColor(current, color)), []);
 
     // Wording inputs are named <key>.<locale>, e.g. gift.el.
     const handleWordingChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {

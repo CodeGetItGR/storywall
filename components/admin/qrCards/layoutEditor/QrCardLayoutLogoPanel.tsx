@@ -3,6 +3,7 @@
 import { useTranslations } from 'next-intl';
 
 import { QrCardLayoutSegmented } from '@/components/admin/qrCards/layoutEditor/QrCardLayoutSegmented';
+import { ColorSwatch } from '@/components/ui/color/ColorSwatch';
 import type { QrCardLayoutEditorState } from '@/hooks/useQrCardLayoutEditor';
 import type { QrCardLogo } from '@/lib/qrCardLayout';
 
@@ -27,13 +28,7 @@ export function QrCardLayoutLogoPanel({ editor, logo }: { editor: QrCardLayoutEd
             {logo.color && (
                 <span className="flex items-center gap-2">
                     <span className="font-mono text-xs text-ink-muted">{logo.color}</span>
-                    <input
-                        type="color"
-                        aria-label={t('color')}
-                        value={logo.color.toLowerCase()}
-                        onChange={editor.handleLogoColorChange}
-                        className="h-8 w-10 cursor-pointer rounded-md border border-border bg-white p-1"
-                    />
+                    <ColorSwatch value={logo.color} label={t('color')} surface="light" onChange={editor.handleLogoColorChange} />
                 </span>
             )}
         </div>

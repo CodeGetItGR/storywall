@@ -75,6 +75,8 @@ export function useQrCardLook(template: AdminQrCardTemplateDto) {
         const { name, value } = event.currentTarget;
         setDraft((current) => ({ ...current, [name]: value }));
     }, []);
+    const handleTextColorPick = useCallback((textColor: string) => setDraft((current) => ({ ...current, textColor })), []);
+    const handleCodeColorPick = useCallback((codeColor: string) => setDraft((current) => ({ ...current, codeColor })), []);
     const handleCenterLogoChange = useCallback((centerLogo: boolean) => setDraft((current) => ({ ...current, centerLogo })), []);
 
     // Type and size only; the server checks the A6 shape and the 1748 px width (3111).
@@ -117,6 +119,8 @@ export function useQrCardLook(template: AdminQrCardTemplateDto) {
         // A failed refetch over cached data still has a list to offer.
         fontsStatus: (fonts.isPending ? 'loading' : fonts.isError && !fonts.data ? 'error' : 'ready') as QrCardFontsStatus,
         handleChange,
+        handleTextColorPick,
+        handleCodeColorPick,
         handleCenterLogoChange,
         handleFileChange,
         clearFile,

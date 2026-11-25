@@ -191,7 +191,7 @@ describe('useQrCardLayoutEditor', () => {
         act(() => result.current.addHostField());
         act(() => result.current.handleFieldFontChange({ currentTarget: { value: 'heading' } } as never));
         act(() => result.current.handleFieldBoldChange(true));
-        act(() => result.current.handleFieldColorChange({ currentTarget: { value: '#aa0000' } } as never));
+        act(() => result.current.handleFieldColorChange('#AA0000'));
         act(() => result.current.handleFieldSizeChange({ currentTarget: { value: '30' } } as never));
         expect(result.current.layout.fields[0]).toMatchObject({ kind: 'host', font: 'heading', bold: true, color: '#AA0000', textSize: 16 });
     });

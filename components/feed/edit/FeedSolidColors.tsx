@@ -19,11 +19,11 @@ export function FeedSolidColors({ value, disabled, onChange }: FeedSolidColorsPr
 
     return (
         <section className="flex flex-col gap-2">
-            {/* Circles */}
+            {/* Circles: closer together on desktop, where the panel's scrollbar takes part of the row */}
             <h3 id={titleId} className="text-[13px] leading-tight font-medium">
                 {t('solidColor')}
             </h3>
-            <ColorCircles value={value} labelledBy={titleId} disabled={disabled} onChange={onChange} />
+            <ColorCircles value={value} labelledBy={titleId} disabled={disabled} className="lg:gap-x-2" onChange={onChange} />
 
             {/* Too dark: always mounted, so screen readers hear the text when it appears */}
             <p role="status" className={cn('text-[12px] text-(--smd-editor-muted)', !tooDark && 'sr-only')}>

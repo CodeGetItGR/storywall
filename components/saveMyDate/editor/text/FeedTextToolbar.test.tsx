@@ -71,7 +71,7 @@ describe('FeedTextToolbar', () => {
     it('colours only this text: the colour picker offers no other scope', async () => {
         renderToolbar();
         fireEvent.click(screen.getByRole('button', { name: en.InvitationEditor.textColor }));
-        await screen.findByText(en.InvitationEditor.moreColors);
+        await screen.findByRole('button', { name: en.InvitationEditor.moreColors });
         expect(screen.queryByText(en.InvitationEditor.thisSection)).toBeNull();
     });
 

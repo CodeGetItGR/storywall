@@ -6,7 +6,6 @@ import { MAX_TEXT } from '@/lib/invitation/primitives';
 import { SAMPLE_DOCUMENT, SAMPLE_THEME } from '@/lib/invitation/samples';
 import {
     addTextElement,
-    BASE_TEXT_COLORS,
     canAddText,
     deleteText,
     fontOptions,
@@ -14,12 +13,12 @@ import {
     isEmptyAddedText,
     readText,
     sameFont,
-    textColorSwatches,
     textMergeKey,
     textSectionId,
     textSizeOptions,
     type TextTarget,
     textTargetKey,
+    themeColors,
     writeColor,
     writeStyle,
     writeText,
@@ -214,11 +213,8 @@ describe('adding and deleting texts', () => {
 });
 
 describe('toolbar choices', () => {
-    it('lists the theme colours, then the used ones, then the base colours, once each', () => {
-        const swatches = textColorSwatches(SAMPLE_DOCUMENT, SAMPLE_THEME);
-        expect(swatches.slice(0, 4)).toEqual(['#b8dfd3', '#efe7ec', '#2f2b2d', '#7a5c61']);
-        expect(swatches).toEqual(expect.arrayContaining([...BASE_TEXT_COLORS]));
-        expect(new Set(swatches.map((color) => color.toLowerCase())).size).toBe(swatches.length);
+    it("lists the theme's own colours", () => {
+        expect(themeColors(SAMPLE_THEME)).toEqual(['#b8dfd3', '#efe7ec', '#2f2b2d']);
     });
 
     it('lists the theme fonts, then the used ones, then every font', () => {

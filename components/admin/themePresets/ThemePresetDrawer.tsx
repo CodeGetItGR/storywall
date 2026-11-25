@@ -7,6 +7,7 @@ import { AdminDrawer } from '@/components/admin/AdminDrawer';
 import { AdminField, adminInputClass } from '@/components/admin/AdminField';
 import { ReactionTypeAvailabilityControl } from '@/components/admin/ReactionTypeAvailabilityControl';
 import { ThemePresetPreview } from '@/components/admin/themePresets/ThemePresetPreview';
+import { ColorSwatch } from '@/components/ui/color/ColorSwatch';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useLocalizedText } from '@/hooks/useLocalizedText';
 import { useThemePresetDrawer } from '@/hooks/useThemePresetDrawer';
@@ -165,13 +166,11 @@ export function ThemePresetDrawer({
                     {/* Colour */}
                     <AdminField label={t('backgroundColor')} required hint={form.errors.backgroundColor ? t('backgroundColorInvalid') : contrastHint}>
                         <div className="flex items-center gap-2">
-                            <input
-                                type="color"
-                                name="backgroundColor"
+                            <ColorSwatch
                                 value={form.colorInputValue}
-                                onChange={form.handleFieldChange}
-                                aria-label={t('backgroundColor')}
-                                className="h-10 w-12 shrink-0 cursor-pointer rounded-md border border-border bg-white p-1"
+                                label={t('backgroundColor')}
+                                surface="light"
+                                onChange={form.handleBackgroundColorPick}
                             />
                             <input
                                 name="backgroundColor"
@@ -194,13 +193,11 @@ export function ThemePresetDrawer({
                     <div className="space-y-1.5">
                         <AdminField label={t('titleColor')} hint={titleColorHint}>
                             <div className="flex items-center gap-2">
-                                <input
-                                    type="color"
-                                    name="titleColor"
+                                <ColorSwatch
                                     value={form.titleColorInputValue}
-                                    onChange={form.handleFieldChange}
-                                    aria-label={t('titleColor')}
-                                    className="h-10 w-12 shrink-0 cursor-pointer rounded-md border border-border bg-white p-1"
+                                    label={t('titleColor')}
+                                    surface="light"
+                                    onChange={form.handleTitleColorPick}
                                 />
                                 <input
                                     name="titleColor"
