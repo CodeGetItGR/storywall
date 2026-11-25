@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils';
 
 type AddCoverPhotoLinkProps = { href: string; label: string; className?: string };
 
-// A host's shortcut to add a cover, on a feed without one: alone in the cover's corner, or beside the Edit pill.
+// A host's shortcut to add a cover, on a feed without one, in the cover's corner.
 export function AddCoverPhotoLink({ href, label, className }: AddCoverPhotoLinkProps) {
     return (
         <AppLink
