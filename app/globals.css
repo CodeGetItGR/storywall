@@ -39,7 +39,7 @@
        the normal page background everywhere else. */
     --color-event: var(--event-bg, var(--background));
     /* Inset fills (the composer's pill): the theme colour on a themed event, else the usual muted surface. */
-    --color-event-muted: var(--event-bg, var(--surface-muted));
+    --color-event-muted: var(--event-muted, var(--event-bg, var(--surface-muted)));
     /* Post cards: the theme colour on a themed event, with a darker shade of it as their divider so
        they stay distinct from the page; else the usual translucent card and its faint border.
        The fallbacks are exactly what bg-card/60 and border-border/60 resolve to. */
@@ -114,7 +114,7 @@
 }
 
 @utility alegreya-light {
-    color: #4f4f4f;
+    color: var(--alegreya-color, #4f4f4f);
     font-family: var(--font-alegreya);
     font-size: 0.75rem;
     font-style: normal;
@@ -299,6 +299,37 @@
 }
 .media-viewer-overlay .text-ink-faint {
     color: rgb(255 255 255 / 0.45);
+}
+
+/* ── Text on a dark event page (KAN-278, lib/pageTone.ts) ──
+   EventThemeScope says how dark its page is; an element that sits straight on the page is marked `on-page` and takes
+   the page's text colours. Cards and pills on the page keep the app's own. */
+@layer base {
+    [data-page-tone] .on-page {
+        --ink: var(--page-ink);
+        --alegreya-color: var(--page-ink);
+        --ink-muted: var(--page-ink-muted);
+        --ink-faint: var(--page-ink-muted);
+        --foreground: var(--page-ink);
+        --border: color-mix(in srgb, var(--page-ink) 30%, transparent);
+        --surface-muted: rgb(255 255 255 / 0.3);
+        color: var(--page-ink);
+    }
+    [data-page-tone='light'] .on-page {
+        --surface-muted: rgb(0 0 0 / 0.25);
+    }
+    /* The side panel's white curtain over a theme */
+    .feed-backdrop[data-page-tone] .on-page-curtain {
+        --ink: var(--page-panel-ink);
+        --foreground: var(--page-panel-ink);
+        --border: rgb(0 0 0 / 0.2);
+        --surface-muted: rgb(255 255 255 / 0.4);
+        color: var(--page-panel-ink);
+    }
+    /* The wordmark, dark in its file */
+    [data-page-tone='light'] .on-page-wordmark {
+        filter: brightness(0) invert(1);
+    }
 }
 
 /* ── Base layer ── */

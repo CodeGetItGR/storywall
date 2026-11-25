@@ -1,6 +1,7 @@
 import type { EventThemeDto, FeedLayoutDto } from '@/lib/api/types';
 import { themeFontFamily } from '@/lib/eventTheme';
 import { INVITATION_SCHEMA_VERSION, type InvitationDocument, upgradeInvitationDocument } from '@/lib/invitation/document';
+import type { PhotoTone } from '@/lib/invitation/photoContrast';
 import type { MediaResolver } from '@/lib/invitation/render';
 import {
     FEED_SECTION_TYPES,
@@ -163,6 +164,8 @@ export type FeedLayoutView = {
     document: InvitationDocument;
     theme: ThemeDesign;
     media: MediaResolver;
+    // How light the theme's page picture is; null on the wall theme, without a picture, or until measured.
+    pageTone: PhotoTone | null;
     // The revision the next save names: 0 before the first save.
     revision: number;
     // null on the wall theme.
@@ -176,17 +179,17 @@ export function readFeedLayout(dto: FeedLayoutDto | null, wallTheme: EventThemeD
     const media: MediaResolver = (mediaId) => urls[mediaId];
     const wall = wallThemeDesign(wallTheme);
     const revision = dto?.revision ?? 0;
-    if (!dto) return { document: defaultFeedLayout(), theme: wall, media, revision, themeSlug: null };
+    if (!dto) return { document: defaultFeedLayout(), theme: wall, media, pageTone: null, revision, themeSlug: null };
 
     let document: InvitationDocument;
     try {
         document = upgradeInvitationDocument(dto.document);
     } catch {
-        return { document: defaultFeedLayout(), theme: wall, media, revision, themeSlug: null };
+        return { document: defaultFeedLayout(), theme: wall, media, pageTone: null, revision, themeSlug: null };
     }
-    if (document.themeId === WALL_THEME_ID) return { document, theme: wall, media, revision, themeSlug: null };
+    if (document.themeId === WALL_THEME_ID) return { document, theme: wall, media, pageTone: null, revision, themeSlug: null };
 
     const design = themeDesignSchema.safeParse(dto.design);
-    if (!design.success) return { document: { ...document, themeId: WALL_THEME_ID }, theme: wall, media, revision, themeSlug: null };
-    return { document, theme: design.data, media, revision, themeSlug: dto.themeSlug };
+    if (!design.success) return { document: { ...document, themeId: WALL_THEME_ID }, theme: wall, media, pageTone: null, revision, themeSlug: null };
+    return { document, theme: design.data, media, pageTone: dto.pageTone ?? null, revision, themeSlug: dto.themeSlug };
 }

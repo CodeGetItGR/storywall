@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 import { fn } from 'storybook/test';
 
+import { onDarkPage } from '@/.storybook/pageTone';
 import { FeedEditRow } from '@/components/feed/edit/FeedEditRow';
 
 const meta = {
@@ -27,6 +28,8 @@ export const Previewing: Story = { args: { previewing: true } };
 export const Saving: Story = { args: { saving: true } };
 
 export const SaveFailed: Story = { args: { failed: true } };
+
+export const OnDarkPage: Story = { decorators: [onDarkPage] };
 
 // A 360 px phone, the narrowest all four must fit on (the Greek words are the longest).
 const onNarrowPhone: Story = {

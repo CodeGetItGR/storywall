@@ -21,7 +21,7 @@ export function FeedEditThemeSheet({ event, session, open, isDesktop, onClose }:
             disabled={grid.disabled}
             solidDisabled={grid.solidDisabled}
             previewTitle={grid.previewTitle}
-            solidColor={session.background}
+            solidColor={grid.solidColor}
             onSelect={grid.select}
             onSolidColor={grid.selectSolid}
             onClose={onClose}

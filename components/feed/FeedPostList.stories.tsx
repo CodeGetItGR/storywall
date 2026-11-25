@@ -8,6 +8,7 @@ import { useFeedItems } from '@/hooks/useFeedItems';
 import type { PartnerBrandingDto, PostResponseDto } from '@/lib/api/types';
 import { eventThemeStyle } from '@/lib/eventTheme';
 import { feedEndsWithPost } from '@/lib/feed/feedEnd';
+import { pageToneOf, pageToneProps, pageToneStyle } from '@/lib/pageTone';
 import { cn } from '@/lib/utils';
 
 const text = (id: string, overrides: Partial<PostResponseDto> = {}) =>
@@ -40,6 +41,8 @@ function FeedEnd({ posts, partnerBranding }: { posts: PostResponseDto[]; partner
     );
 }
 
+const toneOf = (page?: string) => pageToneOf(page ?? '#dfe9e4');
+
 // Phones: posts in a row stay joined and square, with only the feed's first card rounded on top. Desktop: every
 // post is a card of its own.
 const meta = {
@@ -49,7 +52,7 @@ const meta = {
     decorators: [
         withAppContext,
         (Story, { parameters }) => (
-            <div className="bg-event pt-6" style={eventThemeStyle(parameters.page ?? '#dfe9e4', { cardColor: parameters.card ?? '#ffffff' })}>
+            <div className="bg-event pt-6" style={{ ...eventThemeStyle(parameters.page ?? '#dfe9e4', { cardColor: parameters.card ?? '#ffffff' }), ...pageToneStyle(toneOf(parameters.page)) }} {...pageToneProps(toneOf(parameters.page))}>
                 <div className="mx-auto max-w-2xl">
                     <Story />
                 </div>
@@ -98,3 +101,9 @@ export const VendorPhotoCard: Story = { args: { posts: [text('a'), text('b')], p
 
 // A wall theme: cards in the page's own colour.
 export const WallTheme: Story = { ...WithOtherCards, parameters: { page: '#f6e7dd', card: '#f6e7dd' } };
+
+// A dark page colour: the vendor's credit line sits straight on it, so its text is light.
+export const DarkPageCredit: Story = {
+    args: { posts: [text('a'), text('b'), text('c')], partnerBranding: { ...branding, variant: 'CREDIT' } },
+    parameters: { page: '#1B2A4A', card: '#dfe1e6' },
+};

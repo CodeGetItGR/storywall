@@ -21,18 +21,18 @@ export function FeedEmptyState() {
                 </div>
 
                 {/* Message */}
-                <div className="relative mt-6">
+                <div className="on-page relative mt-6">
                     <h2 className="text-xl font-semibold text-ink">{t('emptyPostsTitle')}</h2>
                     <p className="mx-auto mt-2 max-w-[18rem] text-sm leading-6 text-ink-muted">{t('emptyPostsBody')}</p>
                 </div>
 
                 {/* Preview marks */}
                 <div className="relative mx-auto mt-7 flex max-w-[15rem] items-center justify-center gap-2 text-ink-faint">
-                    <span className="h-px flex-1 bg-border" />
+                    <span className="on-page h-px flex-1 bg-border" />
                     <span className="flex h-9 w-9 items-center justify-center rounded-full bg-background shadow-[0_8px_20px_rgba(36,31,26,0.07)]">
                         <ImagePlus className="h-4 w-4" strokeWidth={1.8} aria-hidden="true" />
                     </span>
-                    <span className="h-px flex-1 bg-border" />
+                    <span className="on-page h-px flex-1 bg-border" />
                 </div>
             </div>
         </div>

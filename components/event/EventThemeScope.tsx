@@ -10,6 +10,7 @@ import { ThemeFontFace } from '@/components/event/ThemeFontFace';
 import { useFeedPageThemeOverride } from '@/hooks/useFeedPageTheme';
 import { eventThemeStyle, isThemedEventPage, themeFontScopeProps } from '@/lib/eventTheme';
 import { feedBackdropClassName, feedBackdropStyle } from '@/lib/feedPageBackdrop';
+import { pageToneProps, pageToneStyle } from '@/lib/pageTone';
 import { cn } from '@/lib/utils';
 import { useActiveEvent, useRouteEventId } from '@/providers/EventProvider';
 
@@ -28,10 +29,13 @@ export function EventThemeScope({ children }: { children: ReactNode }) {
     const theme = themed && activeEvent ? (override ? override.theme : activeEvent.theme) : null;
     // A Save my date theme on the feed: its background runs behind the whole page, the post cards on its light tone.
     const backdrop = themed ? (override?.backdrop ?? null) : null;
+    // Text straight on a page too dark for ink changes colour (`.on-page` in globals.css).
+    const tone = themed ? override?.tone : undefined;
     const themeStyle = eventThemeStyle(theme?.backgroundColor, {
         titleColor: theme?.titleColor,
         headingFont: theme?.headingFont,
-        cardColor: backdrop?.cardColor,
+        cardColor: override?.cardColor,
+        toned: tone !== undefined,
     });
     // The font rides with the rest of the theme: a theme whose colour is unusable is no theme at all.
     const headingFont = themeStyle ? theme?.headingFont : null;
@@ -45,8 +49,9 @@ export function EventThemeScope({ children }: { children: ReactNode }) {
                 '-mb-[calc(var(--tab-bar-h)+var(--overview-fab-room,0px))] bg-event pb-[calc(var(--tab-bar-h)+var(--overview-fab-room,0px))] md:mb-0 md:pb-0',
                 feedBackdropClassName(backdrop),
             )}
-            style={{ ...themeStyle, ...feedBackdropStyle(backdrop) }}
+            style={{ ...themeStyle, ...feedBackdropStyle(backdrop), ...pageToneStyle(tone) }}
             data-event-scope=""
+            {...pageToneProps(tone)}
             {...themeFontScopeProps(headingFont)}
         >
             <ThemeFontFace font={headingFont} />

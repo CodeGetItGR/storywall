@@ -10,12 +10,13 @@ import { isEventEnded, isModuleAvailable } from '@/lib/eventLifecycle';
 import { feedEditFrame } from '@/lib/feedEditing';
 import { type FeedFrame, feedFrame, usesInvitationLook, withoutSaveMyDateSections } from '@/lib/feedLayout';
 import { moduleOfBlock } from '@/lib/feedModuleBlocks';
-import { type FeedPageBackdrop, feedPageBackdrop } from '@/lib/feedPageBackdrop';
+import { feedBackdropSurface, type FeedPageBackdrop, feedPageBackdrop } from '@/lib/feedPageBackdrop';
 import { drawsScheduleCard } from '@/lib/feedSchedule';
 import type { InvitationDocument } from '@/lib/invitation/document';
 import { isEmptyForGuests } from '@/lib/invitation/gallery';
 import { INVITATION_LABELS } from '@/lib/invitation/labels';
-import { buildRenderContext, type MediaResolver, type RenderContext } from '@/lib/invitation/render';
+import type { PhotoTone } from '@/lib/invitation/photoContrast';
+import { buildRenderContext, type MediaResolver, onPageBackdrop, type RenderContext } from '@/lib/invitation/render';
 import type { InvitationSection } from '@/lib/invitation/sections';
 import type { ThemeDesign } from '@/lib/invitation/theme';
 import { uploadedFontFaceCss } from '@/lib/invitation/uploadedFonts';
@@ -47,7 +48,7 @@ export type FeedTopView = {
 
 // What edit mode draws: the document being edited and the theme it shows (a held pick included). asGuest: only the
 // blocks guests will see.
-export type FeedTopEditing = { document: InvitationDocument; theme: ThemeDesign; media: MediaResolver; asGuest?: boolean };
+export type FeedTopEditing = { document: InvitationDocument; theme: ThemeDesign; media: MediaResolver; pageTone?: PhotoTone | null; asGuest?: boolean };
 
 // Everything the top of the feed draws, from the saved layout or the default one. While editing,
 // it draws the edit session: every block, hidden ones too (unless it previews as a guest), in the held theme. Without Save my date its sections
@@ -63,6 +64,7 @@ export function useFeedTop(event: EventDetailResponseDto, editing?: FeedTopEditi
     const document = useMemo(() => (saveMyDate ? whole : withoutSaveMyDateSections(whole)), [saveMyDate, whole]);
     const theme = editing?.theme ?? layout.theme;
     const media = editing?.media ?? layout.media;
+    const pageTone = editing ? (editing.pageTone ?? null) : layout.pageTone;
     const look = usesInvitationLook(document);
     // The font files list is public (the published invitation reads it too).
     const fonts = useInvitationFonts(enabled && look);
@@ -72,18 +74,17 @@ export function useFeedTop(event: EventDetailResponseDto, editing?: FeedTopEditi
     // With Save my date, RSVP is one of the host's blocks (spec item 17). Read as useFeedMode does, flag included.
     const rsvpMoves = enabled && saveMyDate;
 
-    const backdrop = useMemo(() => feedPageBackdrop(document, theme, media), [document, theme, media]);
+    const backdrop = useMemo(() => feedPageBackdrop(document, theme, media, pageTone), [document, theme, media, pageTone]);
 
-    const ctx = useMemo(
-        () => ({
-            ...buildRenderContext(document, theme, media),
+    const ctx = useMemo(() => {
+        const plain = buildRenderContext(document, theme, media);
+        return {
+            ...(backdrop ? onPageBackdrop(plain, feedBackdropSurface(backdrop)) : plain),
             labels: INVITATION_LABELS[locale === 'en' ? 'en' : 'el'],
-            pageBackdrop: backdrop !== null,
             ownBackgrounds: true,
             centerText: true,
-        }),
-        [document, theme, media, locale, backdrop],
-    );
+        };
+    }, [document, theme, media, locale, backdrop]);
 
     const frame = useMemo(() => {
         const edited = isEditing ? feedEditFrame(document, { rsvpMoves }) : null;

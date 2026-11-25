@@ -35,7 +35,7 @@ export function FeedEditRow({ saving, failed, onTheme, previewing, onPreview, on
     const previewLabel = previewing ? tFeed('edit') : t('preview');
 
     return (
-        <div className="flex flex-col gap-2 border-b border-dashed border-black/15 px-3 pt-3 pb-4 font-sans sm:px-4">
+        <div className="flex flex-col gap-2 border-b border-dashed border-(--page-ink-muted,rgb(0_0_0/0.15)) px-3 pt-3 pb-4 font-sans sm:px-4">
             {/* Actions */}
             <div className="flex flex-wrap items-center justify-between gap-x-1 gap-y-2 sm:gap-x-2">
                 {/* Theme and preview. Theme keeps its place while previewing, so the eye stays under the finger. */}

@@ -77,19 +77,15 @@ describe('FeedThemeSheet', () => {
         expect(onSolidColor).toHaveBeenCalledExactlyOnceWith('#AC9FC7');
     });
 
-    it('warns while the colour is too dark for the text', () => {
-        renderSheet('#000000');
-        expect(screen.getByRole('status').textContent).toBe('background.tooDark');
-        cleanup();
-        renderSheet('#F5E6D3');
-        expect(screen.queryByText('background.tooDark')).toBeNull();
-        // The status stays mounted, empty, so the warning is announced when it appears.
-        expect(screen.getByRole('status').textContent).toBe('');
-    });
-
-    it("shows no warning for the app's own four colours", () => {
-        renderSheet('#AC9FC7');
-        expect(screen.getByRole('status').textContent).toBe('');
+    it('offers white first, picked with "No theme"', () => {
+        const { onSolidColor } = renderSheet('#FFFFFF');
+        const circles = screen.getByRole('group', { name: 'solidColor' });
+        const white = screen.getByRole('button', { name: '#FFFFFF' });
+        expect(circles.firstElementChild).toBe(white);
+        expect(white).toHaveAttribute('aria-pressed', 'true');
+        expect(screen.getByRole('radio', { name: /No theme/ })).toBeChecked();
+        fireEvent.click(white);
+        expect(onSolidColor).toHaveBeenCalledExactlyOnceWith('#FFFFFF');
     });
 
     it('holds the cards and the colours while Save runs or a theme loads', () => {

@@ -56,7 +56,7 @@ export function StoryAvatar({ group, author, onOpenStoryAction, isCurrentUser }:
     );
 
     const label = (
-        <span className="max-w-14 truncate text-center text-[11px] leading-tight font-medium text-ink-muted">
+        <span className="on-page max-w-14 truncate text-center text-[11px] leading-tight font-medium text-ink-muted">
             {isCurrentUser ? t('yourStory') : author.displayName.split(' ')[0]}
         </span>
     );
