@@ -503,7 +503,7 @@ describe('FeedPageContent edit mode', { timeout: 15_000 }, () => {
         ['invitation', SMD, '2099-06-01T15:00:00Z'],
         ['feed', SMD, '2020-06-01T15:00:00Z'],
         ['one page', [], null],
-    ])('draws the pill under the cover and the switch, on the %s', async (_, modules, startAt) => {
+    ])('draws the pencil in the switch, or alone under the cover, on the %s', async (_, modules, startAt) => {
         renderFeed(null, { flag: true, layout: savedLayout(), isHost: true, modules, startAt, stories: true });
         const edit = await screen.findByRole('button', { name: 'edit' }, LAZY_LOOK);
         const banner = screen.getByTestId('banner');
@@ -511,7 +511,7 @@ describe('FeedPageContent edit mode', { timeout: 15_000 }, () => {
         expect(follows(banner, edit)).toBe(true);
         const half = screen.queryByRole('button', { name: 'invitation' });
         expect(half !== null).toBe(modules.length > 0);
-        if (half) expect(follows(half, edit)).toBe(true);
+        if (half) expect(half.parentElement).toBe(edit.parentElement);
         const stories = document.querySelector('#stories');
         if (stories) expect(follows(edit, stories as HTMLElement)).toBe(true);
     });
@@ -520,7 +520,7 @@ describe('FeedPageContent edit mode', { timeout: 15_000 }, () => {
         renderFeed(null, { flag: true, layout: savedLayout(), isHost: true, modules: SMD });
         fireEvent.click(await screen.findByRole('button', { name: 'edit' }, LAZY_LOOK));
         const cancel = await screen.findByRole('button', { name: 'cancel' }, LAZY_LOOK);
-        const room = document.querySelector('.h-5:empty') as HTMLElement;
+        const room = document.querySelector('.h-4\\.5:empty') as HTMLElement;
         expect(follows(room, cancel)).toBe(true);
     });
 

@@ -3,7 +3,7 @@
 import { useCallback, useState } from 'react';
 
 import { ComposerCard } from '@/components/feed/ComposerCard';
-import { FeedEditPillRow } from '@/components/feed/edit/FeedEditPillRow';
+import { FeedEditPencil } from '@/components/feed/edit/FeedEditPencil';
 import { LazyFeedEditTop } from '@/components/feed/edit/LazyFeedEditTop';
 import { EventDescription } from '@/components/feed/EventDescription';
 import { EventInfoSection } from '@/components/feed/EventInfoSection';
@@ -56,7 +56,7 @@ export function FeedPageContent() {
     const feedSection = useFeedSectionPart(event, top.ctx.media);
     const coverEvent = useFeedPageTheme(event, top.pageBackground, top.backdrop);
     const editMode = useFeedEditMode(event, isHost, isRoleLoading);
-    const { start: startEditing, finish: finishEditing, editPill, cancelPill } = useFeedEditFocus(editMode.start, editMode.finish);
+    const { start: startEditing, finish: finishEditing, editPencil, cancelPill } = useFeedEditFocus(editMode.start, editMode.finish);
     const feedMode = useFeedMode(event);
     // null while the mode isn't known yet: the page keeps its loading state.
     const pageMode: FeedPageMode | null = feedMode.available ? feedMode.mode : 'single';
@@ -73,11 +73,16 @@ export function FeedPageContent() {
         feedMode.mode &&
         (editMode.editing ? (
             // No switch while editing: the host edits the mode they were in. Its room stays, so nothing jumps.
-            <div className="h-5" />
+            <div className="h-4.5" />
         ) : (
             // Centred on the cover's bottom edge, half over it. It scrolls away with the cover.
-            <div className="relative z-10 -mt-5 flex justify-center">
-                <FeedModeSwitch mode={feedMode.mode} onSelect={feedMode.select} />
+            <div className="relative z-10 -mt-4.5 flex justify-center">
+                <FeedModeSwitch
+                    mode={feedMode.mode}
+                    onSelect={feedMode.select}
+                    onEdit={editMode.canEdit ? startEditing : undefined}
+                    editRef={editPencil}
+                />
             </div>
         ));
     const topParts = {
@@ -115,13 +120,25 @@ export function FeedPageContent() {
         rsvp: moduleFlags.rsvp ? <FeedRsvpBlock eventId={eventId} deadline={event.schedule.rsvpDeadline ?? null} /> : null,
     };
 
+    // While edit mode loads, room for its row. Without a switch, the Edit pencil alone, centred under the cover.
+    const editRow = editMode.editing ? (
+        <div className="h-[61px] sm:h-[65px]" />
+    ) : (
+        editMode.canEdit &&
+        !modeSwitch && (
+            <div className="mt-3 flex justify-center">
+                <FeedEditPencil ref={editPencil} onClick={startEditing} />
+            </div>
+        )
+    );
+
     // Feed mode's sections go to the member page only: edit mode draws its own, where a pinned photo takes no tap.
     const feedTop = (
         <FeedTop
             view={top}
             mode={pageMode ?? 'single'}
             modeSwitch={modeSwitch}
-            editRow={editMode.canEdit && <FeedEditPillRow editing={editMode.editing} pillRef={editPill} onEdit={startEditing} />}
+            editRow={editRow}
             {...topParts}
             feedSection={feedSection}
         />
