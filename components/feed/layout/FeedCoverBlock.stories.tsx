@@ -49,7 +49,7 @@ export const WithCover: Story = { args: { event: withPhoto } };
 
 // A theme's top illustration in the invitation, on an event without a cover photo: at its size, wider than the page
 // and while editing.
-const topArt = { src: '/images/icons/icon-512.png', scale: 1, animation: 'none' as const };
+const topArt = { src: '/images/post-flowers.png', scale: 1, animation: 'none' as const };
 export const TopArt: Story = { args: { topArt, clearPill: true } };
 export const TopArtWide: Story = { args: { topArt: { ...topArt, scale: 2.5 }, clearPill: true } };
 export const TopArtEditing: Story = { args: { topArt, clearPill: true, editing: true } };

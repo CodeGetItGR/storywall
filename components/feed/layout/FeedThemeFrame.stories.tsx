@@ -10,6 +10,7 @@ import type { EventDetailResponseDto } from '@/lib/api/types';
 import { defaultFeedLayout, feedFrame } from '@/lib/feedLayout';
 import type { FeedPageMode } from '@/lib/feedMode';
 import { planFeedThemeSwitch } from '@/lib/feedThemes';
+import type { FeedTopArt } from '@/lib/feedTopArt';
 import type { InvitationDocument } from '@/lib/invitation/document';
 import { INVITATION_LABELS } from '@/lib/invitation/labels';
 import { buildRenderContext } from '@/lib/invitation/render';
@@ -35,6 +36,11 @@ function pickedLayout(photo: string | undefined): InvitationDocument {
 
 type PageProps = { event: EventDetailResponseDto; photo?: string; mode: FeedPageMode; color?: string };
 
+const coverOf = (event: EventDetailResponseDto) =>
+    function Cover(topArt: FeedTopArt | null) {
+        return <FeedCoverBlock event={event} isHost={false} wishlist={false} topArt={topArt} />;
+    };
+
 // The invitation's top as guests see it.
 function Page({ event, photo, mode, color }: PageProps) {
     const locale = useLocale() === 'en' ? 'en' : 'el';
@@ -57,7 +63,7 @@ function Page({ event, photo, mode, color }: PageProps) {
                     backdrop: null,
                 }}
                 mode={mode}
-                cover={(topArt) => <FeedCoverBlock event={event} isHost={false} wishlist={false} topArt={topArt} />}
+                cover={coverOf(event)}
                 stories={null}
                 description={<p className="px-4 py-3 text-center text-sm">{event.description}</p>}
                 rsvp={null}

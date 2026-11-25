@@ -7,6 +7,7 @@ import type { FeedTopView } from '@/hooks/useFeedTop';
 import type { FeedAddPlace } from '@/lib/feedEditing';
 import { defaultFeedLayout, feedFrame } from '@/lib/feedLayout';
 import type { FeedPageMode } from '@/lib/feedMode';
+import type { FeedTopArt } from '@/lib/feedTopArt';
 import { SAMPLE_SECTIONS, SAMPLE_THEME } from '@/lib/invitation/samples';
 import type { InvitationSection } from '@/lib/invitation/sections';
 
@@ -162,6 +163,8 @@ describe('FeedTopFrame', () => {
     });
 });
 
+const coverWith = (topArt: FeedTopArt | null) => <span>{topArt?.src ?? 'no art'}</span>;
+
 describe("the theme's top illustration", () => {
     const layout = defaultFeedLayout();
     const ctx = { theme: SAMPLE_THEME, media: (id: string) => `/${id}` };
@@ -172,7 +175,7 @@ describe("the theme's top illustration", () => {
                 view={view}
                 mode={mode}
                 parts={PLAIN_PARTS}
-                cover={(topArt) => <span>{topArt?.src ?? 'no art'}</span>}
+                cover={coverWith}
                 stories={null}
                 description={null}
                 rsvp={null}
