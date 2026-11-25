@@ -10,13 +10,13 @@ import { routes } from '@/lib/routes';
 import { Countdown } from './Countdown';
 
 // On a Save my date theme the header draws the page's own picture, lined up with it, so it hides the posts
-// scrolling under it without showing an edge, and fades
-// out just below itself. A cover picture fixed to the screen shows through its fill.
+// scrolling under it. A thin line shows at its bottom edge once the page scrolls. A cover picture fixed to the screen
+// shows through its fill.
 export function Header({ countdownTime, eventId }: { countdownTime: number; eventId: string }) {
     const strip = useFeedBackdropStrip<HTMLDivElement>();
     return (
         <div ref={strip} className="sticky top-0 z-20 w-full">
-            {/* The page behind the header, fading out just below it */}
+            {/* The page behind the header, with its line */}
             <div aria-hidden="true" className="feed-backdrop-strip-fill bg-event" />
             {/* Header */}
             <div className="relative flex items-center justify-between gap-4 p-4 pb-2">

@@ -8,18 +8,23 @@
     background-position: var(--feed-backdrop-position);
 }
 
-/* A strip's fill (the sticky header's): it draws the page behind the strip and a little below it, where it fades
-   out, so the strip doesn't end in a sharp edge over what scrolls under it. It grows with the first
-   few pixels of scroll (--feed-strip-y), so at the top it leaves the cover photo alone but for a hint. The strip keeps
-   its own height, and taps go through the fade. */
+/* A strip's fill (the sticky header's): it draws the page behind the strip, with a thin line along the bottom in the
+   page's own text colour. At the top of the page there is no line: it shows over the first few pixels of scroll
+   (--feed-strip-line, set by hooks/useFeedBackdropStrip.ts). */
 .feed-backdrop-strip-fill {
-    --feed-strip-fade: clamp(4px, var(--feed-strip-y, 0px), 14px);
     position: absolute;
-    inset: 0 0 calc(0px - var(--feed-strip-fade));
+    inset: 0;
     z-index: -1;
     overflow: hidden;
-    pointer-events: none;
-    mask-image: linear-gradient(to bottom, #000 calc(100% - var(--feed-strip-fade)), transparent);
+}
+
+.feed-backdrop-strip-fill::after {
+    position: absolute;
+    inset: auto 0 0;
+    height: 1px;
+    background: color-mix(in srgb, var(--page-ink, var(--ink)) 16%, transparent);
+    content: '';
+    opacity: var(--feed-strip-line, 0);
 }
 
 /* On a theme the fill hides what scrolls under the strip with the page's own picture, lined up with the page. It

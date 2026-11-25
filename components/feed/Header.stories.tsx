@@ -63,15 +63,14 @@ function ThemedHeader({ backdrop, ...props }: ComponentProps<typeof Header> & { 
     );
 }
 
-// Scrolls a block under the header, then checks a tap on the fade reaches the block.
+// Scrolls a block under the header, then checks its line shows.
 const scrollUnder = async ({ canvasElement }: { canvasElement: HTMLElement }) => {
     const page = await within(canvasElement).findByTestId('page');
     page.scrollTop = 150;
     page.dispatchEvent(new Event('scroll'));
     await new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)));
-    const header = page.querySelector('.sticky.z-20')!.getBoundingClientRect();
-    const tapped = document.elementFromPoint(header.left + header.width / 2, header.bottom + 5);
-    await expect(tapped).toHaveAttribute('data-testid', 'block');
+    const fill = page.querySelector('.feed-backdrop-strip-fill')!;
+    await expect(getComputedStyle(fill, '::after').opacity).toBe('1');
 };
 
 // The story clock is fixed at 2026-06-15 12:00 UTC (see preview.tsx).
@@ -91,7 +90,7 @@ export const Started: Story = {
     args: { countdownTime: Date.parse('2026-06-01T15:00:00Z') },
 };
 
-// The header's edge fades over what scrolls under it, on every kind of page.
+// A solid bar with a thin line over what scrolls under it, on every kind of page.
 export const ScrolledOnWall: Story = { render: (args) => <ThemedHeader {...args} backdrop={null} />, play: scrollUnder };
 export const ScrolledOnSolid: Story = { render: (args) => <ThemedHeader {...args} backdrop={SOLID} />, play: scrollUnder };
 export const ScrolledOnTiled: Story = { render: (args) => <ThemedHeader {...args} backdrop={TILED} />, play: scrollUnder };
@@ -100,7 +99,8 @@ export const ScrolledOnCover: Story = { render: (args) => <ThemedHeader {...args
 // A dark page keeps the header dark, with a light logo and countdown; a middle colour gets dark text.
 export const OnDarkSolid: Story = { render: (args) => <ThemedHeader {...args} backdrop={NAVY} /> };
 export const OnMiddleSolid: Story = { render: (args) => <ThemedHeader {...args} backdrop={CORAL} /> };
+export const ScrolledOnDarkSolid: Story = { render: (args) => <ThemedHeader {...args} backdrop={NAVY} />, play: scrollUnder };
 export const ScrolledOnDarkCover: Story = { render: (args) => <ThemedHeader {...args} backdrop={DARK_COVER} />, play: scrollUnder };
 
-// At the top the fade is only a few pixels, so it doesn't show.
+// At the top there is no line.
 export const AtTheTop: Story = { render: (args) => <ThemedHeader {...args} backdrop={TILED} /> };
