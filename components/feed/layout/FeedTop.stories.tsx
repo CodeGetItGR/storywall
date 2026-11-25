@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 import { fn } from 'storybook/test';
 
-import { FeedEditPillRow } from '@/components/feed/edit/FeedEditPillRow';
+import { FeedEditPencil } from '@/components/feed/edit/FeedEditPencil';
 import { EventInfo } from '@/components/feed/EventInfo';
 import { FeedLookTop } from '@/components/feed/layout/FeedLookTop';
 import { FeedModeSwitch } from '@/components/feed/layout/FeedModeSwitch';
@@ -50,7 +50,14 @@ function TopStory({ extra, ended = false, styledDetails = false, mode = 'single'
             view={view}
             mode={mode}
             modeSwitch={mode === 'single' ? undefined : canEdit ? <PageSwitch mode={mode} /> : <FeedModeSwitch mode={mode} onSelect={noop} />}
-            editRow={canEdit && <FeedEditPillRow editing={false} onEdit={fn()} />}
+            editRow={
+                canEdit &&
+                mode === 'single' && (
+                    <div className="mt-3 flex justify-center">
+                        <FeedEditPencil onClick={fn()} />
+                    </div>
+                )
+            }
             // The pure row, with no calendar sheet; the frame draws it in Social Feed mode only.
             dateRow={<EventInfo date={Date.UTC(2026, 11, 30)} place="Rhodes" className="mt-3 w-full px-4" />}
             cover={<Box label="Cover + title" />}
@@ -66,10 +73,10 @@ const feedSection = (section: InvitationSection) => <Box label={`Feed section: $
 
 const noop = () => undefined;
 
-// The switch as the page places it, half over the cover.
+// A host's switch as the page places it, half over the cover.
 const PageSwitch = ({ mode }: { mode: Mode }) => (
-    <div className="relative z-10 -mt-5 flex justify-center">
-        <FeedModeSwitch mode={mode} onSelect={noop} />
+    <div className="relative z-10 -mt-4.5 flex justify-center">
+        <FeedModeSwitch mode={mode} onSelect={noop} onEdit={fn()} />
     </div>
 );
 
@@ -104,7 +111,7 @@ export const InvitationModeSections: Story = {
 // Without Save my date: the feed sections last, right above the posts. They need no invitation look.
 export const OnePageSections: Story = { args: { extra: FEED_SECTIONS } };
 
-// A host's page: the Edit pill under the switch, or under the cover without one.
+// A host's page: the Edit pencil in the switch, or alone under the cover without one.
 export const HostInvitationMode: Story = { args: { ...InvitationMode.args, canEdit: true } };
 export const HostFeedMode: Story = { args: { ...FeedMode.args, canEdit: true } };
 export const HostOnePage: Story = { args: { canEdit: true } };

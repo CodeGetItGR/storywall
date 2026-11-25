@@ -2,47 +2,73 @@
 
 import { Images, type LucideIcon, Mail } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useCallback } from 'react';
+import { type Ref, useCallback } from 'react';
 
+import { FeedEditPencil } from '@/components/feed/edit/FeedEditPencil';
 import type { FeedMode } from '@/lib/feedMode';
 import { cn } from '@/lib/utils';
 
-type FeedModeSwitchProps = { mode: FeedMode; onSelect: (mode: FeedMode) => void; className?: string };
+type FeedModeSwitchProps = {
+    mode: FeedMode;
+    onSelect: (mode: FeedMode) => void;
+    // Hosts and co-hosts: the Edit pencil between the halves.
+    onEdit?: () => void;
+    editRef?: Ref<HTMLButtonElement>;
+    className?: string;
+};
 
-// label: the half's FeedLayout key. Feed mode's half reads Social Feed; the mode stays 'feed'.
-const HALVES: readonly { mode: FeedMode; label: 'invitation' | 'socialFeed'; Icon: LucideIcon }[] = [
-    { mode: 'invitation', label: 'invitation', Icon: Mail },
-    { mode: 'feed', label: 'socialFeed', Icon: Images },
-];
+// The Invitation | Social Feed pill (look A1): two halves with an icon each, coral under the chosen one.
+// 36 px tall; each half is 30 px to look at and 40 px to tap. Hosts get the 40 px Edit circle in a column of its own:
+// the coral fades between the halves there instead of sliding, so it never passes behind the circle.
+export function FeedModeSwitch({ mode, onSelect, onEdit, editRef, className }: FeedModeSwitchProps) {
+    const half = { mode, onSelect, fills: Boolean(onEdit) };
 
-// The Invitation | Social Feed pill (look A1): two halves with an icon each, a coral thumb under the chosen one.
-// 40 px tall; each half is 32 px to look at and 40 px to tap.
-export function FeedModeSwitch({ mode, onSelect, className }: FeedModeSwitchProps) {
     return (
-        <div className={cn('relative inline-grid h-10 grid-cols-2 rounded-full bg-white p-1 font-sans shadow-[0_6px_20px_rgba(0,0,0,0.14)]', className)}>
+        <div
+            className={cn(
+                'relative inline-grid h-9 content-center items-center rounded-full bg-white p-[3px] font-sans shadow-[0_6px_20px_rgba(0,0,0,0.14)]',
+                onEdit ? 'grid-cols-[1fr_46px_1fr]' : 'grid-cols-2',
+                className,
+            )}
+        >
             {/* Thumb */}
-            <span
-                aria-hidden="true"
-                data-feed-mode-thumb
-                className={cn(
-                    'absolute inset-y-1 left-1 w-[calc(50%-0.25rem)] rounded-full bg-primary transition-transform duration-200 motion-reduce:transition-none',
-                    mode === 'feed' && 'translate-x-full',
-                )}
-            />
+            {!onEdit && (
+                <span
+                    aria-hidden="true"
+                    data-feed-mode-thumb
+                    className={cn(
+                        'absolute inset-y-[3px] left-[3px] w-[calc(50%-3px)] rounded-full bg-primary transition-transform duration-200 motion-reduce:transition-none',
+                        mode === 'feed' && 'translate-x-full',
+                    )}
+                />
+            )}
 
-            {/* Halves */}
-            {HALVES.map((half) => (
-                <FeedModeHalf key={half.mode} mode={half.mode} label={half.label} Icon={half.Icon} pressed={mode === half.mode} onSelect={onSelect} />
-            ))}
+            {/* Invitation */}
+            <FeedModeHalf {...half} half="invitation" label="invitation" Icon={Mail} />
+
+            {/* Edit */}
+            {onEdit && <FeedEditPencil ref={editRef} onClick={onEdit} className="justify-self-center" />}
+
+            {/* Feed mode's half reads Social Feed; the mode stays 'feed' */}
+            <FeedModeHalf {...half} half="feed" label="socialFeed" Icon={Images} />
         </div>
     );
 }
 
-type FeedModeHalfProps = { mode: FeedMode; label: 'invitation' | 'socialFeed'; Icon: LucideIcon; pressed: boolean; onSelect: (mode: FeedMode) => void };
+type FeedModeHalfProps = {
+    half: FeedMode;
+    label: 'invitation' | 'socialFeed';
+    Icon: LucideIcon;
+    mode: FeedMode;
+    onSelect: (mode: FeedMode) => void;
+    // Draws its own coral, with no sliding thumb.
+    fills: boolean;
+};
 
-function FeedModeHalf({ mode, label, Icon, pressed, onSelect }: FeedModeHalfProps) {
+function FeedModeHalf({ half, label, Icon, mode, onSelect, fills }: FeedModeHalfProps) {
     const t = useTranslations('FeedLayout');
-    const select = useCallback(() => onSelect(mode), [mode, onSelect]);
+    const select = useCallback(() => onSelect(half), [half, onSelect]);
+    const pressed = mode === half;
 
     return (
         <button
@@ -50,8 +76,9 @@ function FeedModeHalf({ mode, label, Icon, pressed, onSelect }: FeedModeHalfProp
             aria-pressed={pressed}
             onClick={select}
             className={cn(
-                'relative z-10 flex h-8 items-center justify-center gap-1 rounded-full px-3 text-[13px] font-medium transition-colors before:absolute before:inset-x-0 before:-inset-y-1',
+                'relative z-10 flex h-[30px] items-center justify-center gap-1 rounded-full px-2.5 text-[12.5px] font-medium whitespace-nowrap transition-colors duration-200 before:absolute before:inset-x-0 before:-inset-y-[5px] motion-reduce:transition-none',
                 pressed ? 'text-primary-foreground' : 'text-ink-muted hover:text-ink',
+                fills && pressed && 'bg-primary',
             )}
         >
             <Icon className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />

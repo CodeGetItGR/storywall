@@ -5,7 +5,7 @@ import { useCallback, useRef } from 'react';
 type Target = 'cancel' | 'edit';
 
 // Where focus goes as edit mode opens and closes: to Cancel once edit mode is drawn, and back
-// to the Edit pill after. editPill and cancelPill are callback refs: each focuses its button as it mounts, so a slow edit chunk is fine.
+// to the Edit pencil after. editPencil and cancelPill are callback refs: each focuses its button as it mounts, so a slow edit chunk is fine.
 export function useFeedEditFocus(start: () => void, finish: () => void) {
     const next = useRef<Target | null>(null);
 
@@ -14,7 +14,7 @@ export function useFeedEditFocus(start: () => void, finish: () => void) {
         next.current = null;
         node.focus();
     }, []);
-    const editPill = useCallback((node: HTMLButtonElement | null) => focusIfNext('edit', node), [focusIfNext]);
+    const editPencil = useCallback((node: HTMLButtonElement | null) => focusIfNext('edit', node), [focusIfNext]);
     const cancelPill = useCallback((node: HTMLButtonElement | null) => focusIfNext('cancel', node), [focusIfNext]);
 
     const startEditing = useCallback(() => {
@@ -26,5 +26,5 @@ export function useFeedEditFocus(start: () => void, finish: () => void) {
         finish();
     }, [finish]);
 
-    return { start: startEditing, finish: finishEditing, editPill, cancelPill };
+    return { start: startEditing, finish: finishEditing, editPencil, cancelPill };
 }

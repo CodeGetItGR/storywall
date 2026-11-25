@@ -11,7 +11,7 @@ export type FeedTopProps = {
     mode?: FeedPageMode;
     // The Invitation | Social Feed pill, under the cover.
     modeSwitch?: ReactNode;
-    // The host's Edit pill, or edit mode's Theme, Cancel and Save: under the cover, or under the switch when it shows.
+    // Edit mode's Theme, Cancel and Save, under the cover or the switch's room; a host's Edit pencil on a page without a switch.
     editRow?: ReactNode;
     // Social Feed mode's date + place row, under the pill.
     dateRow?: ReactNode;
@@ -102,7 +102,7 @@ export function FeedTopFrame({
             {/* Invitation | Social Feed switch */}
             {modeSwitch && parts.native(modeSwitch)}
 
-            {/* Edit, or Theme, Cancel and Save */}
+            {/* Theme, Cancel and Save, or the Edit pencil */}
             {editRow && parts.native(editRow)}
 
             {/* Date and place */}
