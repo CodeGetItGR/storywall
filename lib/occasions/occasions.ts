@@ -21,6 +21,7 @@ export const OCCASIONS: readonly Occasion[] = [
     { eventType: 'BABY_SHOWER', slugs: { en: 'baby-showers', el: 'baby-shower' }, ready: false, launched: false },
     { eventType: 'GENDER_REVEAL', slugs: { en: 'gender-reveal', el: 'gender-reveal' }, ready: false, launched: false },
     { eventType: 'REUNION', slugs: { en: 'reunions', el: 'reunion' }, ready: false, launched: false },
+    { eventType: 'GRADUATION', slugs: { en: 'graduations', el: 'apofoitisi' }, ready: false, launched: false },
     { eventType: 'PRIVATE_PARTY', slugs: { en: 'private-parties', el: 'idiotiko-parti' }, ready: false, launched: false },
     { eventType: 'SOCIAL_EVENT', slugs: { en: 'social-events', el: 'koinonikes-ekdiloseis' }, ready: false, launched: false },
 ];

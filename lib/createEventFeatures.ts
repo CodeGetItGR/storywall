@@ -27,6 +27,7 @@ const PRIORITY: Partial<Record<EventTypeConvention, CreateEventFeatureKey[]>> = 
     BAPTISM: ['gallery', 'wishbook', 'rsvp', 'stories', 'playlist', 'schedule', 'theme', 'co_hosts'],
     GENDER_REVEAL: ['he_or_she', 'gallery', 'wishbook', 'rsvp', 'stories', 'playlist', 'schedule', 'theme'],
     REUNION: ['gallery', 'rsvp', 'stories', 'co_hosts', 'playlist', 'schedule', 'posts'],
+    GRADUATION: ['gallery', 'wishbook', 'rsvp', 'stories', 'co_hosts', 'schedule', 'posts'],
 };
 const DEFAULT_PRIORITY: CreateEventFeatureKey[] = ['gallery', 'rsvp', 'wishbook', 'stories', 'playlist', 'schedule', 'co_hosts', 'theme', 'posts'];
 

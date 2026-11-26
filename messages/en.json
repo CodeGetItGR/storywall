@@ -1178,6 +1178,11 @@
             "PRIVATE_PARTY": {
                 "title": "Party name",
                 "startAt": "Party date"
+            },
+            "GRADUATION": {
+                "title": "Event name",
+                "startAt": "Ceremony date",
+                "locationName": "Ceremony location"
             }
         },
         "initialSessions": {
@@ -1204,6 +1209,9 @@
             },
             "REUNION": {
                 "title": "Reunion"
+            },
+            "GRADUATION": {
+                "title": "Ceremony"
             }
         },
         "secondarySessions": {
@@ -1212,6 +1220,14 @@
             },
             "BAPTISM": {
                 "title": "Venue"
+            },
+            "GRADUATION": {
+                "title": "Dinner"
+            }
+        },
+        "suggestedSessions": {
+            "GRADUATION": {
+                "title": "Party"
             }
         },
         "endAtPresets": {

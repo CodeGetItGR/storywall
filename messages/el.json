@@ -1309,6 +1309,11 @@
             "PRIVATE_PARTY": {
                 "title": "Όνομα πάρτι",
                 "startAt": "Ημερομηνία πάρτι"
+            },
+            "GRADUATION": {
+                "title": "Όνομα εκδήλωσης",
+                "startAt": "Ημερομηνία ορκωμοσίας",
+                "locationName": "Τοποθεσία ορκωμοσίας"
             }
         },
         "initialSessions": {
@@ -1335,6 +1340,9 @@
             },
             "REUNION": {
                 "title": "Συνάντηση"
+            },
+            "GRADUATION": {
+                "title": "Ορκωμοσία"
             }
         },
         "secondarySessions": {
@@ -1343,6 +1351,14 @@
             },
             "BAPTISM": {
                 "title": "Χώρος δεξίωσης"
+            },
+            "GRADUATION": {
+                "title": "Δείπνο"
+            }
+        },
+        "suggestedSessions": {
+            "GRADUATION": {
+                "title": "Πάρτι"
             }
         },
         "endAtPresets": {
