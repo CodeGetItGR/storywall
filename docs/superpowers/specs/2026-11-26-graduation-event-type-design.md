@@ -37,7 +37,7 @@ Follows the REUNION type (spec `2026-10-06-reunion-event-type-design.md` in the 
   3. The module matrix (§3).
   4. The four standard reactions (Like, Love, Laugh, Celebrate), as for REUNION.
   5. The member roles (§4.2).
-  6. The `events.upload_frame` column (§7.1).
+- Migration `V238__event_upload_frame.sql`: the `events.upload_frame` column (§7.1).
 - Java catalogs, kept in line with the migration by the existing seed tests:
   `EventTypeModuleDefaults`, `EventTypeMemberRoleDefaults`, `ReactionTypeCatalogDefaults`,
   `EventTypeVoicePackDefaults`.
@@ -144,7 +144,7 @@ It is a paid block like `coupleProfiles`: it needs the `save_my_date` module.
 ```ts
 graduates: z.object({
     title: text,
-    graduates: z.array(graduateSchema).min(1).max(10),
+    graduates: z.array(graduateSchema).max(10),
     desktopColumns: columns,
 }).strict()
 
@@ -204,7 +204,7 @@ downloads included. Videos are never framed.
 - On create, a GRADUATION event gets `CLASSIC`; every other type gets `NONE`.
 - The host changes it with `PATCH /api/events/{id}` (`EventPatchDto.uploadFrame`). A missing field
   leaves it unchanged, so the value `NONE` (not null) turns it off. Only hosts can patch; a value
-  outside the enum is a 400. `PUT` (the full update) does not carry it, so a full update never resets it.
+  outside the enum is a 400. The create request does not carry it.
 - It is returned on the event responses and on `GET /api/qr/{token}` (`QrLinkResolutionDto`), which
   also gains `eventStartAt` and `eventTimezone`, so signed-out QR uploaders see the switch and the
   frame shows the date. Like the title, these are only filled for an active code.
