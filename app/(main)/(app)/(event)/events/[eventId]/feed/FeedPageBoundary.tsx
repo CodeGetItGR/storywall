@@ -92,6 +92,7 @@ export function FeedPageBoundary({ eventId }: { eventId: string }) {
             value={{
                 event,
                 eventId,
+                hasNextPage,
                 isFetchingNextPage,
                 isHost,
                 isRoleLoading,

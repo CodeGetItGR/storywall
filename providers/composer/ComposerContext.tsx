@@ -5,6 +5,8 @@ import { createContext, useContext } from 'react';
 export interface ComposerContextValue {
     openPostComposer: () => void;
     openPostImagePicker: () => void;
+    // The post composer with these photos in it, for a caller with a picker of its own. Nothing picked opens nothing.
+    openPostWithFiles: (files: FileList | null) => void;
     openSongComposer: () => void;
     openAnnouncementComposer: () => void;
     openStoryCapture: () => void;

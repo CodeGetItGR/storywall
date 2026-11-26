@@ -4,20 +4,28 @@ import { PostSkeleton } from '@/components/feed/PostSkeleton';
 import { StorySkeleton } from '@/components/feed/StorySkeleton';
 import { HideComposerFab } from '@/components/layout/mobile-tab-bar/HideComposerFab';
 import { Skeleton } from '@/components/ui/skeleton';
+import { cn } from '@/lib/utils';
 
-export function FeedPageSkeleton() {
+// Whether the page will have the header. Unknown: its room is kept with nothing in it, so it never flashes.
+type FeedPageSkeletonProps = { header?: 'shown' | 'hidden' | 'unknown' };
+
+export function FeedPageSkeleton({ header = 'unknown' }: FeedPageSkeletonProps) {
     const t = useTranslations('FeedPage');
 
     return (
         <div className="mx-auto flex w-full flex-col lg:max-w-[42rem]" role="status" aria-label={t('loading')}>
             {/* Keeps the compose button away until the feed is ready */}
             <HideComposerFab />
-            <div className="sticky top-0 z-20 flex w-full items-center justify-between gap-4 bg-event/90 px-4 py-5 backdrop-blur-sm">
-                <Skeleton className="h-8 w-[8.5rem] rounded-full sm:h-12 sm:w-44" />
-                <Skeleton className="h-8 w-24 rounded-full" />
-            </div>
+            {/* Header */}
+            {header !== 'hidden' && (
+                <div className="sticky top-0 z-20 flex w-full items-center justify-between gap-4 bg-event/90 px-4 py-5 backdrop-blur-sm">
+                    <Skeleton className={cn('h-8 w-[8.5rem] rounded-full sm:h-12 sm:w-44', header === 'unknown' && 'invisible')} />
+                    <Skeleton className={cn('h-8 w-24 rounded-full', header === 'unknown' && 'invisible')} />
+                </div>
+            )}
 
-            <section className="px-3">
+            {/* Cover */}
+            <section className={cn('px-3', header === 'hidden' && 'mt-3')}>
                 <Skeleton className="aspect-[3/2] w-full rounded-lg" />
             </section>
 
@@ -45,7 +53,7 @@ export function FeedPageSkeleton() {
                             </div>
                         </div>
                     </div>
-                    <div className="mt-4 flex flex-col">
+                    <div className="mt-4 flex flex-col lg:px-2">
                         <PostSkeleton withMedia />
                         <PostSkeleton />
                     </div>

@@ -39,6 +39,7 @@ import { useFeedModuleBlockPart } from '@/hooks/useFeedModuleBlockPart';
 import { useFeedModuleTiles } from '@/hooks/useFeedModuleTiles';
 import { useFeedOpenMenu } from '@/hooks/useFeedOpenMenu';
 import { useEditPageTheme } from '@/hooks/useFeedPageTheme';
+import { useFeedPhotoUploads } from '@/hooks/useFeedPhotoUploads';
 import { useFeedSectionContent } from '@/hooks/useFeedSectionContent';
 import { useFeedSectionName } from '@/hooks/useFeedSectionName';
 import { useFeedSectionPart } from '@/hooks/useFeedSectionPart';
@@ -46,6 +47,7 @@ import { useFeedSectionPreviews } from '@/hooks/useFeedSectionPreviews';
 import { useFeedTextPresets } from '@/hooks/useFeedTextPresets';
 import { useFeedTop } from '@/hooks/useFeedTop';
 import { useFeedUploadedMedia } from '@/hooks/useFeedUploadedMedia';
+import { PhotoUploadsContext } from '@/hooks/usePhotoUploadsContext';
 import { useSectionDrag } from '@/hooks/useSectionDrag';
 import { useSettingsPreview } from '@/hooks/useSettingsPreview';
 import type { EventDetailResponseDto } from '@/lib/api/types';
@@ -95,6 +97,7 @@ export function FeedEditTop({
     // The saved layout's photos plus the ones the host uploads while editing.
     const uploads = useFeedUploadedMedia(session.media);
     const sheetUploads = useMemo(() => ({ uploadImage: feedImageUploader(event.id), remember: uploads.remember }), [event.id, uploads.remember]);
+    const photoSlots = useFeedPhotoUploads({ eventId: event.id, store: session.store, remember: uploads.remember });
     const { previewing, toggle: togglePreview } = useFeedEditPreview();
     const moduleBlock = useFeedModuleBlockPart(event, !previewing);
     const view = useFeedTop(event, {
@@ -231,7 +234,7 @@ export function FeedEditTop({
             ),
     };
 
-    const guestFeedSection = useFeedSectionPart(event, uploads.media);
+    const guestFeedSection = useFeedSectionPart(event, uploads.media, true);
     // The description starts 24 px down on the feed and a placeholder 12: the rest is room for their tools (FEED_TOOLS_ROOM).
     const placeholder = (name: string) => (
         <div className="pt-15">
@@ -270,113 +273,117 @@ export function FeedEditTop({
     );
 
     return (
-        <InlineTextEditing
-            store={session.store}
-            document={session.document}
-            theme={session.theme}
-            uploadedFonts={fonts.data}
-            variant="feed"
-            presets={textPresets.presets}
-            onLinkAdded={panels.openSettings}
-            paused={previewing}
-        >
-            {/* The uploaded fonts the Style presets name */}
-            {textPresets.fontFaces && <style>{textPresets.fontFaces}</style>}
-
-            {/* Blocks */}
-            <DndContext
-                sensors={drag.sensors}
-                collisionDetection={closestCenter}
-                modifiers={MODIFIERS}
-                accessibility={drag.accessibility}
-                onDragStart={menu.close}
-                onDragEnd={drag.onDragEnd}
+        <PhotoUploadsContext.Provider value={photoSlots}>
+            <InlineTextEditing
+                store={session.store}
+                document={session.document}
+                theme={session.theme}
+                uploadedFonts={fonts.data}
+                variant="feed"
+                presets={textPresets.presets}
+                onLinkAdded={panels.openSettings}
+                paused={previewing}
             >
-                <SortableContext items={sortableIds} strategy={verticalListSortingStrategy}>
-                    {/* Its own stacking context: the tools stay under the feed's sticky header. */}
-                    <div className="isolate">
-                        {view.look ? (
-                            <FeedLook ctx={view.ctx} lang={view.lang} fontFaces={view.fontFaces}>
-                                {frame}
-                            </FeedLook>
-                        ) : (
-                            frame
-                        )}
-                    </div>
-                </SortableContext>
-            </DndContext>
+                {/* The uploaded fonts the Style presets name */}
+                {textPresets.fontFaces && <style>{textPresets.fontFaces}</style>}
 
-            {/* Block settings */}
-            <FeedBlockSheet
-                title={sheet.section ? blockName(sheet.section) : ''}
-                open={sheet.section !== null}
-                scope={sheet.scope}
-                groups={sheet.groups}
-                parts={sheet.parts}
-                partLabels={preview.labels}
-                isDesktop={preview.isDesktop}
-                membersOnly={sheet.membersOnly}
-                onMembersOnly={sheet.setMembersOnly}
-                promptText={sheet.promptText}
-                onPromptText={sheet.setPromptText}
-                pinned={sheet.pinned}
-                pinnedUploading={sheet.pinnedUploading}
-                media={uploads.media}
-                content={content}
-                onAddPinned={sheet.addPinned}
-                onRemovePinned={sheet.removePinned}
-                onMovePinned={sheet.movePinned}
-                onOpenPart={preview.openEditor}
-                onClose={sheet.close}
-            />
-            <SettingsPartEditor
-                event={event}
-                part={preview.openPart}
-                label={preview.openPart ? preview.labels[preview.openPart] : ''}
-                isDesktop={false}
-                canUploadCover={preview.canUploadCover}
-                onCloseAction={preview.closeEditor}
-            />
+                {/* Blocks */}
+                <DndContext
+                    sensors={drag.sensors}
+                    collisionDetection={closestCenter}
+                    modifiers={MODIFIERS}
+                    accessibility={drag.accessibility}
+                    onDragStart={menu.close}
+                    onDragEnd={drag.onDragEnd}
+                >
+                    <SortableContext items={sortableIds} strategy={verticalListSortingStrategy}>
+                        {/* Its own stacking context: the tools stay under the feed's sticky header. */}
+                        <div className="isolate">
+                            {view.look ? (
+                                <FeedLook ctx={view.ctx} lang={view.lang} fontFaces={view.fontFaces}>
+                                    {frame}
+                                </FeedLook>
+                            ) : (
+                                frame
+                            )}
+                        </div>
+                    </SortableContext>
+                </DndContext>
 
-            {/* Theme */}
-            {!feedOnly && (
-                <FeedEditThemeSheet
-                    event={event}
-                    session={session}
-                    open={panels.themeOpen}
+                {/* Block settings */}
+                <FeedBlockSheet
+                    title={sheet.section ? blockName(sheet.section) : ''}
+                    open={sheet.section !== null}
+                    scope={sheet.scope}
+                    groups={sheet.groups}
+                    parts={sheet.parts}
+                    partLabels={preview.labels}
                     isDesktop={preview.isDesktop}
-                    onClose={panels.closeTheme}
+                    membersOnly={sheet.membersOnly}
+                    onMembersOnly={sheet.setMembersOnly}
+                    promptText={sheet.promptText}
+                    onPromptText={sheet.setPromptText}
+                    pinned={sheet.pinned}
+                    pinnedUploading={sheet.pinnedUploading}
+                    media={uploads.media}
+                    content={content}
+                    onAddPinned={sheet.addPinned}
+                    onRemovePinned={sheet.removePinned}
+                    onMovePinned={sheet.movePinned}
+                    onOpenPart={preview.openEditor}
+                    onClose={sheet.close}
                 />
-            )}
+                <SettingsPartEditor
+                    event={event}
+                    part={preview.openPart}
+                    label={preview.openPart ? preview.labels[preview.openPart] : ''}
+                    isDesktop={false}
+                    canUploadCover={preview.canUploadCover}
+                    onCloseAction={preview.closeEditor}
+                />
 
-            {/* Add section: the invitation's, then Feed mode's own */}
-            <FeedAddSectionSheet
-                kind="invitation"
-                open={addingInvitation}
-                items={invitationItems}
-                tiles={
-                    tiles.length > 0 && <FeedPremiumTiles tiles={tiles} eventId={event.id} eventType={event.eventType} onAdd={actions.addModule} />
-                }
-                onAdd={actions.add}
-                onClose={actions.closeAdd}
-            />
-            <FeedAddSectionSheet kind="feed" open={addingFeed} items={feedItems} tiles={null} onAdd={actions.add} onClose={actions.closeAdd} />
+                {/* Theme */}
+                {!feedOnly && (
+                    <FeedEditThemeSheet
+                        event={event}
+                        session={session}
+                        open={panels.themeOpen}
+                        isDesktop={preview.isDesktop}
+                        onClose={panels.closeTheme}
+                    />
+                )}
 
-            {/* Delete */}
-            <DeleteSectionDialog
-                open={actions.remove.isOpen}
-                sectionName={actions.remove.section ? blockName(actions.remove.section) : ''}
-                fromFeed={actions.remove.section !== null && isFeedModeSectionType(actions.remove.section.type)}
-                onDelete={actions.remove.confirm}
-                onCancel={actions.remove.cancel}
-                finalFocus={actions.remove.finalFocus}
-            />
+                {/* Add section: the invitation's, then Feed mode's own */}
+                <FeedAddSectionSheet
+                    kind="invitation"
+                    open={addingInvitation}
+                    items={invitationItems}
+                    tiles={
+                        tiles.length > 0 && (
+                            <FeedPremiumTiles tiles={tiles} eventId={event.id} eventType={event.eventType} onAdd={actions.addModule} />
+                        )
+                    }
+                    onAdd={actions.add}
+                    onClose={actions.closeAdd}
+                />
+                <FeedAddSectionSheet kind="feed" open={addingFeed} items={feedItems} tiles={null} onAdd={actions.add} onClose={actions.closeAdd} />
 
-            {/* Leave with changes */}
-            <EditorLeaveDialog open={session.leaving} onLeave={session.leave} onStay={session.stay} />
+                {/* Delete */}
+                <DeleteSectionDialog
+                    open={actions.remove.isOpen}
+                    sectionName={actions.remove.section ? blockName(actions.remove.section) : ''}
+                    fromFeed={actions.remove.section !== null && isFeedModeSectionType(actions.remove.section.type)}
+                    onDelete={actions.remove.confirm}
+                    onCancel={actions.remove.cancel}
+                    finalFocus={actions.remove.finalFocus}
+                />
 
-            {/* Saved elsewhere */}
-            <EditorConflictDialog open={session.conflict} isReloading={session.reloading} onReload={session.reload} />
-        </InlineTextEditing>
+                {/* Leave with changes */}
+                <EditorLeaveDialog open={session.leaving} onLeave={session.leave} onStay={session.stay} />
+
+                {/* Saved elsewhere */}
+                <EditorConflictDialog open={session.conflict} isReloading={session.reloading} onReload={session.reload} />
+            </InlineTextEditing>
+        </PhotoUploadsContext.Provider>
     );
 }

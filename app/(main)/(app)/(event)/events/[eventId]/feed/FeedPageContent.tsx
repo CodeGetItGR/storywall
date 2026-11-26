@@ -9,16 +9,16 @@ import { EventDescription } from '@/components/feed/EventDescription';
 import { EventInfoSection } from '@/components/feed/EventInfoSection';
 import { FeedEmptyState } from '@/components/feed/FeedEmptyState';
 import { FeedPageSkeleton } from '@/components/feed/FeedPageSkeleton';
-import { FeedPostRenderer } from '@/components/feed/FeedPostRenderer';
+import { FeedPostList } from '@/components/feed/FeedPostList';
 import { GuestOfferCard } from '@/components/feed/guestOffer/GuestOfferCard';
 import { Header } from '@/components/feed/Header';
 import { HeOrShePromptCard } from '@/components/feed/HeOrShePromptCard';
+import { InvitationFooter } from '@/components/feed/InvitationFooter';
 import { FeedCoverBlock } from '@/components/feed/layout/FeedCoverBlock';
 import { FeedModeSwitch } from '@/components/feed/layout/FeedModeSwitch';
 import { FeedRsvpBlock } from '@/components/feed/layout/FeedRsvpBlock';
 import { FeedTop } from '@/components/feed/layout/FeedTop';
 import { PartnerBrandingPromptModal } from '@/components/feed/partner/PartnerBrandingPromptModal';
-import { PartnerFeedCard } from '@/components/feed/partner/PartnerFeedCard';
 import { PostModal } from '@/components/feed/PostModal';
 import { PublishQueueCards } from '@/components/feed/PublishQueueCards';
 import { FeedQuickActions } from '@/components/feed/quickActions/FeedQuickActions';
@@ -38,7 +38,8 @@ import { useFeedTop } from '@/hooks/useFeedTop';
 import { useHideMobileTabBar } from '@/hooks/useHideMobileTabBar';
 import { useHideMobileTabBarOnScroll } from '@/hooks/useHideMobileTabBarOnScroll';
 import { useRsvpPromptVisible } from '@/hooks/useRsvpPromptVisible';
-import { type FeedPageMode, feedPlaceHref } from '@/lib/feedMode';
+import { feedEndsWithPost } from '@/lib/feed/feedEnd';
+import { feedPlaceHref } from '@/lib/feedMode';
 import { hasFeedSection } from '@/lib/feedSections';
 import { cn } from '@/lib/utils';
 
@@ -46,9 +47,10 @@ import { useFeedPage } from './FeedPageContext';
 
 export function FeedPageContent() {
     useHideMobileTabBarOnScroll();
-    const { currentMemberRsvpId, event, eventId, isFetchingNextPage, isHost, isRoleLoading, loadMoreRef, loadingMoreLabel, moduleFlags, posts } =
+    const { currentMemberRsvpId, event, eventId, hasNextPage, isFetchingNextPage, isHost, isRoleLoading, loadMoreRef, loadingMoreLabel, moduleFlags, posts } =
         useFeedPage();
     const feedItems = useFeedItems(posts, event.partnerBranding);
+    const endsWithPost = feedEndsWithPost(feedItems, hasNextPage);
     const [storyId, setStoryId] = useState<string | null>(null);
     const shouldShowRSVP = useRsvpPromptVisible({ eventId, isHost, rsvpAvailable: moduleFlags.rsvp, rsvpId: currentMemberRsvpId });
     const top = useFeedTop(event);
@@ -59,10 +61,10 @@ export function FeedPageContent() {
     const { start: startEditing, finish: finishEditing, editPencil, cancelPill } = useFeedEditFocus(editMode.start, editMode.finish);
     const feedMode = useFeedMode(event);
     // null while the mode isn't known yet: the page keeps its loading state.
-    const pageMode: FeedPageMode | null = feedMode.available ? feedMode.mode : 'single';
-    // The invitation takes the whole phone: the switch to Social Feed brings the tab bar back.
-    const tabBarAway = pageMode === 'invitation';
-    useHideMobileTabBar(tabBarAway, 'feed-invitation');
+    const { pageMode } = feedMode;
+    // The invitation takes the whole phone: the switch to Social Feed brings the header and the tab bar back.
+    const invitation = pageMode === 'invitation';
+    useHideMobileTabBar(invitation, 'feed-invitation');
     // The Overview's Start editing (?edit=blocks) opens the invitation.
     const startFromLink = useCallback(() => {
         if (feedMode.available) feedMode.select('invitation');
@@ -108,7 +110,7 @@ export function FeedPageContent() {
             </section>
         ),
         description: event.description && (
-            <EventDescription eventId={event.id} description={event.description} keepShown={pageMode === 'invitation' || editMode.editing} />
+            <EventDescription eventId={event.id} description={event.description} keepShown={invitation || editMode.editing} />
         ),
         rsvp: shouldShowRSVP ? <FeedRsvpBlock eventId={eventId} deadline={event.schedule.rsvpDeadline ?? null} /> : null,
         moduleBlock,
@@ -153,12 +155,12 @@ export function FeedPageContent() {
     }
 
     // The mode lives on this device: until it's known the page keeps its loading state, so it never flashes the wrong mode.
-    if (pageMode === null) return <FeedPageSkeleton />;
+    if (pageMode === null) return <FeedPageSkeleton header={feedMode.expected === 'invitation' ? 'hidden' : 'shown'} />;
 
     return (
-        <div className="mx-auto flex w-full flex-col lg:max-w-2xl" data-tab-bar-away={tabBarAway || undefined}>
-            {/* Header */}
-            <Header countdownTime={event.schedule.startAt ? new Date(event.schedule.startAt).getTime() : 0} eventId={eventId} />
+        <div className="mx-auto flex w-full flex-col lg:max-w-2xl" data-tab-bar-away={invitation || undefined}>
+            {/* Header: the invitation has none */}
+            {!invitation && <Header countdownTime={event.schedule.startAt ? new Date(event.schedule.startAt).getTime() : 0} eventId={eventId} />}
             {/* Install */}
             <InstallAppBanner />
             {/* Invitation blocks, stories and RSVP */}
@@ -183,7 +185,10 @@ export function FeedPageContent() {
                 <section id="posts">
                     {moduleFlags.posts && (
                         <div
-                            className={cn('flex flex-col px-0 pb-24 md:pb-10', {
+                            className={cn('flex flex-col px-0', {
+                                // A last post reaches the page's end: on phones it takes the tab bar's room itself (PostCard).
+                                '-mb-[calc(var(--tab-bar-h)+var(--overview-fab-room,0px))] md:mb-0': endsWithPost,
+                                'pb-24 md:pb-16': !endsWithPost,
                                 'mt-4':
                                     (!moduleFlags.stories || !top.drawsMiddle || pageMode === 'feed') &&
                                     !(shouldShowRSVP && top.frame.rsvp && pageMode !== 'feed'),
@@ -203,16 +208,9 @@ export function FeedPageContent() {
                                 {posts.length === 0 ? (
                                     <FeedEmptyState />
                                 ) : (
-                                    feedItems.map((item) =>
-                                        item.kind === 'post' ? (
-                                            <FeedPostRenderer key={item.post.id} post={item.post} isLcpCandidate={item.index === 0} />
-                                        ) : (
-                                            /* Partner card */
-                                            event.partnerBranding && <PartnerFeedCard key={item.key} branding={event.partnerBranding} eventId={eventId} />
-                                        ),
-                                    )
+                                    <FeedPostList items={feedItems} partnerBranding={event.partnerBranding} eventId={eventId} endsWithPost={endsWithPost} />
                                 )}
-                                <div ref={loadMoreRef} className="h-1" />
+                                <div ref={loadMoreRef} className="-mt-1 h-1" />
                                 {isFetchingNextPage && <p className="on-page py-2 text-center text-sm text-ink-muted">{loadingMoreLabel}</p>}
                             </div>
                         </div>
@@ -225,6 +223,9 @@ export function FeedPageContent() {
                     )}
                 </section>
             )}
+
+            {/* Footer */}
+            {invitation && <InvitationFooter />}
 
             <PostModal />
 

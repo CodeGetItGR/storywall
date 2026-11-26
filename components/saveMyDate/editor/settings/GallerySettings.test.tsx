@@ -100,7 +100,7 @@ describe('GallerySettings', () => {
         await act(async () => {
             fireEvent.change(screen.getByTestId('gallery-add-input'), { target: { files: [file('a.jpg'), file('b.jpg'), file('c.jpg')] } });
         });
-        expect(value!.report).toHaveBeenCalledWith('galleryFull');
+        expect(value!.report).toHaveBeenCalledWith('galleryFull', 's-gallery');
         const sent = vi.mocked(value!.upload).mock.calls;
         expect(sent.map(([, picked]) => picked.name)).toEqual(['a.jpg', 'b.jpg']);
         expect(sent.every(([slot]) => slot.kind === 'galleryAdd' && slot.sectionId === SAMPLE_SECTIONS.gallery.id)).toBe(true);
@@ -109,7 +109,7 @@ describe('GallerySettings', () => {
     it('says the gallery is full instead of opening the picker', () => {
         const { value } = renderGallery({ images: Array.from({ length: 10 }, (_, index) => photo(`p${index}`)) });
         fireEvent.click(screen.getByRole('button', { name: 'Add photos' }));
-        expect(value!.report).toHaveBeenCalledWith('galleryFull');
+        expect(value!.report).toHaveBeenCalledWith('galleryFull', 's-gallery');
         expect(value!.canPick).not.toHaveBeenCalled();
     });
 
@@ -150,7 +150,7 @@ describe('GallerySettings', () => {
         await act(async () => {
             fireEvent.change(screen.getByTestId('gallery-add-input'), { target: { files: [file('a.jpg'), file('b.jpg')] } });
         });
-        expect(value.report).toHaveBeenCalledWith(null);
+        expect(value.report).toHaveBeenCalledWith(null, 's-gallery');
         expect(screen.getAllByRole('progressbar').map((bar) => bar.getAttribute('aria-valuenow'))).toEqual(['50', '0']);
     });
 

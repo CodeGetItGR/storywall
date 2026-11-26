@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 
 import type { InvitationElement } from '@/lib/invitation/elements';
 import type { PhotoFrameElement } from '@/lib/invitation/photoFrame';
-import type { PhotoSlot } from '@/lib/invitation/photoSlots';
+import type { PhotoFieldSlot, PhotoSlot } from '@/lib/invitation/photoSlots';
 import type { ImageRef } from '@/lib/invitation/primitives';
 import type { SectionDecoration } from '@/lib/invitation/sections';
 
@@ -23,6 +23,8 @@ export type CanvasTools = {
     customItem?: (sectionId: string, elements: readonly InvitationElement[], item: InvitationElement, content: ReactNode) => ReactNode;
     // On a photo the host can add or replace. An empty slot is drawn only when this is set.
     photo?: (slot: PhotoSlot, hasPhoto: boolean) => ReactNode;
+    // Over a person's photo, outside its shape so no shape cuts it off.
+    personPhoto?: (slot: PhotoFieldSlot, hasPhoto: boolean, photo: ReactNode) => ReactNode;
     // Over a framed photo: move and zoom it.
     framePhoto?: (element: PhotoFrameElement) => ReactNode;
     // Admins: which frame and its effect. When set, a frame with no art yet shows as an empty box.

@@ -10,6 +10,7 @@ import { useAppConfig } from '@/hooks/useAppConfig';
 import { useContentAccess } from '@/hooks/useContentAccess';
 import { useGalleryAlbum } from '@/hooks/useGalleryAlbum';
 import { useGallerySelection } from '@/hooks/useGallerySelection';
+import { useGalleryUploadNotices } from '@/hooks/useGalleryUploadNotices';
 import { useInfiniteScrollSentinel } from '@/hooks/useInfiniteScrollSentinel';
 import { useDeleteMedia, useEventMedia, useOriginalMedia, useUploadMediaBatch } from '@/hooks/useMedia';
 import { useSlowUpload } from '@/hooks/useSlowUpload';
@@ -21,6 +22,7 @@ import { canReportContent } from '@/lib/contentPermissions';
 import { downloadBlob } from '@/lib/download';
 import { isEventDeleted, isEventWritable, readableModuleKeys } from '@/lib/eventLifecycle';
 import { formatBytes } from '@/lib/format';
+import { pickGalleryFiles } from '@/lib/galleryUpload';
 import { INCIDENT_MODE } from '@/lib/incident';
 import { isGalleryOpenToGuests } from '@/lib/qrLinks';
 import { getUploadLimits } from '@/lib/uploadLimits';
@@ -91,6 +93,8 @@ export function useGalleryScreen({ printAvailable = false }: { printAvailable?: 
     );
 
     const { filesPerRequest: maxFiles, imageBytes: maxImageBytes, videoBytes: maxVideoBytes } = getUploadLimits(appConfig?.media);
+    const uploadLimits = useMemo(() => ({ maxFiles, maxImageBytes, maxVideoBytes }), [maxFiles, maxImageBytes, maxVideoBytes]);
+    const notices = useGalleryUploadNotices(uploadLimits);
     // Every event keeps photo originals; videos are never re-encoded, so they have no separate original.
     // Pro items have no full-quality download yet (phase 2).
     const canDownloadOriginal = isHost && selectedMedia !== null && selectedMedia.mediaType !== 'VIDEO' && selectedMedia.collection !== 'PRO';
@@ -137,22 +141,12 @@ export function useGalleryScreen({ printAvailable = false }: { printAvailable?: 
 
     const handleFilesChange = useCallback(
         (event: ChangeEvent<HTMLInputElement>) => {
-            setUploadNotice(null);
-            const picked = Array.from(event.target.files ?? []);
-            const isTooLarge = (file: File) =>
-                (file.type.startsWith('image/') && file.size > maxImageBytes) || (file.type.startsWith('video/') && file.size > maxVideoBytes);
-            const files = picked
-                .filter((file) => (file.type.startsWith('image/') || file.type.startsWith('video/')) && !isTooLarge(file))
-                .slice(0, maxFiles);
+            const { files, notice } = pickGalleryFiles(Array.from(event.target.files ?? []), uploadLimits);
             setSelectedFiles(files);
-            if (picked.some(isTooLarge)) {
-                setUploadNotice(t('filesTooLarge', { imageSize: formatBytes(maxImageBytes), videoSize: formatBytes(maxVideoBytes) }));
-            } else if (files.length < picked.length) {
-                setUploadNotice(t('selectionLimited', { count: maxFiles }));
-            }
+            setUploadNotice(notices.picked(notice));
             event.target.value = '';
         },
-        [maxFiles, maxImageBytes, maxVideoBytes, t],
+        [notices, uploadLimits],
     );
 
     const handleClearSelection = useCallback(() => {
@@ -172,24 +166,13 @@ export function useGalleryScreen({ printAvailable = false }: { printAvailable?: 
                 onBusy: setIsUploadBusy,
             });
         } catch (error) {
-            setUploadNotice(toErrorMessage(error, t('uploadFailed')));
+            setUploadNotice(notices.failed(error));
             return;
         }
 
         setSelectedFiles([]);
-        setUploadNotice(
-            result.failed.length > 0
-                ? result.failed
-                      .map((failure) => {
-                          const errorKey = `uploadErrors.${failure.errorCode}`;
-                          return t.has(errorKey)
-                              ? t(errorKey, { count: maxFiles, filename: failure.filename })
-                              : t('uploadFailedItem', { filename: failure.filename });
-                      })
-                      .join(' ')
-                : t('uploadComplete', { count: result.created.length, failed: 0 }),
-        );
-    }, [activeMember, canUpload, eventId, maxFiles, selectedFiles, t, toErrorMessage, uploadMediaBatch]);
+        setUploadNotice(notices.uploaded(result));
+    }, [activeMember, canUpload, eventId, notices, selectedFiles, uploadMediaBatch]);
 
     const downloadOriginal = useCallback(async () => {
         if (!selectedMedia) return;
@@ -394,7 +377,7 @@ export function useGalleryScreen({ printAvailable = false }: { printAvailable?: 
         canDownloadSelection,
         selectedFiles,
         selectedSize,
-        uploadNotice: isUploadBusy ? t('uploadBusy') : isSlowUpload ? t('uploadSlow') : uploadNotice,
+        uploadNotice: isUploadBusy ? notices.busy : isSlowUpload ? notices.slow : uploadNotice,
         selectedMedia,
         originalError,
         selectionDownloadError,

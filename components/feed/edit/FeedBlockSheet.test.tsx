@@ -5,9 +5,11 @@ import type { ComponentProps } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { FeedBlockSheet } from '@/components/feed/edit/FeedBlockSheet';
+import { PhotoUploadsContext } from '@/hooks/usePhotoUploadsContext';
 import type { SettingsScope } from '@/hooks/useSectionSettingsPanel';
 import { feedSettingsGroups } from '@/lib/feedEditing';
 import { draftImageUploader } from '@/lib/invitation/editorUploads';
+import { createPhotoUploadStore } from '@/lib/invitation/photoUploadStore';
 import { SAMPLE_SECTIONS, SAMPLE_THEME } from '@/lib/invitation/samples';
 import type { InvitationSection } from '@/lib/invitation/sections';
 import { settingsGroups } from '@/lib/invitation/sectionSettings';
@@ -19,38 +21,41 @@ vi.mock('@/components/saveMyDate/invitation/invitationFonts', () => ({ INVITATIO
 afterEach(cleanup);
 
 const noMedia = () => undefined;
+const SLOTS = { uploads: createPhotoUploadStore(), upload: vi.fn(async () => {}), canPick: () => true, report: vi.fn() };
 
 function renderSheet(membersOnly: boolean | null, onMembersOnly = vi.fn(), props: Partial<ComponentProps<typeof FeedBlockSheet>> = {}) {
     render(
         <NextIntlClientProvider locale="en" messages={en}>
-            <FeedBlockSheet
-                title="Dress code"
-                open
-                scope={null}
-                groups={[]}
-                parts={[]}
-                partLabels={{} as never}
-                isDesktop
-                membersOnly={membersOnly}
-                onMembersOnly={onMembersOnly}
-                promptText={null}
-                onPromptText={vi.fn()}
-                pinned={null}
-                pinnedUploading={false}
-                media={noMedia}
-                onAddPinned={vi.fn()}
-                onRemovePinned={vi.fn()}
-                onMovePinned={vi.fn()}
-                onOpenPart={vi.fn()}
-                onClose={vi.fn()}
-                {...props}
-            />
+            <PhotoUploadsContext.Provider value={SLOTS}>
+                <FeedBlockSheet
+                    title="Dress code"
+                    open
+                    scope={null}
+                    groups={[]}
+                    parts={[]}
+                    partLabels={{} as never}
+                    isDesktop
+                    membersOnly={membersOnly}
+                    onMembersOnly={onMembersOnly}
+                    promptText={null}
+                    onPromptText={vi.fn()}
+                    pinned={null}
+                    pinnedUploading={false}
+                    media={noMedia}
+                    onAddPinned={vi.fn()}
+                    onRemovePinned={vi.fn()}
+                    onMovePinned={vi.fn()}
+                    onOpenPart={vi.fn()}
+                    onClose={vi.fn()}
+                    {...props}
+                />
+            </PhotoUploadsContext.Provider>
         </NextIntlClientProvider>,
     );
     return onMembersOnly;
 }
 
-describe("FeedBlockSheet of a Save my date section", () => {
+describe('FeedBlockSheet of a Save my date section', () => {
     const background = { color: undefined, hasPhoto: false, failed: false, onColor: vi.fn(), onPickPhoto: vi.fn(), onRemovePhoto: vi.fn() };
     const content = {
         textColor: '#4A3B32',
@@ -165,14 +170,20 @@ describe('FeedBlockSheet order', () => {
         ['couple contact', SAMPLE_SECTIONS.coupleContact, settings.contactLinks.tiktok, settings.iconTitleColor],
         ['FAQ', SAMPLE_SECTIONS.faq, settings.addQuestion, settings.fill],
         ['date', SAMPLE_SECTIONS.date, settings.language, settings.dateLayout],
-    ])('shows a %s section\'s inputs, Add photo, Members only, then its styling', (_, section, input, style) => {
+    ])("shows a %s section's inputs, Add photo, Members only, then its styling", (_, section, input, style) => {
         renderSection(section);
         expectInOrder([input, addPhoto, membersOnly, textColor, style, background.image, background.color]);
     });
 
-    it("shows the gallery's layout with the styling", () => {
+    it("shows the gallery's photos first, and its layout with the styling", () => {
         renderSection(SAMPLE_SECTIONS.gallery);
-        expectInOrder([addPhoto, membersOnly, textColor, en.InvitationEditor.photos.gallery.layout, background.image]);
+        const { gallery } = en.InvitationEditor.photos;
+        expectInOrder([gallery.add, membersOnly, textColor, gallery.layout, background.image]);
+        // One heading, and its photos go in the gallery, not loose in the section.
+        expect(screen.getAllByRole('heading', { name: gallery.title })).toHaveLength(1);
+        const loose = screen.getAllByLabelText(addPhoto);
+        expect(loose).toHaveLength(1);
+        expect(within(screen.getByRole('group', { name: background.image })).getByLabelText(addPhoto)).toBe(loose[0]);
     });
 
     it('names the contact links by their label alone', () => {

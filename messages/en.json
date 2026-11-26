@@ -6724,12 +6724,24 @@
     "FeedLayout": {
         "invitation": "Invitation",
         "socialFeed": "Social Feed",
-        "membersOnly": "Members only",
+        "madeWith": "Made with",
+        "membersOnly":"Members only",
         "membersOnlyNote": "Only people logged in to their account see this section.",
         "locked": {
             "join": "Sign in and join the event",
             "feed": "Photos and posts"
         }
+    },
+    "FeedModuleBlocks": {
+        "galleryUpload": "Upload photos",
+        "galleryUploadFirst": "Upload the first",
+        "galleryMore": "{count} more",
+        "wishWrite": "Write a wish",
+        "wishAll": "All wishes ({count})",
+        "wishMine": "Your wishes ({count})",
+        "wishWriteYours": "Write your wish…",
+        "wishNone": "No wishes yet.",
+        "wishPosition": "Wish {n} of {total}"
     },
     "FeedEditor": {
         "addIntro": "Add any section you like to your digital invitation",
@@ -9947,6 +9959,7 @@
         "appIcon": "StoryWall app icon",
         "location": "Location",
         "guestPhoto": "Guest photo",
+        "guestVideo": "Guest video",
         "photoBy": "Photo by {name}",
         "qrUploadSent": "Photos sent",
         "qrWishSent": "Wish sent",

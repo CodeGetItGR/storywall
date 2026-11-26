@@ -1,7 +1,15 @@
 import { describe, expect, it } from 'vitest';
 
+import type { EventDetailResponseDto, EventModuleResponseDto, FeedLayoutDto } from '@/lib/api/types';
 import { defaultFeedLayout } from '@/lib/feedLayout';
-import { feedModuleSection, feedModuleToolHref, feedScheduleEditorHref, layoutHasModule, moduleOfBlock } from '@/lib/feedModuleBlocks';
+import {
+    feedLayoutDrawsModule,
+    feedModuleSection,
+    feedModuleToolHref,
+    feedScheduleEditorHref,
+    layoutHasModule,
+    moduleOfBlock,
+} from '@/lib/feedModuleBlocks';
 
 describe('module blocks', () => {
     it('build a plain block for one module', () => {
@@ -23,5 +31,28 @@ describe('module blocks', () => {
         expect(layoutHasModule(layout, 'playlist')).toBe(false);
         const withPlaylist = { ...layout, sections: [...layout.sections, feedModuleSection('playlist', () => 'p')] };
         expect(layoutHasModule(withPlaylist, 'playlist')).toBe(true);
+    });
+});
+
+describe('feedLayoutDrawsModule', () => {
+    const smd = { moduleKey: 'save_my_date', isAvailable: true } as EventModuleResponseDto;
+    const event = (modules: EventModuleResponseDto[], endAt: string | null = null) =>
+        ({ modules, schedule: { endAt } }) as Pick<EventDetailResponseDto, 'modules' | 'schedule'>;
+    const layout = (visible: boolean) => {
+        const document = defaultFeedLayout();
+        document.sections.push({ ...feedModuleSection('gallery', () => 'g'), visible });
+        return { document, revision: 1 } as unknown as FeedLayoutDto;
+    };
+
+    it('is true for a shown block on a live Save my date event', () => {
+        expect(feedLayoutDrawsModule(layout(true), event([smd]), 'gallery')).toBe(true);
+        expect(feedLayoutDrawsModule(layout(true), event([smd]), 'wishbook')).toBe(false);
+    });
+
+    it('is false for a hidden block, without Save my date, after the event or with nothing saved', () => {
+        expect(feedLayoutDrawsModule(layout(false), event([smd]), 'gallery')).toBe(false);
+        expect(feedLayoutDrawsModule(layout(true), event([]), 'gallery')).toBe(false);
+        expect(feedLayoutDrawsModule(layout(true), event([smd], '2000-01-01T00:00:00Z'), 'gallery')).toBe(false);
+        expect(feedLayoutDrawsModule(null, event([smd]), 'gallery')).toBe(false);
     });
 });

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import type { EventCapabilitiesDto, EventHome, EventModuleResponseDto, EventStatus } from '@/lib/api/types';
-import { eventCapabilities, eventHomeHref, isLiteEventRouteAllowed, isLiveLiteEvent, liteModulePages } from '@/lib/eventCapabilities';
+import { eventCapabilities, eventHomeHref, isInvitationOnly, isLiteEventRouteAllowed, isLiveLiteEvent, liteModulePages } from '@/lib/eventCapabilities';
 
 function module_(moduleKey: string, isEnabled = true): EventModuleResponseDto {
     return {
@@ -99,6 +99,21 @@ describe('eventCapabilities', () => {
     it('reads an event without them (an old demo snapshot) as full', () => {
         const capabilities_ = eventCapabilities({ ...event_('START'), capabilities: undefined });
         expect(capabilities_).toMatchObject({ kind: 'FULL', home: 'FEED', takesGuests: true, hasSchedule: true });
+    });
+});
+
+describe('isInvitationOnly', () => {
+    const saveMyDate = module_('save_my_date');
+
+    it('is Save my date without the feed', () => {
+        expect(isInvitationOnly({ ...event_('QR'), modules: [saveMyDate] })).toBe(true);
+        expect(isInvitationOnly({ ...event_('START'), modules: [module_('posts'), saveMyDate] })).toBe(false);
+        expect(isInvitationOnly(event_('QR'))).toBe(false);
+    });
+
+    it('is not a suspended event, nor one without capabilities', () => {
+        expect(isInvitationOnly({ ...event_('QR', 'suspended'), modules: [saveMyDate] })).toBe(false);
+        expect(isInvitationOnly({ ...event_('QR'), modules: [saveMyDate], capabilities: undefined })).toBe(false);
     });
 });
 
