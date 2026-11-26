@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { NextIntlClientProvider } from 'next-intl';
 import type { ReactNode } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -53,7 +53,13 @@ describe('feed sections', () => {
         // Named after the Schedule module (KAN-293).
         expect(screen.getByRole('heading', { name: 'schedule' })).toBeTruthy();
         expect(screen.getByText(en.ManagePage.journey.now)).toBeTruthy();
-        expect(screen.getByText('Church').closest('li')?.dataset.state).toBe('done');
+        // Save my date's alternating timeline: left, then right, the place under the name (KAN-293).
+        const [church, party] = screen.getAllByRole('listitem');
+        expect(church.className).toContain('side-left');
+        expect(church.className).toContain('opacity-50');
+        expect(party.className).toContain('side-right');
+        expect(within(church).getByText('St. Nicholas')).toBeTruthy();
+        expect(within(party).getByText(en.ManagePage.journey.now)).toBeTruthy();
     });
 
     it('opens Add to calendar from the schedule, only while there is something to add', () => {
