@@ -51,6 +51,7 @@ export function ScheduleScreen() {
     const [editingSessionId, setEditingSessionId] = useState<string | null>(null);
     const [editorOpen, setEditorOpen] = useState(false);
     const [creatingSecondary, setCreatingSecondary] = useState(false);
+    const [prefillTitle, setPrefillTitle] = useState<string | undefined>(undefined);
     const [deleteError, setDeleteError] = useState<string | null>(null);
     const [deleteTarget, setDeleteTarget] = useState<EventSessionResponseDto | null>(null);
     const updateSession = useUpdateEventSession(editingSessionId ?? '', eventId ?? '');
@@ -67,6 +68,7 @@ export function ScheduleScreen() {
         setDeleteError(null);
         setEditingSessionId(null);
         setCreatingSecondary(false);
+        setPrefillTitle(undefined);
         setEditorOpen(true);
     }
 
@@ -91,6 +93,8 @@ export function ScheduleScreen() {
         setDeleteError(null);
         setEditingSessionId(null);
         setCreatingSecondary(Boolean(secondarySessionTitleKey && definition.role === 'secondary'));
+        // A suggestion is an ordinary item with its title filled in.
+        setPrefillTitle(definition.role === 'suggestion' ? tCreateEvent(definition.defaultTitleKey) : undefined);
         setEditorOpen(true);
     }
 
@@ -99,6 +103,7 @@ export function ScheduleScreen() {
         setDeleteError(null);
         setEditingSessionId(session.id);
         setCreatingSecondary(false);
+        setPrefillTitle(undefined);
         setEditorOpen(true);
     }
 
@@ -106,6 +111,7 @@ export function ScheduleScreen() {
         setEditorOpen(false);
         setEditingSessionId(null);
         setCreatingSecondary(false);
+        setPrefillTitle(undefined);
     }
 
     function handleEditorOpenChange(nextOpen: boolean) {
@@ -233,6 +239,7 @@ export function ScheduleScreen() {
                     createSession={createSession}
                     updateSession={updateSession}
                     secondaryPrefillTitle={creatingSecondary ? secondarySessionTitle : undefined}
+                    prefillTitle={prefillTitle}
                 />
             )}
 
