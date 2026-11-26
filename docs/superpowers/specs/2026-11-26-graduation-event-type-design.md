@@ -177,9 +177,9 @@ const graduateSchema = z.object({
 
 ### 5.2 Look and editing
 
-The block reuses `PhotoPeopleSection` and `FamilyPhoto` (the godparents and sponsors blocks): a grid of round photos, each with
-the name, then degree and university in smaller text under it, two per row on every screen as the
-sponsors are. No columns setting: the existing people blocks store one that nothing draws (owner's
+The block reuses `PhotoPeopleSection` and `FamilyPhoto` (the godparents and sponsors blocks): the sponsors' photos with rounded
+corners, each with the name, then degree and university in smaller text under it; one per row on a phone
+and two per row on wider screens, as the sponsors are (owner's choice, 2026-11-27). No columns setting: the existing people blocks store one that nothing draws (owner's
 choice, 2026-11-26). Editing follows the sponsors block: the host adds, removes and reorders
 graduates in the block's sheet, one graduate's fields at a time, and removes one with the shared
 **Delete / Διαγραφή** button, as for sponsors (owner's choice, 2026-11-26).

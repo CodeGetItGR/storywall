@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** A Save my date section type `graduates` that a Graduation host adds from the feed's Add section list: a title and up to ten graduates, each with a round photo, name, degree and university.
+**Goal:** A Save my date section type `graduates` that a Graduation host adds from the feed's Add section list: a title and up to ten graduates, each with a photo, name, degree and university.
 
 **Architecture:** A new section type in the zod registry (`lib/invitation/sections.ts`) with the same per-type entries the sponsors block has: defaults, sample, photo slot, editable list, list ids, settings group, renderer case. It draws with a new `GraduatesSection` that reuses `FamilyPhoto`, `SectionText` and the people grid's CSS, and edits through a `GraduatesSettings` panel on the shared `SettingsList`.
 
@@ -10,7 +10,7 @@
 
 **Spec:** `docs/superpowers/specs/2026-11-26-graduation-event-type-design.md` §5, §9. Jira: KAN-302. Builds on part 1 (`claude/kan-301-graduation-frontend`): it needs `GRADUATION` in `EventTypeConvention`.
 
-**Owner's choices (2026-11-26):** no columns setting (two per row on every screen, as the sponsors); removing a graduate uses the shared **Delete / Διαγραφή** button; a new block starts titled **Οι απόφοιτοί μας** for every host, like every other block's Greek starting text. So the approved "Remove graduate" and "Our graduates" are not used.
+**Owner's choices (2026-11-26):** no columns setting (laid out as the sponsors: one per row on a phone, two per row on wider screens; confirmed 2026-11-27); removing a graduate uses the shared **Delete / Διαγραφή** button; a new block starts titled **Οι απόφοιτοί μας** for every host, like every other block's Greek starting text. So the approved "Remove graduate" and "Our graduates" are not used.
 
 **Backend:** guestwall-be `claude/kan-300-graduation-backend` Task 6 adds the same shape to `invitation-document.schema.json` (`{ title, graduates: [{ id, name, degree, university, photo? }] ≤ 10 }`) and `graduates` to `FeedLayoutRules.PAID_TYPES`. A saved layout with the block is refused until that backend is deployed.
 
@@ -588,7 +588,7 @@ The visual check captures each story at 375 px and 1280 px (docs/storybook.md), 
 Run: `npx vitest run components/saveMyDate/invitation lib/invitation/sectionNames.test.ts`
 Expected: PASS (`sectionNames.test.ts` checks every type has a name in both languages).
 
-Run: `npx storybook build --test -o /tmp/sb-graduates` (or the repo's `npm run build-storybook` script) and open the six stories at both widths: two per row, the odd last one centred, the degree and university smaller under the name.
+Run: `npx storybook build --test -o /tmp/sb-graduates` (or the repo's `npm run build-storybook` script) and open the six stories at both widths: one per row on a phone, two per row on desktop with the odd last one centred, the degree and university smaller under the name.
 
 - [ ] **Step 8: Commit**
 
@@ -810,7 +810,7 @@ Dev server only through `preview_start {url: "http://localhost:3000/"}`. Signed 
 
 1. Feed → edit → Add section: the list is Invitation, Graduates, Gallery, Schedule, FAQ, Accommodation, Contact; the Graduates card shows its preview.
 2. Add it: titled "Οι απόφοιτοί μας" with one empty graduate; type a name, degree and university in the sheet; add a second graduate; reorder them; add a photo to one from the block; save.
-3. As a guest (another browser, signed out or member): two per row, each with photo or name, degree and university; an empty graduate doesn't show.
+3. As a guest (another browser, signed out or member): one per row on a phone, two on desktop, each with photo or name, degree and university; an empty graduate doesn't show.
 4. Delete a graduate with Delete; the Add list no longer offers Graduates while the block is on the feed.
 
 - [ ] **Step 3: Push and open the PR into staging**
