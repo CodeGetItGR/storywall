@@ -120,6 +120,20 @@ A new Graduation event's first schedule item is **Ceremony / Ορκωμοσία*
 in `lib/createEventCatalog.ts`, with form labels: name **Event name / Όνομα εκδήλωσης**, date
 **Ceremony date / Ημερομηνία ορκωμοσίας**, place **Ceremony location / Τοποθεσία ορκωμοσίας**.
 
+The schedule screen (`lib/sessionManagement.ts`, `ScheduleEditSessionsTable`) shows three rows for
+GRADUATION:
+
+- **Ceremony / Ορκωμοσία** and **Dinner / Δείπνο**: the existing main and second slots
+  (`isMain`, `isSecondary`), titled with the type's own words instead of the wedding ones
+  ("Ceremony" / "Venue").
+- **Party / Πάρτι**: a suggestion, not a slot. Tapping it opens the normal item editor with the title
+  filled in; the saved item is an ordinary session with neither flag. The row shows while the event
+  has no session other than the main and second ones, so a host who already arranged something else
+  never sees it.
+
+An empty row of any of the three says **Not added yet. / Δεν έχει προστεθεί ακόμη.** Wedding and
+baptism rows keep their current wording.
+
 ## 5. The Graduates feed block
 
 A new Save my date section type, `graduates`, offered in the feed's Add section list for GRADUATION.
