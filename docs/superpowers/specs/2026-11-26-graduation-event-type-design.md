@@ -259,9 +259,10 @@ A graduate's photo uses the graduate's name as its alt text, with the shared `ph
 ## 10. Testing
 
 - **Backend:** the seed tests that compare the migration with the Java catalogs; create sets
-  `upload_frame = CLASSIC` for GRADUATION and null otherwise; host update accepts each design and
-  null, rejects other values and non-hosts; the schema accepts a valid `graduates` section and rejects
-  more than 10 graduates.
+  `upload_frame = CLASSIC` for GRADUATION and `NONE` otherwise; `PATCH` accepts each value, leaves it
+  alone when absent, rejects other values and non-hosts; the QR resolution carries the frame and date
+  only for an active code; the schema accepts a valid `graduates` section and rejects more than 10
+  graduates; `FeedLayoutRules` treats `graduates` as a paid block.
 - **Frontend unit:** `defaultFeedLayout('GRADUATION')` pre-fills the prompt; `feedAddList` for
   GRADUATION; `sectionsForEventType('GRADUATION')`; the `graduates` schema; frame layout for portrait
   and landscape sizes; the frame failure path uploads the plain photo.
