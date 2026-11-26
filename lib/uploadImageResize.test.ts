@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { shrinkImageForUpload, shrinkImagesForUpload } from '@/lib/uploadImageResize';
+import { frameImageForUpload, framePhotosForUpload, shrinkImageForUpload, shrinkImagesForUpload } from '@/lib/uploadImageResize';
 
 const drawImage = vi.fn();
 let encoded: Blob | null;
@@ -114,5 +114,82 @@ describe('shrinkImagesForUpload', () => {
 
         expect(result.map((file) => file.name)).toEqual(['1.jpg', '2.mp4', '3.jpg']);
         expect(result[1]).toBe(files[1]);
+    });
+});
+
+describe('frameImageForUpload', () => {
+    const text = { title: 'Μαρία', date: '2 Ιουλίου 2026' };
+    let loaded: string[];
+
+    beforeEach(() => {
+        loaded = [];
+        // jsdom doesn't decode images: the frame's SVG "loads" at once.
+        vi.stubGlobal(
+            'Image',
+            class {
+                set src(value: string) {
+                    loaded.push(value);
+                }
+                decode() {
+                    return Promise.resolve();
+                }
+            },
+        );
+    });
+
+    it('draws the photo, shrunk to the long edge, then the frame over it, keeping its name and type', async () => {
+        const file = photo('a.jpg', 'image/jpeg', 4_000_000);
+        const framed = await frameImageForUpload(file, 'CLASSIC', text, 2560);
+
+        expect(canvasSize).toEqual({ width: 2560, height: 1920 });
+        expect(drawImage).toHaveBeenCalledTimes(2);
+        expect(drawImage.mock.calls[1].slice(1)).toEqual([0, 0, 2560, 1920]);
+        expect(decodeURIComponent(loaded[0])).toContain('width="2560" height="1920"');
+        expect(framed).toMatchObject({ name: 'a.jpg', type: 'image/jpeg', lastModified: 1234 });
+    });
+
+    it('frames a small photo at its own size', async () => {
+        vi.mocked(createImageBitmap).mockResolvedValue(bitmapOf(1200, 1600) as unknown as ImageBitmap);
+        await frameImageForUpload(photo('a.jpg', 'image/jpeg', 300_000), 'LAUREL', text, 2560);
+        expect(canvasSize).toEqual({ width: 1200, height: 1600 });
+    });
+
+    it("gives up on a photo it can't draw", async () => {
+        expect(await frameImageForUpload(photo('a.gif', 'image/gif', 1000), 'CLASSIC', text, 2560)).toBeNull();
+        vi.mocked(createImageBitmap).mockRejectedValue(new Error('decode'));
+        expect(await frameImageForUpload(photo('a.jpg', 'image/jpeg', 1000), 'CLASSIC', text, 2560)).toBeNull();
+        encoded = null;
+        vi.mocked(createImageBitmap).mockResolvedValue(bitmapOf(400, 300) as unknown as ImageBitmap);
+        expect(await frameImageForUpload(photo('b.jpg', 'image/jpeg', 1000), 'CLASSIC', text, 2560)).toBeNull();
+    });
+});
+
+describe('framePhotosForUpload', () => {
+    const text = { title: 'Μαρία', date: '' };
+
+    beforeEach(() => {
+        vi.stubGlobal(
+            'Image',
+            class {
+                src = '';
+                decode() {
+                    return Promise.resolve();
+                }
+            },
+        );
+    });
+
+    it('frames the photos, leaves videos alone, and counts the photos it sent without the frame', async () => {
+        const jpeg = photo('a.jpg', 'image/jpeg', 4_000_000);
+        const gif = photo('b.gif', 'image/gif', 1000);
+        const video = photo('c.mp4', 'video/mp4', 9_000_000);
+
+        const result = await framePhotosForUpload([jpeg, gif, video], 'CONFETTI', text, 2560);
+
+        expect(result.files.map((file) => file.name)).toEqual(['a.jpg', 'b.gif', 'c.mp4']);
+        expect(result.files[0]).not.toBe(jpeg);
+        expect(result.files[1]).toBe(gif);
+        expect(result.files[2]).toBe(video);
+        expect(result.unframed).toBe(1);
     });
 });
