@@ -24,7 +24,7 @@ export function PartnerFeatureCard({
     action?: ReactNode;
 }) {
     return (
-        <article className="border-b border-event-card-line bg-event-card px-2 py-4">
+        <article className="my-3 px-2 lg:my-4">
             <div className="overflow-hidden rounded-xl bg-card ring-1 ring-border">
                 <PartnerCardLink href={content.href} newTabLabel={content.newTabLabel} className="group block">
                     {/* Cover */}

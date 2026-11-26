@@ -3,6 +3,7 @@
 import { useCallback, useMemo } from 'react';
 
 import { useInvitationTypographyPresets } from '@/hooks/useInvitationTypographyPresets';
+import { buttonTextOn } from '@/lib/invitation/buttonText';
 import type { InvitationDocument } from '@/lib/invitation/document';
 import type { InvitationEditorStore } from '@/lib/invitation/editorStore';
 import { fontOptions, sameFont } from '@/lib/invitation/textEditing';
@@ -11,7 +12,6 @@ import {
     applyTypographyPreset,
     type BackgroundMode,
     type BackgroundSlot,
-    DEFAULT_BUTTON_TEXT,
     setThemeFont,
 } from '@/lib/invitation/themeEditing';
 import type { InvitationFontDto } from '@/lib/invitation/uploadedFonts';
@@ -112,7 +112,7 @@ export function useThemeStyle({ store, design, document, eventType, uploadedFont
         fontValues: { title: fontValue(design.fonts.title), body: fontValue(design.fonts.body), button: fontValue(design.fonts.button) },
         // Shown when a button has no colour of its own.
         buttonBgShown: design.colors.buttonBg ?? design.colors.primary,
-        buttonTextShown: design.colors.buttonText ?? DEFAULT_BUTTON_TEXT,
+        buttonTextShown: design.colors.buttonText ?? buttonTextOn(design.colors.buttonBg ?? design.colors.primary),
         presets: presetList,
         // A pairing that is no longer offered reads as Custom.
         presetId: presetList.some((preset) => preset.id === design.typographyPresetId) ? (design.typographyPresetId ?? '') : '',

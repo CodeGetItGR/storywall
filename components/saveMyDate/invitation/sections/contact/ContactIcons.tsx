@@ -31,8 +31,9 @@ const ICONS: Record<ContactLinkKey, ReactNode> = {
     ),
     instagram: (
         <>
-            <path d="M4 8a2 2 0 0 1 2-2h1.3l.9-1.4h7.6L16.7 6H18a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8Z" {...stroke} />
-            <circle cx="12" cy="13" r="3.2" fill="none" stroke="currentColor" strokeWidth={1.7} />
+            <rect x="3.5" y="3.5" width="17" height="17" rx="5" {...stroke} />
+            <circle cx="12" cy="12" r="3.8" {...stroke} />
+            <circle cx="16.8" cy="7.2" r="1.1" fill="currentColor" />
         </>
     ),
     tiktok: (

@@ -32,6 +32,14 @@ export const Empty: Story = {
     args: { section: storySection('gift', { title: '', bank: '', iban: '' }) },
 };
 
+// Nothing to copy, so no copy button.
+export const WithoutIban: Story = {
+    args: { section: storySection('gift', { iban: '' }) },
+    play: async ({ canvasElement }) => {
+        await expect(canvasElement.querySelector('.gift-copy-btn')).toBeNull();
+    },
+};
+
 export const OnDarkBackground: Story = {
     args: { section: onDark(section) },
 };

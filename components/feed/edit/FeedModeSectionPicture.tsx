@@ -23,7 +23,7 @@ export function FeedModeSectionPicture({ event, type, media }: FeedModeSectionPi
                     <FeedGalleryPlaceholder />
                 </div>
             ) : (
-                <FeedModeSection event={event} section={feedPreviewSection(type, t('placeholder'))} media={media} />
+                <FeedModeSection event={event} section={feedPreviewSection(type, t('placeholder'))} media={media} inEditor />
             )}
         </div>
     );

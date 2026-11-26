@@ -18,7 +18,13 @@ export function useFeedEditSectionPart(event: EventDetailResponseDto, media: Med
     return useCallback(
         (section: InvitationSection) =>
             scheduleCard(section) ?? (
-                <FeedModeSection event={event} section={section} media={media} placeholder={<FeedBlockPlaceholder name={blockName(section)} />} />
+                <FeedModeSection
+                    event={event}
+                    section={section}
+                    media={media}
+                    placeholder={<FeedBlockPlaceholder name={blockName(section)} />}
+                    inEditor
+                />
             ),
         [blockName, event, media, scheduleCard],
     );

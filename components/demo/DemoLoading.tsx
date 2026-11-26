@@ -16,7 +16,7 @@ export function DemoLoading() {
             <DemoBanner />
             {/* Content */}
             <div className="min-h-0 flex-1 overflow-hidden">
-                {segment === 'feed' ? <FeedPageSkeleton /> : <LoadingState size="md" className="h-full" />}
+                {segment === 'feed' ? <FeedPageSkeleton header="shown" /> : <LoadingState size="md" className="h-full" />}
             </div>
         </div>
     );
