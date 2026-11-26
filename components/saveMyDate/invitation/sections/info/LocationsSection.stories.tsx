@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
+import { expect } from 'storybook/test';
 
 import { LONG_TEXT, LONG_TITLE, onDark, SectionStory, STORY_THEME, storySection } from '@/.storybook/invitation';
 
@@ -44,6 +45,14 @@ export const LongContent: Story = {
             reception: LONG_TITLE,
             receptionAddress: LONG_TEXT,
         }),
+    },
+};
+
+// A place that isn't filled in has no map button.
+export const OnePlaceEmpty: Story = {
+    args: { section: storySection('locations', { reception: '', receptionAddress: '', receptionMap: '' }) },
+    play: async ({ canvasElement }) => {
+        await expect(canvasElement.querySelectorAll('.theme-btn')).toHaveLength(1);
     },
 };
 

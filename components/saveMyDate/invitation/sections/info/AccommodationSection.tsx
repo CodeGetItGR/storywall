@@ -1,5 +1,8 @@
+import type { ReactNode } from 'react';
+
 import { InvitationElements } from '@/components/saveMyDate/invitation/InvitationElements';
 import { SectionText } from '@/components/saveMyDate/invitation/sections/SectionText';
+import { emailTextHref, phoneTextHref } from '@/lib/invitation/contactLinks';
 import { showsText, stayHasContent, stayMapUrl, visibleItems } from '@/lib/invitation/listContent';
 import { websiteUrl } from '@/lib/invitation/mapLinks';
 import type { RenderContext, TextContrast } from '@/lib/invitation/render';
@@ -52,6 +55,8 @@ type StayCardProps = {
 function StayCard({ section, item, contrast, ctx }: StayCardProps) {
     const website = websiteUrl(item.website);
     const map = stayMapUrl(item);
+    const hasPhone = showsText(item.phone, ctx);
+    const hasEmail = showsText(item.email, ctx);
     const field = (name: 'name' | 'address' | 'phone' | 'email') => `items.${item.id}.${name}`;
 
     return (
@@ -64,26 +69,32 @@ function StayCard({ section, item, contrast, ctx }: StayCardProps) {
                 <SectionText section={section} path={field('address')} value={item.address} tag="p" className="stay-address" contrast={contrast} ctx={ctx} />
             )}
             {/* Contact */}
-            <div className="stay-contact-row">
-                <div className="stay-contact-item">
-                    <svg className="stay-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                        <path
-                            d="M6.5 3h3l1.5 4-2 2c1 2.5 3 4.5 5.5 5.5l2-2 4 1.5v3c0 1-1 2-2 2C9.5 19 4 13.5 4 6c0-1 1-3 2.5-3Z"
-                            stroke="currentColor"
-                            strokeWidth="1.6"
-                            strokeLinejoin="round"
-                        />
-                    </svg>
-                    <SectionText section={section} path={field('phone')} value={item.phone} tag="span" className="stay-phone" contrast={contrast} ctx={ctx} />
+            {(hasPhone || hasEmail) && (
+                <div className="stay-contact-row">
+                    {hasPhone && (
+                        <StayContact href={ctx.renderText ? '' : phoneTextHref(item.phone)}>
+                            <svg className="stay-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                <path
+                                    d="M6.5 3h3l1.5 4-2 2c1 2.5 3 4.5 5.5 5.5l2-2 4 1.5v3c0 1-1 2-2 2C9.5 19 4 13.5 4 6c0-1 1-3 2.5-3Z"
+                                    stroke="currentColor"
+                                    strokeWidth="1.6"
+                                    strokeLinejoin="round"
+                                />
+                            </svg>
+                            <SectionText section={section} path={field('phone')} value={item.phone} tag="span" className="stay-phone" contrast={contrast} ctx={ctx} />
+                        </StayContact>
+                    )}
+                    {hasEmail && (
+                        <StayContact href={ctx.renderText ? '' : emailTextHref(item.email)}>
+                            <svg className="stay-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                <rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" strokeWidth="1.6" />
+                                <path d="M4 6.5l8 6 8-6" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                            </svg>
+                            <SectionText section={section} path={field('email')} value={item.email} tag="span" className="stay-email" contrast={contrast} ctx={ctx} />
+                        </StayContact>
+                    )}
                 </div>
-                <div className="stay-contact-item">
-                    <svg className="stay-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                        <rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" strokeWidth="1.6" />
-                        <path d="M4 6.5l8 6 8-6" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                    <SectionText section={section} path={field('email')} value={item.email} tag="span" className="stay-email" contrast={contrast} ctx={ctx} />
-                </div>
-            </div>
+            )}
             {/* Links */}
             <div className="stay-btn-row">
                 {website && (
@@ -98,5 +109,15 @@ function StayCard({ section, item, contrast, ctx }: StayCardProps) {
                 )}
             </div>
         </div>
+    );
+}
+
+// An icon and its detail: a link on the guest page, plain in the editor, where the text is typed in place.
+function StayContact({ href, children }: { href: string; children: ReactNode }) {
+    if (!href) return <div className="stay-contact-item">{children}</div>;
+    return (
+        <a className="stay-contact-item" href={href}>
+            {children}
+        </a>
     );
 }

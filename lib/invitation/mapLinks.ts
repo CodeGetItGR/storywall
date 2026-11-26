@@ -5,6 +5,12 @@ export function mapsUrl(name: string, address: string): string {
     return query ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}` : 'https://maps.google.com';
 }
 
+// A place's map link: the host's own, or the search. Empty when there is no place to open.
+export function placeMapUrl(link: string, name: string, address: string): string {
+    if (link.trim()) return link;
+    return name.trim() || address.trim() ? mapsUrl(name, address) : '';
+}
+
 // Hosts often type a website without https://.
 export function websiteUrl(website: string): string {
     const trimmed = website.trim();

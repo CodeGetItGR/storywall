@@ -24,7 +24,7 @@ export function GiftSection({ section, contrast, ctx }: GiftSectionProps) {
                 <GiftIbanBox>
                     <SectionText section={section} path="iban" value={data.iban} contrast={contrast} ctx={ctx} />
                 </GiftIbanBox>
-                <GiftCopyButton iban={data.iban} copyLabel={ctx.labels.copy} copiedLabel={ctx.labels.copied} />
+                {data.iban.trim() && <GiftCopyButton iban={data.iban} copyLabel={ctx.labels.copy} copiedLabel={ctx.labels.copied} />}
             </div>
             {/* Elements */}
             <InvitationElements elements={section.elements} contrast={contrast} ctx={ctx} />
