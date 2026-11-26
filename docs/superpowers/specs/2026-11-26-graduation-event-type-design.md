@@ -211,16 +211,17 @@ landscape photos and keeps the photo's own aspect ratio.
 ## 8. Frontend type wiring
 
 - `lib/api/types.ts`: `GRADUATION` in `EventTypeConvention`; `uploadFrame` on the event types.
-- `lib/createEventCatalog.ts`: the create-event card image (§11, open item 1).
+- `lib/createEventCatalog.ts`: GRADUATION's fallback photo is REUNION's
+  (`friends-and-family-celebrating-at-sunset.webp`) until an admin uploads one (§11, item 1).
 - `lib/createEventFeatures.ts`: GRADUATION → `gallery`, `wishbook`, `rsvp`, `stories`, `co_hosts`,
   `schedule`, `posts`.
 - `lib/occasions/occasions.ts`: `{ eventType: 'GRADUATION', slugs: { en: 'graduations', el: 'apofoitisi' }, ready: false, launched: false }`.
   The occasion page needs its own copy and SEO review later; until then it does not render.
 - Storybook fixtures: a GRADUATION type in `.storybook/fixtures.ts` for the new stories.
 
-## 9. Frontend copy still to approve
+## 9. Frontend copy
 
-Proposed wording for the new screens. Nothing here ships without the owner's yes.
+Wording for the new screens, approved by the owner on 2026-11-26.
 
 | Where | English | Greek |
 |---|---|---|
@@ -237,7 +238,6 @@ Proposed wording for the new screens. Nothing here ships without the owner's yes
 | Host row | Photo frame | Κορνίζα φωτογραφιών |
 | Host option | No frame | Χωρίς κορνίζα |
 | Design names | Classic · Laurel · Confetti | Κλασική · Δάφνη · Κομφετί |
-| Create-event card image alt | depends on the photo chosen (§11) | |
 
 A graduate's photo uses the graduate's name as its alt text, with the shared `photoAlt` fallback, as
 `FamilyPhoto` does for godparents and sponsors. No new alt copy.
@@ -263,8 +263,8 @@ A graduate's photo uses the graduate's name as its alt text, with the shared `ph
 
 ## 11. Open items
 
-1. **Create-event card photo.** There is no graduation photo in `public/landing`. The owner supplies
-   one (or approves a licensed stock photo); its alt text goes through §9.
+1. **Create-event card photo.** The owner uploads a graduation photo in the admin's event type drawer
+   (`EventTypeImageField`), which overrides the code fallback (§8). No new alt copy.
 2. **"Μήνυμα για τον απόφοιτο"** (approved) is masculine. If most hosts turn out to be female or
    several graduates, a neutral form can replace it later.
 3. **Jira:** a KAN epic with one ticket per part (backend type, Graduates block, then & now prompt,
