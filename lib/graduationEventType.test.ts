@@ -3,8 +3,8 @@ import { describe, expect, it } from 'vitest';
 import { createEventTypePhoto, getCreateEventCatalogEntry, getInitialSessionTitleKey } from '@/lib/createEventCatalog';
 import { featurePriority } from '@/lib/createEventFeatures';
 import { OCCASIONS } from '@/lib/occasions/occasions';
-import en from '@/messages/en.json';
 import el from '@/messages/el.json';
+import en from '@/messages/en.json';
 
 // Spec 2026-11-26-graduation-event-type-design.md §4.3, §8.
 describe('the GRADUATION type', () => {
