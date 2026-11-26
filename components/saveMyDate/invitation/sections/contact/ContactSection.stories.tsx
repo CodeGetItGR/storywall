@@ -20,6 +20,11 @@ export const AllLinks: Story = {
     args: { section: storySection('contact', ALL_CONTACT_LINKS) },
 };
 
+// Instagram's mark.
+export const InstagramOnly: Story = {
+    args: { section: storySection('contact', { ...NO_CONTACT_LINKS, instagram: ALL_CONTACT_LINKS.instagram }) },
+};
+
 export const OddLinkCount: Story = {
     args: { section: storySection('contact', { ...NO_CONTACT_LINKS, phone: ALL_CONTACT_LINKS.phone, email: ALL_CONTACT_LINKS.email, instagram: ALL_CONTACT_LINKS.instagram }) },
 };
