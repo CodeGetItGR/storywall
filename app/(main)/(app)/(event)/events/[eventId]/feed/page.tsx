@@ -2,15 +2,27 @@ import { dehydrate, HydrationBoundary, type QueryClient } from '@tanstack/react-
 
 import { guestOfferKeys } from '@/hooks/useGuestOffer';
 import { HE_OR_SHE_MODULE, heOrSheKeys } from '@/hooks/useHeOrShe';
+import { mediaKeys, mediaListPath } from '@/hooks/useMedia';
 import { storyKeys } from '@/hooks/useStories';
+import { WISHBOOK_PAGE_SIZE, wishbookKeys } from '@/hooks/useWishbook';
 import { endpoints } from '@/lib/api/endpoints';
 import { normalizeList, type Page } from '@/lib/api/pagination';
 import { serverGet, serverGetOrNull, serverModuleReadable } from '@/lib/api/serverFetch';
-import type { FeedLayoutDto, GuestOfferDto, HeOrSheViewDto, PostResponseDto, StoryResponseDto } from '@/lib/api/types';
+import type {
+    FeedLayoutDto,
+    GuestOfferDto,
+    HeOrSheViewDto,
+    MediaResponseDto,
+    PostResponseDto,
+    StoryResponseDto,
+    WishbookEntryResponseDto,
+} from '@/lib/api/types';
 import { prefetchAccessToken, resolveServerEventContext, resolveServerEventDetail } from '@/lib/auth/serverEventContext';
+import { readableModuleKeys } from '@/lib/eventLifecycle';
 import { preloadBannerImage } from '@/lib/feed/bannerImage';
 import { showsFeedEditor } from '@/lib/feedEditorRelease';
 import { feedLayoutKeys } from '@/lib/feedLayout';
+import { feedLayoutDrawsModule } from '@/lib/feedModuleBlocks';
 import { postKeys, POSTS_PAGE_SIZE } from '@/lib/postQueries';
 import { makeQueryClient } from '@/lib/queryClient';
 import { FeedEditorFlagProvider } from '@/providers/FeedEditorFlagProvider';
@@ -66,6 +78,38 @@ async function prefetchFeedLayout(queryClient: QueryClient, eventId: string, acc
     }
 }
 
+// The Gallery and Wishbook blocks' content (KAN-299), when the saved layout draws them: the gallery's first page, and
+// everyone's wishes for a host or the guest's own. The layout and the event are deduped with the reads above.
+async function prefetchModuleBlocks(queryClient: QueryClient, eventId: string, accessToken: string): Promise<void> {
+    try {
+        const [layout, context] = await Promise.all([
+            serverGetOrNull<FeedLayoutDto>(endpoints.events.feedLayout(eventId), accessToken),
+            resolveServerEventContext(eventId),
+        ]);
+        const event = await resolveServerEventDetail(eventId);
+        if (!context || !event) return;
+        const readable = readableModuleKeys(event);
+        const gallery = readable.has('gallery') && feedLayoutDrawsModule(layout, event, 'gallery');
+        const wishbook = readable.has('wishbook') && feedLayoutDrawsModule(layout, event, 'wishbook');
+        const wishesPath = `${context.isHost ? endpoints.events.wishbook(eventId) : endpoints.events.wishbookMine(eventId)}?page=0&size=${WISHBOOK_PAGE_SIZE}`;
+        await Promise.all([
+            gallery &&
+                serverGet<Page<MediaResponseDto>>(mediaListPath(eventId, 'GUEST', 0), accessToken).then((page) =>
+                    queryClient.setQueryData(mediaKeys.list(eventId), { pages: [page], pageParams: [0] }),
+                ),
+            wishbook &&
+                serverGet<Page<WishbookEntryResponseDto>>(wishesPath, accessToken).then((page) =>
+                    queryClient.setQueryData(context.isHost ? wishbookKeys.list(eventId) : wishbookKeys.mine(eventId), {
+                        pages: [page],
+                        pageParams: [0],
+                    }),
+                ),
+        ]);
+    } catch {
+        // Best-effort — useEventMedia and useWishbook / useMyWishes fetch normally on the client if this fails.
+    }
+}
+
 // Starts the banner image, the feed's largest paint, with the page. The event detail is deduped with
 // events/[eventId]/layout.tsx.
 async function preloadBanner(eventId: string): Promise<void> {
@@ -100,6 +144,7 @@ export default async function Page({ params }: PageProps) {
             prefetchStories(queryClient, eventId, accessToken),
             prefetchGuestOffer(queryClient, eventId, accessToken),
             feedEditor ? prefetchFeedLayout(queryClient, eventId, accessToken) : Promise.resolve(),
+            feedEditor ? prefetchModuleBlocks(queryClient, eventId, accessToken) : Promise.resolve(),
         ]);
     }
 
