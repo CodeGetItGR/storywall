@@ -21,6 +21,7 @@ export type SettingsGroup =
     | 'dateLanguage'
     | 'dateLayout'
     | 'gallery'
+    | 'galleryPhotos'
     | 'galleryLayout'
     | 'countdown'
     | 'faqItems'
@@ -70,6 +71,7 @@ const GROUP_KINDS: Record<SettingsGroup, SettingsGroupKind> = {
     dateLanguage: 'inputs',
     dateLayout: 'style',
     gallery: 'inputs',
+    galleryPhotos: 'inputs',
     galleryLayout: 'style',
     countdown: 'style',
     faqItems: 'inputs',

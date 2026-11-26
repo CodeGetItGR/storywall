@@ -8,6 +8,7 @@ import { elementSectionId, removeFeedBlockElement } from '@/lib/feedBlockEdits';
 import type { InvitationDocument } from '@/lib/invitation/document';
 import type { InvitationEditorStore } from '@/lib/invitation/editorStore';
 import { feedImageUploader, type UploadedImage } from '@/lib/invitation/editorUploads';
+import { type PhotoFieldSlot, removeFieldPhoto } from '@/lib/invitation/photoSlots';
 import type { RenderContext } from '@/lib/invitation/render';
 
 type FeedEditBlockToolsInput = {
@@ -36,7 +37,12 @@ export function useFeedEditBlockTools({ eventId, store, document, ctx, remember 
         },
         [document, store],
     );
-    const editCtx = useMemo<RenderContext>(() => ({ ...ctx, canvasTools: feedCanvasTools(removePhoto) }), [ctx, removePhoto]);
+    const removePersonPhoto = useCallback((slot: PhotoFieldSlot) => store.getState().edit(removeFieldPhoto(slot.sectionId, slot.path)), [store]);
+    const canvasTools = useMemo(
+        () => feedCanvasTools({ edit: store.getState().edit, onRemoveElement: removePhoto, onRemovePhoto: removePersonPhoto }),
+        [removePersonPhoto, removePhoto, store],
+    );
+    const editCtx = useMemo<RenderContext>(() => ({ ...ctx, canvasTools }), [canvasTools, ctx]);
 
     return { ...edits, ctx: editCtx };
 }

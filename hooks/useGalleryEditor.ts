@@ -49,11 +49,11 @@ export function useGalleryEditor({ sectionId, images, edit }: GalleryEditorOptio
     const pick = useCallback(() => {
         if (!slots) return;
         if (room <= 0) {
-            slots.report('galleryFull');
+            slots.report('galleryFull', sectionId);
             return;
         }
         if (slots.canPick()) inputRef.current?.click();
-    }, [room, slots]);
+    }, [room, sectionId, slots]);
 
     // Sends the picked photos one after another, so they land in the order picked.
     // Each waits in the list from the start, so the room left stays true meanwhile, and
@@ -62,7 +62,7 @@ export function useGalleryEditor({ sectionId, images, edit }: GalleryEditorOptio
         async (files: readonly File[]) => {
             if (!slots || files.length === 0) return;
             const left = GALLERY_MAX_PHOTOS - images.length - addedPercents(uploads.getState(), prefix).length;
-            slots.report(files.length > left ? 'galleryFull' : null);
+            slots.report(files.length > left ? 'galleryFull' : null, sectionId);
             const queued = files
                 .slice(0, Math.max(0, left))
                 .map((file) => ({ file, slot: { kind: 'galleryAdd', sectionId, id: newSectionId() } as PhotoSlot }));
@@ -103,6 +103,8 @@ export function useGalleryEditor({ sectionId, images, edit }: GalleryEditorOptio
 
     return {
         isAvailable: slots !== null,
+        // Why one of its photos isn't in it, where the editor shows that next to the photos.
+        problem: slots?.issue?.sectionId === sectionId ? slots.issue.problem : null,
         ids,
         count: images.length,
         adding,
