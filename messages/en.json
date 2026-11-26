@@ -2362,6 +2362,7 @@
                 "notSet": "Not set",
                 "missing": "No venue session has been added yet.",
                 "mainMissing": "No ceremony session yet. Add it to show it here.",
+                "notAdded": "Not added yet.",
                 "untitled": "Untitled",
                 "editNamed": "Edit {title}",
                 "addNamed": "Add {title}",

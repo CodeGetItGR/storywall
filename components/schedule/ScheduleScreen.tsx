@@ -24,7 +24,7 @@ import { getCreateEventCatalogEntry } from '@/lib/createEventCatalog';
 import { toDatetimeLocalValue } from '@/lib/datetime';
 import { isEventWritable } from '@/lib/eventLifecycle';
 import { routes } from '@/lib/routes';
-import type { ManagedSessionDefinition } from '@/lib/sessionManagement';
+import type { ScheduleRowDefinition } from '@/lib/sessionManagement';
 import { cn } from '@/lib/utils';
 
 export function ScheduleScreen() {
@@ -70,7 +70,7 @@ export function ScheduleScreen() {
         setEditorOpen(true);
     }
 
-    async function restoreMainSession(definition: ManagedSessionDefinition) {
+    async function restoreMainSession(definition: ScheduleRowDefinition) {
         if (!eventId || createSession.isPending) return;
         setDeleteError(null);
         try {
@@ -81,7 +81,7 @@ export function ScheduleScreen() {
         }
     }
 
-    function openCreateManagedEditor(definition: ManagedSessionDefinition) {
+    function openCreateManagedEditor(definition: ScheduleRowDefinition) {
         if (!canAddSession || !definition.canCreate) return;
         if (definition.role === 'main') {
             void restoreMainSession(definition);
