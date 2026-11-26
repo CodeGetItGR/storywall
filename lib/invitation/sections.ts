@@ -32,6 +32,11 @@ const namedPhotoSchema = z
     .object({ id: idSchema, name: text, photo: imageRefSchema.optional() })
     .strict();
 
+// One graduate in the Graduates block (KAN-302).
+const graduateSchema = z
+    .object({ id: idSchema, name: text, degree: text, university: text, photo: imageRefSchema.optional() })
+    .strict();
+
 const parentSchema = z
     .object({ label: text, name: text, photo: imageRefSchema.optional() })
     .strict();
@@ -307,6 +312,7 @@ export const SECTION_DATA_SCHEMAS = {
     weddingSponsors: z
         .object({ sponsorsTitle: text, sponsors: z.array(namedPhotoSchema).max(20) })
         .strict(),
+    graduates: z.object({ title: text, graduates: z.array(graduateSchema).max(10) }).strict(),
     coupleProfiles: z
         .object({
             partnerA: partnerProfileSchema.extend({ photo: imageRefSchema.optional() }).strict(),

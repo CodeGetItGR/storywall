@@ -9,9 +9,11 @@ import { isSaveMyDateSectionType, SECTION_TYPES,sectionSchema } from '@/lib/invi
 // old Save my date app), copied as they are. A new section must come out
 // exactly as the converter turns the old one into the new format.
 type Category = 'Γάμος' | 'Βάπτιση' | 'Γενέθλια';
+// The Graduates block is new: the old editor never had it, so there is nothing to match (KAN-302).
+type OldEditorType = Exclude<NewSectionType, 'graduates'>;
 const themeStyle = () => ({ mode: 'theme', color: '', image: '' });
 
-function oldFactories(uid: () => string, category: Category): Record<NewSectionType, () => Record<string, unknown>> {
+function oldFactories(uid: () => string, category: Category): Record<OldEditorType, () => Record<string, unknown>> {
     const isBaptism = category === 'Βάπτιση';
     return {
         top: () => ({ id: uid(), type: 'top', name: 'TOP Section', data: {}, texts: [], style: themeStyle() }),
@@ -104,7 +106,7 @@ const EVENTS: [string, Category][] = [['WEDDING', 'Γάμος'], ['BAPTISM', 'Β
 
 describe('createSection', () => {
     describe.each(EVENTS)('for %s', (eventType, category) => {
-        it.each(NEW_TYPES)('makes %s as the old editor did', (type) => {
+        it.each(NEW_TYPES.filter((type): type is OldEditorType => type !== 'graduates'))('makes %s as the old editor did', (type) => {
             const made = createSection(type, eventType, counter());
             const ids = counter();
             const old = type === 'faq'

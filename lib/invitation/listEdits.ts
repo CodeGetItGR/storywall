@@ -19,6 +19,12 @@ export const EDITABLE_LISTS = {
     } satisfies ListOf<'accommodation', 'items'>,
     godparents: { type: 'godparents', key: 'godparents', max: 20, blank: (id) => ({ id, name: '' }) } satisfies ListOf<'godparents', 'godparents'>,
     sponsors: { type: 'weddingSponsors', key: 'sponsors', max: 20, blank: (id) => ({ id, name: '' }) } satisfies ListOf<'weddingSponsors', 'sponsors'>,
+    graduates: {
+        type: 'graduates',
+        key: 'graduates',
+        max: 10,
+        blank: (id) => ({ id, name: '', degree: '', university: '' }),
+    } satisfies ListOf<'graduates', 'graduates'>,
     parentsGodparents: { type: 'parentsSimple', key: 'godparents', max: 20, blank: (id) => ({ id, name: '' }) } satisfies ListOf<
         'parentsSimple',
         'godparents'

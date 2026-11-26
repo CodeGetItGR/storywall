@@ -29,6 +29,7 @@ const PHOTO_FIELDS: Partial<Record<SectionType, readonly string[]>> = {
     parentsPhoto: ['parentA.photo', 'parentB.photo'],
     godparents: ['godparents.*.photo'],
     weddingSponsors: ['sponsors.*.photo'],
+    graduates: ['graduates.*.photo'],
     coupleProfiles: ['partnerA.photo', 'partnerB.photo'],
 };
 

@@ -6,6 +6,7 @@ type SectionData<T extends InvitationSection['type']> = Extract<InvitationSectio
 type FaqItem = SectionData<'faq'>['items'][number];
 type Stay = SectionData<'accommodation'>['items'][number];
 type Person = SectionData<'godparents'>['godparents'][number] | SectionData<'parentsSimple'>['godparents'][number];
+type Graduate = SectionData<'graduates'>['graduates'][number];
 
 const filled = (...values: (string | undefined)[]) => values.some((value) => Boolean(value?.trim()));
 
@@ -15,6 +16,8 @@ export const faqItemHasContent = (item: FaqItem) => filled(item.question);
 export const stayHasContent = (stay: Stay) => filled(stay.name, stay.address, stay.phone, stay.email, stay.website, stay.mapUrl);
 
 export const personHasContent = (person: Person) => filled(person.name) || ('photo' in person && Boolean(person.photo));
+
+export const graduateHasContent = (graduate: Graduate) => filled(graduate.name, graduate.degree, graduate.university) || Boolean(graduate.photo);
 
 // The editor draws every item, so a new one can be typed in; guests only see the ones with something in them.
 export function visibleItems<T>(items: readonly T[], hasContent: (item: T) => boolean, ctx: RenderContext): readonly T[] {

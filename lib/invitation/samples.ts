@@ -144,6 +144,13 @@ export const SAMPLE_SECTIONS: { [T in SectionType]: SectionOf<T> } = {
         partnerB: { name: 'Γιάννης', ...noContacts, instagram: 'https://instagram.com/example' },
     }),
     weddingSponsors: section('weddingSponsors', { sponsorsTitle: 'Κουμπάροι', sponsors: [{ id: 'k1', name: 'Κώστας' }] }),
+    graduates: section('graduates', {
+        title: 'Οι απόφοιτοί μας',
+        graduates: [
+            { id: 'g1', name: 'Μαρία', degree: 'Πτυχίο Νομικής', university: 'ΑΠΘ', photo: photo('m-g1') },
+            { id: 'g2', name: 'Νίκος', degree: 'Πτυχίο Πληροφορικής', university: 'ΑΠΘ' },
+        ],
+    }),
     coupleProfiles: section('coupleProfiles', {
         partnerA: { name: 'Γιάννης', role: 'Γαμπρός', familyLabel: 'Γονείς', familyNames: 'Νίκος & Ελένη', photo: photo('m-a') },
         partnerB: { name: 'Μαρία', role: 'Νύφη', familyLabel: 'Γονείς', familyNames: 'Πέτρος & Σοφία' },
