@@ -1,7 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 import { useTranslations } from 'next-intl';
-import { expect, fn } from 'storybook/test';
+import { expect, fn, userEvent, within } from 'storybook/test';
 
+import { copyFor } from '@/.storybook/copy';
 import { useStoryPanel } from '@/.storybook/sectionSettings';
 import { waitForOpen } from '@/.storybook/waitForOpen';
 import { EditorPanelSheet } from '@/components/saveMyDate/editor/EditorPanelSheet';
@@ -17,7 +18,7 @@ function PanelSheet({ panel, onClose }: SheetArgs) {
     return (
         <EditorPanelSheet open title={panel === 'assets' ? t('themeAssets') : t('settings')} onClose={onClose}>
             {panel === 'assets' && <ThemeAssetsPanel />}
-            {panel === 'settings' && <TextColorSetting value="#4f4a3f" onChange={fn()} />}
+            {panel === 'settings' && <TextColorSetting value="#4f4a3f" themeColors={[]} onChange={fn()} />}
             {panel === 'controls' && <SectionControls />}
         </EditorPanelSheet>
     );
@@ -44,6 +45,15 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Settings: Story = {};
+
+// The text colour's mixer, light as the sheet.
+export const TextColorMixer: Story = {
+    play: async ({ globals }) => {
+        const copy = copyFor(globals).InvitationEditor;
+        await userEvent.click(within(await waitForOpen('dialog')).getByRole('button', { name: copy.moreColors }));
+        await within(document.body).findByRole('button', { name: copy.sectionSettings.done }, { timeout: 10_000 });
+    },
+};
 
 export const ThemeAssets: Story = {
     args: { panel: 'assets' },

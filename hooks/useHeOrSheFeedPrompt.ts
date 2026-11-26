@@ -4,14 +4,16 @@ import { useRouter } from 'next/navigation';
 
 import { useHeOrShe, useSendHeOrSheAnswers } from '@/hooks/useHeOrShe';
 import type { HeOrSheValue } from '@/lib/api/types';
+import { heOrSheFeedView } from '@/lib/feedHeOrShe';
 import { routes } from '@/lib/routes';
 import { useContentAccessMode } from '@/providers/EventProvider';
 
 /**
- * The feed's Boy or Girl? prompt: shown while guessing is open and the member hasn't guessed.
+ * The feed's Boy or Girl? prompt and section: the card asks while guessing is open and the member hasn't
+ * guessed; the section also shows the guess, then the result.
  * A guess is saved from the feed; with extra questions to answer it then opens the page.
  */
-export function useHeOrSheFeedPrompt(eventId: string, enabled: boolean) {
+export function useHeOrSheFeedPrompt(eventId: string, enabled: boolean, isHost = false) {
     const router = useRouter();
     // The public demo's mock backend has no Boy or Girl? handlers (v1).
     const isDemoVisitor = useContentAccessMode() === 'demoVisitor';
@@ -35,7 +37,10 @@ export function useHeOrSheFeedPrompt(eventId: string, enabled: boolean) {
     }
 
     return {
+        // The fixed card: it only asks.
         visible,
+        // What the feed section shows.
+        view: heOrSheFeedView(view, isHost),
         // Epoch ms of the closing time, for the countdown; null when voting has no closing time.
         closesTime: Number.isNaN(closesTime) ? null : closesTime,
         isSending: send.isPending,

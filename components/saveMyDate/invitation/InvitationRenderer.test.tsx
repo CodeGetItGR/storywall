@@ -14,7 +14,14 @@ import type { InvitationDocument } from '@/lib/invitation/document';
 import { INVITATION_LABELS } from '@/lib/invitation/labels';
 import type { RsvpSender } from '@/lib/invitation/rsvp';
 import { SAMPLE_DOCUMENT, SAMPLE_SECTIONS, SAMPLE_THEME } from '@/lib/invitation/samples';
-import { type FeedSectionType, type InvitationSection, isFeedSectionType, SECTION_TYPES, type SectionType } from '@/lib/invitation/sections';
+import {
+    type FeedModeSectionType,
+    type FeedSectionType,
+    type InvitationSection,
+    isSaveMyDateSectionType,
+    SECTION_TYPES,
+    type SectionType,
+} from '@/lib/invitation/sections';
 import type { ThemeDesign } from '@/lib/invitation/theme';
 import el from '@/messages/el.json';
 import en from '@/messages/en.json';
@@ -33,7 +40,7 @@ stubIntersectionObserver();
 
 // Where each section type's story is, from this folder. The file must use
 // storySection('<type>') from .storybook/invitation.tsx.
-const SECTION_STORIES: Record<Exclude<SectionType, FeedSectionType | 'feedModule'>, string> = {
+const SECTION_STORIES: Record<Exclude<SectionType, FeedSectionType | FeedModeSectionType | 'feedModule'>, string> = {
     top: 'sections/TopSection.stories.tsx',
     blank: 'sections/CustomSection.stories.tsx',
     photo: 'sections/media/PhotoSection.stories.tsx',
@@ -255,7 +262,7 @@ describe('RSVP through the whole invitation', () => {
 });
 
 describe('Section coverage', () => {
-    it.each(SECTION_TYPES.filter((type) => !isFeedSectionType(type) && type !== 'feedModule'))('%s is drawn', (type) => {
+    it.each(SECTION_TYPES.filter((type) => isSaveMyDateSectionType(type)))('%s is drawn', (type) => {
         const section = SAMPLE_SECTIONS[type] as InvitationSection;
         const { container } = renderInvitation({ ...SAMPLE_DOCUMENT, sections: [section] });
         expect(renderedIds(container)).toEqual([section.id]);

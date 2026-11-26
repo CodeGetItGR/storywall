@@ -8,7 +8,7 @@ import type { PartnerBrandingCardContent } from '@/hooks/usePartnerBrandingCard'
 // Variant COMPACT_ROW: logo, name, services line and a chevron.
 export function PartnerCompactRow({ content }: { content: PartnerBrandingCardContent }) {
     return (
-        <article className="border-b border-event-card-line bg-event-card px-2 py-3">
+        <article className="my-3 px-2 lg:my-4">
             <PartnerCardLink
                 href={content.href}
                 newTabLabel={content.newTabLabel}

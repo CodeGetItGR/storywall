@@ -5,6 +5,7 @@ import './editor.css';
 import { useTranslations } from 'next-intl';
 import type { ReactNode } from 'react';
 
+import { ColorSurfaceProvider } from '@/components/ui/color/ColorSurface';
 import { Modal } from '@/components/ui/modal';
 
 type EditorPanelSheetProps = {
@@ -14,7 +15,8 @@ type EditorPanelSheetProps = {
     children: ReactNode;
 };
 
-// A side panel's content on phones and tablets, as a sheet from the bottom.
+// A side panel's content on phones and tablets, as a light sheet from the bottom; its colour popovers are
+// light too.
 export function EditorPanelSheet({ open, title, onClose, children }: EditorPanelSheetProps) {
     const t = useTranslations('InvitationEditor');
 
@@ -25,7 +27,7 @@ export function EditorPanelSheet({ open, title, onClose, children }: EditorPanel
                 <h2 className="pr-10 text-base font-semibold">{title}</h2>
 
                 {/* Content */}
-                {children}
+                <ColorSurfaceProvider surface="light">{children}</ColorSurfaceProvider>
             </Modal.Body>
         </Modal>
     );

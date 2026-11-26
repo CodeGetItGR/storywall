@@ -2,7 +2,6 @@
 
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
-import type { ReactNode } from 'react';
 
 import { Banner } from '@/components/feed/Banner';
 import { EventSessionActionButtons } from '@/components/feed/EventSessionActionButtons';
@@ -15,18 +14,19 @@ type FeedCoverBlockProps = {
     event: EventDetailResponseDto;
     isHost: boolean;
     wishlist: boolean;
-    // The top corner: the Edit pill for hosts.
-    corner?: ReactNode;
     // Drawn as a small picture (the Overview's feed banner): the banner image isn't preloaded.
     thumbnail?: boolean;
     // The Invitation | Social Feed pill sits on the cover's bottom edge: the title keeps clear of it.
     clearPill?: boolean;
+    // In edit mode the cover takes no taps and draws no buttons of its own.
+    editing?: boolean;
 };
 
 // The feed's cover + title block (feedCover): the banner with the session and gift buttons.
-export function FeedCoverBlock({ event, isHost, wishlist, corner, thumbnail, clearPill }: FeedCoverBlockProps) {
+export function FeedCoverBlock({ event, isHost, wishlist, thumbnail, clearPill, editing = false }: FeedCoverBlockProps) {
     const t = useTranslations('FeedPage');
     const cover = useFeedCoverBlock(event, wishlist);
+    const addPhotoHref = isHost && !editing ? coverPhotoSettingsHref(event.id) : undefined;
 
     return (
         <section className="relative isolate mt-3">
@@ -36,28 +36,27 @@ export function FeedCoverBlock({ event, isHost, wishlist, corner, thumbnail, cle
                 onIllustrationError={cover.onIllustrationError}
                 title={event.title}
                 glowVisible={cover.pageLoaded}
-                fallbackActionHref={isHost ? coverPhotoSettingsHref(event.id) : undefined}
-                fallbackActionLabel={isHost ? t('addCoverPhoto') : undefined}
+                fallbackActionHref={addPhotoHref}
+                fallbackActionLabel={t('addCoverPhoto')}
                 thumbnail={thumbnail}
                 clearPill={clearPill}
                 actions={
-                    <>
-                        <EventSessionActionButtons event={event} />
-                        {/* Gift account */}
-                        {cover.giftHref && (
-                            <AppLink
-                                href={cover.giftHref}
-                                className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-background/92 text-ink shadow-[0_8px_22px_rgba(36,31,26,0.18)] transition-transform hover:-translate-y-0.5"
-                            >
-                                <Image src="/icons/present.svg" alt={cover.giftName} width={22} height={22} className="h-5 w-5" unoptimized />
-                            </AppLink>
-                        )}
-                    </>
+                    !editing && (
+                        <>
+                            <EventSessionActionButtons event={event} />
+                            {/* Gift account */}
+                            {cover.giftHref && (
+                                <AppLink
+                                    href={cover.giftHref}
+                                    className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-background/92 text-ink shadow-[0_8px_22px_rgba(36,31,26,0.18)] transition-transform hover:-translate-y-0.5"
+                                >
+                                    <Image src="/icons/present.svg" alt={cover.giftName} width={22} height={22} className="h-5 w-5" unoptimized />
+                                </AppLink>
+                            )}
+                        </>
+                    )
                 }
             />
-
-            {/* Edit: top-left, clear of the banner's session buttons on the right */}
-            {corner && <div className="absolute top-3 left-3 z-20">{corner}</div>}
         </section>
     );
 }

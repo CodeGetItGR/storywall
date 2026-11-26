@@ -7,6 +7,7 @@ import { AdminField, adminInputClass } from '@/components/admin/AdminField';
 import { AdminSwitch } from '@/components/admin/AdminSwitch';
 import { QrCardLayoutRange } from '@/components/admin/qrCards/layoutEditor/QrCardLayoutRange';
 import { QrCardLayoutSegmented } from '@/components/admin/qrCards/layoutEditor/QrCardLayoutSegmented';
+import { ColorSwatch } from '@/components/ui/color/ColorSwatch';
 import type { QrCardLayoutEditorState } from '@/hooks/useQrCardLayoutEditor';
 import type { QrCardFieldFont, QrCardTextAlign } from '@/lib/api/types';
 import { QR_CARD_LAYOUT_LIMITS, type QrCardTextField } from '@/lib/qrCardLayout';
@@ -71,19 +72,14 @@ export function QrCardLayoutFieldPanel({
                 onChangeAction={editor.handleFieldFontChange}
             />
             <AdminSwitch label={t('bold')} checked={field.bold} onCheckedChangeAction={editor.handleFieldBoldChange} />
-            <label className="flex items-center justify-between gap-2">
+            {/* Colour */}
+            <div className="flex items-center justify-between gap-2">
                 <span className="text-[11px] font-bold tracking-wide text-ink-muted uppercase">{t('color')}</span>
                 <span className="flex items-center gap-2">
                     <span className="font-mono text-xs text-ink-muted">{field.color}</span>
-                    <input
-                        type="color"
-                        aria-label={t('color')}
-                        value={field.color.toLowerCase()}
-                        onChange={editor.handleFieldColorChange}
-                        className="h-8 w-10 cursor-pointer rounded-md border border-border bg-white p-1"
-                    />
+                    <ColorSwatch value={field.color} label={t('color')} surface="light" onChange={editor.handleFieldColorChange} />
                 </span>
-            </label>
+            </div>
         </>
     );
 }

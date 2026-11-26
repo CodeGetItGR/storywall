@@ -8,12 +8,31 @@
     background-position: var(--feed-backdrop-position);
 }
 
-/* A strip that sits on the page and hides what scrolls under it (the sticky header): the page's own picture,
-   lined up with the page, so no edge shows. hooks/useFeedBackdropStrip.ts sets --feed-page-w (the page's width)
+/* A strip's fill (the sticky header's): it draws the page behind the strip, with a thin line along the bottom in the
+   page's own text colour. At the top of the page there is no line: it shows over the first few pixels of scroll
+   (--feed-strip-line, set by hooks/useFeedBackdropStrip.ts). */
+.feed-backdrop-strip-fill {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    overflow: hidden;
+}
+
+.feed-backdrop-strip-fill::after {
+    position: absolute;
+    inset: auto 0 0;
+    height: 1px;
+    background: color-mix(in srgb, var(--page-ink, var(--ink)) 16%, transparent);
+    content: '';
+    opacity: var(--feed-strip-line, 0);
+}
+
+/* On a theme the fill hides what scrolls under the strip with the page's own picture, lined up with the page. It
+   starts where the strip starts. hooks/useFeedBackdropStrip.ts sets --feed-page-w (the page's width)
    and --feed-strip-x / -y (where the strip sits on the page) on the strip itself, so the sums using them are
-   written here, on the strip, not in variables set on the page (those would resolve without them).
+   written here, inside the strip, not in variables set on the page (those would resolve without them).
    --feed-backdrop-tiled is 1 for tiles centred on the page, 0 for one picture as wide as the page. */
-.feed-backdrop .feed-backdrop-strip {
+.feed-backdrop .feed-backdrop-strip-fill {
     background-image: var(--feed-backdrop-mobile);
     background-size: calc(var(--feed-backdrop-tiled) * var(--smd-bg-tile-size) + (1 - var(--feed-backdrop-tiled)) * var(--feed-page-w))
         auto;
@@ -29,7 +48,7 @@
         background-image: var(--feed-backdrop-desktop);
     }
 
-    .feed-backdrop .feed-backdrop-strip {
+    .feed-backdrop .feed-backdrop-strip-fill {
         background-image: var(--feed-backdrop-desktop);
     }
 }
@@ -56,23 +75,10 @@
     position: relative;
 }
 
-/* The sticky header shows the same picture through a box behind its content, placed where the strip sits on the
-   layer: hooks/useFeedBackdropStrip.ts sets --feed-layer-x / -y and the layer's size --feed-layer-w / -h. */
-.feed-backdrop-strip-fill {
-    display: none;
-}
-
-.feed-backdrop.feed-backdrop--fixed .feed-backdrop-strip {
+/* The sticky header's fill shows the same picture through a box placed where the strip sits on the layer:
+   hooks/useFeedBackdropStrip.ts sets --feed-layer-x / -y and the layer's size --feed-layer-w / -h. */
+.feed-backdrop.feed-backdrop--fixed .feed-backdrop-strip-fill {
     background-image: none;
-}
-
-.feed-backdrop--fixed .feed-backdrop-strip-fill {
-    position: absolute;
-    inset: 0;
-    z-index: -1;
-    display: block;
-    overflow: hidden;
-    pointer-events: none;
 }
 
 .feed-backdrop--fixed .feed-backdrop-strip-fill::before {

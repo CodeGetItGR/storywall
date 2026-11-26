@@ -1,23 +1,21 @@
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, render } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { Header } from '@/components/feed/Header';
 
-vi.mock('@/components/feed/Countdown', () => ({ Countdown: () => null }));
-vi.mock('@/components/common/Logo', () => ({ Logo: () => <span>logo</span> }));
+vi.mock('@/hooks/useFeedBackdropStrip', () => ({ useFeedBackdropStrip: () => ({ current: null }) }));
+vi.mock('@/components/common/Logo', () => ({ Logo: () => <span>Logo</span> }));
+vi.mock('@/components/feed/Countdown', () => ({ Countdown: () => <span>Countdown</span> }));
 
 afterEach(cleanup);
 
 describe('Header', () => {
-    it('marks itself for the pinned switch, and draws it just below the header', () => {
-        render(<Header countdownTime={0} eventId="e-1" pinned={<button type="button">pill</button>} />);
-        const header = document.querySelector('[data-feed-header]') as HTMLElement;
-        expect(header).toBeTruthy();
-        expect(header.contains(screen.getByRole('button', { name: 'pill' }))).toBe(true);
-    });
-
-    it('draws nothing extra without it', () => {
-        render(<Header countdownTime={0} eventId="e-1" />);
-        expect(screen.queryByRole('button')).toBeNull();
+    it('draws the page only on its fill: a colour on the header itself would hide the theme picture', () => {
+        const { container } = render(<Header countdownTime={0} eventId="evt" />);
+        const header = container.firstElementChild!;
+        const fill = container.querySelector('.feed-backdrop-strip-fill')!;
+        expect(header.className).not.toMatch(/\bbg-/);
+        expect(fill.getAttribute('aria-hidden')).toBe('true');
+        expect(fill.classList.contains('bg-event')).toBe(true);
     });
 });

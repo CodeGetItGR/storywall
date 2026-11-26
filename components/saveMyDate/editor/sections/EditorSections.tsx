@@ -12,7 +12,7 @@ import { EditorSectionFrame } from '@/components/saveMyDate/editor/sections/Edit
 import type { SectionActions } from '@/hooks/useSectionActions';
 import { useSectionDrag } from '@/hooks/useSectionDrag';
 import type { SectionFrameActions } from '@/hooks/useSectionFrameHandlers';
-import { sectionNameKey } from '@/lib/invitation/sectionNames';
+import { sectionName } from '@/lib/invitation/sectionNames';
 import type { InvitationSection } from '@/lib/invitation/sections';
 
 const MODIFIERS = [restrictToVerticalAxis];
@@ -30,7 +30,7 @@ const NO_SETTINGS: SectionSettingsOpener = { hasSettings: () => false, open: () 
 type EditorSectionsProps = {
     actions: SectionActions;
     settings?: SectionSettingsOpener;
-    // The draft's event type, which names the schedule (sectionNameKey). A theme has none.
+    // The draft's event type, which names the schedule (sectionName). A theme has none.
     eventType?: string | null;
     // The invitation, drawn with each section wrapped in its tools.
     children: (wrapSection: WrapSection) => ReactNode;
@@ -49,7 +49,7 @@ export function EditorSections({ actions, settings = NO_SETTINGS, eventType, chi
     const wrapSection: WrapSection = (section, index, content) => (
         <EditorSectionFrame
             controls={controls[index]}
-            name={t(sectionNameKey(section.type, eventType))}
+            name={sectionName(t, section.type, eventType)}
             isActive={activeId === section.id}
             hasSettings={settings.hasSettings(section)}
             actions={frameActions}
@@ -79,7 +79,7 @@ export function EditorSections({ actions, settings = NO_SETTINGS, eventType, chi
             {/* Delete confirmation */}
             <DeleteSectionDialog
                 open={deleteConfirm.isOpen}
-                sectionName={deleteConfirm.sectionType ? t(sectionNameKey(deleteConfirm.sectionType, eventType)) : ''}
+                sectionName={deleteConfirm.sectionType ? sectionName(t, deleteConfirm.sectionType, eventType) : ''}
                 onDelete={deleteConfirm.confirm}
                 onCancel={deleteConfirm.cancel}
                 finalFocus={deleteConfirm.finalFocus}

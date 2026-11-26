@@ -3,13 +3,13 @@
 import { BackgroundSettings } from '@/components/saveMyDate/editor/settings/BackgroundSettings';
 import { ContactSettings } from '@/components/saveMyDate/editor/settings/ContactSettings';
 import { CoupleContactSettings } from '@/components/saveMyDate/editor/settings/CoupleContactSettings';
-import { DateSettings } from '@/components/saveMyDate/editor/settings/DateSettings';
+import { DateLanguageSetting, DateLayoutSetting, DateSettings } from '@/components/saveMyDate/editor/settings/DateSettings';
 import { DressCodeSettings } from '@/components/saveMyDate/editor/settings/DressCodeSettings';
 import { EffectSettings, TransitionSettings } from '@/components/saveMyDate/editor/settings/EffectSettings';
 import { FaqItemsSettings } from '@/components/saveMyDate/editor/settings/FaqItemsSettings';
 import { FollowEventSettings } from '@/components/saveMyDate/editor/settings/FollowEventSettings';
 import { FooterSettings } from '@/components/saveMyDate/editor/settings/FooterSettings';
-import { GallerySettings } from '@/components/saveMyDate/editor/settings/GallerySettings';
+import { GalleryLayoutSettings, GalleryPhotosSettings, GallerySettings } from '@/components/saveMyDate/editor/settings/GallerySettings';
 import { LinkButtonsSettings } from '@/components/saveMyDate/editor/settings/LinkButtonsSettings';
 import { LocationsSettings } from '@/components/saveMyDate/editor/settings/LocationsSettings';
 import { PeopleSettings } from '@/components/saveMyDate/editor/settings/PeopleSettings';
@@ -21,6 +21,7 @@ import type { SectionOf, SettingsScope } from '@/hooks/useSectionSettingsPanel';
 import type { SectionType } from '@/lib/invitation/sections';
 import type { SettingsGroup } from '@/lib/invitation/sectionSettings';
 import {
+    CONTACT_STYLE_FIELDS,
     COUNTDOWN_FIELDS,
     FAQ_FIELDS,
     PROGRAM_FIELDS,
@@ -60,9 +61,25 @@ function SettingsGroupContent({ scope, group }: { scope: SettingsScope; group: S
             const date = scopeOf(scope, 'date');
             return date && <DateSettings scope={date} />;
         }
+        case 'dateLanguage': {
+            const date = scopeOf(scope, 'date');
+            return date && <DateLanguageSetting scope={date} />;
+        }
+        case 'dateLayout': {
+            const date = scopeOf(scope, 'date');
+            return date && <DateLayoutSetting scope={date} />;
+        }
         case 'gallery': {
             const gallery = scopeOf(scope, 'gallery');
             return gallery && <GallerySettings scope={gallery} />;
+        }
+        case 'galleryPhotos': {
+            const gallery = scopeOf(scope, 'gallery');
+            return gallery && <GalleryPhotosSettings scope={gallery} />;
+        }
+        case 'galleryLayout': {
+            const gallery = scopeOf(scope, 'gallery');
+            return gallery && <GalleryLayoutSettings scope={gallery} />;
         }
         case 'countdown':
             return <SectionStyleSettings scope={scope} groups={COUNTDOWN_FIELDS} />;
@@ -94,6 +111,8 @@ function SettingsGroupContent({ scope, group }: { scope: SettingsScope; group: S
             const couple = scopeOf(scope, 'coupleContact');
             return couple && <CoupleContactSettings scope={couple} />;
         }
+        case 'contactStyle':
+            return <SectionStyleSettings scope={scope} groups={CONTACT_STYLE_FIELDS} />;
         case 'locations': {
             const locations = scopeOf(scope, 'locations');
             return locations && <LocationsSettings scope={locations} />;

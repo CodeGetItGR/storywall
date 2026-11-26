@@ -101,6 +101,9 @@ export function useThemePresetDrawer({
         setDraft((current) => ({ ...current, [name]: name === 'key' ? normalizePresetKeyInput(value) : value }));
     }, []);
 
+    const handleBackgroundColorPick = useCallback((backgroundColor: string) => setDraft((current) => ({ ...current, backgroundColor })), []);
+    const handleTitleColorPick = useCallback((titleColor: string) => setDraft((current) => ({ ...current, titleColor })), []);
+
     // Back to the ink colour, the default.
     const handleUseInk = useCallback(() => {
         setDraft((current) => ({ ...current, titleColor: '' }));
@@ -179,7 +182,7 @@ export function useThemePresetDrawer({
         failure,
         fileError,
         hasPendingFile: file !== null,
-        // <input type="color"> only takes a lower-case #rrggbb.
+        // The picker shows white while the field isn't a valid colour.
         colorInputValue: isHexColor(draft.backgroundColor) ? draft.backgroundColor.toLowerCase() : '#ffffff',
         availability: (draft.archived ? 'ARCHIVED' : 'AVAILABLE') as ThemePresetAvailability,
         // Ratio of the draft colour against the ink text; null while it isn't a valid colour.
@@ -201,6 +204,8 @@ export function useThemePresetDrawer({
         previewTitle: (locale === 'el' ? draft.nameEl : draft.nameEn).trim(),
         isSaving: create.isPending || patch.isPending || upload.isPending,
         handleFieldChange,
+        handleBackgroundColorPick,
+        handleTitleColorPick,
         handleUseInk,
         handleEventTypeChange,
         handleAvailabilityChange,

@@ -6,10 +6,12 @@ import { useLayoutEffect, useRef } from 'react';
 export const FEED_PAGE_SCOPE = '[data-event-scope]';
 // A cover picture's layer, fixed to the screen (FeedBackdropLayer), when the page draws one.
 const FEED_BACKDROP_LAYER = '[data-feed-backdrop-layer]';
+// How far the page scrolls, in pixels, until the strip's line shows in full.
+const LINE_SCROLL = 12;
 
 // Keeps a strip that sits on the page (the sticky header) lined up with the page's backdrop: where it sits on
-// the page and how wide the page is, as the variables .feed-backdrop-strip reads (components/event/feedBackdrop.css),
-// and with a cover picture fixed to the screen, where it sits on that picture's layer and how big the layer is.
+// the page, how wide the page is and how much of the strip's line shows, as the variables .feed-backdrop-strip-fill reads
+// (components/event/feedBackdrop.css), and with a cover picture fixed to the screen, where it sits on that picture's layer and how big the layer is.
 // They follow every scroll and resize, once a frame.
 export function useFeedBackdropStrip<T extends HTMLElement>() {
     const ref = useRef<T>(null);
@@ -26,7 +28,9 @@ export function useFeedBackdropStrip<T extends HTMLElement>() {
             const own = strip.getBoundingClientRect();
             strip.style.setProperty('--feed-page-w', `${onPage.width}px`);
             strip.style.setProperty('--feed-strip-x', `${own.left - onPage.left}px`);
-            strip.style.setProperty('--feed-strip-y', `${own.top - onPage.top}px`);
+            const y = own.top - onPage.top;
+            strip.style.setProperty('--feed-strip-y', `${y}px`);
+            strip.style.setProperty('--feed-strip-line', String(Math.min(1, Math.max(0, y / LINE_SCROLL))));
             const layer = page.querySelector(FEED_BACKDROP_LAYER)?.getBoundingClientRect();
             if (!layer) return;
             strip.style.setProperty('--feed-layer-x', `${own.left - layer.left}px`);

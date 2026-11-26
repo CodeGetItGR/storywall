@@ -12,10 +12,10 @@ import {
     type ColorScope,
     fontOptions,
     sameFont,
-    textColorSwatches,
     type TextRole,
     textSizeOptions,
     THEME_FONT,
+    themeColors,
 } from '@/lib/invitation/textEditing';
 import type { ThemeDesign } from '@/lib/invitation/theme';
 import type { InvitationFontDto } from '@/lib/invitation/uploadedFonts';
@@ -36,7 +36,7 @@ export function useTextToolbar(
     const shown = useShownTextStyle(element);
 
     const fonts = useMemo(() => fontOptions(document, theme, uploadedFonts), [document, theme, uploadedFonts]);
-    const swatches = useMemo(() => textColorSwatches(document, theme), [document, theme]);
+    const ownColors = useMemo(() => themeColors(theme), [theme]);
     const size = style.size ?? shown.size;
     const sizes = useMemo(() => textSizeOptions(size), [size]);
     const font = style.font && style.font !== THEME_FONT ? style.font : THEME_FONT;
@@ -67,7 +67,7 @@ export function useTextToolbar(
         size,
         sizes,
         color: style.color ?? shown.color ?? theme.colors.text,
-        swatches,
+        themeColors: ownColors,
         bold,
         italic,
         align: style.align ?? shown.align ?? 'center',

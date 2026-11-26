@@ -9,10 +9,10 @@ import en from '@/messages/en.json';
 
 afterEach(cleanup);
 
-function renderSwitch(mode: 'invitation' | 'feed', onSelect = vi.fn()) {
+function renderSwitch(mode: 'invitation' | 'feed', onSelect = vi.fn(), onEdit?: () => void) {
     render(
         <NextIntlClientProvider locale="en" messages={en}>
-            <FeedModeSwitch mode={mode} onSelect={onSelect} />
+            <FeedModeSwitch mode={mode} onSelect={onSelect} onEdit={onEdit} />
         </NextIntlClientProvider>,
     );
     return onSelect;
@@ -30,6 +30,32 @@ describe('FeedModeSwitch', () => {
         const onSelect = renderSwitch('invitation');
         await userEvent.click(screen.getByRole('button', { name: en.FeedLayout.socialFeed }));
         expect(onSelect).toHaveBeenCalledExactlyOnceWith('feed');
+    });
+
+    it('gives hosts an Edit button between the halves, not a toggle', async () => {
+        const onEdit = vi.fn();
+        const onSelect = renderSwitch('invitation', vi.fn(), onEdit);
+        const [invitation, edit, feed] = screen.getAllByRole('button');
+        expect(edit).toHaveAccessibleName(en.FeedEditor.edit);
+        expect(edit.hasAttribute('aria-pressed')).toBe(false);
+        expect(invitation).toHaveClass('bg-primary');
+        expect(feed).not.toHaveClass('bg-primary');
+        expect(document.querySelector('[data-feed-mode-thumb]')).toBeNull();
+        await userEvent.click(edit);
+        expect(onEdit).toHaveBeenCalledOnce();
+        expect(onSelect).not.toHaveBeenCalled();
+    });
+
+    it('gives guests no Edit button', () => {
+        renderSwitch('invitation');
+        expect(screen.getAllByRole('button')).toHaveLength(2);
+    });
+
+    it('is 36 px tall, each half 30 px to look at and 40 px to tap', () => {
+        renderSwitch('invitation');
+        const half = screen.getByRole('button', { name: en.FeedLayout.invitation });
+        expect(half.parentElement).toHaveClass('h-9', 'p-[3px]');
+        expect(half).toHaveClass('h-[30px]', 'whitespace-nowrap', 'before:-inset-y-[5px]');
     });
 
     it('names the second half Social Feed, in both languages', () => {

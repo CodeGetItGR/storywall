@@ -5,7 +5,7 @@ import { defaultFeedLayout } from '@/lib/feedLayout';
 import { canBeMembersOnly, setFeedBlockMembersOnly, splitMembersOnly } from '@/lib/feedMembersOnly';
 import { feedModuleSection } from '@/lib/feedModuleBlocks';
 import { SAMPLE_SECTIONS } from '@/lib/invitation/samples';
-import type { InvitationSection } from '@/lib/invitation/sections';
+import { FEED_MODE_SECTION_TYPES, type InvitationSection } from '@/lib/invitation/sections';
 
 const dressCode = { ...(SAMPLE_SECTIONS.dressCode as InvitationSection), id: 'dress' };
 const layout = { ...defaultFeedLayout(), sections: [...defaultFeedLayout().sections, dressCode] };
@@ -15,6 +15,10 @@ describe('members-only blocks', () => {
         const [cover, details, description, rsvp] = layout.sections;
         expect([description, dressCode].every(canBeMembersOnly)).toBe(true);
         expect([cover, details, rsvp, feedModuleSection('playlist', () => 'm')].some(canBeMembersOnly)).toBe(false);
+    });
+
+    it('is never offered on a feed section', () => {
+        expect(FEED_MODE_SECTION_TYPES.some((type) => canBeMembersOnly({ type }))).toBe(false);
     });
 
     it('sets and clears the flag, never on the cover', () => {

@@ -50,6 +50,11 @@ describe('routes.events for a registered demo event id', () => {
         expect(routes.events.rsvpReport('real-event-id', 'FULL_LIST')).toBe('/events/real-event-id/manage/rsvp/reports/FULL_LIST');
     });
 
+    it('rsvpSubmit() opens the form on one session', () => {
+        expect(routes.events.tools.rsvpSubmit('real-event-id', null, { session: 's-1' })).toBe('/events/real-event-id/tools/rsvp/submit?session=s-1');
+        expect(routes.events.tools.rsvpSubmit('real-event-id')).toBe('/events/real-event-id/tools/rsvp/submit');
+    });
+
     it('leaves unregistered event ids on /events/{id}', () => {
         expect(routes.events.feed('evt-real')).toBe('/events/evt-real/feed');
     });

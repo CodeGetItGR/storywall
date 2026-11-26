@@ -51,6 +51,8 @@ export type EventThemeExtras = {
     headingFont?: EventThemeFontDto | null;
     // The post cards' own colour (the feed's Save my date theme, spec P1). Without one they take the page colour.
     cardColor?: string | null;
+    // The page is too dark for ink (KAN-278): the pills on it follow the cards' tone instead.
+    toned?: boolean;
 };
 
 // The theme as CSS custom properties: --event-bg for `bg-event` surfaces, the same colour for post
@@ -66,9 +68,10 @@ export function eventThemeStyle(backgroundColor: string | null | undefined, extr
         '--event-bg': backgroundColor,
         '--event-card-bg': card,
         '--event-card-line': `color-mix(in oklab, ${card} 85%, #000000)`,
-        '--surface-muted': `color-mix(in oklab, ${backgroundColor} 15%, #ffffff)`,
+        '--surface-muted': `color-mix(in oklab, ${extras.toned ? card : backgroundColor} 15%, #ffffff)`,
         '--orangish': '#ffffff',
     };
+    if (extras.toned) style['--event-muted'] = card;
     if (extras.titleColor && isHexColor(extras.titleColor)) style['--event-title'] = extras.titleColor;
     if (usableFont(extras.headingFont)) style['--event-heading-font'] = themeFontFamily(extras.headingFont);
     return style as CSSProperties;

@@ -5,12 +5,12 @@ import { useTranslations } from 'next-intl';
 
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import type { ThemeSwitchStep } from '@/hooks/useThemeSwitch';
-import { sectionNameKey } from '@/lib/invitation/sectionNames';
+import { sectionName } from '@/lib/invitation/sectionNames';
 import type { ThemeSwitchSection } from '@/lib/invitation/themeSwitch';
 
 type ThemeSwitchDialogProps = {
     step: ThemeSwitchStep;
-    // The draft's event type, which names the schedule (sectionNameKey).
+    // The draft's event type, which names the schedule (sectionName).
     eventType?: string | null;
     onConfirm: () => void;
     // Back to the picker.
@@ -69,7 +69,7 @@ function SectionList({ title, sections, eventType }: SectionListProps) {
             <p className="m-0">{title}</p>
             <ul className="m-0 list-disc pl-5">
                 {types.map((type) => (
-                    <li key={type}>{t(sectionNameKey(type, eventType))}</li>
+                    <li key={type}>{sectionName(t, type, eventType)}</li>
                 ))}
             </ul>
         </div>

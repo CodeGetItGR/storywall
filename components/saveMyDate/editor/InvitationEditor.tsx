@@ -19,6 +19,7 @@ import { EditorTour } from '@/components/saveMyDate/editor/tour/EditorTour';
 import { useInvitationEditor } from '@/hooks/useInvitationEditor';
 import type { EditableDraft } from '@/lib/invitation/drafts';
 import { inviteHostFor } from '@/lib/invitation/publication';
+import { themeColors } from '@/lib/invitation/textEditing';
 import type { InvitationFontDto } from '@/lib/invitation/uploadedFonts';
 import { SITE_URL } from '@/lib/seo';
 
@@ -73,7 +74,7 @@ export function InvitationEditor({ draft, uploadedFonts, onReload, isReloading =
             onTour={editor.tour.start}
             subject="invitation"
             assets={assets}
-            settings={<TextColorSetting value={editor.textColor} onChange={editor.setTextColor} />}
+            settings={<TextColorSetting value={editor.textColor} themeColors={themeColors(editor.theme)} onChange={editor.setTextColor} />}
             uploadedFonts={uploadedFonts}
             onReload={onReload}
             isReloading={isReloading}

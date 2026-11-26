@@ -100,6 +100,16 @@ const columns = z.number().int().min(1).max(3);
 export const FEED_MODULE_KEYS = ['wishbook', 'playlist', 'he_or_she', 'quiz_polls', 'schedule', 'wishlist', 'gallery'] as const;
 export type FeedModuleKey = (typeof FEED_MODULE_KEYS)[number];
 
+// One line on a phone.
+export const FEED_PROMPT_MAX_LENGTH = 80;
+
+// Pinned photos holds this many at most (spec, Feed sections).
+export const FEED_PINNED_MAX_PHOTOS = 6;
+
+// A photo the host uploaded for the feed (plan 7b): only an upload, never a theme or event photo. The image is
+// imageRefSchema's media branch.
+const pinnedPhotoSchema = z.object({ id: idSchema, image: z.object({ source: z.literal('media'), mediaId: idSchema }).strict() }).strict();
+
 export const SECTION_DATA_SCHEMAS = {
     top: z.object({}).strict(),
     baby: z
@@ -330,6 +340,13 @@ export const SECTION_DATA_SCHEMAS = {
     // A module's compact block on the feed (plan 7c): its icon, name and a button that opens the tool. Added from the
     // Add section sheet's Premium tiles, Save my date events only. Stores which module, nothing else.
     feedModule: z.object({ module: z.enum(FEED_MODULE_KEYS) }).strict(),
+    // Feed mode's own sections (the Invitation | Feed switch): short, in the app's own look, free on every feed plan.
+    // The schedule draws the event's own sessions and Boy or Girl the event's own vote, so they store nothing.
+    feedSchedule: z.object({}).strict(),
+    feedPrompt: z.object({ text: z.string().max(FEED_PROMPT_MAX_LENGTH) }).strict(),
+    feedHeOrShe: z.object({}).strict(),
+    // A small row of photos the host uploads just for it (KAN-261).
+    feedPinned: z.object({ photos: z.array(pinnedPhotoSchema).max(FEED_PINNED_MAX_PHOTOS) }).strict(),
 } as const;
 
 export type SectionType = keyof typeof SECTION_DATA_SCHEMAS;
@@ -342,7 +359,7 @@ export const LINKABLE_SECTION_TYPES: ReadonlySet<SectionType> = new Set([
 ]);
 
 // Sections that may appear more than once in one invitation.
-export const MULTI_INSTANCE_SECTION_TYPES: ReadonlySet<SectionType> = new Set(['blank', 'photo', 'photoFrame']);
+export const MULTI_INSTANCE_SECTION_TYPES: ReadonlySet<SectionType> = new Set(['blank', 'photo', 'photoFrame', 'feedModule']);
 
 // The feed's own blocks, in their default order. Never offered in the invitation editor.
 export const FEED_SECTION_TYPES = ['feedCover', 'feedDetails', 'feedDescription', 'feedRsvp'] as const satisfies readonly SectionType[];
@@ -350,6 +367,19 @@ export type FeedSectionType = (typeof FEED_SECTION_TYPES)[number];
 
 export function isFeedSectionType(type: SectionType): type is FeedSectionType {
     return (FEED_SECTION_TYPES as readonly SectionType[]).includes(type);
+}
+
+// Feed mode's sections. Drawn under the stories in Feed mode, or above the posts on the one page; never in the invitation.
+export const FEED_MODE_SECTION_TYPES = ['feedSchedule', 'feedPrompt', 'feedHeOrShe', 'feedPinned'] as const satisfies readonly SectionType[];
+export type FeedModeSectionType = (typeof FEED_MODE_SECTION_TYPES)[number];
+
+export function isFeedModeSectionType(type: SectionType): type is FeedModeSectionType {
+    return (FEED_MODE_SECTION_TYPES as readonly SectionType[]).includes(type);
+}
+
+// A Save my date section: not one of the feed's fixed blocks, Feed mode's sections or a module block.
+export function isSaveMyDateSectionType(type: SectionType): boolean {
+    return !isFeedSectionType(type) && !isFeedModeSectionType(type) && type !== 'feedModule';
 }
 
 function sectionSchemaFor<T extends SectionType>(type: T) {

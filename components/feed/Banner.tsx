@@ -57,7 +57,7 @@ export function Banner({
                 </div>
                 <h1
                     className={cn(
-                        'event-heading px-5 pt-3 text-center alegreya-light text-4xl leading-tight text-balance text-event-title',
+                        'on-page event-heading px-5 pt-3 text-center alegreya-light text-4xl leading-tight text-balance text-event-title',
                         clearPill && 'pb-9',
                     )}
                 >

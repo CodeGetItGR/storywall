@@ -40,7 +40,9 @@ export function isPhotoField(type: SectionType, path: string): boolean {
     });
 }
 
-export function photoFieldSlot(sectionId: string, path: string): PhotoSlot {
+export type PhotoFieldSlot = Extract<PhotoSlot, { kind: 'field' }>;
+
+export function photoFieldSlot(sectionId: string, path: string): PhotoFieldSlot {
     return { kind: 'field', sectionId, path };
 }
 
@@ -137,10 +139,25 @@ export function setSlotPhoto(slot: PhotoSlot, photo: ImageRef, size: PhotoSize):
             if (at >= 0) images[at] = photo;
             return;
         }
-        if (!section || !isPhotoField(section.type, slot.path)) return;
-        const segments = slot.path.split('.');
-        const name = segments.pop() as string;
-        const parent = segments.length ? resolveTextField(section.data, segments.join('.')) : section.data;
-        if (isRecord(parent)) parent[name] = photo;
+        const field = photoField(draft, slot.sectionId, slot.path);
+        if (field) field.parent[field.name] = photo;
     };
+}
+
+// Takes the photo out of a photo field; its place stays, empty.
+export function removeFieldPhoto(sectionId: string, path: string): DocumentRecipe {
+    return (draft) => {
+        const field = photoField(draft, sectionId, path);
+        if (field) delete field.parent[field.name];
+    };
+}
+
+// What holds a photo field, and the field's name in it; null when either is gone.
+function photoField(document: InvitationDocument, sectionId: string, path: string): { parent: Record<string, unknown>; name: string } | null {
+    const section = document.sections.find((item) => item.id === sectionId);
+    if (!section || !isPhotoField(section.type, path)) return null;
+    const segments = path.split('.');
+    const name = segments.pop() as string;
+    const parent: unknown = segments.length ? resolveTextField(section.data, segments.join('.')) : section.data;
+    return isRecord(parent) ? { parent, name } : null;
 }

@@ -91,6 +91,7 @@ export function AdminShellNav({
 
     return (
         <aside
+            data-admin-sidebar
             className={cn(
                 'flex flex-col gap-5 bg-card px-3 py-4.5',
                 mobile ? 'min-h-full' : 'hidden h-full w-64 shrink-0 overflow-y-auto border-r border-border lg:flex',

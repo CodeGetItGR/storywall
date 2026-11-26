@@ -1,17 +1,16 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
-import { expect, fn, userEvent, within } from 'storybook/test';
+import { expect, fn, screen, userEvent, waitFor, within } from 'storybook/test';
 
 import { copyFor } from '@/.storybook/copy';
 import { withEditorChrome } from '@/.storybook/editor';
 import { waitForOpen } from '@/.storybook/waitForOpen';
 import { TextColorPicker } from '@/components/saveMyDate/editor/text/TextColorPicker';
-import { BASE_TEXT_COLORS } from '@/lib/invitation/textEditing';
 
 const meta = {
     title: 'SaveMyDate/Editor/Text/TextColorPicker',
     component: TextColorPicker,
     decorators: [withEditorChrome],
-    args: { value: '#2f2b2d', swatches: ['#b8dfd3', '#efe7ec', ...BASE_TEXT_COLORS], onPick: fn() },
+    args: { value: '#2f2b2d', themeColors: ['#b8dfd3', '#efe7ec', '#2f2b2d'], onPick: fn() },
 } satisfies Meta<typeof TextColorPicker>;
 
 export default meta;
@@ -19,7 +18,7 @@ type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {};
 
-// The theme's colours, the ones in use and the old editor's own, for this text by default.
+// The theme's colours and the app's four, for this text by default.
 export const Open: Story = {
     play: async ({ canvasElement, globals }) => {
         await userEvent.click(within(canvasElement).getByRole('button', { name: copyFor(globals).InvitationEditor.textColor }));
@@ -39,13 +38,13 @@ export const EveryText: Story = {
     },
 };
 
-// The full picker, applied only on Apply.
+// The mixer, applied on Done.
 export const MoreColors: Story = {
     play: async ({ canvasElement, globals }) => {
         const copy = copyFor(globals).InvitationEditor;
         await userEvent.click(within(canvasElement).getByRole('button', { name: copy.textColor }));
         const popup = within(await waitForOpen('dialog'));
         await userEvent.click(popup.getByRole('button', { name: copy.moreColors }));
-        await expect(popup.getByRole('button', { name: copy.apply })).toBeVisible();
+        await waitFor(() => expect(screen.getByRole('button', { name: copy.sectionSettings.done })).toBeVisible());
     },
 };

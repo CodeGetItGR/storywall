@@ -4,31 +4,34 @@ import { describe, expect, it } from 'vitest';
 import type { EventModuleResponseDto } from '@/lib/api/types';
 import { feedAddList } from '@/lib/feedAddList';
 import {
+    addableFeedModeTypes,
     addableFeedSectionTypes,
     appendFeedSection,
     canDeleteFeedBlock,
     canHideFeedBlock,
     canMoveFeedBlock,
     deleteFeedBlock,
+    draggableFeedBlocks,
     feedBlockControls,
     feedBlockParts,
     feedEditFrame,
     feedSettingsGroups,
     insertFeedSection,
     isHostBlock,
-    isSaveMyDateBlock,
     moveFeedBlock,
     opensBlockSettings,
     reorderFeedBlocks,
     setFeedBlockVisible,
 } from '@/lib/feedEditing';
 import { defaultFeedLayout } from '@/lib/feedLayout';
+import type { FeedPageMode } from '@/lib/feedMode';
 import { feedModuleSection } from '@/lib/feedModuleBlocks';
+import { createFeedModeSection } from '@/lib/feedSections';
 import type { InvitationDocument } from '@/lib/invitation/document';
 import { MAX_SECTIONS } from '@/lib/invitation/document';
 import { createSection } from '@/lib/invitation/newSection';
 import { SAMPLE_SECTIONS } from '@/lib/invitation/samples';
-import type { InvitationSection } from '@/lib/invitation/sections';
+import { type InvitationSection, isSaveMyDateSectionType } from '@/lib/invitation/sections';
 
 // Without Save my date: RSVP keeps its fixed place.
 const OFF = { rsvpMoves: false };
@@ -44,6 +47,17 @@ function layout(...extra: InvitationSection[]): InvitationDocument {
 }
 
 const ids = (document: InvitationDocument) => document.sections.map((section) => section.id);
+
+describe('draggableFeedBlocks', () => {
+    it('holds only what the mode draws', () => {
+        const prompt = createFeedModeSection('feedPrompt', () => 'prompt');
+        const frame = feedEditFrame(layout(dressCode, prompt), { rsvpMoves: true });
+        const idsIn = (mode: FeedPageMode) => draggableFeedBlocks(frame, mode).map((section) => section.id);
+        expect(idsIn('invitation')).toEqual(['feed-feedDescription', 'feed-feedRsvp', 'dress']);
+        expect(idsIn('feed')).toEqual(['prompt']);
+        expect(idsIn('single')).toEqual(['feed-feedDescription', 'feed-feedRsvp', 'dress', 'prompt']);
+    });
+});
 
 describe('feedEditFrame', () => {
     it('lists every block, hidden ones too', () => {
@@ -90,8 +104,8 @@ describe('which block may do what', () => {
     });
 
     it('tells a Save my date block from the feed blocks and module blocks', () => {
-        expect(isSaveMyDateBlock(dressCode)).toBe(true);
-        expect([cover, details, description, rsvp, feedModuleSection('playlist', () => 'm')].some(isSaveMyDateBlock)).toBe(false);
+        expect(isSaveMyDateSectionType(dressCode.type)).toBe(true);
+        expect([cover, details, description, rsvp, feedModuleSection('playlist', () => 'm')].some((section) => isSaveMyDateSectionType(section.type))).toBe(false);
     });
 
     it('sums it up per block', () => {
@@ -189,8 +203,9 @@ describe('the pencil sheet', () => {
         expect(feedBlockParts('dressCode', ['cover'])).toEqual([]);
     });
 
-    it('keeps the gallery settings on the feed now that it takes photos', () => {
-        expect(feedSettingsGroups(['gallery', 'follow', 'background', 'buttons'])).toEqual(['gallery', 'buttons']);
+    it("keeps the gallery's layout, and shows the date's language and layout apart", () => {
+        expect(feedSettingsGroups(['gallery', 'follow', 'background', 'buttons'])).toEqual(['galleryPhotos', 'galleryLayout', 'buttons']);
+        expect(feedSettingsGroups(['date'])).toEqual(['dateLanguage', 'dateLayout']);
     });
 });
 
@@ -307,21 +322,12 @@ describe('insertFeedSection', () => {
     const dress = { ...(SAMPLE_SECTIONS.dressCode as InvitationSection), id: 'dress' };
     const faq = { ...(SAMPLE_SECTIONS.faq as InvitationSection), id: 'faq' };
     const layout: InvitationDocument = { ...defaultFeedLayout(), sections: [...defaultFeedLayout().sections, dress, faq] };
-    const firstHostId = (document: InvitationDocument) => document.sections.find((section) => isHostBlock(section, options))?.id;
     const contact = () => createSection('contact', 'WEDDING', () => 'new');
 
     it('puts the new block right after the one it was asked from', () => {
         const next = produce(layout, insertFeedSection(contact(), { after: 'dress' }, options));
         const ids = next.sections.map((section) => section.id);
         expect(ids.indexOf('new')).toBe(ids.indexOf('dress') + 1);
-    });
-
-    it('puts the new block before the first host block from the row above it', () => {
-        const first = firstHostId(layout)!;
-        const next = produce(layout, insertFeedSection(contact(), { before: first }, options));
-        expect(firstHostId(next)).toBe('new');
-        const ids = next.sections.map((section) => section.id);
-        expect(ids.indexOf(first)).toBe(ids.indexOf('new') + 1);
     });
 
     it('appends when asked from nowhere', () => {
@@ -332,5 +338,71 @@ describe('insertFeedSection', () => {
     it('appends when the block it was asked from is gone', () => {
         const next = produce(layout, insertFeedSection(contact(), { after: 'missing' }, options));
         expect(next).toEqual(produce(layout, appendFeedSection(contact(), options)));
+    });
+});
+
+describe('feed sections in edit mode', () => {
+    const prompt = { ...SAMPLE_SECTIONS.feedPrompt, id: 'p' } as InvitationSection;
+    const schedule = { ...SAMPLE_SECTIONS.feedSchedule, id: 's' } as InvitationSection;
+    const page = layout(faq, prompt, schedule);
+    const ON = { rsvpMoves: true };
+
+    it('is never one of the host blocks of the middle', () => {
+        expect([isHostBlock(prompt, OFF), isHostBlock(prompt, ON)]).toEqual([false, false]);
+    });
+
+    it.each([OFF, ON])('moves a feed section only among the feed sections (%o)', (options) => {
+        expect(feedBlockControls(page.sections, prompt, options)).toEqual({ canHide: true, canDelete: true, movable: true, canMoveUp: false, canMoveDown: true });
+        expect(feedBlockControls(page.sections, schedule, options)).toMatchObject({ canMoveUp: true, canMoveDown: false });
+        const moved = produce(page, moveFeedBlock('p', 1, options));
+        expect(ids(moved).slice(-2)).toEqual(['s', 'p']);
+        expect(produce(page, moveFeedBlock('p', -1, options))).toBe(page);
+        expect(produce(page, reorderFeedBlocks('p', 'faq', options))).toBe(page);
+        expect(produce(page, reorderFeedBlocks('faq', 'p', options))).toBe(page);
+    });
+
+    it('leaves the blocks between two feed sections where they are', () => {
+        const apart = layout(prompt, faq, schedule);
+        expect(ids(produce(apart, reorderFeedBlocks('s', 'p', OFF))).slice(-3)).toEqual(['s', 'faq', 'p']);
+        expect(feedBlockControls(apart.sections, faq, OFF)).toMatchObject({ canMoveUp: true, canMoveDown: false });
+    });
+
+    it('hides and deletes a feed section', () => {
+        expect(produce(page, setFeedBlockVisible('p', false)).sections.find((section) => section.id === 'p')?.visible).toBe(false);
+        expect(ids(produce(page, deleteFeedBlock('p', OFF)))).not.toContain('p');
+    });
+
+    it('adds a feed section at the end, never past the limit', () => {
+        expect(ids(produce(layout(faq), appendFeedSection(prompt, OFF))).at(-1)).toBe('p');
+        expect(ids(produce(layout(faq), insertFeedSection(prompt, { after: 'feed-feedDescription' }, OFF))).at(-1)).toBe('p');
+        const full = produce(layout(), (draft) => {
+            while (draft.sections.length < MAX_SECTIONS) draft.sections.push({ ...faq, id: `x${draft.sections.length}` });
+        });
+        expect(produce(full, appendFeedSection(prompt, OFF))).toBe(full);
+        expect(addableFeedModeTypes(full, { hasSchedule: true, hasHeOrShe: true })).toEqual([]);
+    });
+
+    it('still adds an invitation section after the last host block, before the feed sections', () => {
+        expect(ids(produce(layout(prompt), appendFeedSection(faq, ON))).slice(-3)).toEqual(['feed-feedRsvp', 'faq', 'p']);
+    });
+
+    it('lists only the feed sections not on the page, each when the event has what it draws', () => {
+        const added = produce(defaultFeedLayout(), appendFeedSection(prompt, OFF));
+        expect(addableFeedModeTypes(added, { hasSchedule: true, hasHeOrShe: true })).toEqual(['feedSchedule', 'feedHeOrShe', 'feedPinned']);
+        expect(addableFeedModeTypes(page, { hasSchedule: true, hasHeOrShe: false })).toEqual(['feedPinned']);
+        expect(addableFeedModeTypes(defaultFeedLayout(), { hasSchedule: false, hasHeOrShe: false })).toEqual(['feedPrompt', 'feedPinned']);
+        expect(addableFeedModeTypes(defaultFeedLayout(), { hasSchedule: false, hasHeOrShe: true })).toEqual(['feedPrompt', 'feedHeOrShe', 'feedPinned']);
+    });
+
+    it('offers Pinned photos on every plan, once', () => {
+        const pinned = createFeedModeSection('feedPinned', () => 'pp');
+        expect(addableFeedModeTypes(layout(), { hasSchedule: false, hasHeOrShe: false })).toContain('feedPinned');
+        expect(addableFeedModeTypes(layout(pinned), { hasSchedule: false, hasHeOrShe: false })).not.toContain('feedPinned');
+    });
+
+    it('lists the feed sections in the edit frame, hidden ones too', () => {
+        const frame = feedEditFrame(layout(faq, prompt, { ...schedule, visible: false }), OFF);
+        expect(frame.feed.map((section) => section.id)).toEqual(['p', 's']);
+        expect(frame.middle.map((section) => section.id)).toEqual(['feed-feedDescription', 'faq']);
     });
 });

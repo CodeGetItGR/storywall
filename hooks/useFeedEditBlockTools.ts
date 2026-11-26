@@ -3,11 +3,12 @@
 import { useCallback, useMemo } from 'react';
 
 import { feedCanvasTools } from '@/components/feed/edit/feedCanvasTools';
-import { useFeedBlockButtons } from '@/hooks/useFeedBlockButtons';
+import { useFeedSectionEdits } from '@/hooks/useFeedSectionEdits';
 import { elementSectionId, removeFeedBlockElement } from '@/lib/feedBlockEdits';
 import type { InvitationDocument } from '@/lib/invitation/document';
 import type { InvitationEditorStore } from '@/lib/invitation/editorStore';
 import { feedImageUploader, type UploadedImage } from '@/lib/invitation/editorUploads';
+import { type PhotoFieldSlot, removeFieldPhoto } from '@/lib/invitation/photoSlots';
 import type { RenderContext } from '@/lib/invitation/render';
 
 type FeedEditBlockToolsInput = {
@@ -18,7 +19,7 @@ type FeedEditBlockToolsInput = {
     remember: (image: Pick<UploadedImage, 'mediaId' | 'url'>) => void;
 };
 
-// Feed edit mode's tools inside the Save my date blocks: the picture and droplet, and the ✕ on an added photo.
+// Feed edit mode's tools for the Save my date sections: their photos, text colour and background, and the ✕ on an added photo.
 export function useFeedEditBlockTools({ eventId, store, document, ctx, remember }: FeedEditBlockToolsInput) {
     const upload = useMemo(() => feedImageUploader(eventId), [eventId]);
     // The inline editor's own field list is private to useInlineTextEdit; the style keys cover every field the host
@@ -27,7 +28,7 @@ export function useFeedEditBlockTools({ eventId, store, document, ctx, remember 
         (sectionId: string) => Object.keys(document.sections.find((section) => section.id === sectionId)?.textStyles ?? {}),
         [document],
     );
-    const buttons = useFeedBlockButtons({ store, upload, remember, fieldPaths });
+    const edits = useFeedSectionEdits({ store, upload, remember, fieldPaths });
 
     const removePhoto = useCallback(
         (elementId: string) => {
@@ -36,7 +37,12 @@ export function useFeedEditBlockTools({ eventId, store, document, ctx, remember 
         },
         [document, store],
     );
-    const editCtx = useMemo<RenderContext>(() => ({ ...ctx, canvasTools: feedCanvasTools(removePhoto) }), [ctx, removePhoto]);
+    const removePersonPhoto = useCallback((slot: PhotoFieldSlot) => store.getState().edit(removeFieldPhoto(slot.sectionId, slot.path)), [store]);
+    const canvasTools = useMemo(
+        () => feedCanvasTools({ edit: store.getState().edit, onRemoveElement: removePhoto, onRemovePhoto: removePersonPhoto }),
+        [removePersonPhoto, removePhoto, store],
+    );
+    const editCtx = useMemo<RenderContext>(() => ({ ...ctx, canvasTools }), [canvasTools, ctx]);
 
-    return { ...buttons, ctx: editCtx };
+    return { ...edits, ctx: editCtx };
 }

@@ -3,7 +3,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { EventThemeScope } from '@/components/event/EventThemeScope';
 import type { EventDetailResponseDto } from '@/lib/api/types';
-import { publishFeedPageTheme } from '@/lib/feedPageTheme';
+import { feedPageTheme, publishFeedPageTheme } from '@/lib/feedPageTheme';
 
 const state = vi.hoisted(() => ({
     event: null as Partial<EventDetailResponseDto> | null,
@@ -74,6 +74,7 @@ describe('EventThemeScope', () => {
                     fixed: false,
                     cardColor: '#F9F5F7',
                 },
+                cardColor: '#F9F5F7',
             },
         });
         const root = renderScope();
@@ -84,6 +85,17 @@ describe('EventThemeScope', () => {
         expect(root.style.getPropertyValue('--event-card-bg')).toBe('#F9F5F7');
         expect(root.style.getPropertyValue('--event-card-line')).toBe('color-mix(in oklab, #F9F5F7 85%, #000000)');
         expect(root.style.getPropertyValue('--feed-backdrop-mobile')).toBe('url("https://media.example/m.jpg")');
+    });
+
+    it('keeps a dark solid colour, with light text on it and the cards on its light tone', () => {
+        state.event = themedEvent;
+        const value = feedPageTheme(themedEvent.theme!, '#1B2A4A');
+        publishFeedPageTheme('feed', { eventId: 'e-1', value });
+        const root = renderScope();
+        expect(root).toHaveAttribute('data-page-tone', 'light');
+        expect(root.style.getPropertyValue('--event-bg')).toBe('#1B2A4A');
+        expect(root.style.getPropertyValue('--page-ink')).toBe('#FFFFFF');
+        expect(root.style.getPropertyValue('--event-card-bg')).toBe(value.cardColor);
     });
 
     it("puts a cover picture on a layer fixed to the screen, before the page's content", () => {
@@ -102,6 +114,7 @@ describe('EventThemeScope', () => {
                     fixed: true,
                     cardColor: '#F9F5F7',
                 },
+                cardColor: '#F9F5F7',
             },
         });
         const root = renderScope();

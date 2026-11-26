@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { defaultFeedLayout } from '@/lib/feedLayout';
-import { feedModuleSection, feedModuleToolHref, layoutHasModule, moduleOfBlock } from '@/lib/feedModuleBlocks';
+import { feedModuleSection, feedModuleToolHref, feedScheduleEditorHref, layoutHasModule, moduleOfBlock } from '@/lib/feedModuleBlocks';
 
 describe('module blocks', () => {
     it('build a plain block for one module', () => {
@@ -11,6 +11,7 @@ describe('module blocks', () => {
     });
 
     it("open each module's tool", () => {
+        expect(feedScheduleEditorHref('e1')).toBe('/events/e1/tools/schedule?section=schedule');
         expect(feedModuleToolHref('e1', 'wishbook')).toBe('/events/e1/tools/wishbook');
         expect(feedModuleToolHref('e1', 'wishlist')).toBe('/events/e1/tools/gifts');
         expect(feedModuleToolHref('e1', 'he_or_she')).toBe('/events/e1/tools/he-or-she');

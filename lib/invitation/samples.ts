@@ -1,5 +1,5 @@
 import { INVITATION_SCHEMA_VERSION, type InvitationDocument } from '@/lib/invitation/document';
-import { type InvitationSection, isFeedSectionType, type SectionType } from '@/lib/invitation/sections';
+import { type InvitationSection, isSaveMyDateSectionType, type SectionType } from '@/lib/invitation/sections';
 import type { SectionStyle } from '@/lib/invitation/sectionStyle';
 import type { ThemeDesign } from '@/lib/invitation/theme';
 
@@ -180,6 +180,10 @@ export const SAMPLE_SECTIONS: { [T in SectionType]: SectionOf<T> } = {
     feedDescription: section('feedDescription', {}),
     feedRsvp: section('feedRsvp', {}),
     feedModule: section('feedModule', { module: 'playlist' }),
+    feedSchedule: section('feedSchedule', {}),
+    feedPrompt: section('feedPrompt', { text: '' }),
+    feedHeOrShe: section('feedHeOrShe', {}),
+    feedPinned: section('feedPinned', { photos: [] }),
 };
 
 export const SAMPLE_THEME: ThemeDesign = {
@@ -204,5 +208,5 @@ export const SAMPLE_DOCUMENT: InvitationDocument = {
     themeId: 'theme-1',
     overrides: {},
     // The feed's own blocks belong to a feed layout, not to an invitation.
-    sections: Object.values(SAMPLE_SECTIONS).filter((section) => !isFeedSectionType(section.type) && section.type !== 'feedModule'),
+    sections: Object.values(SAMPLE_SECTIONS).filter((section) => isSaveMyDateSectionType(section.type)),
 };

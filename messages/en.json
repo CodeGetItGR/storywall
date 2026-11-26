@@ -6708,10 +6708,25 @@
             }
         }
     },
+    "FeedSections": {
+        "schedule": {
+            "attending": "Attending",
+            "declined": "Declined"
+        },
+        "prompt": {
+            "question": "What should guests photograph?",
+            "placeholder": "Show us your best dance move"
+        },
+        "pinned": {
+            "photoAlt": "Photo {number} of {count}"
+        }
+    },
     "FeedLayout": {
         "invitation": "Invitation",
         "socialFeed": "Social Feed",
-        "membersOnly": "Members only",
+        "madeWith": "Made with",
+        "membersOnly":"Members only",
+        "membersOnlyNote": "Only people logged in to their account see this section.",
         "locked": {
             "join": "Sign in and join the event",
             "feed": "Photos and posts"
@@ -6721,10 +6736,10 @@
         "addIntro": "Add any section you like to your digital invitation",
         "addPhoto": "Add photo",
         "background": {
-            "tooDark": "Too dark for the text. A lighter shade will be shown."
+            "color": "Background color",
+            "image": "Background image"
         },
         "banner": {
-            "previewAlt": "Preview of your invitation",
             "startEditing": "Start editing",
             "title": "Want more customization?",
             "unlock": "Unlock",
@@ -6736,12 +6751,14 @@
                 "membersOnly": "Choose what only members see"
             }
         },
+        "design": "Design",
         "edit": "Edit",
         "moduleOpen": "Open",
         "premium": "Premium",
         "premiumLess": "Show less",
         "premiumMore": "Show more",
         "saveFailed": "Couldn't save your changes. Please try again.",
+        "solidColor": "Solid color",
         "style": "Style",
         "themes": "Themes"
     },
@@ -10637,7 +10654,6 @@
         "thisText": "This text",
         "thisSection": "This section",
         "everyText": "Every text",
-        "apply": "Apply",
         "cancel": "Cancel",
         "addText": "Add text",
         "addTitle": "Title",
@@ -10675,6 +10691,7 @@
             "drag": "Drag to move",
             "deleteTitle": "Delete this section?",
             "deleteBody": "The «{name}» section will be removed from the invitation.",
+            "deleteBodyFeed": "The «{name}» section will be removed from the feed.",
             "deleteConfirm": "Delete",
             "deleteCancel": "Cancel",
             "dragInstructions": "Press space to pick up a section. Use the arrow keys to move it, space to drop it, or escape to cancel.",
@@ -10719,7 +10736,10 @@
             "feedCover": "Cover",
             "feedDetails": "Details",
             "feedDescription": "Description",
-            "feedRsvp": "RSVP"
+            "feedRsvp": "RSVP",
+            "feedSchedule": "Today's schedule",
+            "feedPrompt": "Photo prompt",
+            "feedPinned": "Pinned photos"
         },
         "eventPhotos": {
             "title": "Event photos",

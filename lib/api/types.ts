@@ -1198,6 +1198,8 @@ export interface FeedLayoutDto {
     revision: number;
     document: unknown; // an invitation document (lib/invitation/document.ts)
     design: unknown | null; // the Save my date theme's design; null on the wall theme
+    // How light the theme's page picture is; null without one or until measured, and absent before guestwall-be KAN-278.
+    pageTone?: { mean: number; dark: number; light: number } | null;
     imageUrls: Record<string, string>; // image id to URL: the theme's images, the host's feed photos and the event photos the layout uses
     updatedAt: string;
 }

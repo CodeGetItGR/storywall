@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 
+import { onDarkPage, onMiddlePage } from '@/.storybook/pageTone';
 import { EventDescription } from '@/components/feed/EventDescription';
 import { eventDescriptionViewsKey } from '@/lib/storageKeys';
 
@@ -25,3 +26,7 @@ export const LongDescription: Story = {
             'Join us for a summer wedding by the sea. The ceremony starts at six at the little white church above the harbour, and the party moves down to the beach right after. Bring comfortable shoes for the steps, a light jacket for the evening breeze, and every photo you take along the way.',
     },
 };
+
+// On a dark page and on a middle colour.
+export const OnDarkPage: Story = { decorators: [onDarkPage] };
+export const OnMiddlePage: Story = { decorators: [onMiddlePage] };

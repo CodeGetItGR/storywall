@@ -11,8 +11,11 @@ export function relativeLuminance(hex: string): number {
 
 // WCAG 2.x contrast ratio (1–21) between two #RRGGBB colours, the formula the backend uses.
 export function contrastRatio(first: string, second: string): number {
-    const a = relativeLuminance(first);
-    const b = relativeLuminance(second);
+    return luminanceContrast(relativeLuminance(first), relativeLuminance(second));
+}
+
+// The same between two relative luminances.
+export function luminanceContrast(a: number, b: number): number {
     return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
 }
 
@@ -26,25 +29,28 @@ export const MIN_INK_CONTRAST = 4.5;
 export const INK_MUTED_COLOR = '#8A7C70';
 export const MIN_INK_MUTED_CONTRAST = 3;
 
-function mixWithWhite(hex: string, amount: number): string {
-    const channels = [1, 3, 5].map((start) => parseInt(hex.slice(start, start + 2), 16));
-    return `#${channels
-        .map((channel) =>
-            Math.round(channel + (255 - channel) * amount)
+// `hex` mixed toward `other` by `amount` (0–1).
+export function mixColors(hex: string, other: string, amount: number): string {
+    return `#${[1, 3, 5]
+        .map((start) => {
+            const [from, to] = [hex, other].map((color) => parseInt(color.slice(start, start + 2), 16));
+            return Math.round(from + (to - from) * amount)
                 .toString(16)
-                .padStart(2, '0'),
-        )
+                .padStart(2, '0');
+        })
         .join('')
         .toUpperCase()}`;
 }
 
-// Ink text, or the muted ink labels, can't be read on this colour: the Background row warns, and the colour is drawn lightened.
+const mixWithWhite = (hex: string, amount: number) => mixColors(hex, '#FFFFFF', amount);
+
+// Ink text, or the muted ink labels, can't be read on this colour: the page's own text changes colour (lib/pageTone.ts).
 export function tooDarkForInk(hex: string): boolean {
     return contrastRatio(hex, INK_COLOR) < MIN_INK_CONTRAST || contrastRatio(hex, INK_MUTED_COLOR) < MIN_INK_MUTED_CONTRAST;
 }
 
 // The colour itself when ink and muted ink text read on it; otherwise the colour mixed toward white until they do.
-export function readableOnInk(hex: string): string {
+function readableOnInk(hex: string): string {
     if (!tooDarkForInk(hex)) return hex;
     for (let step = 1; step <= 20; step += 1) {
         const mixed = mixWithWhite(hex, step / 20);

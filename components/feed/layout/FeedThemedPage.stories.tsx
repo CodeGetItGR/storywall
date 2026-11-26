@@ -5,28 +5,35 @@ import type { CSSProperties, ReactNode } from 'react';
 import { within } from 'storybook/test';
 
 import { withAppContext } from '@/.storybook/appContext';
-import { storyPhotos, storyPost } from '@/.storybook/fixtures';
+import { storyHostMember, storyPhotos, storyPost } from '@/.storybook/fixtures';
+import { hostPanelHandlers } from '@/.storybook/handlers';
 import { STORY_THEME } from '@/.storybook/invitation';
 import { FeedBackdropLayer } from '@/components/event/FeedBackdropLayer';
+import { FeedPostList } from '@/components/feed/FeedPostList';
 import { Header } from '@/components/feed/Header';
+import { InvitationFooter } from '@/components/feed/InvitationFooter';
 import { FeedLookTop } from '@/components/feed/layout/FeedLookTop';
 import { PostCard } from '@/components/feed/PostCard';
 import { RightContextPanel } from '@/components/layout/RightContextPanel';
 import type { FeedTopView } from '@/hooks/useFeedTop';
 import { eventThemeStyle } from '@/lib/eventTheme';
+import { withPartnerCards } from '@/lib/feed/partnerBranding';
 import { defaultFeedLayout, feedFrame } from '@/lib/feedLayout';
-import { feedBackdropClassName, feedBackdropStyle, type FeedPageBackdrop, feedPageBackdrop } from '@/lib/feedPageBackdrop';
+import type { FeedPageMode } from '@/lib/feedMode';
+import { feedBackdropClassName, feedBackdropStyle, feedBackdropSurface, feedPageBackdrop } from '@/lib/feedPageBackdrop';
+import { type FeedPageTheme, feedPageTheme } from '@/lib/feedPageTheme';
 import { planFeedThemeSwitch } from '@/lib/feedThemes';
 import type { InvitationDocument } from '@/lib/invitation/document';
 import { INVITATION_LABELS } from '@/lib/invitation/labels';
-import { buildRenderContext } from '@/lib/invitation/render';
+import { buildRenderContext, onPageBackdrop } from '@/lib/invitation/render';
 import { SAMPLE_SECTIONS } from '@/lib/invitation/samples';
 import type { InvitationSection } from '@/lib/invitation/sections';
 import type { ThemeDesign } from '@/lib/invitation/theme';
+import { pageToneProps, pageToneStyle } from '@/lib/pageTone';
 import { cn } from '@/lib/utils';
 
 // Stand-ins for today's feed blocks; their own stories cover how they look.
-const Box = ({ label }: { label: string }) => <div className="mx-4 my-3 p-4 text-sm text-ink">{label}</div>;
+const Box = ({ label }: { label: string }) => <div className="on-page mx-4 my-3 p-4 text-sm text-ink">{label}</div>;
 
 const LIGHT: ThemeDesign = {
     ...STORY_THEME,
@@ -55,6 +62,21 @@ const COVER: ThemeDesign = {
         top: { desktop: { mediaId: 'page-dark' }, mode: 'cover', stableRepeat: false },
         content: { desktop: { mediaId: 'page-tall' }, mode: 'cover', stableRepeat: false },
     },
+};
+// A dark picture that fills the screen, a busy one tiled over the page, and a theme with a colour and no picture.
+const DARK: ThemeDesign = {
+    ...STORY_THEME,
+    backgrounds: { ...STORY_THEME.backgrounds, content: { desktop: { mediaId: 'page-dark' }, mode: 'cover', stableRepeat: false } },
+};
+const BUSY: ThemeDesign = {
+    ...STORY_THEME,
+    backgrounds: { ...STORY_THEME.backgrounds, content: { desktop: { mediaId: 'page-tall' }, mode: 'texture', stableRepeat: false } },
+};
+const DARK_TONE = { mean: 0.022, dark: 0.005, light: 0.067 };
+const SOLID: ThemeDesign = {
+    ...STORY_THEME,
+    colors: { ...STORY_THEME.colors, secondary: '#dfe9e4' },
+    backgrounds: { ...STORY_THEME.backgrounds, content: { mode: 'cover', stableRepeat: false } },
 };
 const PAGE_IMAGES: Record<string, string> = {
     'page-light': '/storybook-assets/light-photo.jpg',
@@ -95,11 +117,46 @@ const PICKED_LAYOUT = planFeedThemeSwitch(
     new Set(),
 );
 
-type PageProps = { theme: ThemeDesign; document?: InvitationDocument; children?: ReactNode; whole?: boolean };
+// The whole page in one colour: no theme's backdrop.
+const inColor = (color: string, document = AUTO_LAYOUT): InvitationDocument => ({
+    ...document,
+    overrides: { ...document.overrides, backgroundColor: color },
+});
 
-function FeedColumn({ theme, document = AUTO_LAYOUT, children }: PageProps) {
-    const backdrop = feedPageBackdrop(document, theme, media);
-    const ctx = { ...buildRenderContext(document, theme, media), labels: INVITATION_LABELS.en, pageBackdrop: true };
+// Sections with fills of their own inside: FAQ, RSVP, gift, programme and accommodation.
+const FILLED_LAYOUT: InvitationDocument = {
+    ...AUTO_LAYOUT,
+    sections: [
+        ...base.sections,
+        ...(['faq', 'rsvp', 'gift', 'programIcons', 'accommodation'] as const).map(
+            (type) =>
+                ({
+                    ...SAMPLE_SECTIONS[type],
+                    // No colours of the host's own: they stay as picked on any page.
+                    data: { ...SAMPLE_SECTIONS[type].data, faqStyle: undefined, programStyle: undefined },
+                    id: type,
+                }) as unknown as InvitationSection,
+        ),
+    ],
+};
+
+// What the backend measures on the dark picture.
+const pageTones = new Map([[DARK, DARK_TONE]]);
+
+function pageOf({ theme, document = AUTO_LAYOUT }: PageProps): FeedPageTheme {
+    const backdrop = feedPageBackdrop(document, theme, media, pageTones.get(theme));
+    return feedPageTheme(null, document.overrides.backgroundColor, backdrop);
+}
+
+type PageProps = { theme: ThemeDesign; document?: InvitationDocument; children?: ReactNode; whole?: boolean; mode?: FeedPageMode };
+
+function FeedColumn({ theme, document = AUTO_LAYOUT, children, mode }: PageProps) {
+    const backdrop = feedPageBackdrop(document, theme, media, pageTones.get(theme));
+    const plain = buildRenderContext(document, theme, media);
+    const ctx = {
+        ...(backdrop ? onPageBackdrop(plain, feedBackdropSurface(backdrop)) : plain),
+        labels: INVITATION_LABELS.en,
+    };
     const view: FeedTopView = {
         look: true,
         lang: 'en',
@@ -117,27 +174,34 @@ function FeedColumn({ theme, document = AUTO_LAYOUT, children }: PageProps) {
         <>
             <FeedLookTop
                 view={view}
+                mode={mode}
                 cover={<Box label="Cover + title" />}
                 stories={<Box label="Stories" />}
                 description={<Box label="Description" />}
                 rsvp={<Box label="RSVP" />}
             />
-            {children ?? (
+            {/* Posts, in a plain block as FeedPostList draws them */}
+<div>{children ?? (
                 <>
                     <PostCard post={storyPost({ media: [storyPhotos[0]] })} />
-                    <PostCard post={storyPost({ id: 'post-text', type: 'TEXT', media: [], content: 'What a day!' })} />
+                    <PostCard post={storyPost({ id: 'post-text', type: 'TEXT', media: [], content: 'What a day!' })} endsPage />
                 </>
-            )}
+            )}</div>
         </>
     );
 }
 
 // The page's backdrop as EventThemeScope draws it: a cover picture on its layer fixed to the screen, the page's
 // content after it.
-function BackdropScope({ backdrop, className, children }: { backdrop: FeedPageBackdrop | null; className: string; children: ReactNode }) {
-    const style = { ...eventThemeStyle(backdrop?.color, { cardColor: backdrop?.cardColor }), ...feedBackdropStyle(backdrop) } as CSSProperties;
+function BackdropScope({ page, className, children }: { page: FeedPageTheme; className: string; children: ReactNode }) {
+    const { backdrop = null, cardColor, tone } = page;
+    const style = {
+        ...eventThemeStyle(page.theme?.backgroundColor, { cardColor, toned: Boolean(tone) }),
+        ...feedBackdropStyle(backdrop),
+        ...pageToneStyle(tone),
+    } as CSSProperties;
     return (
-        <div data-event-scope="" className={cn(feedBackdropClassName(backdrop), className)} style={style}>
+        <div data-event-scope="" {...pageToneProps(tone)} className={cn(feedBackdropClassName(backdrop), className)} style={style}>
             {/* Fixed picture */}
             {backdrop?.fixed && <FeedBackdropLayer />}
             {/* Page */}
@@ -149,23 +213,25 @@ function BackdropScope({ backdrop, className, children }: { backdrop: FeedPageBa
 // `whole` draws the page as the app does: the sticky header and, on desktop, the side panel, in a
 // scrolling page, so the header strip and the panel can be checked against the page behind them.
 function ThemedPage({ whole = false, ...props }: PageProps) {
-    const backdrop = feedPageBackdrop(props.document ?? AUTO_LAYOUT, props.theme, media);
+    const page = pageOf(props);
+    const invitation = props.mode === 'invitation';
     if (!whole) {
         return (
-            <BackdropScope backdrop={backdrop} className="mx-auto min-h-screen max-w-2xl bg-event pb-8">
+            <BackdropScope page={page} className="mx-auto min-h-screen max-w-2xl bg-event">
                 <FeedColumn {...props} />
             </BackdropScope>
         );
     }
     return (
         <div data-testid="page" className="no-scrollbar h-screen overflow-y-auto">
-            <BackdropScope backdrop={backdrop} className="bg-event">
+            <BackdropScope page={page} className="bg-event">
                 <div className="flex">
                     {/* Feed */}
                     <div className="min-w-0 flex-1">
-                        <div className="mx-auto flex w-full flex-col pb-8 lg:max-w-2xl">
-                            <Header countdownTime={Date.parse('2026-07-04T15:00:00Z')} eventId="evt-story" />
+                        <div className={cn('mx-auto flex w-full flex-col lg:max-w-2xl', invitation && 'pb-8')}>
+                            {!invitation && <Header countdownTime={Date.parse('2026-07-04T15:00:00Z')} eventId="evt-story" />}
                             <FeedColumn {...props} />
+                            {invitation && <InvitationFooter />}
                         </div>
                     </div>
                     {/* Right panel */}
@@ -191,8 +257,16 @@ const scrollPage = scrollPageTo(420);
 
 // A feed much longer than the screen: text posts, so the page behind them shows.
 const LONG_FEED = Array.from({ length: 12 }, (_, index) => (
-    <PostCard key={index} post={storyPost({ id: `post-${index}`, type: 'TEXT', media: [], content: 'What a day!' })} />
+    <PostCard key={index} post={storyPost({ id: `post-${index}`, type: 'TEXT', media: [], content: 'What a day!' })} endsPage={index === 11} />
 ));
+
+// Posts with a playlist digest between them.
+const DIGEST_POSTS = [
+    storyPost({ id: 'digest-feed-photo', media: [storyPhotos[0]] }),
+    storyPost({ id: 'digest-feed-text', type: 'TEXT', media: [], content: 'What a day!' }),
+    storyPost({ id: 'digest-feed-digest', type: 'PLAYLIST', author: null, media: [], content: '🎵 5 new songs were added to the playlist!' }),
+    storyPost({ id: 'digest-feed-lone', type: 'TEXT', media: [], content: 'What a day!' }),
+];
 
 const meta = {
     title: 'Feed/Layout/FeedThemedPage',
@@ -240,3 +314,43 @@ export const LongFeedCoverMobile: Story = { ...LongFeedCover, globals: { viewpor
 
 // The whole page on a repeating picture, scrolled.
 export const WholePageRepeating: Story = { args: { theme: LIGHT, whole: true }, play: scrollPage };
+
+// Posts with a playlist digest between them, on the page's picture: it shows around the cards.
+export const PostsWithDigest: Story = { args: { theme: COVER, children: <FeedPostList items={withPartnerCards(DIGEST_POSTS, null)} partnerBranding={null} eventId="evt-story" endsWithPost /> } };
+
+// The host's side panel on every kind of theme: a white curtain lets the theme through behind its text.
+const hostPanel: Pick<Story, 'parameters' | 'beforeEach' | 'globals'> = {
+    parameters: { app: { member: storyHostMember } },
+    globals: { viewport: { value: 'desktop' } },
+    beforeEach({ msw }) {
+        msw.use(...hostPanelHandlers());
+    },
+};
+
+export const HostPanelLight: Story = { ...hostPanel, tags: ['visual-desktop-only'], args: { theme: LIGHT, whole: true } };
+export const HostPanelBusy: Story = { ...hostPanel, tags: ['visual-desktop-only'], args: { theme: BUSY, whole: true } };
+export const HostPanelDark: Story = { ...hostPanel, tags: ['visual-desktop-only'], args: { theme: DARK, whole: true } };
+export const HostPanelSolid: Story = { ...hostPanel, tags: ['visual-desktop-only'], args: { theme: SOLID, whole: true } };
+export const HostPanelCoverScrolled: Story = {
+    ...hostPanel,
+    tags: ['visual-desktop-only'],
+    args: { theme: COVER, document: PICKED_LAYOUT, whole: true },
+    play: scrollPage,
+};
+
+// A dark solid colour stays dark: light text on it, posts on its light tone. A middle colour gets dark text.
+export const DarkColor: Story = { args: { document: inColor('#1B2A4A'), whole: true } };
+export const DarkColorMobile: Story = { ...DarkColor, globals: { viewport: { value: 'mobile' } } };
+export const DarkColorSections: Story = { args: { document: inColor('#1B2A4A', FILLED_LAYOUT), children: <></> } };
+export const MiddleColor: Story = { args: { document: inColor('#FF7A59'), whole: true } };
+export const DarkPictureMobile: Story = { args: { theme: DARK, whole: true }, globals: { viewport: { value: 'mobile' } } };
+export const HostPanelDarkColor: Story = { ...hostPanel, tags: ['visual-desktop-only'], args: { document: inColor('#1B2A4A'), whole: true } };
+
+// Invitation mode: no header, and the small footer at the end, on a light picture, a dark one and a dark colour.
+const toTheEnd = scrollPageTo(Number.MAX_SAFE_INTEGER);
+export const InvitationEnd: Story = { args: { theme: LIGHT, whole: true, mode: 'invitation', children: <></> }, play: toTheEnd };
+export const InvitationEndDarkPicture: Story = { args: { theme: DARK, whole: true, mode: 'invitation', children: <></> }, play: toTheEnd };
+export const InvitationEndDarkColor: Story = {
+    args: { document: inColor('#1B2A4A'), whole: true, mode: 'invitation', children: <></> },
+    play: toTheEnd,
+};

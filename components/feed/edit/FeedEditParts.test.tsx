@@ -16,6 +16,8 @@ function renderIn(node: ReactNode) {
     );
 }
 
+const noMedia = () => undefined;
+
 const LABELS: Record<SettingsPart, string> = { cover: 'Cover photo', title: 'Title', date: 'Date', location: 'Location', description: 'Description' };
 
 function renderSheet(props: { isDesktop: boolean; onOpenPart?: (part: SettingsPart) => void; onClose?: () => void }) {
@@ -30,6 +32,14 @@ function renderSheet(props: { isDesktop: boolean; onOpenPart?: (part: SettingsPa
             isDesktop={props.isDesktop}
             membersOnly={null}
             onMembersOnly={vi.fn()}
+            promptText={null}
+            onPromptText={vi.fn()}
+            pinned={null}
+            pinnedUploading={false}
+            media={noMedia}
+            onAddPinned={vi.fn()}
+            onRemovePinned={vi.fn()}
+            onMovePinned={vi.fn()}
             onOpenPart={props.onOpenPart ?? vi.fn()}
             onClose={props.onClose ?? vi.fn()}
         />,
@@ -62,7 +72,7 @@ describe('FeedBlockSheet', () => {
 
 describe('FeedEditRow', () => {
     it('shows the save error under the row only after a failed save', () => {
-        const props = { saving: false, onCancel: vi.fn(), onSave: vi.fn() };
+        const props = { saving: false, previewing: false, onPreview: vi.fn(), onCancel: vi.fn(), onSave: vi.fn() };
         const { rerender } = renderIn(<FeedEditRow {...props} failed={false} />);
         expect(screen.queryByRole('alert')).toBeNull();
 

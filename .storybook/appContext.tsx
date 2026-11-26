@@ -75,6 +75,7 @@ function composerValue(app: StoryAppContext): ComposerContextValue {
     return {
         openPostComposer: fn().mockName('openPostComposer'),
         openPostImagePicker: fn().mockName('openPostImagePicker'),
+        openPostWithFiles: fn().mockName('openPostWithFiles'),
         openSongComposer: fn().mockName('openSongComposer'),
         openAnnouncementComposer: fn().mockName('openAnnouncementComposer'),
         openStoryCapture: fn().mockName('openStoryCapture'),

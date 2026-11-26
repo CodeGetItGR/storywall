@@ -1,10 +1,11 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { type ChangeEvent, useCallback, useId } from 'react';
+import { useCallback, useId } from 'react';
 
 import { SettingsGroup, SettingsInput, SettingsRow } from '@/components/saveMyDate/editor/settings/SettingsControls';
 import { TextFontPicker } from '@/components/saveMyDate/editor/text/TextFontPicker';
+import { ColorSwatch } from '@/components/ui/color/ColorSwatch';
 import { useStyleNumberField } from '@/hooks/useStyleNumberField';
 import { colorInputValue } from '@/lib/invitation/colorInput';
 import { type StyleField, type StyleFieldGroup, visibleStyleGroups } from '@/lib/invitation/sectionStyleFields';
@@ -15,18 +16,19 @@ type StyleFieldsProps = {
     values: Record<string, unknown> | undefined;
     isAdmin: boolean;
     fonts: FontOption[];
+    themeColors: readonly string[];
     // Undefined clears the field, so it follows the theme again.
     onChange: (key: string, value: string | number | undefined) => void;
 };
 
 // A section's style settings, group by group.
-export function StyleFields({ groups, values, isAdmin, fonts, onChange }: StyleFieldsProps) {
+export function StyleFields({ groups, values, isAdmin, fonts, themeColors, onChange }: StyleFieldsProps) {
     const t = useTranslations('InvitationEditor');
 
     return visibleStyleGroups(groups, isAdmin).map((group, index) => (
         <SettingsGroup key={group.label ?? index} title={group.label ? t(group.label) : undefined}>
             {group.fields.map((field) => (
-                <StyleFieldRow key={field.key} field={field} value={values?.[field.key]} fonts={fonts} onChange={onChange} />
+                <StyleFieldRow key={field.key} field={field} value={values?.[field.key]} fonts={fonts} themeColors={themeColors} onChange={onChange} />
             ))}
         </SettingsGroup>
     ));
@@ -36,14 +38,16 @@ type StyleFieldRowProps = {
     field: StyleField;
     value: unknown;
     fonts: FontOption[];
+    themeColors: readonly string[];
     onChange: StyleFieldsProps['onChange'];
 };
 
-function StyleFieldRow({ field, value, fonts, onChange }: StyleFieldRowProps) {
+function StyleFieldRow({ field, value, fonts, themeColors, onChange }: StyleFieldRowProps) {
     const change = useCallback((next: string | number | undefined) => onChange(field.key, next), [field.key, onChange]);
     if (field.kind === 'font')
         return <FontField field={field} value={typeof value === 'string' ? value : undefined} fonts={fonts} onChange={change} />;
-    if (field.kind === 'color') return <ColorField field={field} value={typeof value === 'string' ? value : undefined} onChange={change} />;
+    if (field.kind === 'color')
+        return <ColorField field={field} value={typeof value === 'string' ? value : undefined} themeColors={themeColors} onChange={change} />;
     return <NumberField field={field} value={typeof value === 'number' ? value : undefined} onChange={change} />;
 }
 
@@ -62,10 +66,9 @@ function FontField({ field, value, fonts, onChange }: FieldProps<string> & { fon
     );
 }
 
-function ColorField({ field, value, onChange }: FieldProps<string>) {
+function ColorField({ field, value, themeColors, onChange }: FieldProps<string> & { themeColors: readonly string[] }) {
     const t = useTranslations('InvitationEditor');
     const id = useId();
-    const change = useCallback((event: ChangeEvent<HTMLInputElement>) => onChange(event.target.value), [onChange]);
     const reset = useCallback(() => onChange(undefined), [onChange]);
 
     return (
@@ -80,13 +83,7 @@ function ColorField({ field, value, onChange }: FieldProps<string>) {
                         {t('lineHeightDefault')}
                     </button>
                 )}
-                <input
-                    id={id}
-                    type="color"
-                    value={colorInputValue(value, field.fallback)}
-                    onChange={change}
-                    className="h-9 w-12 shrink-0 cursor-pointer rounded-lg border border-white/20 bg-transparent p-0.5"
-                />
+                <ColorSwatch id={id} value={colorInputValue(value, field.fallback)} label={t(field.label)} themeColors={themeColors} onChange={onChange} />
             </div>
         </SettingsRow>
     );

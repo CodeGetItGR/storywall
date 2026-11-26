@@ -9,7 +9,6 @@ import { letDragKeysThrough } from '@/lib/sortableKeys';
 type SectionSettingsSheetProps = {
     open: boolean;
     title: string;
-    titleId?: string;
     onClose: () => void;
     children: ReactNode;
 };
@@ -17,7 +16,7 @@ type SectionSettingsSheetProps = {
 // A section's settings on phones and tablets: a sheet over the lower part of
 // the screen. The canvas above stays in view and live, so a change shows as
 // it's made; tapping the canvas leaves the sheet open.
-export function SectionSettingsSheet({ open, title, titleId, onClose, children }: SectionSettingsSheetProps) {
+export function SectionSettingsSheet({ open, title, onClose, children }: SectionSettingsSheetProps) {
     const onOpenChange = useCallback((next: boolean) => !next && onClose(), [onClose]);
 
     return (
@@ -29,7 +28,7 @@ export function SectionSettingsSheet({ open, title, titleId, onClose, children }
                 >
                     {/* Header */}
                     <div className="flex shrink-0 items-center justify-between gap-3 px-4 pt-3 pb-2">
-                        <Dialog.Title id={titleId} className="truncate text-[14px] font-bold text-white">
+                        <Dialog.Title className="truncate text-[14px] font-bold text-white">
                             {title}
                         </Dialog.Title>
                         <Dialog.Close render={<SectionSettingsDone />} />

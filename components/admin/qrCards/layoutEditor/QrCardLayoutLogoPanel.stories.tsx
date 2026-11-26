@@ -35,7 +35,7 @@ export const Original: Story = {
         const copy = copyFor(globals).AdminPage.qrCards.layout;
         const canvas = within(canvasElement);
         await expect(canvas.getByRole('radio', { name: copy.logoColorOptions.original })).toBeChecked();
-        await expect(canvas.queryByLabelText(copy.color, { selector: 'input[type="color"]' })).toBeNull();
+        await expect(canvas.queryByRole('button', { name: copy.color })).toBeNull();
     },
 };
 

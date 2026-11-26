@@ -69,8 +69,21 @@ vi.mock('@/hooks/useInvitationThemeCards', () => ({
 
 const event = { id: 'e-1', eventType: 'WEDDING', title: 'Wedding' } as unknown as EventDetailResponseDto;
 
+const plainEvent = { ...event, theme: null } as EventDetailResponseDto;
+
 function session(overrides: Partial<Parameters<typeof useFeedEditThemeGrid>[1]> = {}) {
-    return { themeSlug: '', heldWall: undefined, switching: false, saving: false, pickInvitation: vi.fn(), pickWall: vi.fn(), ...overrides };
+    return {
+        themeSlug: '',
+        heldWall: undefined,
+        background: undefined,
+        switching: false,
+        pickingSolid: false,
+        saving: false,
+        pickInvitation: vi.fn(),
+        pickWall: vi.fn(),
+        pickSolid: vi.fn(),
+        ...overrides,
+    };
 }
 
 beforeEach(() => {
@@ -100,9 +113,52 @@ describe('useFeedEditThemeGrid', () => {
         act(() => result.current.select(invitationThemeChoice('rose')));
         expect(pickInvitation).toHaveBeenCalledWith('rose');
         act(() => result.current.select('p-1'));
-        expect(pickWall).toHaveBeenCalledWith('p-1', expect.objectContaining({ presetKey: 'dino-mint' }), false);
+        expect(pickWall).toHaveBeenCalledWith({ presetId: 'p-1', theme: expect.objectContaining({ presetKey: 'dino-mint' }), applied: false });
         act(() => result.current.select(null));
-        expect(pickWall).toHaveBeenLastCalledWith(null, null, true);
+        expect(pickWall).toHaveBeenLastCalledWith({ presetId: null, theme: null, applied: true });
+    });
+
+    it('puts a solid colour on "No theme", which then isn\'t the card picked', () => {
+        mocks.applied = 'p-1';
+        const pickSolid = vi.fn();
+        const { result } = renderHook(() => useFeedEditThemeGrid(event, session({ background: '#B5BFA6', heldWall: { presetId: null, theme: null }, pickSolid })));
+        expect(result.current.options.filter((option) => option.selected)).toEqual([]);
+        act(() => result.current.selectSolid('#AC9FC7'));
+        expect(pickSolid).toHaveBeenCalledExactlyOnceWith('#AC9FC7', { presetId: null, theme: null, applied: false });
+    });
+
+    it('counts white as "No theme": the circle and the card are picked together, whichever was tapped', () => {
+        const pickWall = vi.fn();
+        const pickSolid = vi.fn();
+        const { result } = renderHook(() => useFeedEditThemeGrid(plainEvent, session({ pickWall, pickSolid })));
+        expect(result.current.solidColor).toBe('#FFFFFF');
+        expect(result.current.options[0].selected).toBe(true);
+        act(() => result.current.selectSolid('#ffffff'));
+        expect(pickWall).toHaveBeenCalledExactlyOnceWith({ presetId: null, theme: null, applied: true });
+        expect(pickSolid).not.toHaveBeenCalled();
+        // A white saved as a colour before reads the same.
+        const saved = renderHook(() => useFeedEditThemeGrid(plainEvent, session({ background: '#FFFFFF' }))).result.current;
+        expect([saved.solidColor, saved.options[0].selected]).toEqual(['#FFFFFF', true]);
+    });
+
+    it('has no white circle picked on a theme or another colour', () => {
+        const colour = renderHook(() => useFeedEditThemeGrid(plainEvent, session({ background: '#B5BFA6' }))).result.current;
+        expect([colour.solidColor, colour.options[0].selected]).toEqual(['#B5BFA6', false]);
+        expect(renderHook(() => useFeedEditThemeGrid(plainEvent, session({ themeSlug: 'rose' }))).result.current.solidColor).toBeUndefined();
+    });
+
+    it('keeps white a colour while the plain look loads for the one being mixed', () => {
+        const pickSolid = vi.fn();
+        const { result } = renderHook(() => useFeedEditThemeGrid(plainEvent, session({ themeSlug: 'rose', switching: true, pickingSolid: true, pickSolid })));
+        act(() => result.current.selectSolid('#FFFFFF'));
+        expect(pickSolid).toHaveBeenCalledExactlyOnceWith('#FFFFFF', { presetId: null, theme: null, applied: true });
+    });
+
+    it('goes on mixing while the plain look loads for the colour, but not while a theme loads', () => {
+        const mixing = renderHook(() => useFeedEditThemeGrid(event, session({ switching: true, pickingSolid: true }))).result.current;
+        expect([mixing.disabled, mixing.solidDisabled]).toEqual([true, false]);
+        const loading = renderHook(() => useFeedEditThemeGrid(event, session({ switching: true }))).result.current;
+        expect([loading.disabled, loading.solidDisabled]).toEqual([true, true]);
     });
 
     describe('without wall themes (no theme module)', () => {
@@ -123,11 +179,23 @@ describe('useFeedEditThemeGrid', () => {
             expect(result.current.options[0]).toMatchObject({ id: 'none', backgroundColor: null, illustrationUrl: null, selected: true });
         });
 
+        it("keeps white a solid colour on the event's own wall look", () => {
+            const pickWall = vi.fn();
+            const pickSolid = vi.fn();
+            const { result } = renderHook(() => useFeedEditThemeGrid(themed, session({ pickWall, pickSolid })));
+            expect(result.current.solidColor).toBeUndefined();
+            act(() => result.current.selectSolid('#FFFFFF'));
+            expect(pickSolid).toHaveBeenCalledExactlyOnceWith('#FFFFFF', { presetId: null, theme: dino, applied: true });
+            expect(pickWall).not.toHaveBeenCalled();
+            const white = renderHook(() => useFeedEditThemeGrid(themed, session({ background: '#FFFFFF' }))).result.current;
+            expect([white.solidColor, white.options[0].selected]).toEqual(['#FFFFFF', false]);
+        });
+
         it("holds a switch back to the event's own wall look, leaving its theme as it is", () => {
             const pickWall = vi.fn();
             const { result } = renderHook(() => useFeedEditThemeGrid(themed, session({ themeSlug: 'rose', pickWall })));
             act(() => result.current.select(null));
-            expect(pickWall).toHaveBeenCalledWith(null, dino, true);
+            expect(pickWall).toHaveBeenCalledWith({ presetId: null, theme: dino, applied: true });
             act(() => result.current.select('p-1'));
             expect(pickWall).toHaveBeenCalledOnce();
         });

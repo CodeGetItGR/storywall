@@ -1,24 +1,25 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { type ChangeEvent, useCallback, useId } from 'react';
+import { useId } from 'react';
 
 import { SettingsRow } from '@/components/saveMyDate/editor/settings/SettingsControls';
+import { ColorSwatch } from '@/components/ui/color/ColorSwatch';
 import { colorInputValue } from '@/lib/invitation/colorInput';
 
 type ThemeColorRowProps = {
     label: string;
     value: string;
+    themeColors: readonly string[];
     onChange: (color: string) => void;
     // Shown while the colour is the theme's own choice; clears it.
     onReset?: () => void;
 };
 
 // One theme colour, with Reset where the colour can follow another.
-export function ThemeColorRow({ label, value, onChange, onReset }: ThemeColorRowProps) {
+export function ThemeColorRow({ label, value, themeColors, onChange, onReset }: ThemeColorRowProps) {
     const t = useTranslations('InvitationEditor.themeStyle');
     const id = useId();
-    const change = useCallback((event: ChangeEvent<HTMLInputElement>) => onChange(event.target.value), [onChange]);
 
     return (
         <SettingsRow label={label} htmlFor={id}>
@@ -32,13 +33,7 @@ export function ThemeColorRow({ label, value, onChange, onReset }: ThemeColorRow
                         {t('reset')}
                     </button>
                 )}
-                <input
-                    id={id}
-                    type="color"
-                    value={colorInputValue(value)}
-                    onChange={change}
-                    className="h-9 w-12 shrink-0 cursor-pointer rounded-lg border border-white/20 bg-transparent p-0.5"
-                />
+                <ColorSwatch id={id} value={colorInputValue(value)} label={label} themeColors={themeColors} onChange={onChange} />
             </div>
         </SettingsRow>
     );

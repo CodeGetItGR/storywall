@@ -80,17 +80,17 @@ afterEach(cleanup);
 describe('StyleFields', () => {
     it('leaves fonts to admins', () => {
         const onChange = vi.fn();
-        const { unmount } = renderIn(<StyleFields groups={COUNTDOWN_FIELDS} values={{}} isAdmin={false} fonts={[]} onChange={onChange} />);
+        const { unmount } = renderIn(<StyleFields groups={COUNTDOWN_FIELDS} values={{}} isAdmin={false} fonts={[]} themeColors={[]} onChange={onChange} />);
         expect(screen.queryByText('Font')).not.toBeInTheDocument();
         unmount();
 
-        renderIn(<StyleFields groups={COUNTDOWN_FIELDS} values={{}} isAdmin fonts={[]} onChange={onChange} />);
+        renderIn(<StyleFields groups={COUNTDOWN_FIELDS} values={{}} isAdmin fonts={[]} themeColors={[]} onChange={onChange} />);
         expect(screen.getByText('Font')).toBeInTheDocument();
     });
 
     it('applies a size in range as it is typed and keeps it in range when left', () => {
         const onChange = vi.fn();
-        renderIn(<StyleFields groups={COUNTDOWN_FIELDS} values={{ size: 44 }} isAdmin={false} fonts={[]} onChange={onChange} />);
+        renderIn(<StyleFields groups={COUNTDOWN_FIELDS} values={{ size: 44 }} isAdmin={false} fonts={[]} themeColors={[]} onChange={onChange} />);
         const size = screen.getByLabelText('Number size (px)');
         expect(size).toHaveValue(44);
         expect(size).toHaveAttribute('placeholder', '48');
@@ -105,12 +105,13 @@ describe('StyleFields', () => {
         expect(onChange).toHaveBeenLastCalledWith('size', 400);
     });
 
-    it('sets a colour and puts it back to the default', () => {
+    it('sets a colour and puts it back to the default', async () => {
         const onChange = vi.fn();
-        renderIn(<StyleFields groups={COUNTDOWN_FIELDS} values={{ color: '#2f2b2d' }} isAdmin={false} fonts={[]} onChange={onChange} />);
+        renderIn(<StyleFields groups={COUNTDOWN_FIELDS} values={{ color: '#2f2b2d' }} isAdmin={false} fonts={[]} themeColors={[]} onChange={onChange} />);
 
-        fireEvent.change(screen.getByLabelText('Color'), { target: { value: '#112233' } });
-        expect(onChange).toHaveBeenLastCalledWith('color', '#112233');
+        fireEvent.click(screen.getByRole('button', { name: 'Color' }));
+        fireEvent.click(await screen.findByRole('button', { name: '#AC9FC7' }));
+        expect(onChange).toHaveBeenLastCalledWith('color', '#AC9FC7');
 
         fireEvent.click(screen.getByRole('button', { name: 'Default' }));
         expect(onChange).toHaveBeenLastCalledWith('color', undefined);
@@ -315,5 +316,13 @@ describe('DressCodeSettings', () => {
         );
         fireEvent.click(screen.getAllByRole('button', { name: 'Remove color #b8dfd3' })[0]);
         expect(edited().data.colors).toEqual(['#efe7ec', '#efe7ec']);
+    });
+
+    it('changes a colour', async () => {
+        const { scope, edited } = scopeFor('dressCode');
+        renderIn(<DressCodeSettings scope={scope} />);
+        fireEvent.click(screen.getByRole('button', { name: '#b8dfd3' }));
+        fireEvent.click(await screen.findByRole('button', { name: '#CFB98C' }));
+        expect(edited().data.colors).toEqual(['#CFB98C', '#efe7ec']);
     });
 });

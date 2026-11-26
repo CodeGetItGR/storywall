@@ -1,9 +1,9 @@
 import { produce } from 'immer';
 import { describe, expect, it } from 'vitest';
 
-import { lightTone, readableOnInk } from '@/lib/contrast';
+import { lightTone } from '@/lib/contrast';
 import { defaultFeedLayout, wallThemeDesign } from '@/lib/feedLayout';
-import { FEED_CARD_LIGHTEN, feedBackdropClassName, feedBackdropStyle, feedPageBackdrop } from '@/lib/feedPageBackdrop';
+import { FEED_CARD_LIGHTEN, feedBackdropClassName, feedBackdropStyle, feedBackdropSurface, feedPageBackdrop } from '@/lib/feedPageBackdrop';
 import { SAMPLE_THEME } from '@/lib/invitation/samples';
 import type { ThemeDesign } from '@/lib/invitation/theme';
 
@@ -14,14 +14,15 @@ describe('feedPageBackdrop', () => {
     it("is the theme's content background, repeating as the slot says", () => {
         const backdrop = feedPageBackdrop(themed, SAMPLE_THEME, media);
         expect(backdrop).toEqual({
-            color: readableOnInk('#efe7ec'),
+            color: '#efe7ec',
             image: { desktop: 'https://cdn.test/m-content.jpg', mobile: 'https://cdn.test/m-content.jpg' },
             size: '100% auto',
             repeat: 'repeat-y',
             position: 'center top',
             tiled: false,
             fixed: false,
-            cardColor: lightTone(readableOnInk('#efe7ec'), FEED_CARD_LIGHTEN),
+            cardColor: lightTone('#efe7ec', FEED_CARD_LIGHTEN),
+            pictureTone: null,
         });
     });
 
@@ -50,7 +51,7 @@ describe('feedPageBackdrop', () => {
 
     it('is the secondary colour alone when the slot has no image', () => {
         const plain = { ...SAMPLE_THEME, backgrounds: { ...SAMPLE_THEME.backgrounds, content: { mode: 'cover', stableRepeat: false } } } as ThemeDesign;
-        expect(feedPageBackdrop(themed, plain, media)).toMatchObject({ color: readableOnInk('#efe7ec'), image: null });
+        expect(feedPageBackdrop(themed, plain, media)).toMatchObject({ color: '#efe7ec', image: null });
     });
 
     it("uses the mobile image on both widths when there's only that one", () => {
@@ -64,6 +65,22 @@ describe('feedPageBackdrop', () => {
             draft.overrides.backgroundColor = '#F5E6D3';
         });
         expect(feedPageBackdrop(coloured, SAMPLE_THEME, media)).toBeNull();
+    });
+});
+
+describe('feedBackdropSurface', () => {
+    const plain = { ...SAMPLE_THEME, backgrounds: { ...SAMPLE_THEME.backgrounds, content: { mode: 'cover', stableRepeat: false } } } as ThemeDesign;
+    const tone = { mean: 0.1, dark: 0.05, light: 0.2 };
+
+    it("is the picture's tone once it is known, or the plain colour", () => {
+        expect(feedBackdropSurface(feedPageBackdrop(themed, SAMPLE_THEME, media, tone)!)).toEqual(tone);
+        expect(feedBackdropSurface(feedPageBackdrop(themed, SAMPLE_THEME, media)!)).toBeNull();
+        expect(feedBackdropSurface(feedPageBackdrop(themed, plain, media, tone)!)).toBe('#efe7ec');
+    });
+
+    it('keeps a dark colour as it is', () => {
+        const dark = { ...plain, colors: { ...plain.colors, secondary: '#2F2B2D' } };
+        expect(feedPageBackdrop(themed, dark, media)?.color).toBe('#2F2B2D');
     });
 });
 

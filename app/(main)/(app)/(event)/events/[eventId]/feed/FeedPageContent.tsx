@@ -3,22 +3,22 @@
 import { useCallback, useState } from 'react';
 
 import { ComposerCard } from '@/components/feed/ComposerCard';
-import { FeedEditPill } from '@/components/feed/edit/FeedEditPill';
+import { FeedEditPencil } from '@/components/feed/edit/FeedEditPencil';
 import { LazyFeedEditTop } from '@/components/feed/edit/LazyFeedEditTop';
 import { EventDescription } from '@/components/feed/EventDescription';
 import { EventInfoSection } from '@/components/feed/EventInfoSection';
 import { FeedEmptyState } from '@/components/feed/FeedEmptyState';
 import { FeedPageSkeleton } from '@/components/feed/FeedPageSkeleton';
-import { FeedPostRenderer } from '@/components/feed/FeedPostRenderer';
+import { FeedPostList } from '@/components/feed/FeedPostList';
 import { GuestOfferCard } from '@/components/feed/guestOffer/GuestOfferCard';
 import { Header } from '@/components/feed/Header';
 import { HeOrShePromptCard } from '@/components/feed/HeOrShePromptCard';
+import { InvitationFooter } from '@/components/feed/InvitationFooter';
 import { FeedCoverBlock } from '@/components/feed/layout/FeedCoverBlock';
 import { FeedModeSwitch } from '@/components/feed/layout/FeedModeSwitch';
 import { FeedRsvpBlock } from '@/components/feed/layout/FeedRsvpBlock';
 import { FeedTop } from '@/components/feed/layout/FeedTop';
 import { PartnerBrandingPromptModal } from '@/components/feed/partner/PartnerBrandingPromptModal';
-import { PartnerFeedCard } from '@/components/feed/partner/PartnerFeedCard';
 import { PostModal } from '@/components/feed/PostModal';
 import { PublishQueueCards } from '@/components/feed/PublishQueueCards';
 import { FeedQuickActions } from '@/components/feed/quickActions/FeedQuickActions';
@@ -31,46 +31,62 @@ import { useFeedEditMode } from '@/hooks/useFeedEditMode';
 import { useFeedEditTrigger } from '@/hooks/useFeedEditTrigger';
 import { useFeedItems } from '@/hooks/useFeedItems';
 import { useFeedMode } from '@/hooks/useFeedMode';
-import { useFeedModeSwitchPin } from '@/hooks/useFeedModeSwitchPin';
 import { useFeedModuleBlockPart } from '@/hooks/useFeedModuleBlockPart';
 import { useFeedPageTheme } from '@/hooks/useFeedPageTheme';
+import { useFeedSectionPart } from '@/hooks/useFeedSectionPart';
 import { useFeedTop } from '@/hooks/useFeedTop';
+import { useHideMobileTabBar } from '@/hooks/useHideMobileTabBar';
 import { useHideMobileTabBarOnScroll } from '@/hooks/useHideMobileTabBarOnScroll';
 import { useRsvpPromptVisible } from '@/hooks/useRsvpPromptVisible';
-import { type FeedPageMode,feedPlaceHref } from '@/lib/feedMode';
+import { feedEndsWithPost } from '@/lib/feed/feedEnd';
+import { feedPlaceHref } from '@/lib/feedMode';
+import { hasFeedSection } from '@/lib/feedSections';
 import { cn } from '@/lib/utils';
 
 import { useFeedPage } from './FeedPageContext';
 
 export function FeedPageContent() {
     useHideMobileTabBarOnScroll();
-    const { currentMemberRsvpId, event, eventId, isFetchingNextPage, isHost, isRoleLoading, loadMoreRef, loadingMoreLabel, moduleFlags, posts } =
+    const { currentMemberRsvpId, event, eventId, hasNextPage, isFetchingNextPage, isHost, isRoleLoading, loadMoreRef, loadingMoreLabel, moduleFlags, posts } =
         useFeedPage();
     const feedItems = useFeedItems(posts, event.partnerBranding);
+    const endsWithPost = feedEndsWithPost(feedItems, hasNextPage);
     const [storyId, setStoryId] = useState<string | null>(null);
     const shouldShowRSVP = useRsvpPromptVisible({ eventId, isHost, rsvpAvailable: moduleFlags.rsvp, rsvpId: currentMemberRsvpId });
     const top = useFeedTop(event);
     const moduleBlock = useFeedModuleBlockPart(event);
+    const feedSection = useFeedSectionPart(event, top.ctx.media);
     const coverEvent = useFeedPageTheme(event, top.pageBackground, top.backdrop);
     const editMode = useFeedEditMode(event, isHost, isRoleLoading);
-    const { start: startEditing, finish: finishEditing, editPill, cancelPill } = useFeedEditFocus(editMode.start, editMode.finish);
+    const { start: startEditing, finish: finishEditing, editPencil, cancelPill } = useFeedEditFocus(editMode.start, editMode.finish);
     const feedMode = useFeedMode(event);
     // null while the mode isn't known yet: the page keeps its loading state.
-    const pageMode: FeedPageMode | null = feedMode.available ? feedMode.mode : 'single';
-    const { ref: pinRef, pinned } = useFeedModeSwitchPin(pageMode !== null && pageMode !== 'single');
+    const { pageMode } = feedMode;
+    // The invitation takes the whole phone: the switch to Social Feed brings the header and the tab bar back.
+    const invitation = pageMode === 'invitation';
+    useHideMobileTabBar(invitation, 'feed-invitation');
     // The Overview's Start editing (?edit=blocks) opens the invitation.
     const startFromLink = useCallback(() => {
         if (feedMode.available) feedMode.select('invitation');
         startEditing();
     }, [feedMode, startEditing]);
     useFeedEditTrigger({ settled: editMode.settled, canEdit: editMode.canEdit, start: startFromLink });
-    const pill = feedMode.mode && <FeedModeSwitch mode={feedMode.mode} onSelect={feedMode.select} />;
-    const modeSwitch = pill && (
-        // Centred on the cover's bottom edge, half over it. While a copy is pinned under the header, it keeps its space.
-        <div ref={pinRef} className={cn('relative z-10 -mt-6 flex justify-center', pinned && 'invisible')}>
-            {pill}
-        </div>
-    );
+    const modeSwitch =
+        feedMode.mode &&
+        (editMode.editing ? (
+            // No switch while editing: the host edits the mode they were in. Its room stays, so nothing jumps.
+            <div className="h-4.5" />
+        ) : (
+            // Centred on the cover's bottom edge, half over it. It scrolls away with the cover.
+            <div className="relative z-10 -mt-4.5 flex justify-center">
+                <FeedModeSwitch
+                    mode={feedMode.mode}
+                    onSelect={feedMode.select}
+                    onEdit={editMode.canEdit ? startEditing : undefined}
+                    editRef={editPencil}
+                />
+            </div>
+        ));
     const topParts = {
         cover: (
             <FeedCoverBlock
@@ -78,7 +94,7 @@ export function FeedPageContent() {
                 isHost={isHost}
                 wishlist={moduleFlags.wishlist}
                 clearPill={Boolean(modeSwitch)}
-                corner={editMode.canEdit && !editMode.editing ? <FeedEditPill ref={editPill} onClick={startEditing} /> : undefined}
+                editing={editMode.editing}
             />
         ),
         // Social Feed mode only (FeedTopFrame); signed-out visitors get it under the cover (KAN-246).
@@ -94,13 +110,41 @@ export function FeedPageContent() {
             </section>
         ),
         description: event.description && (
-            <EventDescription eventId={event.id} description={event.description} keepShown={pageMode === 'invitation' || editMode.editing} />
+            <EventDescription eventId={event.id} description={event.description} keepShown={invitation || editMode.editing} />
         ),
         rsvp: shouldShowRSVP ? <FeedRsvpBlock eventId={eventId} deadline={event.schedule.rsvpDeadline ?? null} /> : null,
         moduleBlock,
     };
 
-    const feedTop = <FeedTop view={top} mode={pageMode ?? 'single'} modeSwitch={modeSwitch} {...topParts} />;
+    // What guests see differently from the host editing, for edit mode's preview.
+    const guestParts = {
+        cover: <FeedCoverBlock event={coverEvent} isHost={false} wishlist={moduleFlags.wishlist} clearPill={Boolean(modeSwitch)} />,
+        rsvp: moduleFlags.rsvp ? <FeedRsvpBlock eventId={eventId} deadline={event.schedule.rsvpDeadline ?? null} /> : null,
+    };
+
+    // While edit mode loads, room for its row. Without a switch, the Edit pencil alone, centred under the cover.
+    const editRow = editMode.editing ? (
+        <div className="h-[61px] sm:h-[65px]" />
+    ) : (
+        editMode.canEdit &&
+        !modeSwitch && (
+            <div className="mt-3 flex justify-center">
+                <FeedEditPencil ref={editPencil} onClick={startEditing} />
+            </div>
+        )
+    );
+
+    // Feed mode's sections go to the member page only: edit mode draws its own, where a pinned photo takes no tap.
+    const feedTop = (
+        <FeedTop
+            view={top}
+            mode={pageMode ?? 'single'}
+            modeSwitch={modeSwitch}
+            editRow={editRow}
+            {...topParts}
+            feedSection={feedSection}
+        />
+    );
 
     function openStoryModal(nextStoryId: string) {
         setStoryId(nextStoryId);
@@ -111,22 +155,20 @@ export function FeedPageContent() {
     }
 
     // The mode lives on this device: until it's known the page keeps its loading state, so it never flashes the wrong mode.
-    if (pageMode === null) return <FeedPageSkeleton />;
+    if (pageMode === null) return <FeedPageSkeleton header={feedMode.expected === 'invitation' ? 'hidden' : 'shown'} />;
 
     return (
-        <div className="mx-auto flex w-full flex-col lg:max-w-2xl">
-            {/* Header */}
-            <Header
-                countdownTime={event.schedule.startAt ? new Date(event.schedule.startAt).getTime() : 0}
-                eventId={eventId}
-                pinned={pinned ? pill : undefined}
-            />
+        <div className="mx-auto flex w-full flex-col lg:max-w-2xl" data-tab-bar-away={invitation || undefined}>
+            {/* Header: the invitation has none */}
+            {!invitation && <Header countdownTime={event.schedule.startAt ? new Date(event.schedule.startAt).getTime() : 0} eventId={eventId} />}
             {/* Install */}
             <InstallAppBanner />
             {/* Invitation blocks, stories and RSVP */}
             {editMode.editing ? (
                 <LazyFeedEditTop
                     event={event}
+                    scope={editMode.scope}
+                    guest={guestParts}
                     onDone={finishEditing}
                     cancelRef={cancelPill}
                     fallback={feedTop}
@@ -143,7 +185,10 @@ export function FeedPageContent() {
                 <section id="posts">
                     {moduleFlags.posts && (
                         <div
-                            className={cn('flex flex-col px-0 pb-24 md:pb-10', {
+                            className={cn('flex flex-col px-0', {
+                                // A last post reaches the page's end: on phones it takes the tab bar's room itself (PostCard).
+                                '-mb-[calc(var(--tab-bar-h)+var(--overview-fab-room,0px))] md:mb-0': endsWithPost,
+                                'pb-24 md:pb-16': !endsWithPost,
                                 'mt-4':
                                     (!moduleFlags.stories || !top.drawsMiddle || pageMode === 'feed') &&
                                     !(shouldShowRSVP && top.frame.rsvp && pageMode !== 'feed'),
@@ -155,23 +200,18 @@ export function FeedPageContent() {
                             <PublishQueueCards />
                             {/* Guest offer */}
                             <GuestOfferCard eventId={eventId} isHost={isHost} />
-                            {/* Boy or Girl? prompt */}
-                            <HeOrShePromptCard eventId={eventId} eventType={event.eventType} enabled={moduleFlags.he_or_she} />
+                            {/* Boy or Girl? prompt: the fixed card, unless the host placed the section */}
+                            {!hasFeedSection(top.sections, 'feedHeOrShe') && (
+                                <HeOrShePromptCard eventId={eventId} eventType={event.eventType} enabled={moduleFlags.he_or_she} />
+                            )}
                             <div className="flex flex-col">
                                 {posts.length === 0 ? (
                                     <FeedEmptyState />
                                 ) : (
-                                    feedItems.map((item) =>
-                                        item.kind === 'post' ? (
-                                            <FeedPostRenderer key={item.post.id} post={item.post} isLcpCandidate={item.index === 0} />
-                                        ) : (
-                                            /* Partner card */
-                                            event.partnerBranding && <PartnerFeedCard key={item.key} branding={event.partnerBranding} eventId={eventId} />
-                                        ),
-                                    )
+                                    <FeedPostList items={feedItems} partnerBranding={event.partnerBranding} eventId={eventId} endsWithPost={endsWithPost} />
                                 )}
-                                <div ref={loadMoreRef} className="h-1" />
-                                {isFetchingNextPage && <p className="py-2 text-center text-sm text-ink-muted">{loadingMoreLabel}</p>}
+                                <div ref={loadMoreRef} className="-mt-1 h-1" />
+                                {isFetchingNextPage && <p className="on-page py-2 text-center text-sm text-ink-muted">{loadingMoreLabel}</p>}
                             </div>
                         </div>
                     )}
@@ -183,6 +223,9 @@ export function FeedPageContent() {
                     )}
                 </section>
             )}
+
+            {/* Footer */}
+            {invitation && <InvitationFooter />}
 
             <PostModal />
 

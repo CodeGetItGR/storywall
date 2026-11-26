@@ -70,7 +70,7 @@ export function TextToolbar({ toolbar, anchor, canAdd, onDelete, toolbarRef, onK
                 </TextToolbarSelect>
 
                 {/* Colour */}
-                <TextColorPicker value={toolbar.color} swatches={toolbar.swatches} onPick={toolbar.pickColor} />
+                <TextColorPicker value={toolbar.color} themeColors={toolbar.themeColors} onPick={toolbar.pickColor} />
                 <Divider />
 
                 {/* Weight and slant */}

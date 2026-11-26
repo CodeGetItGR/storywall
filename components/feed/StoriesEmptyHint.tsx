@@ -9,7 +9,7 @@ export function StoriesEmptyHint({ storiesName, canCompose }: { storiesName: str
     const locale = useLocale();
 
     return (
-        <div className="flex min-h-15.5 min-w-0 flex-col justify-center">
+        <div className="on-page flex min-h-15.5 min-w-0 flex-col justify-center">
             <p className="text-sm font-semibold text-ink">{t('emptyTitle', { name: storiesName.toLocaleLowerCase(locale) })}</p>
             {canCompose && <p className="mt-0.5 text-xs text-ink-muted">{t('emptyBody')}</p>}
         </div>

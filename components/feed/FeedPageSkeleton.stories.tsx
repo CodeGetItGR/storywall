@@ -14,4 +14,10 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const Default: Story = {};
+export const Default: Story = { args: { header: 'shown' } };
+
+// On the way to an invitation.
+export const WithoutHeader: Story = { args: { header: 'hidden' } };
+
+// The event isn't known yet: the header's room, with nothing in it.
+export const HeaderUnknown: Story = {};
