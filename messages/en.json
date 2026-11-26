@@ -10962,6 +10962,9 @@
             "address": "Address",
             "addGodparent": "Add godparent",
             "addSponsor": "Add sponsor",
+            "addGraduate": "Add graduate",
+            "degree": "Degree",
+            "university": "University",
             "untitled": "Untitled",
             "reorder": "Drag to reorder",
             "listDrag": {

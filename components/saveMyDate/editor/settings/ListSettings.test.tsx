@@ -5,6 +5,7 @@ import { type ReactNode, useCallback, useState } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { FaqItemsSettings } from '@/components/saveMyDate/editor/settings/FaqItemsSettings';
+import { GraduatesSettings } from '@/components/saveMyDate/editor/settings/GraduatesSettings';
 import { PeopleSettings } from '@/components/saveMyDate/editor/settings/PeopleSettings';
 import { StaysSettings } from '@/components/saveMyDate/editor/settings/StaysSettings';
 import type { PeopleSection } from '@/hooks/usePeopleSettings';
@@ -179,5 +180,33 @@ describe('useSortableDrag with the list lines', () => {
         act(() => result.current.onDragEnd({ active: { id: 'a' }, over: { id: 'b' } } as never));
         expect(onReorder).toHaveBeenCalledOnce();
         expect(onReorder).toHaveBeenCalledWith('a', 'b');
+    });
+});
+
+describe('GraduatesSettings', () => {
+    const graduates = () =>
+        renderSettings(SAMPLE_SECTIONS.graduates, (scope) => <GraduatesSettings scope={scope as SettingsScope<SectionOf<'graduates'>>} />);
+
+    it('lists the graduates by name and adds one with its name, degree and university', () => {
+        graduates();
+        expect(screen.getByRole('heading', { name: en.InvitationEditor.sectionNames.graduates })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: 'Μαρία' })).toBeInTheDocument();
+
+        fireEvent.click(screen.getByRole('button', { name: copy.addGraduate }));
+        type(copy.name, 'Ελένη');
+        type(copy.degree, 'Πτυχίο Ιατρικής');
+        type(copy.university, 'ΕΚΠΑ');
+        expect(items().graduates).toEqual([
+            expect.objectContaining({ id: 'g1' }),
+            expect.objectContaining({ id: 'g2' }),
+            expect.objectContaining({ name: 'Ελένη', degree: 'Πτυχίο Ιατρικής', university: 'ΕΚΠΑ' }),
+        ]);
+    });
+
+    it('deletes a graduate with the shared Delete button', () => {
+        graduates();
+        fireEvent.click(screen.getByRole('button', { name: 'Νίκος' }));
+        fireEvent.click(screen.getByRole('button', { name: en.InvitationEditor.delete }));
+        expect(items().graduates).toEqual([expect.objectContaining({ id: 'g1' })]);
     });
 });

@@ -59,6 +59,7 @@ const TYPE_GROUPS: Partial<Record<SectionType, SettingsGroup[]>> = {
     godparents: ['people'],
     parentsSimple: ['people'],
     weddingSponsors: ['people'],
+    graduates: ['people'],
 };
 
 // Whether a group is what the section says or how it looks.
