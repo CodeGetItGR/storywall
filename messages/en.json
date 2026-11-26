@@ -6732,7 +6732,8 @@
         },
         "prompt": {
             "question": "What should guests photograph?",
-            "placeholder": "Show us your best dance move"
+            "placeholder": "Show us your best dance move",
+            "thenAndNow": "Then & now: post an old photo with the graduate"
         },
         "pinned": {
             "photoAlt": "Photo {number} of {count}"

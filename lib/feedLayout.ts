@@ -4,6 +4,7 @@ import { INVITATION_SCHEMA_VERSION, type InvitationDocument, upgradeInvitationDo
 import type { PhotoTone } from '@/lib/invitation/photoContrast';
 import type { MediaResolver } from '@/lib/invitation/render';
 import {
+    FEED_PROMPT_MAX_LENGTH,
     FEED_SECTION_TYPES,
     type FeedSectionType,
     type InvitationSection,
@@ -82,9 +83,27 @@ export function newFeedBlock(type: FeedSectionType): InvitationSection {
 }
 
 // What an event with no saved layout draws: today's feed. Each block draws only when it has
-// something to show (a description, an RSVP to ask for).
-export function defaultFeedLayout(): InvitationDocument {
-    return { schemaVersion: INVITATION_SCHEMA_VERSION, themeId: WALL_THEME_ID, overrides: {}, sections: FEED_SECTION_TYPES.map(newFeedBlock) };
+// something to show (a description, an RSVP to ask for). promptText: the photo prompt a new event of
+// some types starts with (hooks/useFeedStarterPrompt), shown in Feed mode until the host changes it.
+export function defaultFeedLayout(promptText?: string): InvitationDocument {
+    const sections = FEED_SECTION_TYPES.map(newFeedBlock);
+    if (promptText) sections.push(starterPrompt(promptText));
+    return { schemaVersion: INVITATION_SCHEMA_VERSION, themeId: WALL_THEME_ID, overrides: {}, sections };
+}
+
+// Built here rather than with lib/feedSections' createFeedModeSection, which imports this file.
+function starterPrompt(text: string): InvitationSection {
+    return {
+        id: 'feed-feedPrompt',
+        type: 'feedPrompt',
+        name: 'feedPrompt',
+        visible: true,
+        locked: false,
+        data: { text: text.slice(0, FEED_PROMPT_MAX_LENGTH) },
+        textStyles: {},
+        elements: [],
+        style: PLAIN_FEED_STYLE,
+    } as InvitationSection;
 }
 
 export type FeedFrame = {
@@ -174,18 +193,19 @@ export type FeedLayoutView = {
 
 // The API answer as the feed draws it. Nothing saved, or a document it can't read, draws the
 // default layout; a theme design it can't read draws the wall look. Never throws.
-export function readFeedLayout(dto: FeedLayoutDto | null, wallTheme: EventThemeDto | null): FeedLayoutView {
+// promptText: see defaultFeedLayout; it only shows while nothing is saved.
+export function readFeedLayout(dto: FeedLayoutDto | null, wallTheme: EventThemeDto | null, promptText?: string): FeedLayoutView {
     const urls = dto?.imageUrls ?? {};
     const media: MediaResolver = (mediaId) => urls[mediaId];
     const wall = wallThemeDesign(wallTheme);
     const revision = dto?.revision ?? 0;
-    if (!dto) return { document: defaultFeedLayout(), theme: wall, media, pageTone: null, revision, themeSlug: null };
+    if (!dto) return { document: defaultFeedLayout(promptText), theme: wall, media, pageTone: null, revision, themeSlug: null };
 
     let document: InvitationDocument;
     try {
         document = upgradeInvitationDocument(dto.document);
     } catch {
-        return { document: defaultFeedLayout(), theme: wall, media, pageTone: null, revision, themeSlug: null };
+        return { document: defaultFeedLayout(promptText), theme: wall, media, pageTone: null, revision, themeSlug: null };
     }
     if (document.themeId === WALL_THEME_ID) return { document, theme: wall, media, pageTone: null, revision, themeSlug: null };
 
