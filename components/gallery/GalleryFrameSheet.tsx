@@ -33,7 +33,7 @@ export function GalleryFrameSheet({ setting }: { setting: GalleryFrameSetting })
                 </h2>
 
                 {/* Designs */}
-                <div role="radiogroup" aria-labelledby={titleId} className="mt-4 grid grid-cols-2 gap-3">
+                <div role="radiogroup" aria-labelledby={titleId} className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
                     {setting.options.map((option) => {
                         const labelId = `${titleId}-${option.frame}`;
                         const selected = option.frame === setting.current;
