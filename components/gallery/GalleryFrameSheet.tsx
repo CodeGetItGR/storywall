@@ -11,7 +11,7 @@ import { cn } from '@/lib/utils';
 
 // The host picks the frame: each design on the sample photo, and No frame. A pick saves at once.
 export function GalleryFrameSheet({ setting }: { setting: GalleryFrameSetting }) {
-    const tCommon = useTranslations('Common');
+    const tGallery = useTranslations('GalleryPage');
     const titleId = useId();
     const { choose } = setting;
     const handleChoose = useCallback((event: MouseEvent<HTMLButtonElement>) => choose(event.currentTarget.dataset.frame as UploadFrame), [choose]);
@@ -23,7 +23,7 @@ export function GalleryFrameSheet({ setting }: { setting: GalleryFrameSetting })
             variant="sheet"
             size="sm"
             labelledBy={titleId}
-            closeLabel={tCommon('close')}
+            closeLabel={tGallery('print.close')}
             closeDisabled={setting.saving}
         >
             <Modal.Body className="px-5 pt-5 pb-6">
