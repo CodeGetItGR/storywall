@@ -39,7 +39,7 @@ export function PlaylistDigestCard({ post }: PlaylistDigestCardProps) {
     // instead of the newest. See post-recent-comments-preview-fe-integration.md.
 
     return (
-        <article className="bg-transparent p-2">
+        <article className="my-3 bg-transparent px-2 lg:my-4">
             {/* Playlist digest */}
             <div className="@container relative isolate overflow-hidden rounded-xl bg-linear-to-br from-[#9d3868] via-primary to-accent-orange px-4 py-4 text-white sm:px-5">
                 <div

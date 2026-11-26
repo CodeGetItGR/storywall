@@ -8,6 +8,7 @@ type FeedPageContextValue = {
     event: EventDetailResponseDto;
     eventId: string;
     currentMemberRsvpId: string | null;
+    hasNextPage: boolean;
     isFetchingNextPage: boolean;
     isHost: boolean;
     // The viewer's role is still loading: isHost may still turn true.
