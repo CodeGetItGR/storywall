@@ -267,8 +267,8 @@ A graduate's photo uses the graduate's name as its alt text, with the shared `ph
    (`EventTypeImageField`), which overrides the code fallback (§8). No new alt copy.
 2. **"Μήνυμα για τον απόφοιτο"** (approved) is masculine. If most hosts turn out to be female or
    several graduates, a neutral form can replace it later.
-3. **Jira:** a KAN epic with one ticket per part (backend type, Graduates block, then & now prompt,
-   photo frame) before implementation starts.
+3. **Jira:** epic KAN-300; KAN-301 type registration, KAN-302 Graduates block, KAN-303 then & now
+   prompt, KAN-304 photo frame.
 
 ## 12. Out of scope
 
