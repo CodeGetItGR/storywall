@@ -5,7 +5,7 @@ import { useLocale, useTranslations } from 'next-intl';
 
 import { ScheduleEditSessionRow } from '@/components/schedule/ScheduleEditSessionRow';
 import type { EventDetailResponseDto, EventSessionResponseDto } from '@/lib/api/types';
-import { scheduleEditRows,type ScheduleRowDefinition } from '@/lib/sessionManagement';
+import { scheduleEditRows, type ScheduleRowDefinition } from '@/lib/sessionManagement';
 
 interface ScheduleEditSessionsTableProps {
     event: EventDetailResponseDto;

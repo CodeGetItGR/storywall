@@ -23,7 +23,12 @@ describe('scheduleEditRows', () => {
             'suggestion',
         ]);
         const [party] = getScheduleSuggestions('GRADUATION');
-        expect(party).toMatchObject({ role: 'suggestion', sectionId: 'party-session', defaultTitleKey: 'suggestedSessions.GRADUATION.title', missingKey: 'notAdded' });
+        expect(party).toMatchObject({
+            role: 'suggestion',
+            sectionId: 'party-session',
+            defaultTitleKey: 'suggestedSessions.GRADUATION.title',
+            missingKey: 'notAdded',
+        });
     });
 
     it('drops the suggestion once a graduation has any other item', () => {

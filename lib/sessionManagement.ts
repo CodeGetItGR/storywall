@@ -66,7 +66,13 @@ const SESSION_MANAGEMENT_BY_EVENT_TYPE: Partial<Record<EventTypeConvention, Mana
 
 const SUGGESTIONS_BY_EVENT_TYPE: Partial<Record<EventTypeConvention, SuggestedSessionDefinition[]>> = {
     GRADUATION: [
-        { role: 'suggestion', sectionId: 'party-session', defaultTitleKey: 'suggestedSessions.GRADUATION.title', missingKey: 'notAdded', canCreate: true },
+        {
+            role: 'suggestion',
+            sectionId: 'party-session',
+            defaultTitleKey: 'suggestedSessions.GRADUATION.title',
+            missingKey: 'notAdded',
+            canCreate: true,
+        },
     ],
 };
 
