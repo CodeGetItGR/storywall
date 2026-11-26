@@ -149,7 +149,6 @@ It is a paid block like `coupleProfiles`: it needs the `save_my_date` module.
 graduates: z.object({
     title: text,
     graduates: z.array(graduateSchema).max(10),
-    desktopColumns: columns,
 }).strict()
 
 const graduateSchema = z.object({
@@ -163,7 +162,9 @@ const graduateSchema = z.object({
 
 - `lib/invitation/sections.ts`: the schema. One Graduates block per event: it does not join
   `MULTI_INSTANCE_SECTION_TYPES`.
-- `lib/invitation/newSection.ts`: a new block starts with one empty graduate.
+- `lib/invitation/newSection.ts`: a new block starts titled "Οι απόφοιτοί μας" with one empty
+  graduate. Like every other block's starting text, the title is Greek for every host (owner's
+  choice, 2026-11-26).
 - `lib/invitation/photoSlots.ts`: one photo slot per graduate (`graduates.{id}.photo`).
 - `lib/invitation/samples.ts` and `lib/saveMyDatePreview.ts`: a sample with two graduates.
 - `lib/feedLayout.ts`: `graduates` joins `PAID_FEED_SECTION_TYPES`.
@@ -177,9 +178,11 @@ const graduateSchema = z.object({
 ### 5.2 Look and editing
 
 The block reuses `PhotoPeopleSection` and `FamilyPhoto` (the godparents and sponsors blocks): a grid of round photos, each with
-the name, then degree and university in smaller text under it. On mobile, one or two per row; on
-desktop, `desktopColumns`. Editing follows the sponsors block: the host adds, removes and reorders
-graduates in the block's sheet, one graduate's fields at a time.
+the name, then degree and university in smaller text under it, two per row on every screen as the
+sponsors are. No columns setting: the existing people blocks store one that nothing draws (owner's
+choice, 2026-11-26). Editing follows the sponsors block: the host adds, removes and reorders
+graduates in the block's sheet, one graduate's fields at a time, and removes one with the shared
+**Delete / Διαγραφή** button, as for sponsors (owner's choice, 2026-11-26).
 
 ## 6. Then & now prompt
 
@@ -261,12 +264,11 @@ Wording for the new screens, approved by the owner on 2026-11-26.
 | Where | English | Greek |
 |---|---|---|
 | Add section list, block name | Graduates | Απόφοιτοι |
-| Block's default title | Our graduates | Οι απόφοιτοί μας |
+| Block's default title (Greek for every host, §5.1) | — | Οι απόφοιτοί μας |
 | Field label | Name | Όνομα |
 | Field label | Degree | Πτυχίο |
 | Field label | University | Πανεπιστήμιο |
 | Button | Add graduate | Προσθήκη αποφοίτου |
-| Button | Remove graduate | Αφαίρεση αποφοίτου |
 | Guest switch | Add frame | Προσθήκη κορνίζας |
 | Frame preview alt | Graduation frame preview | Προεπισκόπηση κορνίζας αποφοίτησης |
 | Notice when a photo can't be framed | Some photos were uploaded without the frame. | Κάποιες φωτογραφίες ανέβηκαν χωρίς κορνίζα. |
