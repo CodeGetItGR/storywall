@@ -436,10 +436,10 @@ export function sectionShell(section: InvitationSection, index: number, ctx: Ren
     };
 }
 
-// Theme art (main art, location icons) never outgrows its container.
 // Base width of a theme's top illustration, before its own scale.
 export const MAIN_ART_BASE = 420;
 
+// Theme art (main art, location icons) never outgrows its container.
 export function artImageStyle(base: number, scale: number, isIcon = false): CSSProperties {
     const size = Math.round(base * scale);
     return { width: `min(${size}px, ${isIcon ? 60 : 94}%)`, maxWidth: 'none', height: 'auto', maxHeight: 'none' };
