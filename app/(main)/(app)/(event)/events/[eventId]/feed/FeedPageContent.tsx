@@ -13,6 +13,7 @@ import { FeedPostRenderer } from '@/components/feed/FeedPostRenderer';
 import { GuestOfferCard } from '@/components/feed/guestOffer/GuestOfferCard';
 import { Header } from '@/components/feed/Header';
 import { HeOrShePromptCard } from '@/components/feed/HeOrShePromptCard';
+import { InvitationFooter } from '@/components/feed/InvitationFooter';
 import { FeedCoverBlock } from '@/components/feed/layout/FeedCoverBlock';
 import { FeedModeSwitch } from '@/components/feed/layout/FeedModeSwitch';
 import { FeedRsvpBlock } from '@/components/feed/layout/FeedRsvpBlock';
@@ -38,7 +39,7 @@ import { useFeedTop } from '@/hooks/useFeedTop';
 import { useHideMobileTabBar } from '@/hooks/useHideMobileTabBar';
 import { useHideMobileTabBarOnScroll } from '@/hooks/useHideMobileTabBarOnScroll';
 import { useRsvpPromptVisible } from '@/hooks/useRsvpPromptVisible';
-import { type FeedPageMode, feedPlaceHref } from '@/lib/feedMode';
+import { feedPlaceHref } from '@/lib/feedMode';
 import { hasFeedSection } from '@/lib/feedSections';
 import { cn } from '@/lib/utils';
 
@@ -59,10 +60,10 @@ export function FeedPageContent() {
     const { start: startEditing, finish: finishEditing, editPencil, cancelPill } = useFeedEditFocus(editMode.start, editMode.finish);
     const feedMode = useFeedMode(event);
     // null while the mode isn't known yet: the page keeps its loading state.
-    const pageMode: FeedPageMode | null = feedMode.available ? feedMode.mode : 'single';
-    // The invitation takes the whole phone: the switch to Social Feed brings the tab bar back.
-    const tabBarAway = pageMode === 'invitation';
-    useHideMobileTabBar(tabBarAway, 'feed-invitation');
+    const { pageMode } = feedMode;
+    // The invitation takes the whole phone: the switch to Social Feed brings the header and the tab bar back.
+    const invitation = pageMode === 'invitation';
+    useHideMobileTabBar(invitation, 'feed-invitation');
     // The Overview's Start editing (?edit=blocks) opens the invitation.
     const startFromLink = useCallback(() => {
         if (feedMode.available) feedMode.select('invitation');
@@ -108,7 +109,7 @@ export function FeedPageContent() {
             </section>
         ),
         description: event.description && (
-            <EventDescription eventId={event.id} description={event.description} keepShown={pageMode === 'invitation' || editMode.editing} />
+            <EventDescription eventId={event.id} description={event.description} keepShown={invitation || editMode.editing} />
         ),
         rsvp: shouldShowRSVP ? <FeedRsvpBlock eventId={eventId} deadline={event.schedule.rsvpDeadline ?? null} /> : null,
         moduleBlock,
@@ -153,12 +154,12 @@ export function FeedPageContent() {
     }
 
     // The mode lives on this device: until it's known the page keeps its loading state, so it never flashes the wrong mode.
-    if (pageMode === null) return <FeedPageSkeleton />;
+    if (pageMode === null) return <FeedPageSkeleton header={feedMode.expected === 'invitation' ? 'hidden' : 'shown'} />;
 
     return (
-        <div className="mx-auto flex w-full flex-col lg:max-w-2xl" data-tab-bar-away={tabBarAway || undefined}>
-            {/* Header */}
-            <Header countdownTime={event.schedule.startAt ? new Date(event.schedule.startAt).getTime() : 0} eventId={eventId} />
+        <div className="mx-auto flex w-full flex-col lg:max-w-2xl" data-tab-bar-away={invitation || undefined}>
+            {/* Header: the invitation has none */}
+            {!invitation && <Header countdownTime={event.schedule.startAt ? new Date(event.schedule.startAt).getTime() : 0} eventId={eventId} />}
             {/* Install */}
             <InstallAppBanner />
             {/* Invitation blocks, stories and RSVP */}
@@ -225,6 +226,9 @@ export function FeedPageContent() {
                     )}
                 </section>
             )}
+
+            {/* Footer */}
+            {invitation && <InvitationFooter />}
 
             <PostModal />
 

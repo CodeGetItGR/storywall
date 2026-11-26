@@ -10,7 +10,7 @@ vi.mock('@/components/feed/Countdown', () => ({ Countdown: () => <span>Countdown
 afterEach(cleanup);
 
 describe('Header', () => {
-    it('draws the page only on its fill, which fades out below it: a colour on the header itself would end in an edge', () => {
+    it('draws the page only on its fill: a colour on the header itself would hide the theme picture', () => {
         const { container } = render(<Header countdownTime={0} eventId="evt" />);
         const header = container.firstElementChild!;
         const fill = container.querySelector('.feed-backdrop-strip-fill')!;
