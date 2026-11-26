@@ -19,15 +19,17 @@ type FeedModeSectionProps = {
     placeholder?: ReactNode;
     // A tap on a pinned photo opens it full screen: the member page only.
     opensPhotos?: boolean;
+    // The host's edit mode, its preview and the Add section picture: the photo prompt draws even while the host can't post.
+    inEditor?: boolean;
 };
 
 // One of Feed mode's sections, by its type.
-export function FeedModeSection({ event, section, media, placeholder, opensPhotos = false }: FeedModeSectionProps) {
+export function FeedModeSection({ event, section, media, placeholder, opensPhotos = false, inEditor = false }: FeedModeSectionProps) {
     switch (section.type) {
         case 'feedSchedule':
             return <FeedScheduleSection event={event} placeholder={placeholder} />;
         case 'feedPrompt':
-            return <FeedPromptSection text={section.data.text} placeholder={placeholder} />;
+            return <FeedPromptSection text={section.data.text} placeholder={placeholder} inEditor={inEditor} />;
         case 'feedHeOrShe':
             return <FeedHeOrSheSection event={event} placeholder={placeholder} />;
         case 'feedPinned':

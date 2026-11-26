@@ -9,10 +9,12 @@ import type { MediaResolver } from '@/lib/invitation/render';
 import type { InvitationSection } from '@/lib/invitation/sections';
 
 // What FeedTopFrame draws for one of Feed mode's sections on the member page, where a tap opens a pinned photo.
-export function useFeedSectionPart(event: EventDetailResponseDto, media: MediaResolver) {
+// inEditor: edit mode's preview of that page.
+export function useFeedSectionPart(event: EventDetailResponseDto, media: MediaResolver, inEditor = false) {
     const scheduleCard = useFeedScheduleCardPart(event);
     return useCallback(
-        (section: InvitationSection) => scheduleCard(section) ?? <FeedModeSection event={event} section={section} media={media} opensPhotos />,
-        [event, media, scheduleCard],
+        (section: InvitationSection) =>
+            scheduleCard(section) ?? <FeedModeSection event={event} section={section} media={media} opensPhotos inEditor={inEditor} />,
+        [event, inEditor, media, scheduleCard],
     );
 }

@@ -231,7 +231,7 @@ export function FeedEditTop({
             ),
     };
 
-    const guestFeedSection = useFeedSectionPart(event, uploads.media);
+    const guestFeedSection = useFeedSectionPart(event, uploads.media, true);
     // The description starts 24 px down on the feed and a placeholder 12: the rest is room for their tools (FEED_TOOLS_ROOM).
     const placeholder = (name: string) => (
         <div className="pt-15">

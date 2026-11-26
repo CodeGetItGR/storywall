@@ -189,51 +189,66 @@ export function useComposerController(): ComposerController {
         setIsOpen(false);
     }
 
-    function handleFiles(fileList: FileList | null) {
-        if (!canComposePost) return;
-        if (!fileList || fileList.length === 0) return;
-        setSizeError(null);
-        setCountError(null);
+    const imageCount = images.length;
+    const handleFiles = useCallback(
+        (fileList: FileList | null, preview: boolean) => {
+            if (!canComposePost) return;
+            if (!fileList || fileList.length === 0) return;
+            setSizeError(null);
+            setCountError(null);
 
-        const incoming = Array.from(fileList);
-        const room = maxImages - images.length;
-        const accepted: File[] = [];
-        const oversizeNames: string[] = [];
+            const incoming = Array.from(fileList);
+            const room = maxImages - imageCount;
+            const accepted: File[] = [];
+            const oversizeNames: string[] = [];
 
-        for (const file of incoming) {
-            if (accepted.length >= room) break;
-            const byteLimit = file.type.startsWith('video/') ? maxVideoBytes : maxImageBytes;
-            if (file.size > byteLimit) {
-                oversizeNames.push(file.name);
-                continue;
+            for (const file of incoming) {
+                if (accepted.length >= room) break;
+                const byteLimit = file.type.startsWith('video/') ? maxVideoBytes : maxImageBytes;
+                if (file.size > byteLimit) {
+                    oversizeNames.push(file.name);
+                    continue;
+                }
+                accepted.push(file);
             }
-            accepted.push(file);
-        }
 
-        if (incoming.length > room) setCountError(t('maxImagesReached', { count: maxImages }));
-        if (oversizeNames.length > 0) {
-            setSizeError(
-                t('fileTooLarge', {
-                    filename: oversizeNames.join(', '),
-                    imageSize: formatBytes(maxImageBytes),
-                    videoSize: formatBytes(maxVideoBytes),
-                }),
-            );
-        }
+            if (incoming.length > room) setCountError(t('maxImagesReached', { count: maxImages }));
+            if (oversizeNames.length > 0) {
+                setSizeError(
+                    t('fileTooLarge', {
+                        filename: oversizeNames.join(', '),
+                        imageSize: formatBytes(maxImageBytes),
+                        videoSize: formatBytes(maxVideoBytes),
+                    }),
+                );
+            }
 
-        if (accepted.length > 0) {
-            const pending = accepted.map((file) => ({
-                key: `${file.name}-${file.size}-${Date.now()}-${Math.random()}`,
-                file,
-                previewUrl: URL.createObjectURL(file),
-                filterId: 'original',
-                status: 'pending' as const,
-            }));
-            setImages((prev) => [...prev, ...pending]);
-            setSelectedImageKey(pending[0].file.type.startsWith('video/') ? null : pending[0].key);
-            setMediaPreviewKey(pending[0].key);
-        }
-    }
+            if (accepted.length > 0) {
+                const pending = accepted.map((file) => ({
+                    key: `${file.name}-${file.size}-${Date.now()}-${Math.random()}`,
+                    file,
+                    previewUrl: URL.createObjectURL(file),
+                    filterId: 'original',
+                    status: 'pending' as const,
+                }));
+                setImages((prev) => [...prev, ...pending]);
+                setSelectedImageKey(pending[0].file.type.startsWith('video/') ? null : pending[0].key);
+                if (preview) setMediaPreviewKey(pending[0].key);
+            }
+        },
+        [canComposePost, imageCount, maxImageBytes, maxImages, maxVideoBytes, t],
+    );
+
+    // No full-screen preview: two dialogs opening in one go would each hide the other from screen readers.
+    const openPostWithFiles = useCallback(
+        (fileList: FileList | null) => {
+            if (!canComposePost || !fileList || fileList.length === 0) return;
+            setComposerMode('post');
+            setIsOpen(true);
+            handleFiles(fileList, false);
+        },
+        [canComposePost, handleFiles],
+    );
 
     function removeImage(key: string) {
         if (!canComposePost) return;
@@ -266,7 +281,7 @@ export function useComposerController(): ComposerController {
     }, [canComposePost, handlePickPhotos]);
 
     function handlePostFilesChange(event: React.ChangeEvent<HTMLInputElement>) {
-        handleFiles(event.target.files);
+        handleFiles(event.target.files, true);
         event.target.value = '';
     }
 
@@ -349,6 +364,7 @@ export function useComposerController(): ComposerController {
         () => ({
             openPostComposer,
             openPostImagePicker,
+            openPostWithFiles,
             openSongComposer,
             openAnnouncementComposer,
             openStoryCapture: storyComposer.open,
@@ -367,6 +383,7 @@ export function useComposerController(): ComposerController {
             openAnnouncementComposer,
             openPostComposer,
             openPostImagePicker,
+            openPostWithFiles,
             openSongComposer,
             storyComposer.open,
         ],
