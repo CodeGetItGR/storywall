@@ -62,6 +62,7 @@ const SECTION_STORIES: Record<Exclude<SectionType, FeedSectionType | FeedModeSec
     godparents: 'sections/family/PhotoPeopleSection.stories.tsx',
     weddingSponsors: 'sections/family/PhotoPeopleSection.stories.tsx',
     weddingSponsorsSimple: 'sections/couple/WeddingSponsorsSimpleSection.stories.tsx',
+    graduates: 'sections/family/GraduatesSection.stories.tsx',
     coupleProfiles: 'sections/couple/CoupleProfilesSection.stories.tsx',
     coupleProfilesSimple: 'sections/couple/CoupleProfilesSimpleSection.stories.tsx',
     ourStoryProposal: 'sections/couple/OurStoryProposalSection.stories.tsx',

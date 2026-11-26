@@ -493,6 +493,8 @@
 .smd-invitation .family-godparents { width: 100%; max-width: 380px; }
 .smd-invitation .family-godparents-list { display: grid; grid-template-columns: 1fr; gap: 36px; max-width: 380px; margin: 0 auto; }
 .smd-invitation .family-godparent { position: relative; }
+/* A graduate's degree and university, one line each under the name (KAN-302). */
+.smd-invitation .family-godparent .family-graduate-detail { display: block; margin-top: 2px; }
 
 /* Family: people without photos */
 .smd-invitation .family-godparents-simple-list { display: grid; gap: 8px; max-width: 320px; margin: 8px auto 0; }
