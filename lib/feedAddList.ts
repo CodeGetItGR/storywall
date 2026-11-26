@@ -44,14 +44,16 @@ const BAPTISM: readonly NewSectionType[] = [
 const SHOWER: readonly NewSectionType[] = ['invitation', ...BEFORE, 'faq', 'accommodation', 'gift', 'contact', ...AFTER];
 // Birthday, and the types that use its list (social event, private party, reunion): no gift.
 const BIRTHDAY: readonly NewSectionType[] = ['invitation', ...BEFORE, 'faq', 'accommodation', 'contact', ...AFTER];
+// Graduation: the birthday list with the Graduates block (KAN-302).
+const GRADUATION: readonly NewSectionType[] = ['invitation', 'graduates', ...BEFORE, 'faq', 'accommodation', 'contact', ...AFTER];
 
-const LISTS: Record<string, readonly NewSectionType[]> = { WEDDING, BAPTISM, BABY_SHOWER: SHOWER, GENDER_REVEAL: SHOWER };
+const LISTS: Record<string, readonly NewSectionType[]> = { WEDDING, BAPTISM, BABY_SHOWER: SHOWER, GENDER_REVEAL: SHOWER, GRADUATION };
 
 // A module whose Premium tile covers a section: with the module, the section leaves the list (spec item 15).
 const COVERED_BY: Partial<Record<NewSectionType, string>> = { gift: 'wishlist' };
 
 // Every type any list holds: these are the Save my date blocks the feed may add.
-export const FEED_ADD_TYPES: readonly NewSectionType[] = [...new Set([...WEDDING, ...BAPTISM, ...SHOWER, ...BIRTHDAY])];
+export const FEED_ADD_TYPES: readonly NewSectionType[] = [...new Set([...WEDDING, ...BAPTISM, ...SHOWER, ...BIRTHDAY, ...GRADUATION])];
 
 export function feedAddList(document: InvitationDocument, eventType: string, modules: readonly EventModuleResponseDto[]): NewSectionType[] {
     if (document.sections.length >= MAX_SECTIONS) return [];

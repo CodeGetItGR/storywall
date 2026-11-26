@@ -51,6 +51,7 @@ export const PAID_FEED_SECTION_TYPES = [
     'contact',
     'baby',
     'parentsPhoto',
+    'graduates',
 ] as const satisfies readonly SectionType[];
 
 // Shared with the server prefetch, so it lives here rather than in the 'use client' hook.

@@ -1,11 +1,14 @@
 import { describe, expect, it } from 'vitest';
 
+import { FEED_ADD_TYPES, feedAddList } from '@/lib/feedAddList';
+import { defaultFeedLayout, PAID_FEED_SECTION_TYPES } from '@/lib/feedLayout';
 import { graduateHasContent } from '@/lib/invitation/listContent';
 import { EDITABLE_LISTS } from '@/lib/invitation/listEdits';
 import { uniqueListItemIds } from '@/lib/invitation/listIds';
 import { createSection } from '@/lib/invitation/newSection';
 import { isPhotoField } from '@/lib/invitation/photoSlots';
 import { SAMPLE_SECTIONS } from '@/lib/invitation/samples';
+import { EVENT_TYPE_SECTIONS } from '@/lib/invitation/sectionRules';
 import { MULTI_INSTANCE_SECTION_TYPES, SECTION_DATA_SCHEMAS } from '@/lib/invitation/sections';
 
 const graduate = (id: string) => ({ id, name: 'Μαρία', degree: 'Πτυχίο Νομικής', university: 'ΑΠΘ' });
@@ -50,5 +53,39 @@ describe('the graduates section', () => {
         expect(graduateHasContent({ id: 'g', name: '', degree: '', university: '' })).toBe(false);
         expect(graduateHasContent({ id: 'g', name: '', degree: 'Νομική', university: '' })).toBe(true);
         expect(graduateHasContent({ id: 'g', name: '', degree: '', university: '', photo: { source: 'media', mediaId: 'm' } })).toBe(true);
+    });
+});
+
+describe('the Graduates block on the feed', () => {
+    it("is in a graduation's Add section list, in the owner's order, and nobody else's", () => {
+        expect(feedAddList(defaultFeedLayout(), 'GRADUATION', [])).toEqual([
+            'invitation',
+            'graduates',
+            'date',
+            'countdown',
+            'locations',
+            'gallery',
+            'faq',
+            'accommodation',
+            'contact',
+            'photo',
+            'blank',
+        ]);
+        expect(feedAddList(defaultFeedLayout(), 'BIRTHDAY', [])).not.toContain('graduates');
+        expect(FEED_ADD_TYPES).toContain('graduates');
+    });
+
+    it('is offered once', () => {
+        const layout = { ...defaultFeedLayout(), sections: [...defaultFeedLayout().sections, SAMPLE_SECTIONS.graduates] };
+        expect(feedAddList(layout, 'GRADUATION', [])).not.toContain('graduates');
+    });
+
+    it('needs Save my date', () => {
+        expect(PAID_FEED_SECTION_TYPES).toContain('graduates');
+    });
+
+    it("joins the birthday's sections for a graduation invitation", () => {
+        expect(EVENT_TYPE_SECTIONS.GRADUATION.default).toEqual(EVENT_TYPE_SECTIONS.BIRTHDAY.default);
+        expect(EVENT_TYPE_SECTIONS.GRADUATION.optional).toEqual([...EVENT_TYPE_SECTIONS.BIRTHDAY.optional, 'graduates']);
     });
 });
