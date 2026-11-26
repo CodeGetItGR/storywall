@@ -41,7 +41,8 @@ Follows the REUNION type (spec `2026-10-06-reunion-event-type-design.md` in the 
 - Java catalogs, kept in line with the migration by the existing seed tests:
   `EventTypeModuleDefaults`, `EventTypeMemberRoleDefaults`, `ReactionTypeCatalogDefaults`,
   `EventTypeVoicePackDefaults`.
-- `invitation-document.schema.json` gains the `graduates` section (§5).
+- `invitation-document.schema.json` gains the `graduates` section (§5), and
+  `FeedLayoutRules.PAID_TYPES` gains `graduates` so saving a layout with it needs Save my date.
 
 ### Rollout
 
@@ -99,15 +100,25 @@ Graduation event (§3), as REUNION's does.
 
 ### 4.2 Member roles (`EventTypeMemberRoleDefaults`, sort order = list index)
 
-| Key | Emoji | English | Greek |
-|---|---|---|---|
-| GRADUATE | 🎓 | Graduate | Απόφοιτος / Απόφοιτη |
-| FAMILY | 🏡 | Family | Οικογένεια |
-| FRIEND | 🥂 | Friend | Φίλος / Φίλη |
-| FELLOW_STUDENT | 📚 | Fellow student | Συμφοιτητής / Συμφοιτήτρια |
-| PROFESSOR | 🍎 | Professor | Καθηγητής / Καθηγήτρια |
+| Key | Emoji | English | Greek | Wishbook book section (EN / EL) |
+|---|---|---|---|---|
+| GRADUATE | 🎓 | Graduate | Απόφοιτος / Απόφοιτη | The graduates / Οι απόφοιτοι |
+| FAMILY | 🏡 | Family | Οικογένεια | Our family / Η οικογένειά μας (existing) |
+| FRIEND | 🥂 | Friend | Φίλος / Φίλη | Our friends / Οι φίλοι μας (existing) |
+| FELLOW_STUDENT | 📚 | Fellow student | Συμφοιτητής / Συμφοιτήτρια | Our fellow students / Οι συμφοιτητές μας |
+| PROFESSOR | 🍎 | Professor | Καθηγητής / Καθηγήτρια | Our professors / Οι καθηγητές μας |
 
-No holder limit and none host-only, so several graduates can each hold GRADUATE.
+No holder limit and none host-only, so several graduates can each hold GRADUATE. GRADUATION allows
+custom roles (`EventTypeMemberRoleDefaults.CUSTOM_ALLOWED`), as BIRTHDAY and REUNION do.
+
+### 4.3 Schedule
+
+A new Graduation event's first schedule item is **Ceremony / Ορκωμοσία**
+(`event.session.main.title.GRADUATION` in both `messages*.properties`, and the frontend's
+`initialSessions.GRADUATION.title`). Like weddings and baptisms, it offers a second item,
+**Dinner / Δείπνο** (`secondarySessions.GRADUATION.title`), through a `CREATE_EVENT_CATALOG` entry
+in `lib/createEventCatalog.ts`, with form labels: name **Event name / Όνομα εκδήλωσης**, date
+**Ceremony date / Ημερομηνία ορκωμοσίας**, place **Ceremony location / Τοποθεσία ορκωμοσίας**.
 
 ## 5. The Graduates feed block
 
@@ -142,7 +153,8 @@ const graduateSchema = z.object({
   `accommodation`, `contact`.
 - `lib/invitation/sectionRules.ts`: a GRADUATION entry: the BIRTHDAY default and optional lists, plus
   `graduates` as optional.
-- Backend `invitation-document.schema.json`: the same shape, so saved layouts validate.
+- Backend `invitation-document.schema.json`: the same shape, so saved layouts validate; and
+  `FeedLayoutRules.PAID_TYPES` gains `graduates`.
 
 ### 5.2 Look and editing
 
@@ -172,14 +184,16 @@ downloads included. Videos are never framed.
 
 ### 7.1 The host's choice (backend)
 
-- New column `events.upload_frame VARCHAR(20) NULL` with a CHECK listing the designs. Null means no
-  frame is offered.
-- Java enum `UploadFrame { CLASSIC, LAUREL, CONFETTI }`.
-- On create, a GRADUATION event gets `CLASSIC`; every other type gets null.
-- The host changes it through the existing event update (`EventRequestDto.uploadFrame`). Only hosts
-  can change it; any value outside the enum is a 400.
-- It is returned on the event response and on the public event data the QR upload page reads, so
-  signed-out QR uploaders see the switch too.
+- New column `events.upload_frame VARCHAR(20) NOT NULL DEFAULT 'NONE'` with a CHECK listing the
+  values. `NONE` means no frame is offered; every existing event gets it.
+- Java enum `UploadFrame { NONE, CLASSIC, LAUREL, CONFETTI }`.
+- On create, a GRADUATION event gets `CLASSIC`; every other type gets `NONE`.
+- The host changes it with `PATCH /api/events/{id}` (`EventPatchDto.uploadFrame`). A missing field
+  leaves it unchanged, so the value `NONE` (not null) turns it off. Only hosts can patch; a value
+  outside the enum is a 400. `PUT` (the full update) does not carry it, so a full update never resets it.
+- It is returned on the event responses and on `GET /api/qr/{token}` (`QrLinkResolutionDto`), which
+  also gains `eventStartAt` and `eventTimezone`, so signed-out QR uploaders see the switch and the
+  frame shows the date. Like the title, these are only filled for an active code.
 - Any type may hold a frame, but the host setting is only shown for GRADUATION (§7.3). Other types
   can get it later without a migration.
 
@@ -211,7 +225,7 @@ landscape photos and keeps the photo's own aspect ratio.
 ## 8. Frontend type wiring
 
 - `lib/api/types.ts`: `GRADUATION` in `EventTypeConvention`; `uploadFrame` on the event types.
-- `lib/createEventCatalog.ts`: GRADUATION's fallback photo is REUNION's
+- `lib/createEventCatalog.ts`: the GRADUATION catalog entry (§4.3); its fallback photo is REUNION's
   (`friends-and-family-celebrating-at-sunset.webp`) until an admin uploads one (§11, item 1).
 - `lib/createEventFeatures.ts`: GRADUATION → `gallery`, `wishbook`, `rsvp`, `stories`, `co_hosts`,
   `schedule`, `posts`.
