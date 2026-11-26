@@ -40,6 +40,8 @@ export function GalleryUploadSection({
 }: GalleryUploadSectionProps) {
     const t = useTranslations('GalleryPage');
     const uploadAccept = useUploadAccept();
+    // The upload sends the list it was started with and then clears it, so the list can't change meanwhile.
+    const pickerEnabled = canUpload && !isUploading;
 
     return (
         <section className="mb-5 rounded-md border border-border p-4">
@@ -52,12 +54,12 @@ export function GalleryUploadSection({
                 <label
                     className={cn(
                         'relative inline-flex cursor-pointer items-center justify-center gap-2 rounded-full px-4 py-2.5 text-sm font-semibold transition-opacity',
-                        canUpload ? 'text-white bg-gradient-brand hover:opacity-90' : 'cursor-not-allowed bg-surface-muted text-ink-muted opacity-60',
+                        pickerEnabled ? 'text-white bg-gradient-brand hover:opacity-90' : 'cursor-not-allowed bg-surface-muted text-ink-muted opacity-60',
                     )}
                 >
                     <UploadCloud className="h-4 w-4" />
                     {t('chooseFiles')}
-                    <input type="file" accept={uploadAccept.media} multiple disabled={!canUpload} onChange={onFilesChange} className="sr-only" />
+                    <input type="file" accept={uploadAccept.media} multiple disabled={!pickerEnabled} onChange={onFilesChange} className="sr-only" />
                 </label>
             </div>
 
@@ -78,7 +80,8 @@ export function GalleryUploadSection({
                             <button
                                 type="button"
                                 onClick={onClearSelection}
-                                className="rounded-full px-3 py-1.5 text-xs font-semibold text-ink-muted transition-colors hover:bg-card hover:text-ink"
+                                disabled={isUploading}
+                                className="rounded-full px-3 py-1.5 text-xs font-semibold text-ink-muted transition-colors hover:bg-card hover:text-ink disabled:opacity-50"
                             >
                                 {t('clear')}
                             </button>
