@@ -14,6 +14,7 @@ const mocks = vi.hoisted(() => ({
     addSelected: vi.fn(),
 }));
 
+vi.mock('@/hooks/useGalleryFrameSetting', () => ({ useGalleryFrameSetting: () => null }));
 vi.mock('@/hooks/useModuleCopy', () => {
     const copy = (moduleKey: string) => ({ name: moduleKey, description: `${moduleKey} description`, cardLabel: moduleKey, Icon: () => null });
     return {
@@ -30,7 +31,9 @@ vi.mock('@/components/gallery/GalleryUploadSection', () => ({ GalleryUploadSecti
 vi.mock('@/components/gallery/MemberArchiveModal', () => ({ MemberArchiveModal: () => null }));
 vi.mock('@/components/gallery/GallerySelectionBar', () => ({ GallerySelectionBar: () => null }));
 vi.mock('@/components/gallery/GalleryMediaGrid', () => ({
-    GalleryMediaGrid: ({ printedIds }: { printedIds?: Set<string> }) => <div data-testid="grid" data-printed={printedIds ? printedIds.size : 'none'} />,
+    GalleryMediaGrid: ({ printedIds }: { printedIds?: Set<string> }) => (
+        <div data-testid="grid" data-printed={printedIds ? printedIds.size : 'none'} />
+    ),
 }));
 vi.mock('@/components/gallery/GallerySelectionActions', () => ({
     GallerySelectionActions: ({ canDownload, onPrintSelected }: { canDownload?: boolean; onPrintSelected?: () => void }) => (

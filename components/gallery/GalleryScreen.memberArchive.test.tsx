@@ -12,6 +12,7 @@ const mocks = vi.hoisted(() => ({
     modalMounts: 0,
 }));
 
+vi.mock('@/hooks/useGalleryFrameSetting', () => ({ useGalleryFrameSetting: () => null }));
 vi.mock('@/hooks/useModuleCopy', () => {
     const copy = (moduleKey: string) => ({ name: moduleKey, description: `${moduleKey} description`, cardLabel: moduleKey, Icon: () => null });
     return {
