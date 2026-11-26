@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { frameImageForUpload, framePhotosForUpload, shrinkImageForUpload, shrinkImagesForUpload } from '@/lib/uploadImageResize';
+import { frameImageForUpload, framePhotosForUpload, isAnimatedImage, shrinkImageForUpload, shrinkImagesForUpload } from '@/lib/uploadImageResize';
 
 const drawImage = vi.fn();
 let encoded: Blob | null;
@@ -200,5 +200,69 @@ describe('framePhotosForUpload', () => {
         expect(result.files[1]).toBe(gif);
         expect(result.files[2]).toBe(video);
         expect(result.unframed).toBe(1);
+    });
+});
+
+function bytesFile(name: string, type: string, bytes: number[]): File {
+    return new File([new Uint8Array(bytes)], name, { type });
+}
+
+const ascii = (text: string) => Array.from(text).map((c) => c.charCodeAt(0));
+const be32 = (n: number) => [(n >>> 24) & 255, (n >>> 16) & 255, (n >>> 8) & 255, n & 255];
+const le32 = (n: number) => [n & 255, (n >>> 8) & 255, (n >>> 16) & 255, (n >>> 24) & 255];
+const PNG_SIGNATURE = [137, 80, 78, 71, 13, 10, 26, 10];
+const pngChunk = (type: string, data: number[]) => [...be32(data.length), ...ascii(type), ...data, 0, 0, 0, 0];
+const ihdr = pngChunk('IHDR', new Array(13).fill(0));
+const webpChunk = (type: string, data: number[]) => [...ascii(type), ...le32(data.length), ...data, ...(data.length % 2 ? [0] : [])];
+const webp = (...chunks: number[][]) => [...ascii('RIFF'), ...le32(4 + chunks.flat().length), ...ascii('WEBP'), ...chunks.flat()];
+const vp8xFlags = (flags: number) => [flags, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+
+describe('isAnimatedImage', () => {
+    it('says a PNG is animated only when an acTL chunk comes before its image data', async () => {
+        const still = bytesFile('a.png', 'image/png', [...PNG_SIGNATURE, ...ihdr, ...pngChunk('IDAT', [1, 2, 3]), ...pngChunk('IEND', [])]);
+        const apng = bytesFile('b.png', 'image/png', [
+            ...PNG_SIGNATURE,
+            ...ihdr,
+            ...pngChunk('acTL', [0, 0, 0, 2, 0, 0, 0, 0]),
+            ...pngChunk('IDAT', [1, 2, 3]),
+        ]);
+        expect(await isAnimatedImage(still)).toBe(false);
+        expect(await isAnimatedImage(apng)).toBe(true);
+    });
+
+    it('says a WebP is animated by its VP8X animation flag or an ANIM chunk', async () => {
+        const vp8 = bytesFile('a.webp', 'image/webp', webp(webpChunk('VP8 ', [1, 2, 3, 4])));
+        const staticVp8x = bytesFile('b.webp', 'image/webp', webp(webpChunk('VP8X', vp8xFlags(0x10)), webpChunk('VP8L', [1, 2])));
+        const flagged = bytesFile('c.webp', 'image/webp', webp(webpChunk('VP8X', vp8xFlags(0x12)), webpChunk('ANIM', [0, 0, 0, 0, 0, 0])));
+        const animChunkOnly = bytesFile('d.webp', 'image/webp', webp(webpChunk('VP8X', vp8xFlags(0)), webpChunk('ANIM', [0, 0, 0, 0, 0, 0])));
+        expect(await isAnimatedImage(vp8)).toBe(false);
+        expect(await isAnimatedImage(staticVp8x)).toBe(false);
+        expect(await isAnimatedImage(flagged)).toBe(true);
+        expect(await isAnimatedImage(animChunkOnly)).toBe(true);
+    });
+
+    it('treats other types, short files and junk as not animated', async () => {
+        expect(await isAnimatedImage(bytesFile('a.jpg', 'image/jpeg', [1, 2, 3]))).toBe(false);
+        expect(await isAnimatedImage(bytesFile('a.png', 'image/png', [1, 2]))).toBe(false);
+        expect(await isAnimatedImage(bytesFile('a.webp', 'image/webp', [1, 2]))).toBe(false);
+    });
+});
+
+describe('framePhotosForUpload animated images', () => {
+    it('sends an animated PNG and WebP as they were and counts them as unframed', async () => {
+        const apng = bytesFile('a.png', 'image/png', [
+            ...PNG_SIGNATURE,
+            ...ihdr,
+            ...pngChunk('acTL', [0, 0, 0, 2, 0, 0, 0, 0]),
+            ...pngChunk('IDAT', [1]),
+        ]);
+        const animatedWebp = bytesFile('b.webp', 'image/webp', webp(webpChunk('VP8X', vp8xFlags(0x02))));
+
+        const result = await framePhotosForUpload([apng, animatedWebp], 'CLASSIC', { title: 'Maria', date: '' }, 2560);
+
+        expect(result.files[0]).toBe(apng);
+        expect(result.files[1]).toBe(animatedWebp);
+        expect(result.unframed).toBe(2);
+        expect(createImageBitmap).not.toHaveBeenCalled();
     });
 });

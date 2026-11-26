@@ -64,9 +64,7 @@ describe('AnonymousQrMediaUploadForm frame', () => {
     it('keeps the unframed notice when a retry of the refused photos has none', async () => {
         const gif = new File(['g'], 'a.gif', { type: 'image/gif' });
         const jpeg = new File(['j'], 'b.jpg', { type: 'image/jpeg' });
-        prepare
-            .mockResolvedValueOnce({ files: [gif, jpeg], notice: 'UploadFrame.unframed' })
-            .mockResolvedValueOnce({ files: [jpeg], notice: null });
+        prepare.mockResolvedValueOnce({ files: [gif, jpeg], notice: 'UploadFrame.unframed' }).mockResolvedValueOnce({ files: [jpeg], notice: null });
         mutateAsync
             .mockResolvedValueOnce({ created: [{ id: 'm', originalFilename: 'a.gif' }], failed: [{ filename: 'b.jpg', errorCode: 'X' }] })
             .mockResolvedValueOnce({ created: [{ id: 'n', originalFilename: 'b.jpg' }], failed: [] });
