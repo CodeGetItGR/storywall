@@ -134,6 +134,10 @@ GRADUATION:
 An empty row of any of the three says **Not added yet. / Δεν έχει προστεθεί ακόμη.** Wedding and
 baptism rows keep their current wording.
 
+The host's setup checklist and settings page reuse the existing **Add venue details / Προσθήκη
+στοιχείων χώρου** and **Edit venue details / Επεξεργασία στοιχείων χώρου** links, which open the
+Dinner (owner's choice, 2026-11-26).
+
 ## 5. The Graduates feed block
 
 A new Save my date section type, `graduates`, offered in the feed's Add section list for GRADUATION.
@@ -186,9 +190,12 @@ New GRADUATION events start with the existing `feedPrompt` block filled in:
 
 Both are under `FEED_PROMPT_MAX_LENGTH` (80). The host can edit or hide it like any prompt.
 
-`defaultFeedLayout()` takes the event type: `defaultFeedLayout(eventType?: string)`. For GRADUATION
-the `feedPrompt` block starts visible with the text in the event's language; every other type is
-unchanged. Every caller that knows the event passes its type; the rest keep today's layout.
+Events store no language, so the text follows the viewer (owner's choice, 2026-11-26). A new event has
+no saved layout and the feed draws `defaultFeedLayout()` in the browser; for GRADUATION that layout
+also holds a shown `feedPrompt` block, in each viewer's app language. When the host first saves the
+feed, the prompt is saved with it in the host's language, and from then on it is an ordinary prompt.
+`defaultFeedLayout(promptText?)` takes the text, which `hooks/useFeedStarterPrompt` gives for
+GRADUATION; every other type is unchanged.
 
 ## 7. Graduation photo frame
 
