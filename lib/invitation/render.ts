@@ -6,6 +6,7 @@ import type { CanvasTools } from '@/lib/invitation/canvasTools';
 import { colorInputValue } from '@/lib/invitation/colorInput';
 import type { InvitationDocument } from '@/lib/invitation/document';
 import type { InvitationElement } from '@/lib/invitation/elements';
+import type { EventPlace } from '@/lib/invitation/eventPlaces';
 import { INVITATION_LABELS, type InvitationLabels, invitationLanguage } from '@/lib/invitation/labels';
 import type { PhotoTone } from '@/lib/invitation/photoContrast';
 import type { ImageRef, TextStyle } from '@/lib/invitation/primitives';
@@ -50,8 +51,11 @@ export type RenderContext = {
     presetMode: boolean;
     // A preset the host picked replaces every font on the page.
     forcePreset: boolean;
-    // The date the countdown counts to: the first date section's, hidden or not.
+    // The date the countdown counts to: the first date section's, hidden or not; on the feed, the event's.
     eventIso?: string;
+    // The customizable feed (KAN-293): Date, Countdown and Places read the event, whatever the sections hold. iso is
+    // null while the event has no date.
+    eventDetails?: { iso: string | null; places: readonly EventPlace[] };
     // Sections touching a transition's art.
     transitionAdjacent: ReadonlySet<string>;
     // Fixed labels in the invitation's own language.

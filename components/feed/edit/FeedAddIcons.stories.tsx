@@ -2,7 +2,17 @@ import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 
 const SECTIONS = [
     'invitation',
+    'coupleNames',
     'coupleProfiles',
+    'coupleProfilesSimple',
+    'parentsSimple',
+    'weddingSponsorsSimple',
+    'coupleContact',
+    'date',
+    'countdown',
+    'locations',
+    'photo',
+    'blank',
     'parents',
     'weddingSponsors',
     'gallery',

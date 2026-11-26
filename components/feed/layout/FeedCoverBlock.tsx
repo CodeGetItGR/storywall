@@ -20,10 +20,12 @@ type FeedCoverBlockProps = {
     clearPill?: boolean;
     // In edit mode the cover takes no taps and draws no buttons of its own.
     editing?: boolean;
+    // The round place buttons; left out while the invitation shows its own Places section (KAN-293).
+    places?: boolean;
 };
 
 // The feed's cover + title block (feedCover): the banner with the session and gift buttons.
-export function FeedCoverBlock({ event, isHost, wishlist, thumbnail, clearPill, editing = false }: FeedCoverBlockProps) {
+export function FeedCoverBlock({ event, isHost, wishlist, thumbnail, clearPill, editing = false, places = true }: FeedCoverBlockProps) {
     const t = useTranslations('FeedPage');
     const cover = useFeedCoverBlock(event, wishlist);
     const addPhotoHref = isHost && !editing ? coverPhotoSettingsHref(event.id) : undefined;
@@ -43,7 +45,7 @@ export function FeedCoverBlock({ event, isHost, wishlist, thumbnail, clearPill, 
                 actions={
                     !editing && (
                         <>
-                            <EventSessionActionButtons event={event} />
+                            {places && <EventSessionActionButtons event={event} />}
                             {/* Gift account */}
                             {cover.giftHref && (
                                 <AppLink

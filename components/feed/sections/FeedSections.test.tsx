@@ -12,7 +12,9 @@ import en from '@/messages/en.json';
 import { ComposerContext, type ComposerContextValue } from '@/providers/composer/ComposerContext';
 
 const schedule = vi.hoisted(() => ({ items: null as FeedScheduleItem[] | null }));
-vi.mock('@/hooks/useFeedSchedule', () => ({ useFeedSchedule: () => schedule.items }));
+vi.mock('@/hooks/useFeedSchedule', () => ({
+    useFeedScheduleDays: () => (schedule.items ? [{ day: '2030-06-20', label: null, items: schedule.items }] : []),
+}));
 const rsvp = vi.hoisted(() => ({ link: null as ((sessionId: string) => FeedScheduleRsvpLink) | null }));
 vi.mock('@/hooks/useFeedScheduleRsvp', () => ({ useFeedScheduleRsvp: () => rsvp.link }));
 vi.mock('@/hooks/useUploadAccept', () => ({ useUploadAccept: () => ({ media: 'image/*' }) }));
@@ -48,7 +50,8 @@ describe('feed sections', () => {
             { id: 'b', time: '19:00', title: 'Party', place: null, state: 'now', rsvpEnabled: false },
         ];
         renderSection(<FeedModeSection media={media} event={event} section={section('feedSchedule', {})} />);
-        expect(screen.getByRole('heading', { name: en.InvitationEditor.sectionNames.feedSchedule })).toBeTruthy();
+        // Named after the Schedule module (KAN-293).
+        expect(screen.getByRole('heading', { name: 'schedule' })).toBeTruthy();
         expect(screen.getByText(en.ManagePage.journey.now)).toBeTruthy();
         expect(screen.getByText('Church').closest('li')?.dataset.state).toBe('done');
     });

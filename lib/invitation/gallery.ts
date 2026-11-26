@@ -51,6 +51,10 @@ export function stepGalleryIndex(index: number, direction: 1 | -1, count: number
 export function isEmptyForGuests(section: InvitationSection, ctx: RenderContext): boolean {
     if (section.type === 'gallery') return !ctx.canvasTools?.gallery && galleryImages(section.data, ctx).length === 0;
     if (section.type === 'photo') return !ctx.canvasTools?.photo && !resolveImage(section.data.photo, ctx);
+    // On the feed these read the event (KAN-293): nothing to show without its date, or without a place.
+    const details = ctx.eventDetails;
+    if (details && (section.type === 'date' || section.type === 'countdown')) return details.iso === null;
+    if (details && section.type === 'locations') return details.places.length === 0;
     if (section.type === 'photoFrame' || section.type === 'blank') {
         const { elements } = section;
         return elements.length > 0 && elements.every((element) => element.kind === 'photoFrame' && !isFrameShown(element, ctx));
