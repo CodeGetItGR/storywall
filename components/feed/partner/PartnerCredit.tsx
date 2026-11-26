@@ -3,10 +3,10 @@ import { PartnerCardLink } from '@/components/feed/partner/PartnerCardLink';
 import { PartnerLogo } from '@/components/feed/partner/PartnerLogo';
 import type { PartnerBrandingCardContent } from '@/hooks/usePartnerBrandingCard';
 
-// Variant CREDIT: a small credit line with the logo.
+// Variant CREDIT: a small credit line with the logo, straight on the page.
 export function PartnerCredit({ content }: { content: PartnerBrandingCardContent }) {
     return (
-        <article className="border-b border-event-card-line bg-event-card px-4 py-3">
+        <article className="on-page my-3 px-4 lg:my-4">
             <PartnerCardLink
                 href={content.href}
                 newTabLabel={content.newTabLabel}
