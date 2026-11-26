@@ -1253,6 +1253,9 @@ export interface FeedLayoutSaveResponseDto {
     updatedAt: string;
 }
 
+// The frame guests may add to the photos they upload (KAN-304). NONE: no frame is offered.
+export type UploadFrame = 'NONE' | 'CLASSIC' | 'LAUREL' | 'CONFETTI';
+
 // Returned by GET /api/events (list) and POST /api/events — flat summary shape.
 // GET /api/events/{id} returns EventDetailResponseDto instead (see below).
 export interface EventResponseDto {
@@ -1261,6 +1264,8 @@ export interface EventResponseDto {
     subtitle: string | null;
     description: string | null;
     eventType: EventTypeConvention;
+    // Missing from a backend older than this field: read it as NONE.
+    uploadFrame?: UploadFrame;
     visibility: EventVisibility;
     // null on a lite event without a date (KAN-108), with endAt and timezone.
     startAt: string | null;
@@ -1348,6 +1353,8 @@ export interface EventDetailResponseDto {
     subtitle: string | null;
     description: string | null;
     eventType: EventTypeConvention;
+    // Missing from a backend older than this field: read it as NONE.
+    uploadFrame?: UploadFrame;
     visibility: EventVisibility;
     schedule: EventScheduleDto;
     location: EventLocationDto;
@@ -3352,6 +3359,10 @@ export interface QrLinkResolutionDto {
     eventId?: string;
     eventTitle?: string;
     eventSubtitle?: string | null;
+    // Only for an active code, like the title. Missing from a backend older than these fields (KAN-304).
+    uploadFrame?: UploadFrame;
+    eventStartAt?: string | null;
+    eventTimezone?: string | null;
     coverMediaId?: string | null;
     // Read the cover from here: the scanner isn't a member, so GET /api/medias/{id} refuses them.
     // Only for drawing it: uploaderMemberId, anonymousUploaderName, originalFilename and storageKey come back null, metadata {}.
@@ -3417,6 +3428,8 @@ export interface EventPatchDto {
     coverMediaId?: string;
     brandingSettings?: Record<string, unknown>;
     rsvpDeadline?: string;
+    // NONE turns the frame off; leave it out to keep the current one.
+    uploadFrame?: UploadFrame;
     // DRAFT only: switches the draft to another of its plan's durations.
     // Sending the current one back is a no-op. (keepOriginals was removed
     // 2026-09-23; sending it is a 400.)
