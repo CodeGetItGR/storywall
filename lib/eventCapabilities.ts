@@ -1,6 +1,7 @@
 import type { EventCapabilitiesDto, EventDetailResponseDto, EventModuleResponseDto } from '@/lib/api/types';
-import { isEventDeleted } from '@/lib/eventLifecycle';
+import { isEventDeleted, isModuleAvailable } from '@/lib/eventLifecycle';
 import { routes } from '@/lib/routes';
+import { SAVE_MY_DATE_MODULE_KEY } from '@/lib/saveMyDateRelease';
 
 type CapabilitiesInput = Pick<EventDetailResponseDto, 'id' | 'status' | 'deletedAt' | 'suspended' | 'capabilities' | 'modules'>;
 
@@ -8,7 +9,7 @@ export type LiteModulePage = 'gallery' | 'wishbook';
 
 // What an event can do, as the backend works it out. A suspended event shows only the suspended view, so it
 // has none. A demo snapshot taken before the backend sent them is a full event, which always has a date.
-export function eventCapabilities(event: CapabilitiesInput | null | undefined): EventCapabilitiesDto | null {
+export function eventCapabilities(event: Pick<CapabilitiesInput, 'capabilities' | 'suspended'> | null | undefined): EventCapabilitiesDto | null {
     if (!event || event.suspended) return null;
     return event.capabilities ?? FULL_CAPABILITIES;
 }
@@ -28,6 +29,11 @@ const FULL_CAPABILITIES: EventCapabilitiesDto = {
 export function isLiveLiteEvent(event: CapabilitiesInput | null | undefined): boolean {
     if (!event || event.status === 'DRAFT' || isEventDeleted(event)) return false;
     return eventCapabilities(event)?.kind === 'LITE';
+}
+
+// Sold as an invitation alone: Save my date without the feed (posts).
+export function isInvitationOnly(event: Pick<CapabilitiesInput, 'capabilities' | 'suspended' | 'modules'>): boolean {
+    return isModuleAvailable(event.modules, SAVE_MY_DATE_MODULE_KEY) && eventCapabilities(event)?.takesGuests === false;
 }
 
 // The module pages a lite event has: the gallery and/or the wishbook it paid for. The Bundle has both.

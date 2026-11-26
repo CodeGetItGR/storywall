@@ -6724,7 +6724,8 @@
     "FeedLayout": {
         "invitation": "Invitation",
         "socialFeed": "Social Feed",
-        "membersOnly": "Members only",
+        "madeWith": "Made with",
+        "membersOnly":"Members only",
         "membersOnlyNote": "Only people logged in to their account see this section.",
         "locked": {
             "join": "Sign in and join the event",

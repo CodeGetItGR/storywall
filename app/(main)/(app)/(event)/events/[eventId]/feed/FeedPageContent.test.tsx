@@ -77,7 +77,8 @@ vi.mock('@/components/feed/FeedEmptyState', () => ({ FeedEmptyState: () => null 
 vi.mock('@/components/feed/EventInfoSection', () => ({ EventInfoSection: () => <div data-testid="date-row" /> }));
 vi.mock('@/components/feed/FeedPageSkeleton', () => ({ FeedPageSkeleton: () => <div data-testid="skeleton" /> }));
 vi.mock('@/components/feed/FeedPostRenderer', () => ({ FeedPostRenderer: () => null }));
-vi.mock('@/components/feed/Header', () => ({ Header: () => null }));
+vi.mock('@/components/feed/Header', () => ({ Header: () => <div data-testid="header" /> }));
+vi.mock('@/components/feed/InvitationFooter', () => ({ InvitationFooter: () => <div data-testid="footer" /> }));
 vi.mock('@/components/feed/PostModal', () => ({ PostModal: () => null }));
 vi.mock('@/components/feed/PublishQueueCards', () => ({ PublishQueueCards: () => null }));
 vi.mock('@/components/feed/RsvpPrompt', () => ({ RsvpPrompt: () => <div data-testid="rsvp" /> }));
@@ -95,7 +96,7 @@ vi.mock('@/components/feed/HeOrShePromptCard', () => ({ HeOrShePromptCard: () =>
 vi.mock('@/components/feed/sections/FeedHeOrSheSection', () => ({ FeedHeOrSheSection: () => <span>section card</span> }));
 vi.mock('@/providers/composer/ComposerContext', async (importOriginal) => ({
     ...(await importOriginal<typeof import('@/providers/composer/ComposerContext')>()),
-    useComposer: () => ({ openPostComposer: vi.fn(), canComposePost: true }),
+    useComposer: () => ({ openPostComposer: vi.fn(), openPostWithFiles: vi.fn(), canComposePost: true }),
 }));
 vi.mock('@/components/feed/quickActions/FeedQuickActions', () => ({ FeedQuickActions: () => null }));
 
@@ -162,11 +163,12 @@ type FeedOptions = {
     stories?: boolean;
     startAt?: string | null;
     posts?: boolean;
+    takesGuests?: boolean;
 };
 
 function renderFeed(
     illustrationUrl: string | null,
-    { description = null, endAt = null, layout, flag = false, isHost = false, modules = [], stories = false, startAt = null, posts = false }: FeedOptions = {},
+    { description = null, endAt = null, layout, flag = false, isHost = false, modules = [], stories = false, startAt = null, posts = false, takesGuests = true }: FeedOptions = {},
 ) {
     // staleTime: the seeded layout counts as fresh, so nothing is fetched for real.
     const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false, staleTime: Infinity } } });
@@ -180,6 +182,7 @@ function renderFeed(
         hosts: [],
         partnerBrandingPrompt: null,
         modules,
+        capabilities: { takesGuests },
         coverMedia: null,
         description,
         theme: illustrationUrl ? { presetKey: 'dino', backgroundColor: '#aabbcc', illustrationUrl } : null,
@@ -306,6 +309,31 @@ describe('FeedPageContent layout', { timeout: 15_000 }, () => {
         fireEvent.click(socialFeed);
         expect(tabBar.away).toBe(false);
         expect(document.querySelector('[data-tab-bar-away]')).toBeNull();
+    });
+
+    it('has no header on Invitation, which ends with the footer, and the header alone on Social Feed', async () => {
+        renderFeed(null, { description: 'Hello', flag: true, layout: savedLayout(dressCode), modules: SMD, startAt: '2099-06-01T15:00:00Z' });
+        const socialFeed = await screen.findByRole('button', { name: 'socialFeed' }, LAZY_LOOK);
+        expect(screen.queryByTestId('header')).toBeNull();
+        expect(follows(screen.getByTestId('description'), screen.getByTestId('footer'))).toBe(true);
+        fireEvent.click(socialFeed);
+        expect(screen.getByTestId('header')).toBeTruthy();
+        expect(screen.queryByTestId('footer')).toBeNull();
+    });
+
+    it('has the header and no footer on the one page', () => {
+        renderFeed(null, { description: 'Hello', flag: true, layout: savedLayout(dressCode) });
+        expect(screen.getByTestId('header')).toBeTruthy();
+        expect(screen.queryByTestId('footer')).toBeNull();
+    });
+
+    it('draws an event sold as an invitation alone as the invitation, with no switch', async () => {
+        renderFeed(null, { description: 'Hello', flag: true, layout: savedLayout(dressCode), modules: SMD, startAt: '2020-06-01T15:00:00Z', takesGuests: false });
+        expect(await screen.findByTestId('description', {}, LAZY_LOOK)).toBeTruthy();
+        expect(screen.queryByRole('button', { name: 'socialFeed' })).toBeNull();
+        expect(screen.queryByTestId('header')).toBeNull();
+        expect(screen.getByTestId('footer')).toBeTruthy();
+        expect(document.querySelector('#posts')).toBeNull();
     });
 
     it('keeps the tab bar on the one page', () => {
@@ -467,7 +495,8 @@ describe('FeedPageContent edit mode', { timeout: 15_000 }, () => {
         const cancel = await screen.findByRole('button', { name: 'cancel' }, LAZY_LOOK);
         expect(screen.queryByRole('button', { name: 'invitation' })).toBeNull();
         expect(screen.queryByRole('button', { name: 'socialFeed' })).toBeNull();
-        const cover = screen.getByRole('group', { name: 'sectionNames.feedCover' });
+        expect(screen.queryByTestId('header')).toBeNull();
+        const cover =screen.getByRole('group', { name: 'sectionNames.feedCover' });
         expect(cover.contains(cancel)).toBe(false);
     });
 

@@ -15,6 +15,7 @@ const schedule = vi.hoisted(() => ({ items: null as FeedScheduleItem[] | null })
 vi.mock('@/hooks/useFeedSchedule', () => ({ useFeedSchedule: () => schedule.items }));
 const rsvp = vi.hoisted(() => ({ link: null as ((sessionId: string) => FeedScheduleRsvpLink) | null }));
 vi.mock('@/hooks/useFeedScheduleRsvp', () => ({ useFeedScheduleRsvp: () => rsvp.link }));
+vi.mock('@/hooks/useUploadAccept', () => ({ useUploadAccept: () => ({ media: 'image/*' }) }));
 vi.mock('@/hooks/useModuleCopy', () => ({ useModuleCopy: () => (key: string) => ({ name: key === 'rsvp' ? 'RSVP' : key }) }));
 
 afterEach(() => {
@@ -29,10 +30,12 @@ const section = (type: string, data: object) =>
     ({ id: type, type, name: type, visible: true, locked: false, data, textStyles: {}, elements: [], style: {} }) as unknown as InvitationSection;
 
 function renderSection(node: ReactNode, composer: Partial<ComposerContextValue> = {}) {
-    const value = { openPostComposer: vi.fn(), canComposePost: true, ...composer } as ComposerContextValue;
+    const value = { openPostWithFiles: vi.fn(), canComposePost: true, ...composer } as ComposerContextValue;
     render(
         <NextIntlClientProvider locale="en" messages={en}>
-            <ComposerContext.Provider value={value}>{node}</ComposerContext.Provider>
+            <ComposerContext.Provider value={value}>
+                <div data-testid="feed">{node}</div>
+            </ComposerContext.Provider>
         </NextIntlClientProvider>,
     );
     return value;
@@ -78,8 +81,12 @@ describe('feed sections', () => {
         rsvp.link = (sessionId) => ({ answer: answers[sessionId] ?? null, href: `/rsvp?session=${sessionId}` });
         renderSection(<FeedModeSection media={media} event={event} section={section('feedSchedule', {})} />);
         expect(screen.getByRole('link', { name: 'RSVP', description: 'Church' }).getAttribute('href')).toBe('/rsvp?session=church');
-        expect(screen.getByRole('link', { name: en.FeedSections.schedule.attending, description: 'Party' }).getAttribute('href')).toBe('/rsvp?session=party');
-        expect(screen.getByRole('link', { name: en.FeedSections.schedule.declined, description: 'Brunch' }).getAttribute('href')).toBe('/rsvp?session=brunch');
+        expect(screen.getByRole('link', { name: en.FeedSections.schedule.attending, description: 'Party' }).getAttribute('href')).toBe(
+            '/rsvp?session=party',
+        );
+        expect(screen.getByRole('link', { name: en.FeedSections.schedule.declined, description: 'Brunch' }).getAttribute('href')).toBe(
+            '/rsvp?session=brunch',
+        );
         expect(screen.getAllByRole('link')).toHaveLength(3);
     });
 
@@ -100,19 +107,29 @@ describe('feed sections', () => {
         expect(screen.getByText('empty')).toBeTruthy();
     });
 
-    it('opens the post composer from the photo prompt', () => {
-        const composer = renderSection(
-            <FeedModeSection media={media} event={event} section={section('feedPrompt', { text: 'Show us your best dance move' })} />,
-        );
-        fireEvent.click(screen.getByRole('button', { name: 'Show us your best dance move' }));
-        expect(composer.openPostComposer).toHaveBeenCalledOnce();
+    const prompt = section('feedPrompt', { text: 'Show us your best dance move' });
+    const promptButton = () => screen.queryByRole('button', { name: new RegExp(`^${en.FeedEditor.addPhoto} ?Show us your best dance move$`) });
+
+    it("opens the prompt's own picker inside the tap, then the composer with the picked photo", () => {
+        const composer = renderSection(<FeedModeSection media={media} event={event} section={prompt} />);
+        const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+        const opened = vi.spyOn(input, 'click');
+        fireEvent.click(promptButton() as HTMLElement);
+        expect(opened).toHaveBeenCalledOnce();
+        expect(composer.openPostWithFiles).not.toHaveBeenCalled();
+
+        const files = [new File(['x'], 'dance.jpg', { type: 'image/jpeg' })];
+        fireEvent.change(input, { target: { files } });
+        expect(composer.openPostWithFiles).toHaveBeenCalledExactlyOnceWith(files);
     });
 
-    it("shows the prompt without a button to a viewer who can't post", () => {
-        renderSection(<FeedModeSection media={media} event={event} section={section('feedPrompt', { text: 'Show us' })} />, {
-            canComposePost: false,
-        });
-        expect(screen.queryByRole('button')).toBeNull();
-        expect(screen.getByText('Show us')).toBeTruthy();
+    it("draws nothing for a viewer who can't post, not even an empty box", () => {
+        renderSection(<FeedModeSection media={media} event={event} section={prompt} />, { canComposePost: false });
+        expect(screen.getByTestId('feed').innerHTML).toBe('');
+    });
+
+    it("keeps the prompt in the host's editor while the host can't post", () => {
+        renderSection(<FeedModeSection media={media} event={event} section={prompt} inEditor />, { canComposePost: false });
+        expect(promptButton()).toBeTruthy();
     });
 });

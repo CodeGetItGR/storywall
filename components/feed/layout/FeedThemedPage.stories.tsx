@@ -10,12 +10,14 @@ import { hostPanelHandlers } from '@/.storybook/handlers';
 import { STORY_THEME } from '@/.storybook/invitation';
 import { FeedBackdropLayer } from '@/components/event/FeedBackdropLayer';
 import { Header } from '@/components/feed/Header';
+import { InvitationFooter } from '@/components/feed/InvitationFooter';
 import { FeedLookTop } from '@/components/feed/layout/FeedLookTop';
 import { PostCard } from '@/components/feed/PostCard';
 import { RightContextPanel } from '@/components/layout/RightContextPanel';
 import type { FeedTopView } from '@/hooks/useFeedTop';
 import { eventThemeStyle } from '@/lib/eventTheme';
 import { defaultFeedLayout, feedFrame } from '@/lib/feedLayout';
+import type { FeedPageMode } from '@/lib/feedMode';
 import { feedBackdropClassName, feedBackdropStyle, feedBackdropSurface, feedPageBackdrop } from '@/lib/feedPageBackdrop';
 import { type FeedPageTheme, feedPageTheme } from '@/lib/feedPageTheme';
 import { planFeedThemeSwitch } from '@/lib/feedThemes';
@@ -144,9 +146,9 @@ function pageOf({ theme, document = AUTO_LAYOUT }: PageProps): FeedPageTheme {
     return feedPageTheme(null, document.overrides.backgroundColor, backdrop);
 }
 
-type PageProps = { theme: ThemeDesign; document?: InvitationDocument; children?: ReactNode; whole?: boolean };
+type PageProps = { theme: ThemeDesign; document?: InvitationDocument; children?: ReactNode; whole?: boolean; mode?: FeedPageMode };
 
-function FeedColumn({ theme, document = AUTO_LAYOUT, children }: PageProps) {
+function FeedColumn({ theme, document = AUTO_LAYOUT, children, mode }: PageProps) {
     const backdrop = feedPageBackdrop(document, theme, media, pageTones.get(theme));
     const plain = buildRenderContext(document, theme, media);
     const ctx = {
@@ -170,6 +172,7 @@ function FeedColumn({ theme, document = AUTO_LAYOUT, children }: PageProps) {
         <>
             <FeedLookTop
                 view={view}
+                mode={mode}
                 cover={<Box label="Cover + title" />}
                 stories={<Box label="Stories" />}
                 description={<Box label="Description" />}
@@ -208,6 +211,7 @@ function BackdropScope({ page, className, children }: { page: FeedPageTheme; cla
 // scrolling page, so the header strip and the panel can be checked against the page behind them.
 function ThemedPage({ whole = false, ...props }: PageProps) {
     const page = pageOf(props);
+    const invitation = props.mode === 'invitation';
     if (!whole) {
         return (
             <BackdropScope page={page} className="mx-auto min-h-screen max-w-2xl bg-event pb-8">
@@ -222,8 +226,9 @@ function ThemedPage({ whole = false, ...props }: PageProps) {
                     {/* Feed */}
                     <div className="min-w-0 flex-1">
                         <div className="mx-auto flex w-full flex-col pb-8 lg:max-w-2xl">
-                            <Header countdownTime={Date.parse('2026-07-04T15:00:00Z')} eventId="evt-story" />
+                            {!invitation && <Header countdownTime={Date.parse('2026-07-04T15:00:00Z')} eventId="evt-story" />}
                             <FeedColumn {...props} />
+                            {invitation && <InvitationFooter />}
                         </div>
                     </div>
                     {/* Right panel */}
@@ -326,3 +331,12 @@ export const DarkColorSections: Story = { args: { document: inColor('#1B2A4A', F
 export const MiddleColor: Story = { args: { document: inColor('#FF7A59'), whole: true } };
 export const DarkPictureMobile: Story = { args: { theme: DARK, whole: true }, globals: { viewport: { value: 'mobile' } } };
 export const HostPanelDarkColor: Story = { ...hostPanel, tags: ['visual-desktop-only'], args: { document: inColor('#1B2A4A'), whole: true } };
+
+// Invitation mode: no header, and the small footer at the end, on a light picture, a dark one and a dark colour.
+const toTheEnd = scrollPageTo(Number.MAX_SAFE_INTEGER);
+export const InvitationEnd: Story = { args: { theme: LIGHT, whole: true, mode: 'invitation', children: <></> }, play: toTheEnd };
+export const InvitationEndDarkPicture: Story = { args: { theme: DARK, whole: true, mode: 'invitation', children: <></> }, play: toTheEnd };
+export const InvitationEndDarkColor: Story = {
+    args: { document: inColor('#1B2A4A'), whole: true, mode: 'invitation', children: <></> },
+    play: toTheEnd,
+};
