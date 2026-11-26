@@ -2,6 +2,7 @@ import type { CSSProperties } from 'react';
 
 import { INK_COLOR, MIN_INK_CONTRAST } from '@/lib/contrast';
 import { activeEffect, revealsBackground, type SectionEffect } from '@/lib/invitation/backgroundEffects';
+import { buttonTextOn } from '@/lib/invitation/buttonText';
 import type { CanvasTools } from '@/lib/invitation/canvasTools';
 import { colorInputValue } from '@/lib/invitation/colorInput';
 import type { InvitationDocument } from '@/lib/invitation/document';
@@ -163,7 +164,7 @@ export function themeCssVars(ctx: RenderContext): CSSProperties {
         '--family-photo-clip': shape.clip ?? 'none',
     };
     if (colors.buttonBg) vars['--btn-bg'] = colors.buttonBg;
-    if (colors.buttonText) vars['--btn-text'] = colors.buttonText;
+    vars['--btn-text'] = colors.buttonText ?? buttonTextOn(colors.buttonBg ?? colors.primary);
     if (ctx.buttonFont) vars['--btn-font'] = ctx.buttonFont;
     return vars as CSSProperties;
 }

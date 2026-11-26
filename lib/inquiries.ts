@@ -39,3 +39,9 @@ export const SAMPLE_INQUIRIES: readonly { guestName: string; eventDate: string }
     { guestName: 'Maria P.', eventDate: '2027-06-12' },
     { guestName: 'Nikos K.', eventDate: '2027-09-04' },
 ];
+
+// A mail link with a plain @, which mail apps need. Everything else stays encoded, so a typed address can't add mail
+// headers or recipients.
+export function inquiryMailHref(email: string): string {
+    return `mailto:${encodeURIComponent(email).replaceAll('%40', '@')}`;
+}

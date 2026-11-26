@@ -1,5 +1,6 @@
 import type { CSSProperties } from 'react';
 
+import { buttonTextOn } from '@/lib/invitation/buttonText';
 import { dateFieldIsTitle } from '@/lib/invitation/dateDisplay';
 import type { TextStyle } from '@/lib/invitation/primitives';
 import {
@@ -131,7 +132,8 @@ export function rsvpVars(data: RsvpData, contrast: TextContrast, ctx: RenderCont
         '--rsvp-field-radius': px(style.fieldRadius),
         '--rsvp-option-selected-color': style.optionSelectedColor,
         '--rsvp-btn-bg': style.buttonBg,
-        '--rsvp-btn-color': style.buttonColor,
+        // The theme's button text is chosen for the theme's button colour, so the form's own colour needs its own.
+        '--rsvp-btn-color': style.buttonColor ?? (style.buttonBg && !ctx.theme.colors.buttonText ? buttonTextOn(style.buttonBg) : undefined),
         '--rsvp-btn-font': ownFont(style.buttonFont, ctx),
     });
 }

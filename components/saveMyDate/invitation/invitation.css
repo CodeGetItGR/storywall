@@ -626,6 +626,7 @@
 .smd-invitation .stay-address { width: 100%; text-align: center; font-size: 14px; opacity: 0.75; margin: 0 0 14px; }
 .smd-invitation .stay-contact-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px 22px; font-size: 14px; opacity: 0.85; margin-bottom: 18px; }
 .smd-invitation .stay-contact-item { display: inline-flex; align-items: center; gap: 6px; }
+.smd-invitation a.stay-contact-item { padding: 5px 0; margin: -5px 0; text-decoration: none; }
 .smd-invitation .stay-icon { width: 15px; height: 15px; flex: none; opacity: 0.8; }
 .smd-invitation .stay-contact-row .text-block { margin: 0; }
 .smd-invitation .stay-btn-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }

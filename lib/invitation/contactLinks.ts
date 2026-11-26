@@ -31,6 +31,18 @@ function contactHref(key: ContactLinkKey, value: string): string {
     }
 }
 
+// A phone a host typed as plain text: a link only when it holds exactly one number, so two numbers in one field are
+// never dialled as one.
+export function phoneTextHref(value: string): string {
+    const numbers = value.match(/[+(]*\d[\d\s().-]*\d/g) ?? [];
+    return numbers.length === 1 ? contactHref('phone', numbers[0]) : '';
+}
+
+// An email a host typed as plain text: a link only when it is one address.
+export function emailTextHref(value: string): string {
+    return /^[^\s@]+@[^\s@]+$/.test(value.trim()) ? contactHref('email', value) : '';
+}
+
 export function contactLinks(fields: ContactFields): ContactLink[] {
     return CONTACT_LINK_KEYS.map((key) => ({ key, href: contactHref(key, fields[key]) })).filter((link) => link.href);
 }

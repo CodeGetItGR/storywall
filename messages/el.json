@@ -6861,6 +6861,17 @@
             "feed": "Φωτογραφίες και αναρτήσεις"
         }
     },
+    "FeedModuleBlocks": {
+        "galleryUpload": "Ανεβάστε φωτογραφίες",
+        "galleryUploadFirst": "Ανεβάστε την πρώτη",
+        "galleryMore": "{count} ακόμη",
+        "wishWrite": "Γράψτε μια ευχή",
+        "wishAll": "Όλες οι ευχές ({count})",
+        "wishMine": "Οι ευχές σας ({count})",
+        "wishWriteYours": "Γράψτε την ευχή σας…",
+        "wishNone": "Δεν υπάρχουν ευχές ακόμη.",
+        "wishPosition": "Ευχή {n} από {total}"
+    },
     "FeedEditor": {
         "addIntro": "Προσθέστε όποια ενότητα θέλετε για το ψηφιακό σας προσκλητήριο",
         "addPhoto": "Προσθήκη φωτογραφίας",
@@ -9965,6 +9976,7 @@
         "appIcon": "Εικονίδιο εφαρμογής StoryWall",
         "location": "Τοποθεσία",
         "guestPhoto": "Φωτογραφία καλεσμένου",
+        "guestVideo": "Βίντεο καλεσμένου",
         "photoBy": "Φωτογραφία από {name}",
         "qrUploadSent": "Οι φωτογραφίες στάλθηκαν",
         "qrWishSent": "Η ευχή στάλθηκε",

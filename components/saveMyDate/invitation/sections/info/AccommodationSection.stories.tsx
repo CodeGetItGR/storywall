@@ -1,6 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
+import { expect } from 'storybook/test';
 
 import { LONG_TEXT, LONG_TITLE, onDark, SectionStory, storySection } from '@/.storybook/invitation';
+import { wallThemeDesign } from '@/lib/feedLayout';
 
 const section = storySection('accommodation');
 const stay = section.data.items[0];
@@ -33,6 +35,32 @@ export const OddStayCount: Story = {
 
 export const WithoutWebsite: Story = {
     args: { section: storySection('accommodation', { items: [{ ...fullStay, website: '' }] }) },
+};
+
+// No icon without its detail, and the phone can be tapped.
+export const PhoneOnly: Story = {
+    args: { section: storySection('accommodation', { items: [{ ...fullStay, email: '' }] }) },
+    play: async ({ canvasElement }) => {
+        await expect(canvasElement.querySelectorAll('.stay-icon')).toHaveLength(1);
+        await expect(canvasElement.querySelector('a.stay-contact-item')).toHaveAttribute('href', 'tel:6900000000');
+    },
+};
+
+export const WithoutContact: Story = {
+    args: { section: storySection('accommodation', { items: [{ ...fullStay, phone: '', email: '' }] }) },
+    play: async ({ canvasElement }) => {
+        await expect(canvasElement.querySelector('.stay-icon')).toBeNull();
+    },
+};
+
+// The feed of an event with no theme: dark buttons, light text.
+export const NoTheme: Story = {
+    args: { section: storySection('accommodation', { items: [fullStay] }), theme: wallThemeDesign(null) },
+    play: async ({ canvasElement }) => {
+        const button = canvasElement.querySelector<HTMLElement>('.theme-btn');
+        if (!button) throw new Error('The button is missing');
+        await expect(getComputedStyle(button).color).toBe('rgb(255, 255, 255)');
+    },
 };
 
 export const NoStays: Story = {
