@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl';
 import { useId } from 'react';
 
 import { AddToCalendarSheet } from '@/components/feed/AddToCalendarSheet';
-import { FeedScheduleMore, FeedScheduleName } from '@/components/feed/sections/FeedScheduleEntry';
+import { FeedScheduleMore, FeedScheduleName, FeedScheduleTime } from '@/components/feed/sections/FeedScheduleEntry';
 import { ProgramTimeline } from '@/components/saveMyDate/invitation/sections/info/ProgramTimeline';
 import { useAddToCalendar } from '@/hooks/useAddToCalendar';
 import type { FeedScheduleDayItems } from '@/hooks/useFeedSchedule';
@@ -20,7 +20,7 @@ const NOW_DOT = { background: 'var(--logo)' };
 type FeedScheduleTimelineProps = { event: EventDetailResponseDto; heading: string; days: FeedScheduleDayItems[]; className?: string };
 
 // The schedule (KAN-293): Save my date's alternating timeline, in the theme's fonts and the page's text colour. Each
-// session has its place under its name, a gradient Now and dot while under way, and its RSVP button when it takes
+// session has its place under its name, a gradient Now beside its time and dot while under way, and its RSVP button when it takes
 // replies. Add to calendar sits under the heading, and each day has its heading when there are several.
 export function FeedScheduleTimeline({ event, heading, days, className }: FeedScheduleTimelineProps) {
     const t = useTranslations();
@@ -70,8 +70,8 @@ export function FeedScheduleTimeline({ event, heading, days, className }: FeedSc
                             const link = item.rsvpEnabled && rsvp ? rsvp(item.id) : null;
                             return {
                                 id: item.id,
-                                time: item.time,
-                                label: <FeedScheduleName item={item} titleId={titleId} nowLabel={nowLabel} />,
+                                time: <FeedScheduleTime item={item} nowLabel={nowLabel} />,
+                                label: <FeedScheduleName item={item} titleId={titleId} />,
                                 extra: <FeedScheduleMore item={item} titleId={titleId} rsvp={link} rsvpName={rsvpName} />,
                                 className: item.state === 'done' ? 'opacity-50' : undefined,
                                 dotStyle: item.state === 'now' ? NOW_DOT : undefined,

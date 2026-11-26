@@ -4,19 +4,26 @@ import { FeedScheduleRsvp } from '@/components/feed/sections/FeedScheduleRsvp';
 import type { FeedScheduleItem } from '@/hooks/useFeedSchedule';
 import type { FeedScheduleRsvpLink } from '@/hooks/useFeedScheduleRsvp';
 
-// A session's name in the timeline, with the gradient Now on the one under way.
-export function FeedScheduleName({ item, titleId, nowLabel }: { item: FeedScheduleItem; titleId: string; nowLabel: string }) {
+// A session's time in the timeline, with the gradient Now beside it on the one under way.
+export function FeedScheduleTime({ item, nowLabel }: { item: FeedScheduleItem; nowLabel: string }) {
     return (
         <>
-            <span id={titleId} className="wrap-break-word">
-                {item.title}
-            </span>
+            {item.time}
             {item.state === 'now' && (
-                <span className="ms-1.5 inline-block rounded-full bg-(image:--logo) px-2 py-0.5 align-middle font-sans text-[11px] font-semibold text-white">
+                <span className="ms-1.5 inline-block rounded-full bg-(image:--logo) px-2 py-0.5 align-middle font-sans text-[11px] leading-normal font-semibold text-white">
                     {nowLabel}
                 </span>
             )}
         </>
+    );
+}
+
+// A session's name in the timeline.
+export function FeedScheduleName({ item, titleId }: { item: FeedScheduleItem; titleId: string }) {
+    return (
+        <span id={titleId} className="wrap-break-word">
+            {item.title}
+        </span>
     );
 }
 
