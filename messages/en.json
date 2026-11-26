@@ -9954,12 +9954,24 @@
             "close": "Close"
         }
     },
+    "UploadFrame": {
+        "add": "Add frame",
+        "unframed": "Some photos were uploaded without the frame.",
+        "setting": "Photo frame",
+        "none": "No frame",
+        "designs": {
+            "CLASSIC": "Classic",
+            "LAUREL": "Laurel",
+            "CONFETTI": "Confetti"
+        }
+    },
     "ImageAlt": {
         "gift": "Gift",
         "wishbook": "Wishbook",
         "eventCover": "Event cover photo",
         "eventCoverOf": "Cover photo of {name}",
         "photoPreview": "Photo preview",
+        "uploadFramePreview": "Graduation frame preview",
         "profilePhoto": "Profile photo",
         "profilePhotoOf": "Profile photo of {name}",
         "themeIllustration": "{name} theme",

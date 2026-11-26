@@ -9971,12 +9971,24 @@
             "close": "Κλείσιμο"
         }
     },
+    "UploadFrame": {
+        "add": "Προσθήκη κορνίζας",
+        "unframed": "Κάποιες φωτογραφίες ανέβηκαν χωρίς κορνίζα.",
+        "setting": "Κορνίζα φωτογραφιών",
+        "none": "Χωρίς κορνίζα",
+        "designs": {
+            "CLASSIC": "Κλασική",
+            "LAUREL": "Δάφνη",
+            "CONFETTI": "Κομφετί"
+        }
+    },
     "ImageAlt": {
         "gift": "Δώρο",
         "wishbook": "Ευχολόγιο",
         "eventCover": "Φωτογραφία εξωφύλλου εκδήλωσης",
         "eventCoverOf": "Φωτογραφία εξωφύλλου: {name}",
         "photoPreview": "Προεπισκόπηση φωτογραφίας",
+        "uploadFramePreview": "Προεπισκόπηση κορνίζας αποφοίτησης",
         "profilePhoto": "Φωτογραφία προφίλ",
         "profilePhotoOf": "Φωτογραφία προφίλ: {name}",
         "themeIllustration": "Θέμα {name}",
