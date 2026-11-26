@@ -2,7 +2,7 @@ import { act, renderHook } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { useFeedMode } from '@/hooks/useFeedMode';
+import { useExpectedFeedMode, useFeedMode } from '@/hooks/useFeedMode';
 import type { EventDetailResponseDto } from '@/lib/api/types';
 import { storedFeedModePick } from '@/lib/feedModeStore';
 import { FeedEditorFlagProvider } from '@/providers/FeedEditorFlagProvider';
@@ -55,7 +55,30 @@ describe('useFeedMode', () => {
     it('has no switch without Save my date, and ignores the param', () => {
         nav.search = 'view=feed';
         const { result } = renderHook(() => useFeedMode(event([])), { wrapper });
-        expect(result.current).toMatchObject({ available: false, mode: null });
+        expect(result.current).toMatchObject({ available: false, mode: null, pageMode: 'single', expected: 'single' });
         expect(storedFeedModePick('e-1')).toBeNull();
+    });
+
+    it('is always the invitation, with no switch, on an event sold as an invitation alone', () => {
+        nav.search = 'view=feed';
+        const invitationOnly = { ...event(), capabilities: { takesGuests: false } } as EventDetailResponseDto;
+        const { result } = renderHook(() => useFeedMode(invitationOnly), { wrapper });
+        expect(result.current).toMatchObject({ available: false, mode: null, pageMode: 'invitation', expected: 'invitation' });
+        expect(storedFeedModePick('e-1')).toBeNull();
+    });
+});
+
+describe('useExpectedFeedMode', () => {
+    it('answers the mode the page will open on, and saves nothing', () => {
+        const { result } = renderHook(() => useExpectedFeedMode(event()), { wrapper });
+        expect(result.current).toBe('invitation');
+        nav.search = 'view=feed';
+        expect(renderHook(() => useExpectedFeedMode(event()), { wrapper }).result.current).toBe('feed');
+        expect(storedFeedModePick('e-1')).toBeNull();
+    });
+
+    it('answers the one page without Save my date, and nothing without an event', () => {
+        expect(renderHook(() => useExpectedFeedMode(event([])), { wrapper }).result.current).toBe('single');
+        expect(renderHook(() => useExpectedFeedMode(null), { wrapper }).result.current).toBeNull();
     });
 });
