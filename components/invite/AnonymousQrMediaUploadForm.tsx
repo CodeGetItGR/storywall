@@ -4,7 +4,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { ArrowRight, Images, Loader2, UserRound, Video, X } from 'lucide-react';
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
-import React, { useCallback, useEffect, useId, useState } from 'react';
+import React, { useCallback, useEffect, useId, useRef, useState } from 'react';
 
 import { ProtectedImage } from '@/components/common/ProtectedImage';
 import { UploadFrameSwitch } from '@/components/gallery/UploadFrameSwitch';
@@ -65,6 +65,8 @@ export function AnonymousQrMediaUploadForm({ token, member = null, onSentChange,
     const [isBusy, setIsBusy] = useState(false);
     const previews = useFilePreviews(files);
     const uploadFrame = useUploadFrame(frameSource);
+    // Set at once, so a second submit can't start while one is under way (state would be a render late).
+    const submitting = useRef(false);
     const [isFraming, setIsFraming] = useState(false);
     const [frameNotice, setFrameNotice] = useState<string | null>(null);
     const nameHintId = useId();
@@ -140,21 +142,29 @@ export function AnonymousQrMediaUploadForm({ token, member = null, onSentChange,
 
     async function handleSubmit(e: React.SubmitEvent<HTMLFormElement>) {
         e.preventDefault();
+        if (submitting.current) return;
         if (files.length === 0 || !isAccepted) return;
         if (!member && (!termsVersion.data || !guidelinesVersion.data)) {
             setSubmitError(t('anonymousUpload.acceptanceUnavailable'));
             return;
         }
 
+        submitting.current = true;
         setSubmitError(null);
-        setIsFraming(true);
-        let prepared: { files: File[]; notice: string | null };
-        try {
-            prepared = await uploadFrame.prepare(files);
-        } finally {
-            setIsFraming(false);
+        let prepared: { files: File[]; notice: string | null } = { files, notice: null };
+        // Only an event with a frame goes through the framing step.
+        if (uploadFrame.control) {
+            setIsFraming(true);
+            try {
+                prepared = await uploadFrame.prepare(files);
+            } catch (error) {
+                submitting.current = false;
+                throw error;
+            } finally {
+                setIsFraming(false);
+            }
+            setFrameNotice(prepared.notice);
         }
-        setFrameNotice(prepared.notice);
         try {
             const result = member
                 ? await memberUploadBatch.mutateAsync({ eventId: member.eventId, files: prepared.files, onBusy: setIsBusy })
@@ -190,6 +200,8 @@ export function AnonymousQrMediaUploadForm({ token, member = null, onSentChange,
                 return;
             }
             setSubmitError(toErrorMessage(err));
+        } finally {
+            submitting.current = false;
         }
     }
 

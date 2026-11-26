@@ -5,6 +5,7 @@ import { frameImageForUpload, framePhotosForUpload, shrinkImageForUpload, shrink
 const drawImage = vi.fn();
 let encoded: Blob | null;
 let canvasSize: { width: number; height: number } | null;
+let canvases: HTMLCanvasElement[];
 
 function photo(name: string, type: string, size: number): File {
     const file = new File(['x'], name, { type, lastModified: 1234 });
@@ -20,9 +21,11 @@ beforeEach(() => {
     drawImage.mockReset();
     encoded = new Blob(['small'], { type: 'image/jpeg' });
     canvasSize = null;
+    canvases = [];
     vi.stubGlobal('createImageBitmap', vi.fn().mockResolvedValue(bitmapOf(4000, 3000)));
     vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockImplementation(function (this: HTMLCanvasElement) {
         canvasSize = { width: this.width, height: this.height };
+        canvases.push(this);
         return { drawImage, imageSmoothingQuality: 'low' } as unknown as CanvasRenderingContext2D;
     } as unknown as typeof HTMLCanvasElement.prototype.getContext);
     vi.spyOn(HTMLCanvasElement.prototype, 'toBlob').mockImplementation((callback) => callback(encoded));
@@ -146,6 +149,12 @@ describe('frameImageForUpload', () => {
         expect(drawImage.mock.calls[1].slice(1)).toEqual([0, 0, 2560, 1920]);
         expect(decodeURIComponent(loaded[0])).toContain('width="2560" height="1920"');
         expect(framed).toMatchObject({ name: 'a.jpg', type: 'image/jpeg', lastModified: 1234 });
+    });
+
+    it('releases the canvas once drawn, so many large photos do not run a phone out of memory', async () => {
+        await frameImageForUpload(photo('a.jpg', 'image/jpeg', 4_000_000), 'CLASSIC', text, 2560);
+
+        expect(canvases[0]).toMatchObject({ width: 0, height: 0 });
     });
 
     it('frames a small photo at its own size', async () => {

@@ -1,6 +1,6 @@
 'use client';
 
-import { type ChangeEvent, useCallback, useMemo, useState } from 'react';
+import { type ChangeEvent, useCallback, useMemo, useRef, useState } from 'react';
 
 import { useAppConfig } from '@/hooks/useAppConfig';
 import { useGalleryUploadNotices } from '@/hooks/useGalleryUploadNotices';
@@ -23,7 +23,7 @@ export function useFeedGalleryUpload(event: EventDetailResponseDto) {
     const slow = useSlowUpload(upload.isPending);
     const [notice, setNotice] = useState<string | null>(null);
     const [busy, setBusy] = useState(false);
-    const frame = useUploadFrame({
+    const { control: frameControl, prepare } = useUploadFrame({
         eventId,
         frame: event.uploadFrame,
         title: event.title,
@@ -32,35 +32,46 @@ export function useFeedGalleryUpload(event: EventDetailResponseDto) {
     });
     // Framing runs before the upload starts, so the button shows it is busy from the pick.
     const [framing, setFraming] = useState(false);
+    // Set at once, so a second pick can't start while one is under way (state would be a render late).
+    const inFlight = useRef(false);
 
     const onFiles = useCallback(
         async (event: ChangeEvent<HTMLInputElement>) => {
+            if (inFlight.current) return;
             const picked = pickGalleryFiles(Array.from(event.target.files ?? []), limits);
             event.target.value = '';
             setNotice(notices.picked(picked.notice));
             if (picked.files.length === 0) return;
-            let prepared: { files: File[]; notice: string | null } = { files: picked.files, notice: null };
-            setFraming(true);
+            inFlight.current = true;
             try {
-                prepared = await frame.prepare(picked.files);
+                let prepared: { files: File[]; notice: string | null } = { files: picked.files, notice: null };
+                // Only an event with a frame goes through the framing step.
+                if (frameControl) {
+                    setFraming(true);
+                    try {
+                        prepared = await prepare(picked.files);
+                    } finally {
+                        setFraming(false);
+                    }
+                }
+                try {
+                    const result = await upload.mutateAsync({ eventId, files: prepared.files, onBusy: setBusy });
+                    // A pick that left files out keeps saying so after the upload.
+                    setNotice([notices.picked(picked.notice), prepared.notice, notices.uploaded(result)].filter(Boolean).join(' '));
+                } catch (error) {
+                    setNotice(notices.failed(error));
+                }
             } finally {
-                setFraming(false);
-            }
-            try {
-                const result = await upload.mutateAsync({ eventId, files: prepared.files, onBusy: setBusy });
-                // A pick that left files out keeps saying so after the upload.
-                setNotice([notices.picked(picked.notice), prepared.notice, notices.uploaded(result)].filter(Boolean).join(' '));
-            } catch (error) {
-                setNotice(notices.failed(error));
+                inFlight.current = false;
             }
         },
-        [eventId, frame, limits, notices, upload],
+        [eventId, frameControl, limits, notices, prepare, upload],
     );
 
     return {
         onFiles,
         uploading: upload.isPending || framing,
         notice: busy ? notices.busy : slow ? notices.slow : notice,
-        frame: frame.control,
+        frame: frameControl,
     };
 }

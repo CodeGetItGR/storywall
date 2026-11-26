@@ -96,7 +96,7 @@ export function useGalleryScreen({ printAvailable = false }: { printAvailable?: 
     const { filesPerRequest: maxFiles, imageBytes: maxImageBytes, videoBytes: maxVideoBytes } = getUploadLimits(appConfig?.media);
     const uploadLimits = useMemo(() => ({ maxFiles, maxImageBytes, maxVideoBytes }), [maxFiles, maxImageBytes, maxVideoBytes]);
     const notices = useGalleryUploadNotices(uploadLimits);
-    const uploadFrame = useUploadFrame(
+    const { control: uploadFrameControl, prepare: prepareFrame } = useUploadFrame(
         activeEvent && eventId
             ? {
                   eventId,
@@ -108,6 +108,8 @@ export function useGalleryScreen({ printAvailable = false }: { printAvailable?: 
             : null,
     );
     const [isFraming, setIsFraming] = useState(false);
+    // Set at once, so a second Upload can't start while one is under way (state would be a render late).
+    const uploadInFlight = useRef(false);
     // Every event keeps photo originals; videos are never re-encoded, so they have no separate original.
     // Pro items have no full-quality download yet (phase 2).
     const canDownloadOriginal = isHost && selectedMedia !== null && selectedMedia.mediaType !== 'VIDEO' && selectedMedia.collection !== 'PRO';
@@ -168,31 +170,40 @@ export function useGalleryScreen({ printAvailable = false }: { printAvailable?: 
     }, []);
 
     const handleUpload = useCallback(async () => {
+        if (uploadInFlight.current) return;
         if (!eventId || !activeMember || selectedFiles.length === 0 || !canUpload) return;
 
-        setUploadNotice(null);
-        setIsFraming(true);
-        let prepared: { files: File[]; notice: string | null };
+        uploadInFlight.current = true;
         try {
-            prepared = await uploadFrame.prepare(selectedFiles);
-        } finally {
-            setIsFraming(false);
-        }
-        let result;
-        try {
-            result = await uploadMediaBatch.mutateAsync({
-                eventId,
-                files: prepared.files,
-                onBusy: setIsUploadBusy,
-            });
-        } catch (error) {
-            setUploadNotice(notices.failed(error));
-            return;
-        }
+            setUploadNotice(null);
+            let prepared: { files: File[]; notice: string | null } = { files: selectedFiles, notice: null };
+            // Only an event with a frame goes through the framing step.
+            if (uploadFrameControl) {
+                setIsFraming(true);
+                try {
+                    prepared = await prepareFrame(selectedFiles);
+                } finally {
+                    setIsFraming(false);
+                }
+            }
+            let result;
+            try {
+                result = await uploadMediaBatch.mutateAsync({
+                    eventId,
+                    files: prepared.files,
+                    onBusy: setIsUploadBusy,
+                });
+            } catch (error) {
+                setUploadNotice(notices.failed(error));
+                return;
+            }
 
-        setSelectedFiles([]);
-        setUploadNotice([prepared.notice, notices.uploaded(result)].filter(Boolean).join(' '));
-    }, [activeMember, canUpload, eventId, notices, selectedFiles, uploadFrame, uploadMediaBatch]);
+            setSelectedFiles([]);
+            setUploadNotice([prepared.notice, notices.uploaded(result)].filter(Boolean).join(' '));
+        } finally {
+            uploadInFlight.current = false;
+        }
+    }, [activeMember, canUpload, eventId, notices, prepareFrame, selectedFiles, uploadFrameControl, uploadMediaBatch]);
 
     const downloadOriginal = useCallback(async () => {
         if (!selectedMedia) return;
@@ -418,7 +429,7 @@ export function useGalleryScreen({ printAvailable = false }: { printAvailable?: 
         gallerySelection,
         uploadMediaBatch,
         isUploading: uploadMediaBatch.isPending || isFraming,
-        uploadFrame: uploadFrame.control,
+        uploadFrame: uploadFrameControl,
         originalMedia,
         canDownloadOriginal,
         canDownloadSelected,

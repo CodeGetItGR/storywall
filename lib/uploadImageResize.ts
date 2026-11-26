@@ -57,20 +57,22 @@ async function loadImage(src: string): Promise<HTMLImageElement> {
 export async function frameImageForUpload(file: File, design: FramedDesign, text: FrameText, maxDimension: number): Promise<File | null> {
     if (!SHRINKABLE_TYPES.has(file.type)) return null;
     let bitmap: ImageBitmap | null = null;
+    let overlay: HTMLImageElement | null = null;
+    const canvas = document.createElement('canvas');
     try {
         bitmap = await createImageBitmap(file, { imageOrientation: 'from-image' });
         const scale = maxDimension > 0 ? Math.min(1, maxDimension / Math.max(bitmap.width, bitmap.height)) : 1;
         const width = Math.round(bitmap.width * scale);
         const height = Math.round(bitmap.height * scale);
 
-        const canvas = document.createElement('canvas');
         canvas.width = width;
         canvas.height = height;
         const context = canvas.getContext('2d');
         if (!context) return null;
         context.imageSmoothingQuality = 'high';
         context.drawImage(bitmap, 0, 0, width, height);
-        context.drawImage(await loadImage(frameSvgDataUrl(frameSvg(design, { width, height }, text))), 0, 0, width, height);
+        overlay = await loadImage(frameSvgDataUrl(frameSvg(design, { width, height }, text)));
+        context.drawImage(overlay, 0, 0, width, height);
 
         const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, file.type, ENCODE_QUALITY));
         if (!blob) return null;
@@ -79,6 +81,10 @@ export async function frameImageForUpload(file: File, design: FramedDesign, text
         return null;
     } finally {
         bitmap?.close();
+        // Release the pixels now: iOS Safari runs out of canvas memory across many large photos.
+        canvas.width = 0;
+        canvas.height = 0;
+        if (overlay) overlay.src = '';
     }
 }
 
