@@ -55,6 +55,11 @@ export type InvitationLabels = {
     rsvpPhoneMissing: string;
     rsvpPhoneInvalid: string;
     rsvpClosed: string;
+    // The sessions a guest answers for on their own (KAN-298), as the signed-in RSVP page asks.
+    rsvpSessionsTitle: string;
+    rsvpSessionsRequired: string;
+    rsvpSessionYes: string;
+    rsvpSessionNo: string;
     // The RSVP line written from the event's reply-by date (KAN-84).
     rsvpDeadline: string;
     // The button to the event's guest link (KAN-84).
@@ -119,6 +124,10 @@ export const INVITATION_LABELS: Record<DateLanguage, InvitationLabels> = {
         rsvpPhoneMissing: 'Συμπλήρωσε το τηλέφωνο επικοινωνίας.',
         rsvpPhoneInvalid: 'Έλεγξε το τηλέφωνο επικοινωνίας.',
         rsvpClosed: 'Η εκδήλωση δεν δέχεται πλέον απαντήσεις.',
+        rsvpSessionsTitle: 'Σε ποια μέρη θα παρευρεθείτε;',
+        rsvpSessionsRequired: 'Απαντήστε σε όλα για να στείλετε την απάντησή σας.',
+        rsvpSessionYes: 'Ναι',
+        rsvpSessionNo: 'Όχι',
         rsvpDeadline: 'Απαντήστε έως {date}',
         joinEvent: 'Συμμετοχή στην εκδήλωση',
         newTitle: 'Νέος τίτλος',
@@ -166,6 +175,10 @@ export const INVITATION_LABELS: Record<DateLanguage, InvitationLabels> = {
         rsvpPhoneMissing: 'Fill in your contact phone.',
         rsvpPhoneInvalid: 'Check your contact phone.',
         rsvpClosed: 'This event is no longer accepting replies.',
+        rsvpSessionsTitle: 'Which parts will you attend?',
+        rsvpSessionsRequired: 'Answer each one to send your RSVP.',
+        rsvpSessionYes: 'Yes',
+        rsvpSessionNo: 'No',
         rsvpDeadline: 'Please reply by {date}',
         joinEvent: 'Join the event',
         newTitle: 'New title',

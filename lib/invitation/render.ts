@@ -10,6 +10,7 @@ import { INVITATION_LABELS, type InvitationLabels, invitationLanguage } from '@/
 import type { PhotoTone } from '@/lib/invitation/photoContrast';
 import type { ImageRef, TextStyle } from '@/lib/invitation/primitives';
 import type { RsvpSender } from '@/lib/invitation/rsvp';
+import type { InvitationRsvpState } from '@/lib/invitation/rsvpSessions';
 import { type InvitationSection, isSaveMyDateSectionType } from '@/lib/invitation/sections';
 import type { TextRenderer } from '@/lib/invitation/textEditing';
 import type { ThemeDesign } from '@/lib/invitation/theme';
@@ -62,6 +63,9 @@ export type RenderContext = {
     // The event's guest link, for the RSVP section's "Join the event" button (KAN-84). Only while the event's plan has
     // the wall and the link is active.
     joinUrl?: string;
+    // Whether replies have closed, and the sessions the RSVP form asks about (KAN-297, KAN-298). Only the published
+    // page knows; elsewhere the form is open and asks about none.
+    rsvp?: InvitationRsvpState;
     // The editor draws every text so it can be typed in; guests get plain text.
     renderText?: TextRenderer;
     // The editor's handles and arrows inside the invitation.

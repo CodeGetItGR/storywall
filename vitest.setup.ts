@@ -9,3 +9,15 @@ vi.mock('@/lib/incident', async (importOriginal) => ({
     INCIDENT_MODE: false,
     isPausedRequest: () => false,
 }));
+
+// jsdom has no modal dialogs: open and close them as a browser would, close event included.
+if (typeof HTMLDialogElement !== 'undefined' && !HTMLDialogElement.prototype.showModal) {
+    HTMLDialogElement.prototype.showModal = function showModal(this: HTMLDialogElement) {
+        this.open = true;
+    };
+    HTMLDialogElement.prototype.close = function close(this: HTMLDialogElement) {
+        if (!this.open) return;
+        this.open = false;
+        this.dispatchEvent(new Event('close'));
+    };
+}

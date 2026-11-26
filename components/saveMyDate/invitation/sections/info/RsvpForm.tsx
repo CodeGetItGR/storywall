@@ -2,6 +2,7 @@
 
 import { type CSSProperties, useId } from 'react';
 
+import { RsvpSessionRows } from '@/components/saveMyDate/invitation/sections/info/RsvpSessionRows';
 import { useInvitationRsvp } from '@/hooks/useInvitationRsvp';
 import type { InvitationLabels } from '@/lib/invitation/labels';
 import {
@@ -17,17 +18,29 @@ import {
     rsvpCountOptions,
     type RsvpSender,
 } from '@/lib/invitation/rsvp';
+import type { RsvpSessionChoice } from '@/lib/invitation/rsvpSessions';
 
 type RsvpFormProps = {
     labels: InvitationLabels;
     send?: RsvpSender;
+    // The sessions with RSVP turned on, asked about while the guest is attending.
+    sessions?: RsvpSessionChoice[];
+    // The answer picked when the form opens.
+    initialAttending?: boolean;
+    onSent?: () => void;
 };
+
+const NO_SESSIONS: RsvpSessionChoice[] = [];
 
 const HONEYPOT_STYLE: CSSProperties = { position: 'absolute', left: '-10000px', width: 1, height: 1, overflow: 'hidden' };
 
-export function RsvpForm({ labels, send }: RsvpFormProps) {
+export function RsvpForm({ labels, send, sessions = NO_SESSIONS, initialAttending, onSent }: RsvpFormProps) {
     const id = useId();
-    const { attending, attend, decline, sending, sent, status, submit } = useInvitationRsvp(send, labels);
+    const { attending, attend, decline, sending, sent, status, submit } = useInvitationRsvp(send, labels, {
+        sessionIds: sessions.map((session) => session.id),
+        initialAttending,
+        onSent,
+    });
 
     if (sent) return <div className="rsvp-thankyou-card">{labels.rsvpThanks}</div>;
 
@@ -62,6 +75,12 @@ export function RsvpForm({ labels, send }: RsvpFormProps) {
                     </label>
                 </div>
             </div>
+            {/* Sessions */}
+            {sessions.length > 0 && (
+                <div style={attending ? undefined : { display: 'none' }}>
+                    <RsvpSessionRows id={id} labels={labels} sessions={sessions} />
+                </div>
+            )}
             {/* Guests */}
             <div className="rsvp-counts" style={attending ? undefined : { display: 'none' }}>
                 <div>

@@ -227,6 +227,8 @@ describe('RSVP through the whole invitation', () => {
         const { container } = renderInvitation(SAMPLE_DOCUMENT, { sendRsvp });
         const form = rsvpForm(container);
 
+        // The block's answers open the form in its pop-up (KAN-298).
+        fireEvent.click(form.getByRole('button', { name: labels.rsvpYes }));
         fillIn(form);
         fireEvent.change(form.getByLabelText(labels.rsvpAdults), { target: { value: '3' } });
         fireEvent.change(form.getByLabelText(labels.rsvpChildren), { target: { value: '0' } });
@@ -252,8 +254,9 @@ describe('RSVP through the whole invitation', () => {
         const { container } = renderInvitation(SAMPLE_DOCUMENT, { sendRsvp });
         const form = rsvpForm(container);
 
+        fireEvent.click(form.getByRole('button', { name: labels.rsvpNo }));
+        expect(form.getByLabelText<HTMLInputElement>(labels.rsvpNo).checked).toBe(true);
         fillIn(form);
-        fireEvent.click(form.getByLabelText(labels.rsvpNo));
         fireEvent.click(form.getByRole('button', { name: labels.rsvpSubmit }));
 
         await form.findByText(labels.rsvpThanks);

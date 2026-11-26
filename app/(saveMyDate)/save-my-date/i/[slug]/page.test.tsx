@@ -189,6 +189,8 @@ describe("A guest's RSVP on the published page", () => {
 
     function reply() {
         const form = rsvpForm();
+        // The block's yes opens the form in its pop-up (KAN-298).
+        fireEvent.click(form.getByRole('button', { name: labels.rsvpYes }));
         fireEvent.change(form.getByLabelText(labels.rsvpName), { target: { value: 'Μαρία' } });
         fireEvent.change(form.getByLabelText(labels.rsvpPhone), { target: { value: '694 123 4567' } });
         fireEvent.click(form.getByRole('button', { name: labels.rsvpSubmit }));

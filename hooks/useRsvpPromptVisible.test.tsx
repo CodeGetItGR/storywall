@@ -39,6 +39,11 @@ describe('useRsvpPromptVisible', () => {
         expect(renderHook(() => useRsvpPromptVisible({ ...base, rsvpAvailable: false })).result.current).toBe(false);
     });
 
+    it('is hidden once the reply-by date has passed', () => {
+        expect(renderHook(() => useRsvpPromptVisible({ ...base, deadline: '2020-01-01T00:00:00Z' })).result.current).toBe(false);
+        expect(renderHook(() => useRsvpPromptVisible({ ...base, deadline: '2999-01-01T00:00:00Z' })).result.current).toBe(true);
+    });
+
     it('is hidden for a host and never asks for the host role', () => {
         expect(renderHook(() => useRsvpPromptVisible({ ...base, isHost: true })).result.current).toBe(false);
         expect(vendor.eventId).toHaveBeenLastCalledWith(null);

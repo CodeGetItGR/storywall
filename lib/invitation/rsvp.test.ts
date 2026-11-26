@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { isRsvpPhone, readRsvpForm, rsvpCountOptions, type RsvpReply, rsvpRequestBody } from '@/lib/invitation/rsvp';
+import { isRsvpPhone, readRsvpForm, rsvpCountOptions, type RsvpReply, rsvpRequestBody, rsvpSessionField } from '@/lib/invitation/rsvp';
 
 function form(values: Record<string, string>) {
     const data = new FormData();
@@ -56,6 +56,27 @@ describe('readRsvpForm', () => {
     it('passes the honeypot on as it was filled, so the backend can drop the reply', () => {
         expect(readRsvpForm(form({ ...filled, website: 'spam.example' }))).toMatchObject({ reply: { website: 'spam.example' } });
     });
+
+    describe('with sessions that ask for an answer', () => {
+        const sessions = ['s1', 's2'];
+        const answered = { ...filled, [rsvpSessionField('s1')]: 'yes', [rsvpSessionField('s2')]: 'no' };
+
+        it('sends an answer for each one', () => {
+            expect(readRsvpForm(form(answered), sessions)).toMatchObject({
+                reply: { sessionAnswers: [{ sessionId: 's1', attending: true }, { sessionId: 's2', attending: false }] },
+            });
+        });
+
+        it('asks for every one before sending', () => {
+            expect(readRsvpForm(form({ ...filled, [rsvpSessionField('s1')]: 'yes' }), sessions)).toEqual({ problem: 'sessions-missing' });
+        });
+
+        it('asks about none, and sends none, for someone not attending', () => {
+            const result = readRsvpForm(form({ ...filled, attendance: 'declined' }), sessions);
+            expect(result).toHaveProperty('reply');
+            expect(result).not.toHaveProperty('reply.sessionAnswers');
+        });
+    });
 });
 
 describe('isRsvpPhone', () => {
@@ -95,6 +116,20 @@ describe('rsvpRequestBody', () => {
     it('turns anything that is not text or a whole number into an empty value', () => {
         const odd = { ...reply, phone: 42, notes: null, adultCount: '3', childCount: 1.5 };
         expect(rsvpRequestBody(odd as unknown as RsvpReply)).toMatchObject({ phone: '', notes: '', adultCount: 0, childCount: 0 });
+    });
+
+    it('keeps session answers the backend reads, and no more than it takes', () => {
+        const id = '0b0c1f9e-3c1a-4d55-9d1e-6a2c4b9f7a10';
+        const answers = [
+            { sessionId: id, attending: true, extra: 1 },
+            { sessionId: 'not-an-id', attending: true },
+            { sessionId: id, attending: 'yes' },
+            ...Array.from({ length: 120 }, () => ({ sessionId: id, attending: false })),
+        ];
+        const body = rsvpRequestBody({ ...reply, sessionAnswers: answers } as unknown as RsvpReply);
+        expect(body.sessionAnswers?.[0]).toEqual({ sessionId: id, attending: true });
+        expect(body.sessionAnswers).toHaveLength(100);
+        expect(rsvpRequestBody({ ...reply, sessionAnswers: 'all' } as unknown as RsvpReply).sessionAnswers).toEqual([]);
     });
 });
 

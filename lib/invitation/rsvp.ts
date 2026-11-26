@@ -18,6 +18,12 @@ export const RSVP_HONEYPOT_FIELD = 'website';
 
 export type RsvpAttendance = 'ATTENDING' | 'DECLINED';
 
+// A guest's answer for one session with RSVP turned on (KAN-298).
+export type RsvpSessionAnswer = { sessionId: string; attending: boolean };
+
+// The most session answers the backend takes in one reply.
+export const RSVP_MAX_SESSION_ANSWERS = 100;
+
 // What POST /api/public/invitations/{slug}/rsvp takes.
 export type RsvpReply = {
     guestName: string;
@@ -28,6 +34,8 @@ export type RsvpReply = {
     childCount: number;
     notes: string;
     website: string;
+    // Only when the event asks about sessions and the guest is attending.
+    sessionAnswers?: RsvpSessionAnswer[];
 };
 
 // How a send ended: saved, a message for the guest, or the invitation is
@@ -51,6 +59,17 @@ export function isRsvpPhone(phone: string): boolean {
 const text = (value: unknown, max: number) => (typeof value === 'string' ? value.slice(0, max) : '');
 const count = (value: unknown, max: number) => (typeof value === 'number' && Number.isInteger(value) ? Math.min(max, Math.max(0, value)) : 0);
 
+const SESSION_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+// Session answers with an id the backend reads and a yes or no, and no more than it takes.
+function sessionAnswers(value: unknown): RsvpSessionAnswer[] {
+    if (!Array.isArray(value)) return [];
+    return value
+        .filter((answer): answer is RsvpSessionAnswer => typeof answer?.sessionId === 'string' && SESSION_ID.test(answer.sessionId) && typeof answer.attending === 'boolean')
+        .slice(0, RSVP_MAX_SESSION_ANSWERS)
+        .map((answer) => ({ sessionId: answer.sessionId, attending: answer.attending }));
+}
+
 // A reply as it arrived from the browser, cut down to the fields and sizes the
 // backend takes, so the server sends nothing else.
 export function rsvpRequestBody(reply: RsvpReply): RsvpReply {
@@ -63,6 +82,7 @@ export function rsvpRequestBody(reply: RsvpReply): RsvpReply {
         childCount: count(reply.childCount, RSVP_MAX_CHILDREN),
         notes: text(reply.notes, RSVP_MAX_NOTES),
         website: text(reply.website, RSVP_MAX_NAME),
+        ...(reply.sessionAnswers ? { sessionAnswers: sessionAnswers(reply.sessionAnswers) } : {}),
     };
 }
 
@@ -70,12 +90,16 @@ const field = (form: FormData, name: string) => String(form.get(name) ?? '').tri
 
 const clampCount = (value: string, min: number, max: number) => Math.min(max, Math.max(min, Number(value) || min));
 
-export type RsvpFormProblem = 'name-missing' | 'phone-missing' | 'phone-invalid';
+export type RsvpFormProblem = 'name-missing' | 'phone-missing' | 'phone-invalid' | 'sessions-missing';
+
+// The form field of one session's yes or no.
+export const rsvpSessionField = (sessionId: string) => `session-${sessionId}`;
 
 export type RsvpFormResult = { reply: RsvpReply } | { problem: RsvpFormProblem };
 
-// Reads the form. Someone not attending sends no headcount.
-export function readRsvpForm(form: FormData): RsvpFormResult {
+// Reads the form. Someone not attending sends no headcount and no session answers; someone attending answers every
+// session the form asks about.
+export function readRsvpForm(form: FormData, sessionIds: readonly string[] = []): RsvpFormResult {
     const guestName = field(form, 'guestName');
     const phone = field(form, 'phone');
     if (!guestName) return { problem: 'name-missing' };
@@ -83,6 +107,8 @@ export function readRsvpForm(form: FormData): RsvpFormResult {
     if (!isRsvpPhone(phone)) return { problem: 'phone-invalid' };
 
     const attending = field(form, 'attendance') !== 'declined';
+    const answers = sessionIds.map((sessionId) => ({ sessionId, value: field(form, rsvpSessionField(sessionId)) }));
+    if (attending && answers.some((answer) => answer.value !== 'yes' && answer.value !== 'no')) return { problem: 'sessions-missing' };
     return {
         reply: {
             guestName,
@@ -93,6 +119,9 @@ export function readRsvpForm(form: FormData): RsvpFormResult {
             childCount: attending ? clampCount(field(form, 'childCount'), 0, RSVP_MAX_CHILDREN) : 0,
             notes: field(form, 'notes'),
             website: String(form.get(RSVP_HONEYPOT_FIELD) ?? ''),
+            ...(attending && answers.length
+                ? { sessionAnswers: answers.map((answer) => ({ sessionId: answer.sessionId, attending: answer.value === 'yes' })) }
+                : {}),
         },
     };
 }

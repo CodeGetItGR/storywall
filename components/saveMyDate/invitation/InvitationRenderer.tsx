@@ -11,6 +11,7 @@ import type { InvitationDocument } from '@/lib/invitation/document';
 import { invitationLanguage } from '@/lib/invitation/labels';
 import { buildRenderContext, type MediaResolver, themeCssVars, type TypographyPreset } from '@/lib/invitation/render';
 import type { RsvpSender } from '@/lib/invitation/rsvp';
+import type { InvitationRsvpState } from '@/lib/invitation/rsvpSessions';
 import type { InvitationSection as Section } from '@/lib/invitation/sections';
 import type { TextRenderer } from '@/lib/invitation/textEditing';
 import type { ThemeDesign } from '@/lib/invitation/theme';
@@ -28,6 +29,8 @@ type InvitationRendererProps = {
     sendRsvp?: RsvpSender;
     // The event's guest link, for the "Join the event" button.
     joinUrl?: string;
+    // Whether replies have closed, and the sessions the RSVP form asks about.
+    rsvp?: InvitationRsvpState;
     // The editor draws hidden sections too, so the host can show them again.
     showHidden?: boolean;
     // The editor puts its tools around each section.
@@ -48,12 +51,13 @@ export function InvitationRenderer({
     uploadedFonts = [],
     sendRsvp,
     joinUrl,
+    rsvp,
     showHidden = false,
     wrapSection,
     renderText,
     canvasTools,
 }: InvitationRendererProps) {
-    const ctx = { ...buildRenderContext(document, theme, media, hostPreset, sendRsvp), joinUrl, renderText, canvasTools };
+    const ctx = { ...buildRenderContext(document, theme, media, hostPreset, sendRsvp), joinUrl, rsvp, renderText, canvasTools };
     const fontFaces = uploadedFontFaceCss(uploadedFonts, [document, theme, hostPreset]);
 
     return (
