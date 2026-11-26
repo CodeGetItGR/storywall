@@ -82,3 +82,15 @@ export function isGalleryOpenToGuests(
 ): boolean {
     return readableModuleKeys(event).has('gallery') && isMemberArchiveEnabled(event?.modules);
 }
+
+// The frame details a QR upload needs (KAN-304): only for an active code, like the title.
+export function qrUploadFrameSource(resolution: QrLinkResolutionDto | undefined) {
+    if (resolution?.status !== 'ACTIVE' || !resolution.eventId) return null;
+    return {
+        eventId: resolution.eventId,
+        frame: resolution.uploadFrame,
+        title: resolution.eventTitle,
+        startAt: resolution.eventStartAt,
+        timezone: resolution.eventTimezone,
+    };
+}

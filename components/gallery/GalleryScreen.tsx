@@ -69,7 +69,8 @@ export function GalleryScreen() {
         showPreviousMedia,
         showNextMedia,
         gallerySelection,
-        uploadMediaBatch,
+        isUploading,
+        uploadFrame,
         originalMedia,
         canDownloadOriginal,
         canDeleteMedia,
@@ -157,7 +158,8 @@ export function GalleryScreen() {
                     uploadNotice={uploadNotice}
                     showMemberArchiveNote={isMemberArchiveEnabled(activeEvent?.modules)}
                     maxFiles={maxFiles}
-                    isUploading={uploadMediaBatch.isPending}
+                    isUploading={isUploading}
+                    frame={uploadFrame}
                     onFilesChange={handleFilesChange}
                     onClearSelection={handleClearSelection}
                     onUpload={handleUpload}

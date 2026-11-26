@@ -6,7 +6,7 @@ import { ApiError } from '@/lib/api/client';
 
 const { mutateAsync, memberMutateAsync } = vi.hoisted(() => ({ mutateAsync: vi.fn(), memberMutateAsync: vi.fn() }));
 
-vi.mock('next-intl', () => ({ useTranslations: () => (key: string) => key }));
+vi.mock('next-intl', () => ({ useTranslations: () => (key: string) => key, useLocale: () => 'en' }));
 vi.mock('@/hooks/useApiErrorMessage', () => ({ useApiErrorMessage: () => () => 'error' }));
 vi.mock('@/hooks/useFilePreviews', () => ({ useFilePreviews: () => [] }));
 vi.mock('@/hooks/useQrMediaUpload', () => ({ useUploadQrMediaBatch: () => ({ isPending: false, mutateAsync }) }));

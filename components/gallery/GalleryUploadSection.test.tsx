@@ -20,6 +20,7 @@ describe('GalleryUploadSection', () => {
                 showMemberArchiveNote={false}
                 maxFiles={10}
                 isUploading={false}
+                frame={null}
                 onFilesChange={vi.fn()}
                 onClearSelection={vi.fn()}
                 onUpload={vi.fn()}

@@ -14,6 +14,7 @@ import { useGalleryUploadNotices } from '@/hooks/useGalleryUploadNotices';
 import { useInfiniteScrollSentinel } from '@/hooks/useInfiniteScrollSentinel';
 import { useDeleteMedia, useEventMedia, useOriginalMedia, useUploadMediaBatch } from '@/hooks/useMedia';
 import { useSlowUpload } from '@/hooks/useSlowUpload';
+import { useUploadFrame } from '@/hooks/useUploadFrame';
 import { useMyVendorRole } from '@/hooks/useVendors';
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
@@ -95,6 +96,18 @@ export function useGalleryScreen({ printAvailable = false }: { printAvailable?: 
     const { filesPerRequest: maxFiles, imageBytes: maxImageBytes, videoBytes: maxVideoBytes } = getUploadLimits(appConfig?.media);
     const uploadLimits = useMemo(() => ({ maxFiles, maxImageBytes, maxVideoBytes }), [maxFiles, maxImageBytes, maxVideoBytes]);
     const notices = useGalleryUploadNotices(uploadLimits);
+    const uploadFrame = useUploadFrame(
+        activeEvent && eventId
+            ? {
+                  eventId,
+                  frame: activeEvent.uploadFrame,
+                  title: activeEvent.title,
+                  startAt: activeEvent.schedule.startAt,
+                  timezone: activeEvent.schedule.timezone,
+              }
+            : null,
+    );
+    const [isFraming, setIsFraming] = useState(false);
     // Every event keeps photo originals; videos are never re-encoded, so they have no separate original.
     // Pro items have no full-quality download yet (phase 2).
     const canDownloadOriginal = isHost && selectedMedia !== null && selectedMedia.mediaType !== 'VIDEO' && selectedMedia.collection !== 'PRO';
@@ -158,11 +171,18 @@ export function useGalleryScreen({ printAvailable = false }: { printAvailable?: 
         if (!eventId || !activeMember || selectedFiles.length === 0 || !canUpload) return;
 
         setUploadNotice(null);
+        setIsFraming(true);
+        let prepared: { files: File[]; notice: string | null };
+        try {
+            prepared = await uploadFrame.prepare(selectedFiles);
+        } finally {
+            setIsFraming(false);
+        }
         let result;
         try {
             result = await uploadMediaBatch.mutateAsync({
                 eventId,
-                files: selectedFiles,
+                files: prepared.files,
                 onBusy: setIsUploadBusy,
             });
         } catch (error) {
@@ -171,8 +191,8 @@ export function useGalleryScreen({ printAvailable = false }: { printAvailable?: 
         }
 
         setSelectedFiles([]);
-        setUploadNotice(notices.uploaded(result));
-    }, [activeMember, canUpload, eventId, notices, selectedFiles, uploadMediaBatch]);
+        setUploadNotice([prepared.notice, notices.uploaded(result)].filter(Boolean).join(' '));
+    }, [activeMember, canUpload, eventId, notices, selectedFiles, uploadFrame, uploadMediaBatch]);
 
     const downloadOriginal = useCallback(async () => {
         if (!selectedMedia) return;
@@ -397,6 +417,8 @@ export function useGalleryScreen({ printAvailable = false }: { printAvailable?: 
         showNextMedia,
         gallerySelection,
         uploadMediaBatch,
+        isUploading: uploadMediaBatch.isPending || isFraming,
+        uploadFrame: uploadFrame.control,
         originalMedia,
         canDownloadOriginal,
         canDownloadSelected,

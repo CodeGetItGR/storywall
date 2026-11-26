@@ -7,6 +7,7 @@ import { useTranslations } from 'next-intl';
 import React, { useCallback, useEffect, useId, useState } from 'react';
 
 import { ProtectedImage } from '@/components/common/ProtectedImage';
+import { UploadFrameSwitch } from '@/components/gallery/UploadFrameSwitch';
 import { IncidentPausedNote } from '@/components/incident/IncidentPausedNote';
 import { SignupAcceptanceCheckbox } from '@/components/legal/SignupAcceptanceCheckbox';
 import { QrSentArt } from '@/components/qrGuest/QrSentArt';
@@ -20,6 +21,7 @@ import { useUploadQrMediaBatch } from '@/hooks/useQrMediaUpload';
 import { useSlowUpload } from '@/hooks/useSlowUpload';
 import { termsVersionQueryKey, useTermsVersion } from '@/hooks/useTermsVersion';
 import { useUploadAccept } from '@/hooks/useUploadAccept';
+import { type UploadFrameSource, useUploadFrame } from '@/hooks/useUploadFrame';
 import { isGuidelinesVersionMismatchError, isTermsVersionMismatchError } from '@/lib/api/errors';
 import { formatBytes } from '@/lib/format';
 import { INCIDENT_MODE } from '@/lib/incident';
@@ -32,9 +34,11 @@ interface AnonymousQrMediaUploadFormProps {
     member?: { eventId: string; displayName: string } | null;
     // Told when the sent screen shows or hides, so the page can drop its own header there.
     onSentChange?: (sent: boolean) => void;
+    // The event's frame, when it has one: Add frame shows above the upload button (KAN-304).
+    frameSource?: UploadFrameSource | null;
 }
 
-export function AnonymousQrMediaUploadForm({ token, member = null, onSentChange }: AnonymousQrMediaUploadFormProps) {
+export function AnonymousQrMediaUploadForm({ token, member = null, onSentChange, frameSource = null }: AnonymousQrMediaUploadFormProps) {
     const t = useTranslations('QrCodePage');
     const tAlt = useTranslations('ImageAlt');
     const uploadAccept = useUploadAccept();
@@ -60,6 +64,9 @@ export function AnonymousQrMediaUploadForm({ token, member = null, onSentChange 
     const [isDragActive, setIsDragActive] = useState(false);
     const [isBusy, setIsBusy] = useState(false);
     const previews = useFilePreviews(files);
+    const uploadFrame = useUploadFrame(frameSource);
+    const [isFraming, setIsFraming] = useState(false);
+    const [frameNotice, setFrameNotice] = useState<string | null>(null);
     const nameHintId = useId();
     const pickerLabel = files.length > 0 ? t('anonymousUpload.addMore') : t('anonymousUpload.chooseFiles');
 
@@ -75,6 +82,7 @@ export function AnonymousQrMediaUploadForm({ token, member = null, onSentChange 
     const handleUploadMore = useCallback(() => {
         setAcceptedDocuments(false);
         setSubmitError(null);
+        setFrameNotice(null);
         setDone(false);
     }, []);
 
@@ -139,12 +147,20 @@ export function AnonymousQrMediaUploadForm({ token, member = null, onSentChange 
         }
 
         setSubmitError(null);
+        setIsFraming(true);
+        let prepared: { files: File[]; notice: string | null };
+        try {
+            prepared = await uploadFrame.prepare(files);
+        } finally {
+            setIsFraming(false);
+        }
+        setFrameNotice(prepared.notice);
         try {
             const result = member
-                ? await memberUploadBatch.mutateAsync({ eventId: member.eventId, files, onBusy: setIsBusy })
+                ? await memberUploadBatch.mutateAsync({ eventId: member.eventId, files: prepared.files, onBusy: setIsBusy })
                 : await qrUploadBatch.mutateAsync({
                       token,
-                      files,
+                      files: prepared.files,
                       uploaderName: uploaderName.trim() || undefined,
                       acceptance: { termsVersion: termsVersion.data!, guidelinesVersion: guidelinesVersion.data! },
                       onBusy: setIsBusy,
@@ -183,6 +199,7 @@ export function AnonymousQrMediaUploadForm({ token, member = null, onSentChange 
             <div className="flex flex-col items-center gap-4 py-8 text-center">
                 <QrSentArt kind="upload" />
                 <p className="text-base font-semibold text-ink">{t('anonymousUpload.success')}</p>
+                {frameNotice && <p className="text-sm text-ink-muted">{frameNotice}</p>}
                 <button
                     type="button"
                     onClick={handleUploadMore}
@@ -324,13 +341,16 @@ export function AnonymousQrMediaUploadForm({ token, member = null, onSentChange 
                 )
             )}
 
+            {/* Frame */}
+            {uploadFrame.control && <UploadFrameSwitch control={uploadFrame.control} />}
+
             {/* Upload */}
             <button
                 type="submit"
-                disabled={INCIDENT_MODE || uploadBatch.isPending || files.length === 0 || !isAccepted}
+                disabled={INCIDENT_MODE || uploadBatch.isPending || isFraming || files.length === 0 || !isAccepted}
                 className="flex min-h-12 w-full items-center justify-center gap-2 rounded-full text-[15px] font-semibold text-white transition-opacity bg-gradient-brand hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
             >
-                {uploadBatch.isPending ? (
+                {uploadBatch.isPending || isFraming ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
                     <>

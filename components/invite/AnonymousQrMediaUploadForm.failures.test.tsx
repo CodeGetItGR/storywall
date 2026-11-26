@@ -8,6 +8,7 @@ const { mutateAsync } = vi.hoisted(() => ({ mutateAsync: vi.fn() }));
 
 vi.mock('next-intl', () => ({
     useTranslations: () => (key: string, values?: Record<string, unknown>) => (values ? `${key}:${JSON.stringify(values)}` : key),
+    useLocale: () => 'en',
 }));
 vi.mock('@/hooks/useApiErrorMessage', () => ({ useApiErrorMessage: () => () => 'error' }));
 vi.mock('@/hooks/useFilePreviews', () => ({

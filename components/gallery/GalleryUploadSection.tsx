@@ -4,9 +4,11 @@ import { Loader2, UploadCloud } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import type { ChangeEvent } from 'react';
 
+import { UploadFrameSwitch } from '@/components/gallery/UploadFrameSwitch';
 import { IncidentPausedNote } from '@/components/incident/IncidentPausedNote';
 import { useUploadAccept } from '@/hooks/useUploadAccept';
 import { formatBytes } from '@/lib/format';
+import type { UploadFrameControl } from '@/lib/uploadFrame';
 import { cn } from '@/lib/utils';
 
 interface GalleryUploadSectionProps {
@@ -17,6 +19,7 @@ interface GalleryUploadSectionProps {
     showMemberArchiveNote: boolean;
     maxFiles: number;
     isUploading: boolean;
+    frame: UploadFrameControl | null;
     onFilesChange: (event: ChangeEvent<HTMLInputElement>) => void;
     onClearSelection: () => void;
     onUpload: () => void;
@@ -30,6 +33,7 @@ export function GalleryUploadSection({
     showMemberArchiveNote,
     maxFiles,
     isUploading,
+    frame,
     onFilesChange,
     onClearSelection,
     onUpload,
@@ -56,6 +60,9 @@ export function GalleryUploadSection({
                     <input type="file" accept={uploadAccept.media} multiple disabled={!canUpload} onChange={onFilesChange} className="sr-only" />
                 </label>
             </div>
+
+            {/* Frame */}
+            {frame && <UploadFrameSwitch control={frame} className="mt-3" />}
 
             {/* Incident note */}
             <IncidentPausedNote className="mt-3" />

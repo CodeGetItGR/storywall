@@ -15,7 +15,7 @@ const photo = (id: string) => ({
     status: 'READY' as const,
     thumbnailUrl: null,
 });
-const upload = { onFiles: vi.fn(), uploading: false, notice: null, accept: 'image/*' };
+const upload = { onFiles: vi.fn(), uploading: false, notice: null, accept: 'image/*', frame: null };
 const base: ComponentProps<typeof FeedGalleryBlock> = {
     name: 'Photos',
     tiles: [photo('a'), photo('b'), photo('c')],
@@ -89,5 +89,22 @@ describe('FeedGalleryBlock', () => {
     it('labels a video tile as a video', () => {
         renderBlock({ tiles: [{ ...photo('v'), mediaType: 'VIDEO', thumbnailUrl: 'https://cdn.test/v.jpg' }], more: 0 });
         expect(screen.getByRole('img', { name: en.ImageAlt.guestVideo })).toBeTruthy();
+    });
+});
+
+describe('FeedGalleryBlock frame', () => {
+    const frame = { on: false, toggle: vi.fn(), previewSrc: 'data:image/svg+xml,x', label: 'Add frame', alt: 'Graduation frame preview' };
+
+    it('shows Add frame above the upload button when the event has a frame', () => {
+        renderBlock({ upload: { ...upload, frame } });
+        const toggle = screen.getByRole('switch', { name: 'Add frame' });
+        expect(toggle).toHaveAttribute('aria-checked', 'false');
+        expect(screen.getByRole('img', { name: 'Graduation frame preview' })).toBeInTheDocument();
+        expect(toggle.compareDocumentPosition(screen.getByText(en.FeedModuleBlocks.galleryUpload)) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    });
+
+    it('has no switch without one', () => {
+        renderBlock({ upload: { ...upload, frame: null } });
+        expect(screen.queryByRole('switch')).not.toBeInTheDocument();
     });
 });

@@ -23,8 +23,13 @@ const mocks = vi.hoisted(() => ({
 
 vi.mock('next/navigation', () => ({ useRouter: () => ({ push: vi.fn() }) }));
 vi.mock('next-intl', () => ({ useTranslations: () => Object.assign((key: string) => key, { has: () => false }) }));
+vi.mock('@/hooks/useUploadFrame', () => ({ useUploadFrame: () => ({ control: null, prepare: async (files: File[]) => ({ files, notice: null }) }) }));
 vi.mock('@/components/routing/EventRouteGate', () => ({
-    useEventRouteContext: () => ({ activeEvent: mocks.activeEvent, eventId: 'event-1', isHost: mocks.isHost }),
+    useEventRouteContext: () => ({
+        activeEvent: mocks.activeEvent && { schedule: { startAt: null, timezone: null }, ...mocks.activeEvent },
+        eventId: 'event-1',
+        isHost: mocks.isHost,
+    }),
 }));
 vi.mock('@/hooks/useApiErrorMessage', () => ({ useApiErrorMessage: () => () => 'error' }));
 vi.mock('@/hooks/useAppConfig', () => ({ useAppConfig: () => ({ data: { media: {}, reportTargetTypes: mocks.reportTargetTypes } }) }));
