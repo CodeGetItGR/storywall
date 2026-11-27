@@ -28,6 +28,21 @@ function renderStyle(style: GraduatesStyle, graduates = [WITH_PHOTO, NO_PHOTO], 
 afterEach(cleanup);
 
 describe('Graduates styles', () => {
+    it('stickers: decorates the title and each photo, by position', () => {
+        renderStyle('stickers', [WITH_PHOTO, { ...WITH_PHOTO, id: 'g3', name: 'Ελένη' }]);
+        // Title: a star and confetti. First graduate: diploma and star. Second: books and champagne.
+        expect(screen.getAllByRole('img', { name: 'Αστέρι' })).toHaveLength(2);
+        expect(screen.getAllByRole('img', { name: 'Κομφετί' })).toHaveLength(1);
+        expect(screen.getByRole('img', { name: 'Δίπλωμα' })).toBeTruthy();
+        expect(screen.getByRole('img', { name: 'Βιβλία' })).toBeTruthy();
+        expect(screen.getByRole('img', { name: 'Σαμπάνια' })).toBeTruthy();
+    });
+
+    it('stickers: a graduate without a photo gets none', () => {
+        renderStyle('stickers', [NO_PHOTO]);
+        expect(screen.queryByRole('img', { name: 'Δίπλωμα' })).toBeNull();
+    });
+
     it('cap: puts a cap on each photo, none on a graduate without one', () => {
         renderStyle('cap');
         expect(screen.getAllByRole('img', { name: 'Καπέλο αποφοίτησης' })).toHaveLength(1);

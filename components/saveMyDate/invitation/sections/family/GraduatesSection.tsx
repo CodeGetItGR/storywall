@@ -3,9 +3,11 @@ import type { ComponentType } from 'react';
 import { InvitationElements } from '@/components/saveMyDate/invitation/InvitationElements';
 import { CapGraduate } from '@/components/saveMyDate/invitation/sections/family/graduates/CapGraduate';
 import type { GraduateProps } from '@/components/saveMyDate/invitation/sections/family/graduates/GraduateName';
+import { PlacedStickers } from '@/components/saveMyDate/invitation/sections/family/graduates/PlacedStickers';
 import { PlainGraduate } from '@/components/saveMyDate/invitation/sections/family/graduates/PlainGraduate';
+import { StickerGraduate } from '@/components/saveMyDate/invitation/sections/family/graduates/StickerGraduate';
 import { SectionText } from '@/components/saveMyDate/invitation/sections/SectionText';
-import { graduatesStyleOf } from '@/lib/invitation/graduatesStyles';
+import { graduatesStyleOf, TITLE_STICKERS } from '@/lib/invitation/graduatesStyles';
 import { graduateHasContent, visibleItems } from '@/lib/invitation/listContent';
 import type { RenderContext, TextContrast } from '@/lib/invitation/render';
 import type { GraduatesStyle, InvitationSection } from '@/lib/invitation/sections';
@@ -20,7 +22,7 @@ type GraduatesSectionProps = {
 const GRADUATE_BY_STYLE: Record<GraduatesStyle, ComponentType<GraduateProps>> = {
     plain: PlainGraduate,
     cap: CapGraduate,
-    stickers: PlainGraduate,
+    stickers: StickerGraduate,
     polaroids: PlainGraduate,
     cover: PlainGraduate,
 };
@@ -36,6 +38,7 @@ export function GraduatesSection({ section, contrast, ctx }: GraduatesSectionPro
                 {/* Title */}
                 <div className="grad-title">
                     <SectionText section={section} path="title" value={section.data.title} tag="h3" className="family-title" contrast={contrast} ctx={ctx} />
+                    {style === 'stickers' && <PlacedStickers stickers={TITLE_STICKERS} labels={ctx.labels} />}
                 </div>
                 {/* Graduates */}
                 <div className="family-godparents-list">

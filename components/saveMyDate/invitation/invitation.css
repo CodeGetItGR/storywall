@@ -509,8 +509,10 @@
 /* Graduates: cap */
 .smd-invitation .graduates-cap .family-title { margin-bottom: 48px; }
 .smd-invitation .graduates-cap .family-godparents-list { row-gap: 64px; }
-.smd-invitation .grad-cap-photo { position: relative; width: 100%; max-width: 370px; margin: 0 auto 14px; }
-.smd-invitation .grad-cap-photo .family-photo { margin-bottom: 0; }
+.smd-invitation .grad-cap-photo,
+.smd-invitation .grad-sticker-photo { position: relative; width: 100%; max-width: 370px; margin: 0 auto 14px; }
+.smd-invitation .grad-cap-photo .family-photo,
+.smd-invitation .grad-sticker-photo .family-photo { margin-bottom: 0; }
 .smd-invitation .grad-cap {
     position: absolute;
     z-index: 2;
@@ -523,6 +525,23 @@
     pointer-events: none;
 }
 .smd-invitation .graduates-cap .family-godparent:nth-child(even) .grad-cap { left: auto; right: -14px; transform: rotate(12deg); }
+
+/* Graduates: stickers */
+.smd-invitation .graduates-stickers .family-godparents-list { row-gap: 48px; }
+.smd-invitation .grad-sticker { position: absolute; z-index: 3; filter: drop-shadow(0 3px 4px rgb(0 0 0 / 0.2)); pointer-events: none; }
+.smd-invitation .grad-sticker-diploma { width: 120px; height: 70px; }
+.smd-invitation .grad-sticker-books { width: 96px; height: 70px; }
+.smd-invitation .grad-sticker-champagne { width: 62px; height: 98px; }
+.smd-invitation .grad-sticker-star { width: 34px; height: 34px; }
+.smd-invitation .grad-sticker-confetti { width: 60px; height: 40px; }
+.smd-invitation .grad-sticker-photo .grad-sticker.is-top-left { top: -24px; left: -14px; }
+.smd-invitation .grad-sticker-photo .grad-sticker.is-top-right { top: -24px; right: -14px; }
+.smd-invitation .grad-sticker-photo .grad-sticker.is-bottom-left { bottom: -6px; left: -14px; }
+.smd-invitation .grad-sticker-photo .grad-sticker.is-bottom-right { bottom: -6px; right: -12px; }
+/* Around the title, the stickers sit beside it, not over it. */
+.smd-invitation .grad-title .grad-sticker.is-top-left { top: -18px; left: 8%; }
+.smd-invitation .grad-title .grad-sticker.is-top-right { top: -10px; right: 6%; }
+.smd-invitation .graduates-stickers .family-title { margin-bottom: 36px; }
 
 /* Family: people without photos */
 .smd-invitation .family-godparents-simple-list { display: grid; gap: 8px; max-width: 320px; margin: 8px auto 0; }
