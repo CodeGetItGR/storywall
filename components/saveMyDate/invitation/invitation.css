@@ -560,10 +560,12 @@
 .smd-invitation .grad-tape { position: absolute; z-index: 2; top: -12px; left: 50%; width: 92px; height: 26px; transform: translateX(-50%) rotate(-3deg); }
 .smd-invitation .graduates-polaroids .family-godparent:nth-child(even) .grad-tape { transform: translateX(-50%) rotate(4deg); }
 .smd-invitation .grad-joined-detail { margin: 0; }
+/* Degree and university share one line. */
+.smd-invitation .grad-joined-detail .text-block { display: inline; }
 
 /* Graduates: cover */
 .smd-invitation .graduates-cover .family-godparents-list { row-gap: 28px; }
-.smd-invitation .grad-cover { position: relative; width: min(100%, 340px); aspect-ratio: 4 / 5; margin: 0 auto; overflow: hidden; border-radius: 4px; color: #fff; text-align: left; }
+.smd-invitation .grad-cover { position: relative; width: min(100%, 340px); aspect-ratio: 4 / 5; margin: 0 auto; overflow: hidden; border-radius: 4px; color: #fff; }
 .smd-invitation .grad-cover-photo { position: absolute; inset: 0; }
 .smd-invitation .grad-cover-photo > * { height: 100%; }
 .smd-invitation .grad-cover-photo .family-photo {
