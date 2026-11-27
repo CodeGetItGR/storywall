@@ -18,8 +18,10 @@ import { feedBlockControls } from '@/lib/feedEditing';
 import { defaultFeedLayout } from '@/lib/feedLayout';
 import { feedBackdropSurface, feedPageBackdrop } from '@/lib/feedPageBackdrop';
 import { feedPageTheme } from '@/lib/feedPageTheme';
+import { FEED_BLOCK_FALLBACK_STYLE } from '@/lib/feedThemeStyles';
 import { createInvitationEditorStore } from '@/lib/invitation/editorStore';
-import { type PhotoFieldSlot, removeFieldPhoto } from '@/lib/invitation/photoSlots';
+import { createSection } from '@/lib/invitation/newSection';
+import { type PhotoFieldSlot, photoFrameSlot, photoSlotKey, removeFieldPhoto } from '@/lib/invitation/photoSlots';
 import { createPhotoUploadStore } from '@/lib/invitation/photoUploadStore';
 import { buildRenderContext, onPageBackdrop } from '@/lib/invitation/render';
 import type { InvitationSection as Section } from '@/lib/invitation/sections';
@@ -133,6 +135,29 @@ export const CoupleEmptyAsGuest: Story = {
         await expect(canvasElement.querySelector('.family-photo')).toBeNull();
     },
 };
+// The theme's framed photo: empty, with its photo, on a dark page, a photo on its way and one too large.
+const framedPhoto = (mediaId: string | undefined) => {
+    const photo = mediaId ? ({ source: 'media', mediaId } as const) : undefined;
+    const section = createSection('photoFrame', 'WEDDING', () => 'framed');
+    return onPage({ ...section, style: FEED_BLOCK_FALLBACK_STYLE, elements: section.elements.map((element) => ({ ...element, frameId: 'fr-oval', photo })) } as Section);
+};
+const PLAIN: ThemeDesign = {
+    ...STORY_THEME,
+    backgrounds: {
+        top: { mode: 'cover', stableRepeat: false },
+        content: { mode: 'cover', stableRepeat: false },
+        extra: { mode: 'cover', stableRepeat: false },
+    },
+};
+const frameKey = photoSlotKey(photoFrameSlot('framed'));
+export const FrameEmpty: Story = { args: { section: framedPhoto(undefined), theme: PLAIN } };
+export const FrameEmptyOnDarkPage: Story = { args: { section: framedPhoto(undefined), theme: PLAIN, darkPage: true } };
+export const FrameFilled: Story = { args: { section: framedPhoto('m-framed'), theme: PLAIN } };
+export const FrameFilledOnDarkPage: Story = { args: { section: framedPhoto('m-framed'), theme: PLAIN, darkPage: true } };
+export const FrameUploading: Story = { args: { section: framedPhoto('m-framed'), theme: PLAIN, uploading: frameKey } };
+export const FrameTooLarge: Story = { args: { section: framedPhoto(undefined), theme: PLAIN, issue: { problem: 'size', sectionId: null, key: frameKey } } };
+export const FrameAsGuest: Story = { args: { section: framedPhoto('m-framed'), theme: PLAIN, guest: true } };
+
 export const CoupleLongNames: Story = {
     args: {
         section: storySection('coupleProfiles', {

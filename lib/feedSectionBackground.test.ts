@@ -17,6 +17,7 @@ describe('section backgrounds', () => {
         expect(canHaveBackground(faq)).toBe(true);
         expect(canHaveBackground({ ...faq, locked: true })).toBe(false);
         expect(defaultFeedLayout().sections.some(canHaveBackground)).toBe(false);
+        expect(canHaveBackground(createSection('photoFrame', 'WEDDING'))).toBe(false);
     });
 
     it('holds one at a time, and goes back to the feed', () => {

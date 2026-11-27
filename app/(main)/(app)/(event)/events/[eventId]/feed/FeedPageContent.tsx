@@ -42,6 +42,7 @@ import { feedEndsWithPost } from '@/lib/feed/feedEnd';
 import { showsPlaces } from '@/lib/feedEventDetails';
 import { feedPlaceHref } from '@/lib/feedMode';
 import { hasFeedSection } from '@/lib/feedSections';
+import type { FeedTopArt } from '@/lib/feedTopArt';
 import { cn } from '@/lib/utils';
 
 import { useFeedPage } from './FeedPageContext';
@@ -91,9 +92,10 @@ export function FeedPageContent() {
     // While the invitation shows its own Places, the cover leaves out its place buttons (KAN-293).
     const coverPlaces = !(invitation && showsPlaces(top.frame.middle));
     const topParts = {
-        cover: (
+        cover: (topArt: FeedTopArt | null) => (
             <FeedCoverBlock
                 event={coverEvent}
+                topArt={topArt}
                 isHost={isHost}
                 wishlist={moduleFlags.wishlist}
                 clearPill={Boolean(modeSwitch)}
@@ -122,8 +124,15 @@ export function FeedPageContent() {
 
     // What guests see differently from the host editing, for edit mode's preview.
     const guestParts = {
-        cover: (
-            <FeedCoverBlock event={coverEvent} isHost={false} wishlist={moduleFlags.wishlist} clearPill={Boolean(modeSwitch)} places={coverPlaces} />
+        cover: (topArt: FeedTopArt | null) => (
+            <FeedCoverBlock
+                event={coverEvent}
+                topArt={topArt}
+                isHost={false}
+                wishlist={moduleFlags.wishlist}
+                clearPill={Boolean(modeSwitch)}
+                places={coverPlaces}
+            />
         ),
         rsvp: moduleFlags.rsvp ? <FeedRsvpBlock eventId={eventId} deadline={event.schedule.rsvpDeadline ?? null} /> : null,
     };
