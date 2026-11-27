@@ -158,9 +158,10 @@ export const SAMPLE_SECTIONS: { [T in SectionType]: SectionOf<T> } = {
     // Late in the list, so fewer sample sections change their alternating background.
     graduates: section('graduates', {
         title: 'Οι απόφοιτοί μας',
+        style: 'cap',
         graduates: [
-            { id: 'g1', name: 'Μαρία', degree: 'Πτυχίο Νομικής', university: 'ΑΠΘ', photo: photo('m-g1') },
-            { id: 'g2', name: 'Νίκος', degree: 'Πτυχίο Πληροφορικής', university: 'ΑΠΘ' },
+            { id: 'g1', name: 'Μαρία', degree: 'Πτυχίο Νομικής', university: 'ΑΠΘ', photo: photo('m-grad-1') },
+            { id: 'g2', name: 'Νίκος', degree: 'Πτυχίο Πληροφορικής', university: 'ΑΠΘ', photo: photo('m-grad-2') },
         ],
     }),
     photoFrame: section('photoFrame', {}, {
