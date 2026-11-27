@@ -7,11 +7,11 @@ import { TargetedSection } from '@/components/manage/TargetedSection';
 import type { EventSessionResponseDto, EventTypeConvention } from '@/lib/api/types';
 import { formatTimeRange } from '@/lib/datetime';
 import { resolveLocationKind } from '@/lib/sessionLocations';
-import type { ManagedSessionDefinition } from '@/lib/sessionManagement';
+import type { ScheduleRowDefinition } from '@/lib/sessionManagement';
 import { cn } from '@/lib/utils';
 
 interface ScheduleEditSessionRowProps {
-    definition: ManagedSessionDefinition | null;
+    definition: ScheduleRowDefinition | null;
     session: EventSessionResponseDto | null;
     eventType: EventTypeConvention;
     canWrite: boolean;
@@ -21,7 +21,7 @@ interface ScheduleEditSessionRowProps {
     canAddSession: boolean;
     deleteDisabled: boolean;
     locale: string;
-    onCreateManagedSession: (definition: ManagedSessionDefinition) => void;
+    onCreateManagedSession: (definition: ScheduleRowDefinition) => void;
     onEditSession: (session: EventSessionResponseDto) => void;
     onDeleteSession: (session: EventSessionResponseDto) => void;
 }
@@ -39,6 +39,7 @@ export function ScheduleEditSessionRow({
     onDeleteSession,
 }: ScheduleEditSessionRowProps) {
     const t = useTranslations('SchedulePage.host.sessionManagement');
+    const tCreateEvent = useTranslations('CreateEventPage');
     const isManaged = Boolean(definition || session?.isMain || session?.isSecondary);
     const MainIcon = resolveLocationKind(eventType, 'main') === 'church' ? Church : PartyPopper;
     const Icon =
@@ -47,7 +48,8 @@ export function ScheduleEditSessionRow({
             : definition?.role === 'secondary' || session?.isSecondary
               ? Martini
               : CalendarClock;
-    const title = session?.title ?? (definition ? t(`${definition.titleKey}.title`) : t('untitled'));
+    const definitionTitle = definition ? tCreateEvent(definition.defaultTitleKey) : null;
+    const title = session?.title ?? definitionTitle ?? t('untitled');
     const time = session?.startAt ? formatTimeRange(locale, session.startAt, session.endAt, t('notSet')) : t('notSet');
     const location = session?.locationName || t('notSet');
     const canCreate = canWrite && canAddSession && Boolean(definition?.canCreate && !session);
@@ -80,7 +82,7 @@ export function ScheduleEditSessionRow({
                     </span>
                     <div className="min-w-0">
                         <p className="truncate text-sm font-semibold text-ink">{title}</p>
-                        {!session && <p className="mt-0.5 text-xs text-ink-muted">{definition?.role === 'main' ? t('mainMissing') : t('missing')}</p>}
+                        {!session && definition && <p className="mt-0.5 text-xs text-ink-muted">{t(definition.missingKey)}</p>}
                     </div>
                 </div>
                 <div className="hidden min-w-0 items-center gap-1.5 text-xs text-ink-muted sm:flex">
@@ -97,7 +99,7 @@ export function ScheduleEditSessionRow({
                             type="button"
                             onClick={handleCreate}
                             className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-border/70 text-ink-muted transition-colors hover:border-primary/20 hover:bg-primary-light hover:text-primary-dark"
-                            aria-label={definition ? t('addNamed', { title: t(`${definition.titleKey}.title`) }) : t('addItem')}
+                            aria-label={definitionTitle ? t('addNamed', { title: definitionTitle }) : t('addItem')}
                         >
                             <Plus className="h-3.5 w-3.5" aria-hidden="true" />
                         </button>

@@ -1,0 +1,14 @@
+/* The alternating timeline: moments either side of a centre line, the time over the name, a dot on the line.
+   Save my date's Program section draws it inside .smd-invitation; the feed's schedule draws it under
+   .program-timeline, inside or outside the invitation look (KAN-293). */
+:is(.smd-invitation, .program-timeline) .program-list { position: relative; max-width: 480px; margin: 0 auto; }
+:is(.smd-invitation, .program-timeline) .program-list::before { content: ''; position: absolute; left: 50%; top: 6px; bottom: 6px; width: var(--program-line-width, 1px); background: var(--program-color, currentColor); opacity: 0.3; transform: translateX(-50%); }
+:is(.smd-invitation, .program-timeline) .program-item { position: relative; display: flex; align-items: flex-start; padding: 16px 0; --pc-y: calc(16px + var(--program-time-size, var(--program-size, 26px)) * 0.525); }
+:is(.smd-invitation, .program-timeline) .program-item.side-left { justify-content: flex-end; padding-right: calc(50% + 14px); }
+:is(.smd-invitation, .program-timeline) .program-item.side-right { justify-content: flex-start; padding-left: calc(50% + 14px); }
+:is(.smd-invitation, .program-timeline) .program-content { max-width: 200px; }
+:is(.smd-invitation, .program-timeline) .program-item.side-left .program-content { text-align: right; }
+:is(.smd-invitation, .program-timeline) .program-item.side-right .program-content { text-align: left; }
+:is(.smd-invitation, .program-timeline) .program-dot { position: absolute; left: 50%; top: calc(var(--pc-y) - 4.5px); transform: translateX(-50%); width: 9px; height: 9px; border-radius: 50%; background: var(--program-color, currentColor); z-index: 2; }
+:is(.smd-invitation, .program-timeline) .program-time { font-size: var(--program-time-size, var(--program-size, 26px)); font-family: var(--program-time-font, var(--program-font, var(--title-font))); font-weight: 700; margin: 0 0 2px; line-height: 1.05; color: var(--program-time-color, var(--program-color, inherit)); }
+:is(.smd-invitation, .program-timeline) .program-label { font-size: var(--program-label-size, 14px); font-family: var(--program-label-font, var(--program-font, var(--body-font))); opacity: 0.85; margin: 0; line-height: 1.25; color: var(--program-label-color, var(--program-color, inherit)); }

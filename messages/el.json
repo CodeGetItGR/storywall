@@ -1309,6 +1309,11 @@
             "PRIVATE_PARTY": {
                 "title": "Όνομα πάρτι",
                 "startAt": "Ημερομηνία πάρτι"
+            },
+            "GRADUATION": {
+                "title": "Όνομα εκδήλωσης",
+                "startAt": "Ημερομηνία ορκωμοσίας",
+                "locationName": "Τοποθεσία ορκωμοσίας"
             }
         },
         "initialSessions": {
@@ -1335,6 +1340,9 @@
             },
             "REUNION": {
                 "title": "Συνάντηση"
+            },
+            "GRADUATION": {
+                "title": "Ορκωμοσία"
             }
         },
         "secondarySessions": {
@@ -1343,6 +1351,14 @@
             },
             "BAPTISM": {
                 "title": "Χώρος δεξίωσης"
+            },
+            "GRADUATION": {
+                "title": "Δείπνο"
+            }
+        },
+        "suggestedSessions": {
+            "GRADUATION": {
+                "title": "Πάρτι"
             }
         },
         "endAtPresets": {
@@ -2475,6 +2491,7 @@
                 "notSet": "Δεν έχει οριστεί",
                 "missing": "Δεν έχει προστεθεί ακόμη χώρος δεξίωσης.",
                 "mainMissing": "Δεν υπάρχει ακόμη ενότητα τελετής. Προσθέστε τη για να εμφανιστεί εδώ.",
+                "notAdded": "Δεν έχει προστεθεί ακόμη.",
                 "untitled": "Χωρίς τίτλο",
                 "editNamed": "Επεξεργασία: {title}",
                 "addNamed": "Προσθήκη: {title}",
@@ -6844,7 +6861,8 @@
         },
         "prompt": {
             "question": "Τι να φωτογραφίσουν οι καλεσμένοι;",
-            "placeholder": "Δείξτε μας την καλύτερη χορευτική σας κίνηση"
+            "placeholder": "Δείξτε μας την καλύτερη χορευτική σας κίνηση",
+            "thenAndNow": "Τότε και τώρα: μια παλιά σας φωτογραφία μαζί"
         },
         "pinned": {
             "photoAlt": "Φωτογραφία {number} από {count}"
@@ -6860,6 +6878,17 @@
             "join": "Συνδεθείτε και μπείτε στην εκδήλωση",
             "feed": "Φωτογραφίες και αναρτήσεις"
         }
+    },
+    "FeedModuleBlocks": {
+        "galleryUpload": "Ανεβάστε φωτογραφίες",
+        "galleryUploadFirst": "Ανεβάστε την πρώτη",
+        "galleryMore": "{count} ακόμη",
+        "wishWrite": "Γράψτε μια ευχή",
+        "wishAll": "Όλες οι ευχές ({count})",
+        "wishMine": "Οι ευχές σας ({count})",
+        "wishWriteYours": "Γράψτε την ευχή σας…",
+        "wishNone": "Δεν υπάρχουν ευχές ακόμη.",
+        "wishPosition": "Ευχή {n} από {total}"
     },
     "FeedEditor": {
         "addIntro": "Προσθέστε όποια ενότητα θέλετε για το ψηφιακό σας προσκλητήριο",
@@ -9965,6 +9994,7 @@
         "appIcon": "Εικονίδιο εφαρμογής StoryWall",
         "location": "Τοποθεσία",
         "guestPhoto": "Φωτογραφία καλεσμένου",
+        "guestVideo": "Βίντεο καλεσμένου",
         "photoBy": "Φωτογραφία από {name}",
         "qrUploadSent": "Οι φωτογραφίες στάλθηκαν",
         "qrWishSent": "Η ευχή στάλθηκε",
@@ -10747,7 +10777,7 @@
             "invitation": "Κείμενο πρόσκλησης",
             "date": "Ημερομηνία",
             "countdown": "Αντίστροφη μέτρηση",
-            "locations": "Εκκλησία & Δεξίωση",
+            "locations": "Τοποθεσίες",
             "parents": "Οικογένειες",
             "rsvp": "RSVP",
             "gift": "Δώρο - Αρ. Λογαριασμού",
@@ -10775,7 +10805,6 @@
             "feedDetails": "Λεπτομέρειες",
             "feedDescription": "Περιγραφή",
             "feedRsvp": "RSVP",
-            "feedSchedule": "Το πρόγραμμα της ημέρας",
             "feedPrompt": "Ιδέα για φωτογραφία",
             "feedPinned": "Καρφιτσωμένες φωτογραφίες"
         },

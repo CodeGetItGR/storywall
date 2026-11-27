@@ -1,9 +1,14 @@
-import { cleanup, render, screen } from '@testing-library/react';
+import { act, cleanup, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { ScheduleScreen } from '@/components/schedule/ScheduleScreen';
+import { getScheduleSuggestions, type ScheduleRowDefinition } from '@/lib/sessionManagement';
 
 const can = vi.hoisted(() => ({ edit: false, limitEnabled: [] as boolean[] }));
+const captured = vi.hoisted(() => ({
+    onCreateManagedSession: null as null | ((definition: ScheduleRowDefinition) => void),
+    sheets: [] as { open: boolean; prefillTitle?: string; secondaryPrefillTitle?: string }[],
+}));
 vi.mock('@/hooks/useCanEditSchedule', () => ({ useCanEditSchedule: () => can.edit }));
 vi.mock('next-intl', () => ({ useTranslations: () => (key: string) => key, useLocale: () => 'en' }));
 vi.mock('next/navigation', () => ({ useSearchParams: () => new URLSearchParams({ section: 'schedule' }) }));
@@ -40,16 +45,27 @@ vi.mock('@/components/schedule/ScheduleSkeletons', () => ({ SchedulePageSkeleton
 vi.mock('@/components/tools/ModulePageShell', () => ({ ModulePageShell: ({ children }: { children: React.ReactNode }) => <div>{children}</div> }));
 vi.mock('@/components/tools/ModuleNotice', () => ({ ModuleNotice: ({ children }: { children: React.ReactNode }) => <p>{children}</p> }));
 vi.mock('@/components/ui/ConfirmActionModal', () => ({ ConfirmActionModal: () => null }));
-vi.mock('@/components/schedule/ScheduleEditSessionsTable', () => ({ ScheduleEditSessionsTable: () => <p>edit table</p> }));
+vi.mock('@/components/schedule/ScheduleEditSessionsTable', () => ({
+    ScheduleEditSessionsTable: (props: { onCreateManagedSession: (definition: ScheduleRowDefinition) => void }) => {
+        captured.onCreateManagedSession = props.onCreateManagedSession;
+        return <p>edit table</p>;
+    },
+}));
 vi.mock('@/app/(main)/(app)/(event)/events/[eventId]/tools/schedule/components/ScheduleSessionsList', () => ({
     ScheduleSessionsList: () => <p>public list</p>,
 }));
-vi.mock('@/app/(main)/(app)/(event)/events/[eventId]/tools/schedule/components/ScheduleEditorSheet', () => ({ ScheduleEditorSheet: () => null }));
+vi.mock('@/app/(main)/(app)/(event)/events/[eventId]/tools/schedule/components/ScheduleEditorSheet', () => ({
+    ScheduleEditorSheet: (props: { open: boolean; prefillTitle?: string; secondaryPrefillTitle?: string }) => {
+        captured.sheets.push(props);
+        return null;
+    },
+}));
 vi.mock('@/app/(main)/(app)/(event)/events/[eventId]/tools/schedule/components/ScheduleEmptyState', () => ({ ScheduleEmptyState: () => null }));
 
 afterEach(() => {
     cleanup();
     can.limitEnabled = [];
+    captured.sheets = [];
 });
 
 describe('ScheduleScreen for a planner', () => {
@@ -59,6 +75,19 @@ describe('ScheduleScreen for a planner', () => {
         expect(screen.getByRole('button', { name: 'views.edit' })).toBeTruthy();
         expect(screen.getByText('edit table')).toBeTruthy();
         expect(can.limitEnabled.every((enabled) => enabled === false)).toBe(true);
+    });
+
+    it("opens the editor with a suggestion's title, as an ordinary item", () => {
+        can.edit = true;
+        render(<ScheduleScreen />);
+        const [party] = getScheduleSuggestions('GRADUATION');
+        act(() => captured.onCreateManagedSession?.(party));
+        // next-intl is mocked to hand back the key.
+        expect(captured.sheets.at(-1)).toMatchObject({
+            open: true,
+            prefillTitle: 'suggestedSessions.GRADUATION.title',
+            secondaryPrefillTitle: undefined,
+        });
     });
 
     it('keeps guests on the public list without a toggle, even with a section in the link', () => {

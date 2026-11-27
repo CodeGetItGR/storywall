@@ -4,6 +4,7 @@ import { expect, fn, userEvent, within } from 'storybook/test';
 
 import { labelsFor, LONG_TEXT, LONG_TITLE, onDark, SectionStory, storySection } from '@/.storybook/invitation';
 import { waitForOpen } from '@/.storybook/waitForOpen';
+import { wallThemeDesign } from '@/lib/feedLayout';
 import { INVITATION_LABELS } from '@/lib/invitation/labels';
 import type { RsvpOutcome } from '@/lib/invitation/rsvp';
 import type { InvitationRsvpState } from '@/lib/invitation/rsvpSessions';
@@ -272,6 +273,11 @@ export const CustomFormStyle: Story = {
     play: async ({ canvasElement, globals }) => {
         await open(canvasElement, globals);
     },
+};
+
+// A light button of its own on a theme whose buttons are dark.
+export const LightButtonNoTheme: Story = {
+    args: { section: storySection('rsvp', { formStyle: { buttonBg: '#b8dfd3' } }), theme: wallThemeDesign(null) },
 };
 
 export const OnDarkBackground: Story = {

@@ -36,6 +36,9 @@ function wrap(
     };
 }
 
+// The starter prompt reads next-intl, which these tests do not provide.
+vi.mock('@/hooks/useFeedStarterPrompt', () => ({ useFeedStarterPrompt: () => undefined }));
+
 describe('useFeedEditMode', () => {
     it('lets a host start and finish editing', () => {
         const { result } = renderHook(() => useFeedEditMode(active, true), { wrapper: wrap() });

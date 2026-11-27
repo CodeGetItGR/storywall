@@ -24,6 +24,9 @@ function wrapper({ children }: { children: ReactNode }) {
 
 afterEach(() => get.mockReset());
 
+// The starter prompt reads next-intl, which these tests do not provide.
+vi.mock('@/hooks/useFeedStarterPrompt', () => ({ useFeedStarterPrompt: () => undefined }));
+
 describe('useFeedLayout', () => {
     it('asks nothing and draws the default layout while the flag is off', () => {
         const { result } = renderHook(() => useFeedLayout(event, { enabled: false }), { wrapper });
@@ -33,7 +36,14 @@ describe('useFeedLayout', () => {
 
     it('ignores a cached layout while the flag is off', () => {
         const client = new QueryClient();
-        client.setQueryData(['events', 'e-1', 'feed-layout'], { themeSlug: null, revision: 9, document: defaultFeedLayout(), design: null, imageUrls: {}, updatedAt: '' });
+        client.setQueryData(['events', 'e-1', 'feed-layout'], {
+            themeSlug: null,
+            revision: 9,
+            document: defaultFeedLayout(),
+            design: null,
+            imageUrls: {},
+            updatedAt: '',
+        });
         const cached = ({ children }: { children: ReactNode }) => <QueryClientProvider client={client}>{children}</QueryClientProvider>;
         const { result } = renderHook(() => useFeedLayout(event, { enabled: false }), { wrapper: cached });
         expect(result.current.revision).toBe(0);
@@ -41,7 +51,14 @@ describe('useFeedLayout', () => {
 
     it('reads the saved layout', async () => {
         const base = defaultFeedLayout();
-        get.mockResolvedValue({ themeSlug: null, revision: 2, document: { ...base, sections: [...base.sections, SAMPLE_SECTIONS.faq] }, design: null, imageUrls: {}, updatedAt: '' });
+        get.mockResolvedValue({
+            themeSlug: null,
+            revision: 2,
+            document: { ...base, sections: [...base.sections, SAMPLE_SECTIONS.faq] },
+            design: null,
+            imageUrls: {},
+            updatedAt: '',
+        });
         const { result } = renderHook(() => useFeedLayout(event, { enabled: true }), { wrapper });
         await waitFor(() => expect(result.current.revision).toBe(2));
         expect(get).toHaveBeenCalledWith('/api/events/e-1/feed-layout');

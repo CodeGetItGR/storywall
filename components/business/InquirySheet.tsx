@@ -8,7 +8,7 @@ import { Button, buttonVariants } from '@/components/ui/button';
 import { Modal } from '@/components/ui/modal';
 import { useBusinessContactFocus } from '@/hooks/useBusinessContactFocus';
 import type { GuestInquiryDto } from '@/lib/api/types';
-import { formatInquiryDate } from '@/lib/inquiries';
+import { formatInquiryDate, inquiryMailHref } from '@/lib/inquiries';
 
 // A call or email link, styled like the call and email buttons on vendor cards. Long addresses shorten instead of
 // widening the sheet.
@@ -73,7 +73,7 @@ export function InquirySheet({
                                 </a>
                             )}
                             {inquiry.email && (
-                                <a href={`mailto:${encodeURIComponent(inquiry.email)}`} className={REPLY_LINK}>
+                                <a href={inquiryMailHref(inquiry.email)} className={REPLY_LINK}>
                                     <Mail aria-hidden="true" />
                                     <span className="truncate">
                                         {t('writeEmail')} {inquiry.email}

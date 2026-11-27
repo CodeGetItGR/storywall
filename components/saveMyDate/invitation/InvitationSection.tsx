@@ -21,6 +21,7 @@ import { PhotoPeopleSection } from '@/components/saveMyDate/invitation/sections/
 import { FaqSection } from '@/components/saveMyDate/invitation/sections/faq/FaqSection';
 import { FooterSection } from '@/components/saveMyDate/invitation/sections/FooterSection';
 import { AccommodationSection } from '@/components/saveMyDate/invitation/sections/info/AccommodationSection';
+import { EventPlacesSection } from '@/components/saveMyDate/invitation/sections/info/EventPlacesSection';
 import { GiftSection } from '@/components/saveMyDate/invitation/sections/info/GiftSection';
 import { LocationsSection } from '@/components/saveMyDate/invitation/sections/info/LocationsSection';
 import { ProgramIconsSection } from '@/components/saveMyDate/invitation/sections/info/ProgramIconsSection';
@@ -147,7 +148,12 @@ function SectionContent({ section, contrast, ctx }: SectionContentProps) {
         case 'programIcons':
             return <ProgramIconsSection section={section} contrast={contrast} ctx={ctx} />;
         case 'locations':
-            return <LocationsSection section={section} contrast={contrast} ctx={ctx} />;
+            // On the feed, the event's own places (KAN-293).
+            return ctx.eventDetails ? (
+                <EventPlacesSection section={section} places={ctx.eventDetails.places} contrast={contrast} ctx={ctx} />
+            ) : (
+                <LocationsSection section={section} contrast={contrast} ctx={ctx} />
+            );
         case 'accommodation':
             return <AccommodationSection section={section} contrast={contrast} ctx={ctx} />;
         case 'gift':

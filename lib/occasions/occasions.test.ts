@@ -32,6 +32,7 @@ describe('occasion registry', () => {
             'BAPTISM',
             'BIRTHDAY',
             'GENDER_REVEAL',
+            'GRADUATION',
             'PRIVATE_PARTY',
             'REUNION',
             'SOCIAL_EVENT',

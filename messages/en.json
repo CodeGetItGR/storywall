@@ -1178,6 +1178,11 @@
             "PRIVATE_PARTY": {
                 "title": "Party name",
                 "startAt": "Party date"
+            },
+            "GRADUATION": {
+                "title": "Event name",
+                "startAt": "Ceremony date",
+                "locationName": "Ceremony location"
             }
         },
         "initialSessions": {
@@ -1204,6 +1209,9 @@
             },
             "REUNION": {
                 "title": "Reunion"
+            },
+            "GRADUATION": {
+                "title": "Ceremony"
             }
         },
         "secondarySessions": {
@@ -1212,6 +1220,14 @@
             },
             "BAPTISM": {
                 "title": "Venue"
+            },
+            "GRADUATION": {
+                "title": "Dinner"
+            }
+        },
+        "suggestedSessions": {
+            "GRADUATION": {
+                "title": "Party"
             }
         },
         "endAtPresets": {
@@ -2346,6 +2362,7 @@
                 "notSet": "Not set",
                 "missing": "No venue session has been added yet.",
                 "mainMissing": "No ceremony session yet. Add it to show it here.",
+                "notAdded": "Not added yet.",
                 "untitled": "Untitled",
                 "editNamed": "Edit {title}",
                 "addNamed": "Add {title}",
@@ -6715,7 +6732,8 @@
         },
         "prompt": {
             "question": "What should guests photograph?",
-            "placeholder": "Show us your best dance move"
+            "placeholder": "Show us your best dance move",
+            "thenAndNow": "Then & now: post an old photo with the graduate"
         },
         "pinned": {
             "photoAlt": "Photo {number} of {count}"
@@ -6731,6 +6749,17 @@
             "join": "Sign in and join the event",
             "feed": "Photos and posts"
         }
+    },
+    "FeedModuleBlocks": {
+        "galleryUpload": "Upload photos",
+        "galleryUploadFirst": "Upload the first",
+        "galleryMore": "{count} more",
+        "wishWrite": "Write a wish",
+        "wishAll": "All wishes ({count})",
+        "wishMine": "Your wishes ({count})",
+        "wishWriteYours": "Write your wish…",
+        "wishNone": "No wishes yet.",
+        "wishPosition": "Wish {n} of {total}"
     },
     "FeedEditor": {
         "addIntro": "Add any section you like to your digital invitation",
@@ -9948,6 +9977,7 @@
         "appIcon": "StoryWall app icon",
         "location": "Location",
         "guestPhoto": "Guest photo",
+        "guestVideo": "Guest video",
         "photoBy": "Photo by {name}",
         "qrUploadSent": "Photos sent",
         "qrWishSent": "Wish sent",
@@ -10709,7 +10739,7 @@
             "invitation": "Invitation text",
             "date": "Date",
             "countdown": "Countdown",
-            "locations": "Church & reception",
+            "locations": "Places",
             "parents": "Families",
             "rsvp": "RSVP",
             "gift": "Gift - Bank account",
@@ -10737,7 +10767,6 @@
             "feedDetails": "Details",
             "feedDescription": "Description",
             "feedRsvp": "RSVP",
-            "feedSchedule": "Today's schedule",
             "feedPrompt": "Photo prompt",
             "feedPinned": "Pinned photos"
         },

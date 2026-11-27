@@ -3,7 +3,7 @@ import { useTranslations } from 'next-intl';
 import { InvitationElements } from '@/components/saveMyDate/invitation/InvitationElements';
 import { SectionText } from '@/components/saveMyDate/invitation/sections/SectionText';
 import { ThemeArtImage } from '@/components/saveMyDate/invitation/sections/ThemeArtImage';
-import { mapsUrl } from '@/lib/invitation/mapLinks';
+import { placeMapUrl } from '@/lib/invitation/mapLinks';
 import { artAnimationClass, artImageStyle, type RenderContext, type TextContrast } from '@/lib/invitation/render';
 import type { InvitationSection } from '@/lib/invitation/sections';
 
@@ -55,6 +55,7 @@ function LocationCard({ section, place, contrast, ctx }: LocationCardProps) {
     const { data } = section;
     const name = data[place];
     const address = data[`${place}Address`];
+    const map = placeMapUrl(data[`${place}Map`], name, address);
     const art = ctx.theme.art[`${place}Icon`];
     const src = art && ctx.media(art.image.mediaId);
 
@@ -76,11 +77,13 @@ function LocationCard({ section, place, contrast, ctx }: LocationCardProps) {
             <SectionText section={section} path={place} value={name} tag="h3" contrast={contrast} ctx={ctx} />
             <SectionText section={section} path={`${place}Address`} value={address} tag="p" contrast={contrast} ctx={ctx} />
             {/* Map */}
-            <div className="location-map-row">
-                <a className="theme-btn" href={data[`${place}Map`] || mapsUrl(name, address)} target="_blank" rel="noopener">
-                    {ctx.labels.map}
-                </a>
-            </div>
+            {map && (
+                <div className="location-map-row">
+                    <a className="theme-btn" href={map} target="_blank" rel="noopener">
+                        {ctx.labels.map}
+                    </a>
+                </div>
+            )}
         </div>
     );
 }

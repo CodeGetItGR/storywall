@@ -24,7 +24,7 @@ import { getCreateEventCatalogEntry } from '@/lib/createEventCatalog';
 import { toDatetimeLocalValue } from '@/lib/datetime';
 import { isEventWritable } from '@/lib/eventLifecycle';
 import { routes } from '@/lib/routes';
-import type { ManagedSessionDefinition } from '@/lib/sessionManagement';
+import type { ScheduleRowDefinition } from '@/lib/sessionManagement';
 import { cn } from '@/lib/utils';
 
 export function ScheduleScreen() {
@@ -51,6 +51,7 @@ export function ScheduleScreen() {
     const [editingSessionId, setEditingSessionId] = useState<string | null>(null);
     const [editorOpen, setEditorOpen] = useState(false);
     const [creatingSecondary, setCreatingSecondary] = useState(false);
+    const [prefillTitle, setPrefillTitle] = useState<string | undefined>(undefined);
     const [deleteError, setDeleteError] = useState<string | null>(null);
     const [deleteTarget, setDeleteTarget] = useState<EventSessionResponseDto | null>(null);
     const updateSession = useUpdateEventSession(editingSessionId ?? '', eventId ?? '');
@@ -67,10 +68,11 @@ export function ScheduleScreen() {
         setDeleteError(null);
         setEditingSessionId(null);
         setCreatingSecondary(false);
+        setPrefillTitle(undefined);
         setEditorOpen(true);
     }
 
-    async function restoreMainSession(definition: ManagedSessionDefinition) {
+    async function restoreMainSession(definition: ScheduleRowDefinition) {
         if (!eventId || createSession.isPending) return;
         setDeleteError(null);
         try {
@@ -81,7 +83,7 @@ export function ScheduleScreen() {
         }
     }
 
-    function openCreateManagedEditor(definition: ManagedSessionDefinition) {
+    function openCreateManagedEditor(definition: ScheduleRowDefinition) {
         if (!canAddSession || !definition.canCreate) return;
         if (definition.role === 'main') {
             void restoreMainSession(definition);
@@ -91,6 +93,8 @@ export function ScheduleScreen() {
         setDeleteError(null);
         setEditingSessionId(null);
         setCreatingSecondary(Boolean(secondarySessionTitleKey && definition.role === 'secondary'));
+        // A suggestion is an ordinary item with its title filled in.
+        setPrefillTitle(definition.role === 'suggestion' ? tCreateEvent(definition.defaultTitleKey) : undefined);
         setEditorOpen(true);
     }
 
@@ -99,6 +103,7 @@ export function ScheduleScreen() {
         setDeleteError(null);
         setEditingSessionId(session.id);
         setCreatingSecondary(false);
+        setPrefillTitle(undefined);
         setEditorOpen(true);
     }
 
@@ -106,6 +111,7 @@ export function ScheduleScreen() {
         setEditorOpen(false);
         setEditingSessionId(null);
         setCreatingSecondary(false);
+        setPrefillTitle(undefined);
     }
 
     function handleEditorOpenChange(nextOpen: boolean) {
@@ -233,6 +239,7 @@ export function ScheduleScreen() {
                     createSession={createSession}
                     updateSession={updateSession}
                     secondaryPrefillTitle={creatingSecondary ? secondarySessionTitle : undefined}
+                    prefillTitle={prefillTitle}
                 />
             )}
 

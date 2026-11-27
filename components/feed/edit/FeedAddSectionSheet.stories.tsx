@@ -74,6 +74,9 @@ const openPreview = async (name: string, copy: ReturnType<typeof copyFor>['Invit
 
 export const Wedding: Story = {};
 export const Baptism: Story = { args: { eventType: 'BAPTISM', types: listFor('BAPTISM') } };
+// A shower has the gift; a birthday, and the types that share its list, don't (KAN-293).
+export const BabyShower: Story = { tags: ['visual-desktop-only'], args: { eventType: 'BABY_SHOWER', types: listFor('BABY_SHOWER') } };
+export const Birthday: Story = { tags: ['visual-desktop-only'], args: { eventType: 'BIRTHDAY', types: listFor('BIRTHDAY') } };
 export const NothingLeft: Story = { args: { types: [] } };
 
 export const PreviewOpen: Story = {
@@ -104,11 +107,13 @@ const feedStory = (types: readonly FeedModeSectionType[]): Story => ({
     render: () => <FeedSheet event={boyOrGirl} types={types} />,
 });
 
+// Feed mode's schedule goes by the Schedule module's name (KAN-293).
 const feedPreview = (type: 'feedSchedule' | 'feedPrompt' | 'feedPinned'): Story => ({
     ...feedStory(FEED_MODE_SECTION_TYPES),
     play: async ({ globals }) => {
-        const copy = copyFor(globals).InvitationEditor;
-        await openPreview(copy.sectionNames[type], copy);
+        const copy = copyFor(globals);
+        const name = type === 'feedSchedule' ? copy.Modules.schedule.name : copy.InvitationEditor.sectionNames[type];
+        await openPreview(name, copy.InvitationEditor);
     },
 });
 

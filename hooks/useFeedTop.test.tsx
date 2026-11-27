@@ -19,7 +19,7 @@ vi.mock('@/providers/EventProvider', () => ({ useIsHost: () => viewer.isHost }))
 vi.mock('@/hooks/useAdminInvitationThemes', () => ({ useInvitationFonts: () => ({ data: [] }) }));
 
 // An event that has ended: the read-only feed keeps only the cover and details.
-const event = { id: 'e-1', theme: null, description: null, schedule: { endAt: '2020-01-01T00:00:00Z' } } as unknown as EventDetailResponseDto;
+const event = { id: 'e-1', theme: null, description: null, location: { name: null, address: null, mapsUrl: null }, schedule: { endAt: '2020-01-01T00:00:00Z' } } as unknown as EventDetailResponseDto;
 
 const SMD = [{ moduleKey: 'save_my_date', isAvailable: true }];
 const smdEvent = { ...event, modules: SMD } as unknown as EventDetailResponseDto;
@@ -38,6 +38,9 @@ function wrapperWith(saved: FeedLayoutDto | null) {
 }
 
 const wrapper = wrapperWith(null);
+
+// The starter prompt reads next-intl, which these tests do not provide.
+vi.mock('@/hooks/useFeedStarterPrompt', () => ({ useFeedStarterPrompt: () => undefined }));
 
 describe('useFeedTop while editing', () => {
     const dressCode = { ...(SAMPLE_SECTIONS.dressCode as InvitationSection), id: 'dress' };
@@ -166,7 +169,9 @@ describe('useFeedTop on a Save my date theme', () => {
     });
 
     it('follows the theme held in edit mode', () => {
-        const { result } = renderHook(() => useFeedTop(event, { document: themed, theme: SAMPLE_THEME, media: (id) => `https://held.test/${id}` }), { wrapper });
+        const { result } = renderHook(() => useFeedTop(event, { document: themed, theme: SAMPLE_THEME, media: (id) => `https://held.test/${id}` }), {
+            wrapper,
+        });
         expect(result.current.backdrop?.image?.desktop).toBe('https://held.test/m-content');
     });
 });
@@ -213,8 +218,17 @@ describe('useFeedTop and a schedule with no sessions', () => {
         expect(idsOf(eventWith({ sessions: [{ ...church, startAt: null }] }))).toEqual([]);
     });
 
+    it('leaves both out once the last session is over, but keeps them in edit mode (KAN-293)', () => {
+        viewer.isHost = true;
+        const past = eventWith({ sessions: [{ ...church, startAt: '2021-06-20T16:00:00Z', endAt: '2021-06-20T17:00:00Z' }] });
+        expect(idsOf(past)).toEqual([]);
+        expect(idsOf(past, false)).toEqual(['module', 'today']);
+    });
+
     it("leaves the host's card out after the event", () => {
         viewer.isHost = true;
-        expect(idsOf(eventWith({ schedule: { startAt: '2020-01-01T00:00:00Z', timezone: 'Europe/Athens', endAt: '2020-01-02T00:00:00Z' } }))).toEqual([]);
+        expect(idsOf(eventWith({ schedule: { startAt: '2020-01-01T00:00:00Z', timezone: 'Europe/Athens', endAt: '2020-01-02T00:00:00Z' } }))).toEqual(
+            [],
+        );
     });
 });

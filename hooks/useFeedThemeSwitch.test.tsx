@@ -44,6 +44,9 @@ beforeEach(() => {
     api.put.mockResolvedValue({ revision: 1, updatedAt: '2026-11-21T10:00:00Z' });
 });
 
+// The starter prompt reads next-intl, which these tests do not provide.
+vi.mock('@/hooks/useFeedStarterPrompt', () => ({ useFeedStarterPrompt: () => undefined }));
+
 describe('useFeedThemeSwitch', () => {
     it("saves the layout on the theme, under the theme's own id", async () => {
         const { result } = renderHook(() => useFeedThemeSwitch(EVENT, readFeedLayout(null, null)), { wrapper });

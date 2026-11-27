@@ -39,6 +39,7 @@ import { useHideMobileTabBar } from '@/hooks/useHideMobileTabBar';
 import { useHideMobileTabBarOnScroll } from '@/hooks/useHideMobileTabBarOnScroll';
 import { useRsvpPromptVisible } from '@/hooks/useRsvpPromptVisible';
 import { feedEndsWithPost } from '@/lib/feed/feedEnd';
+import { showsPlaces } from '@/lib/feedEventDetails';
 import { feedPlaceHref } from '@/lib/feedMode';
 import { hasFeedSection } from '@/lib/feedSections';
 import { cn } from '@/lib/utils';
@@ -93,6 +94,8 @@ export function FeedPageContent() {
                 />
             </div>
         ));
+    // While the invitation shows its own Places, the cover leaves out its place buttons (KAN-293).
+    const coverPlaces = !(invitation && showsPlaces(top.frame.middle));
     const topParts = {
         cover: (
             <FeedCoverBlock
@@ -101,6 +104,7 @@ export function FeedPageContent() {
                 wishlist={moduleFlags.wishlist}
                 clearPill={Boolean(modeSwitch)}
                 editing={editMode.editing}
+                places={coverPlaces}
             />
         ),
         // Social Feed mode only (FeedTopFrame); signed-out visitors get it under the cover (KAN-246).
@@ -124,7 +128,9 @@ export function FeedPageContent() {
 
     // What guests see differently from the host editing, for edit mode's preview.
     const guestParts = {
-        cover: <FeedCoverBlock event={coverEvent} isHost={false} wishlist={moduleFlags.wishlist} clearPill={Boolean(modeSwitch)} />,
+        cover: (
+            <FeedCoverBlock event={coverEvent} isHost={false} wishlist={moduleFlags.wishlist} clearPill={Boolean(modeSwitch)} places={coverPlaces} />
+        ),
         rsvp: moduleFlags.rsvp ? <FeedRsvpBlock eventId={eventId} deadline={event.schedule.rsvpDeadline ?? null} /> : null,
     };
 
