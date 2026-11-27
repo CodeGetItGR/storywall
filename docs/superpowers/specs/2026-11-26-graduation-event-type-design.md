@@ -170,8 +170,8 @@ const graduateSchema = z.object({
 - `lib/feedLayout.ts`: `graduates` joins `PAID_FEED_SECTION_TYPES`.
 - `lib/feedAddList.ts`: a GRADUATION list: `invitation`, `graduates`, `gallery`, `program`, `faq`,
   `accommodation`, `contact`.
-- `lib/invitation/sectionRules.ts`: a GRADUATION entry: the BIRTHDAY default and optional lists, plus
-  `graduates` as optional.
+- `lib/invitation/sectionRules.ts` stays as it is: the block belongs to the feed (its Invitation view), never
+  to the standalone Save my date editor (owner, 2026-11-27).
 - Backend `invitation-document.schema.json`: the same shape, so saved layouts validate; and
   `FeedLayoutRules.PAID_TYPES` gains `graduates`.
 

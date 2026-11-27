@@ -33,8 +33,6 @@ export const EVENT_TYPE_SECTIONS: Record<string, EventSections> = {
     WEDDING,
     BAPTISM,
     BIRTHDAY,
-    // A graduation invitation: the birthday's sections and the Graduates block (KAN-302).
-    GRADUATION: { default: BIRTHDAY.default, optional: [...BIRTHDAY.optional, 'graduates'] },
     BABY_SHOWER: {
         default: ['top', 'invitation', 'date', 'gift', 'gallery', 'contact', 'footer'],
         optional: ['locations', 'rsvp', 'countdown', 'accommodation', 'program', 'programIcons', 'faq', 'blank', 'photo', 'photoFrame'],

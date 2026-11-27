@@ -8,7 +8,7 @@ import { uniqueListItemIds } from '@/lib/invitation/listIds';
 import { createSection } from '@/lib/invitation/newSection';
 import { isPhotoField } from '@/lib/invitation/photoSlots';
 import { SAMPLE_SECTIONS } from '@/lib/invitation/samples';
-import { EVENT_TYPE_SECTIONS } from '@/lib/invitation/sectionRules';
+import { addableSectionTypes } from '@/lib/invitation/sectionRules';
 import { MULTI_INSTANCE_SECTION_TYPES, SECTION_DATA_SCHEMAS } from '@/lib/invitation/sections';
 
 const graduate = (id: string) => ({ id, name: 'Μαρία', degree: 'Πτυχίο Νομικής', university: 'ΑΠΘ' });
@@ -84,8 +84,10 @@ describe('the Graduates block on the feed', () => {
         expect(PAID_FEED_SECTION_TYPES).toContain('graduates');
     });
 
-    it("joins the birthday's sections for a graduation invitation", () => {
-        expect(EVENT_TYPE_SECTIONS.GRADUATION.default).toEqual(EVENT_TYPE_SECTIONS.BIRTHDAY.default);
-        expect(EVENT_TYPE_SECTIONS.GRADUATION.optional).toEqual([...EVENT_TYPE_SECTIONS.BIRTHDAY.optional, 'graduates']);
+    // The block is the feed's only: the standalone Save my date editor never offers it.
+    it('stays out of the standalone editor', () => {
+        const document = { ...defaultFeedLayout(), sections: [] };
+        expect(addableSectionTypes(document, 'GRADUATION', 'host')).not.toContain('graduates');
+        expect(addableSectionTypes(document, 'GRADUATION', 'admin')).not.toContain('graduates');
     });
 });
