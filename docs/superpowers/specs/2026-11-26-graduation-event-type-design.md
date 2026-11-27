@@ -170,16 +170,16 @@ const graduateSchema = z.object({
 - `lib/feedLayout.ts`: `graduates` joins `PAID_FEED_SECTION_TYPES`.
 - `lib/feedAddList.ts`: a GRADUATION list: `invitation`, `graduates`, `gallery`, `program`, `faq`,
   `accommodation`, `contact`.
-- `lib/invitation/sectionRules.ts`: a GRADUATION entry: the BIRTHDAY default and optional lists, plus
-  `graduates` as optional.
+- `lib/invitation/sectionRules.ts` stays as it is: the block belongs to the feed (its Invitation view), never
+  to the standalone Save my date editor (owner, 2026-11-27).
 - Backend `invitation-document.schema.json`: the same shape, so saved layouts validate; and
   `FeedLayoutRules.PAID_TYPES` gains `graduates`.
 
 ### 5.2 Look and editing
 
-The block reuses `PhotoPeopleSection` and `FamilyPhoto` (the godparents and sponsors blocks): a grid of round photos, each with
-the name, then degree and university in smaller text under it, two per row on every screen as the
-sponsors are. No columns setting: the existing people blocks store one that nothing draws (owner's
+The block reuses `PhotoPeopleSection` and `FamilyPhoto` (the godparents and sponsors blocks): the sponsors' photos with rounded
+corners, each with the name, then degree and university in smaller text under it; one per row on a phone
+and two per row on wider screens, as the sponsors are (owner's choice, 2026-11-27). No columns setting: the existing people blocks store one that nothing draws (owner's
 choice, 2026-11-26). Editing follows the sponsors block: the host adds, removes and reorders
 graduates in the block's sheet, one graduate's fields at a time, and removes one with the shared
 **Delete / Διαγραφή** button, as for sponsors (owner's choice, 2026-11-26).

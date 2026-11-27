@@ -10758,6 +10758,7 @@
             "dressCode": "Dress code",
             "coupleContact": "Couple contact",
             "weddingSponsors": "Wedding sponsors",
+            "graduates": "Graduates",
             "coupleProfiles": "The couple",
             "coupleProfilesSimple": "The couple (no photos)",
             "weddingSponsorsSimple": "Wedding sponsors (no photos)",
@@ -10866,6 +10867,14 @@
                 "triple": "Triple",
                 "calendar": "Calendar"
             },
+            "graduatesStyle": "Style",
+            "graduatesStyles": {
+                "plain": "Plain",
+                "cap": "Cap",
+                "stickers": "Stickers",
+                "polaroids": "Polaroids",
+                "cover": "Cover"
+            },
             "language": "Language",
             "languages": {
                 "el": "Ελληνικά",
@@ -10961,6 +10970,9 @@
             "address": "Address",
             "addGodparent": "Add godparent",
             "addSponsor": "Add sponsor",
+            "addGraduate": "Add graduate",
+            "degree": "Degree",
+            "university": "University",
             "untitled": "Untitled",
             "reorder": "Drag to reorder",
             "listDrag": {

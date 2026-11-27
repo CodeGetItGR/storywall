@@ -493,6 +493,117 @@
 .smd-invitation .family-godparents { width: 100%; max-width: 380px; }
 .smd-invitation .family-godparents-list { display: grid; grid-template-columns: 1fr; gap: 36px; max-width: 380px; margin: 0 auto; }
 .smd-invitation .family-godparent { position: relative; }
+/* A graduate's degree and university, one line each under the name (KAN-302). */
+.smd-invitation .family-godparent .family-graduate-detail { display: block; margin-top: 2px; }
+
+/* Graduates styles (KAN-302): colours mixed from the theme's primary colour, never gold. */
+.smd-invitation .graduates-block {
+    --grad-accent: color-mix(in srgb, var(--primary) 35%, #f4c95d);
+    --grad-rose: color-mix(in srgb, var(--primary) 40%, #e98a8a);
+    --grad-soft: color-mix(in srgb, var(--primary) 40%, #ffffff);
+    --grad-deep: color-mix(in srgb, var(--primary) 50%, #1f3b2c);
+}
+.smd-invitation .graduates-block:not(.graduates-plain) .family-photo img { object-position: 50% 25%; }
+.smd-invitation .grad-title { position: relative; }
+
+/* Graduates: cap */
+.smd-invitation .graduates-cap .family-title { margin-bottom: 48px; }
+.smd-invitation .graduates-cap .family-godparents-list { row-gap: 64px; }
+.smd-invitation .grad-cap-photo,
+.smd-invitation .grad-sticker-photo { position: relative; width: 100%; max-width: 370px; margin: 0 auto 14px; }
+.smd-invitation .grad-cap-photo .family-photo,
+.smd-invitation .grad-sticker-photo .family-photo { margin-bottom: 0; }
+.smd-invitation .grad-cap {
+    position: absolute;
+    z-index: 2;
+    top: -44px;
+    left: -14px;
+    width: 118px;
+    height: 92px;
+    transform: rotate(-13deg);
+    filter: drop-shadow(0 4px 5px rgb(0 0 0 / 0.22));
+    pointer-events: none;
+}
+.smd-invitation .graduates-cap .family-godparent:nth-child(even) .grad-cap { left: auto; right: -14px; transform: rotate(12deg); }
+
+/* Graduates: stickers */
+.smd-invitation .graduates-stickers .family-godparents-list { row-gap: 48px; }
+.smd-invitation .grad-sticker { position: absolute; z-index: 3; filter: drop-shadow(0 3px 4px rgb(0 0 0 / 0.2)); pointer-events: none; }
+.smd-invitation .grad-sticker-diploma { width: 120px; height: 70px; }
+.smd-invitation .grad-sticker-books { width: 96px; height: 70px; }
+.smd-invitation .grad-sticker-champagne { width: 62px; height: 98px; }
+.smd-invitation .grad-sticker-star { width: 34px; height: 34px; }
+.smd-invitation .grad-sticker-confetti { width: 60px; height: 40px; }
+.smd-invitation .grad-sticker-photo .grad-sticker.is-top-left { top: -24px; left: -14px; }
+.smd-invitation .grad-sticker-photo .grad-sticker.is-top-right { top: -24px; right: -14px; }
+.smd-invitation .grad-sticker-photo .grad-sticker.is-bottom-left { bottom: -6px; left: -14px; }
+.smd-invitation .grad-sticker-photo .grad-sticker.is-bottom-right { bottom: -6px; right: -12px; }
+/* Around the title, the stickers sit beside it, not over it. */
+.smd-invitation .grad-title .grad-sticker.is-top-left { top: -18px; left: 8%; }
+.smd-invitation .grad-title .grad-sticker.is-top-right { top: -10px; right: 6%; }
+.smd-invitation .graduates-stickers .family-title { margin-bottom: 36px; }
+
+/* Graduates: polaroids */
+.smd-invitation .graduates-polaroids .family-godparents-list { row-gap: 40px; }
+.smd-invitation .grad-polaroid {
+    position: relative;
+    width: min(100%, 300px);
+    margin: 14px auto 14px;
+    padding: 12px 12px 16px;
+    background: #fff;
+    box-shadow: 0 2px 4px rgb(0 0 0 / 0.08), 0 12px 24px rgb(20 30 50 / 0.12);
+    transform: rotate(-2.5deg);
+}
+.smd-invitation .graduates-polaroids .family-godparent:nth-child(even) .grad-polaroid { transform: rotate(2deg); }
+.smd-invitation .grad-polaroid .family-photo { max-width: none; aspect-ratio: 1; border-radius: 0; clip-path: none; margin: 0; }
+.smd-invitation .grad-polaroid h2 { margin: 12px 0 0; font-size: 28px; overflow-wrap: anywhere; }
+.smd-invitation .grad-tape { position: absolute; z-index: 2; top: -12px; left: 50%; width: 92px; height: 26px; transform: translateX(-50%) rotate(-3deg); }
+.smd-invitation .graduates-polaroids .family-godparent:nth-child(even) .grad-tape { transform: translateX(-50%) rotate(4deg); }
+.smd-invitation .grad-joined-detail { margin: 0; }
+/* Degree and university share one line. */
+.smd-invitation .grad-joined-detail .text-block { display: inline; }
+
+/* Graduates: cover */
+.smd-invitation .graduates-cover .family-godparents-list { row-gap: 28px; }
+.smd-invitation .grad-cover { position: relative; width: min(100%, 340px); aspect-ratio: 4 / 5; margin: 0 auto; overflow: hidden; border-radius: 4px; color: #fff; }
+.smd-invitation .grad-cover-photo { position: absolute; inset: 0; }
+.smd-invitation .grad-cover-photo > * { height: 100%; }
+.smd-invitation .grad-cover-photo .family-photo {
+    max-width: none;
+    height: 100%;
+    aspect-ratio: auto;
+    margin: 0;
+    border-radius: 0;
+    clip-path: none;
+    /* A host's empty cover: dark enough for the white texts. */
+    background: color-mix(in srgb, var(--primary) 45%, #1d2230);
+}
+.smd-invitation .grad-cover::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    background: linear-gradient(to bottom, rgb(0 0 0 / 0.25), transparent 22%, transparent 70%, rgb(0 0 0 / 0.4));
+}
+.smd-invitation .grad-cover-frame { position: absolute; inset: 10px; z-index: 1; border: 1px solid rgb(255 255 255 / 0.85); pointer-events: none; }
+.smd-invitation .grad-cover .grad-cover-top {
+    position: absolute;
+    z-index: 2;
+    top: 22px;
+    left: 24px;
+    right: 24px;
+    font-size: 13px;
+    letter-spacing: 0.32em;
+    text-transform: uppercase;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+.smd-invitation .grad-cover-bottom { position: absolute; z-index: 2; left: 20px; right: 20px; bottom: 20px; }
+.smd-invitation .grad-cover-bottom h2 { margin: 0; font-size: calc(34px * var(--grad-name-scale, 1)); line-height: 1.1; overflow-wrap: anywhere; }
+.smd-invitation .grad-cover .grad-cover-degree { display: block; margin-top: 4px; font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; }
 
 /* Family: people without photos */
 .smd-invitation .family-godparents-simple-list { display: grid; gap: 8px; max-width: 320px; margin: 8px auto 0; }

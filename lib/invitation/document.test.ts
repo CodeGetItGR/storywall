@@ -18,7 +18,7 @@ const clone = <T>(value: T): T => structuredClone(value);
 
 describe('invitation document format', () => {
     it('covers the 30 section types of the old editor, the 4 feed blocks, the module block and the 4 Feed mode sections', () => {
-        expect(SECTION_TYPES).toHaveLength(39);
+        expect(SECTION_TYPES).toHaveLength(40);
     });
 
     it.each(SECTION_TYPES)('accepts the %s sample', (type) => {

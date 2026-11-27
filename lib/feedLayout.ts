@@ -51,6 +51,7 @@ export const PAID_FEED_SECTION_TYPES = [
     'contact',
     'baby',
     'parentsPhoto',
+    'graduates',
     'photoFrame',
 ] as const satisfies readonly SectionType[];
 

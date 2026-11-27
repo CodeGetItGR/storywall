@@ -10,11 +10,13 @@ type FamilyPhotoProps = {
     sectionId: string;
     path: string;
     ctx: RenderContext;
+    // Extra classes for a style's own photo shape (the Graduates styles).
+    className?: string;
 };
 
 // A person's photo in the theme's photo shape. Without a photo, guests see only
 // the name; the editor shows the empty shape with its camera.
-export function FamilyPhoto({ photo, name, sectionId, path, ctx }: FamilyPhotoProps) {
+export function FamilyPhoto({ photo, name, sectionId, path, ctx, className = '' }: FamilyPhotoProps) {
     const src = resolveImage(photo, ctx);
     const camera = ctx.canvasTools?.photo;
     const tools = ctx.canvasTools?.personPhoto;
@@ -22,7 +24,7 @@ export function FamilyPhoto({ photo, name, sectionId, path, ctx }: FamilyPhotoPr
 
     const slot = photoFieldSlot(sectionId, path);
     const shape = (
-        <div className="family-photo">
+        <div className={['family-photo', className].filter(Boolean).join(' ')}>
             {/* Photo */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
             {src && <img src={src} alt={name.trim() || ctx.labels.photoAlt} />}

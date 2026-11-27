@@ -46,5 +46,6 @@ export const WeddingSponsors = only('s-weddingSponsors');
 export const CoupleProfiles = only('s-coupleProfiles');
 export const CoupleProfilesSimple = only('s-coupleProfilesSimple');
 export const WeddingSponsorsSimple = only('s-weddingSponsorsSimple');
+export const Graduates = only('s-graduates');
 export const PhotoFrame = only('s-photoFrame');
 export const Footer = only('s-footer');

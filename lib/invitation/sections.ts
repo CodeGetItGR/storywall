@@ -32,6 +32,11 @@ const namedPhotoSchema = z
     .object({ id: idSchema, name: text, photo: imageRefSchema.optional() })
     .strict();
 
+// One graduate in the Graduates block (KAN-302).
+const graduateSchema = z
+    .object({ id: idSchema, name: text, degree: text, university: text, photo: imageRefSchema.optional() })
+    .strict();
+
 const parentSchema = z
     .object({ label: text, name: text, photo: imageRefSchema.optional() })
     .strict();
@@ -89,6 +94,10 @@ const programIconSchema = z.discriminatedUnion('kind', [
 export const DATE_DISPLAY_STYLES = [
     'original', 'stacked', 'editorial', 'vertical', 'bullet', 'split', 'triple', 'calendar',
 ] as const;
+
+// The Graduates block's looks (KAN-302). A block saved before styles existed has none and draws as plain.
+export const GRADUATES_STYLES = ['plain', 'cap', 'stickers', 'polaroids', 'cover'] as const;
+export type GraduatesStyle = (typeof GRADUATES_STYLES)[number];
 
 export const GALLERY_LAYOUTS = ['grid', 'masonry', 'carousel', 'featured'] as const;
 
@@ -307,6 +316,7 @@ export const SECTION_DATA_SCHEMAS = {
     weddingSponsors: z
         .object({ sponsorsTitle: text, sponsors: z.array(namedPhotoSchema).max(20) })
         .strict(),
+    graduates: z.object({ title: text, style: z.enum(GRADUATES_STYLES).optional(), graduates: z.array(graduateSchema).max(10) }).strict(),
     coupleProfiles: z
         .object({
             partnerA: partnerProfileSchema.extend({ photo: imageRefSchema.optional() }).strict(),

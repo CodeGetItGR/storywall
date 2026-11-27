@@ -10796,6 +10796,7 @@
             "dressCode": "Dress Code",
             "coupleContact": "Επικοινωνία Ζευγαριού",
             "weddingSponsors": "Κουμπάροι",
+            "graduates": "Απόφοιτοι",
             "coupleProfiles": "Το ζευγάρι",
             "coupleProfilesSimple": "Το ζευγάρι (χωρίς φωτο)",
             "weddingSponsorsSimple": "Κουμπάροι (χωρίς φωτο)",
@@ -10904,6 +10905,14 @@
                 "triple": "Τριπλό",
                 "calendar": "Ημερολόγιο"
             },
+            "graduatesStyle": "Στιλ",
+            "graduatesStyles": {
+                "plain": "Απλό",
+                "cap": "Καπέλο",
+                "stickers": "Αυτοκόλλητα",
+                "polaroids": "Πολαρόιντ",
+                "cover": "Εξώφυλλο"
+            },
             "language": "Γλώσσα",
             "languages": {
                 "el": "Ελληνικά",
@@ -10999,6 +11008,9 @@
             "address": "Διεύθυνση",
             "addGodparent": "Προσθήκη νονού/νονάς",
             "addSponsor": "Προσθήκη κουμπάρου/κουμπάρας",
+            "addGraduate": "Προσθήκη αποφοίτου",
+            "degree": "Πτυχίο",
+            "university": "Πανεπιστήμιο",
             "untitled": "Χωρίς τίτλο",
             "reorder": "Σύρετε για αλλαγή σειράς",
             "listDrag": {

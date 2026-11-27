@@ -14,6 +14,7 @@ import { CustomSection } from '@/components/saveMyDate/invitation/sections/Custo
 import { DateSection } from '@/components/saveMyDate/invitation/sections/date/DateSection';
 import { DressCodeSection } from '@/components/saveMyDate/invitation/sections/DressCodeSection';
 import { BabySection } from '@/components/saveMyDate/invitation/sections/family/BabySection';
+import { GraduatesSection } from '@/components/saveMyDate/invitation/sections/family/GraduatesSection';
 import { ParentsPhotoSection } from '@/components/saveMyDate/invitation/sections/family/ParentsPhotoSection';
 import { ParentsSection } from '@/components/saveMyDate/invitation/sections/family/ParentsSection';
 import { ParentsSimpleSection } from '@/components/saveMyDate/invitation/sections/family/ParentsSimpleSection';
@@ -63,6 +64,7 @@ const BUILT_SECTION_TYPES: ReadonlySet<SectionType> = new Set([
     'godparents',
     'weddingSponsors',
     'weddingSponsorsSimple',
+    'graduates',
     'coupleProfiles',
     'coupleProfilesSimple',
     'ourStoryProposal',
@@ -137,6 +139,8 @@ function SectionContent({ section, contrast, ctx }: SectionContentProps) {
             return <PhotoPeopleSection section={section} contrast={contrast} ctx={ctx} />;
         case 'weddingSponsorsSimple':
             return <WeddingSponsorsSimpleSection section={section} contrast={contrast} ctx={ctx} />;
+        case 'graduates':
+            return <GraduatesSection section={section} contrast={contrast} ctx={ctx} />;
         case 'coupleProfiles':
             return <CoupleProfilesSection section={section} contrast={contrast} ctx={ctx} />;
         case 'coupleProfilesSimple':

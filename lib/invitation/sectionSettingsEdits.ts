@@ -3,7 +3,7 @@ import type { Draft } from 'immer';
 import type { ContactLinkKey } from '@/lib/invitation/contactLinks';
 import { applyDateLanguage, type DateLanguage } from '@/lib/invitation/dateDisplay';
 import { moveById } from '@/lib/invitation/listEdits';
-import { DATE_DISPLAY_STYLES, type InvitationSection, type SectionType } from '@/lib/invitation/sections';
+import { DATE_DISPLAY_STYLES, type GraduatesStyle, type InvitationSection, type SectionType } from '@/lib/invitation/sections';
 import { type DocumentRecipe, editSection, editSectionData, type SectionData, type StylePatch, writeStyle } from '@/lib/invitation/sectionSettings';
 import { upgradeProgramStyle } from '@/lib/invitation/sectionStyleFields';
 
@@ -15,6 +15,12 @@ export type DateLayout = (typeof DATE_DISPLAY_STYLES)[number];
 export function setDateLayout(id: string, layout: DateLayout): DocumentRecipe {
     return editSectionData(id, 'date', (data) => {
         data.displayStyle = layout;
+    });
+}
+
+export function setGraduatesStyle(id: string, style: GraduatesStyle): DocumentRecipe {
+    return editSectionData(id, 'graduates', (data) => {
+        data.style = style;
     });
 }
 
