@@ -77,11 +77,12 @@ export function canHideFeedBlock(section: Block): boolean {
     return section.type !== 'feedCover' && !section.locked;
 }
 
-// A Save my date, module or Feed mode block, and RSVP when it moves (spec item 17). Never the cover, details or description.
+// A Save my date, module or Feed mode block, and RSVP when it moves (spec item 17). Never the cover, details,
+// description or the theme's framed photo, which the host only hides (KAN-292).
 export function canDeleteFeedBlock(section: Block, { rsvpMoves }: HostBlockOptions): boolean {
     if (section.locked) return false;
     if (section.type === 'feedRsvp') return rsvpMoves;
-    return !isFeedSectionType(section.type);
+    return section.type !== 'photoFrame' && !isFeedSectionType(section.type);
 }
 
 // A locked block keeps its place: it never moves, and nothing moves into it.

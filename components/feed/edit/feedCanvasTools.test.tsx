@@ -7,9 +7,12 @@ import { feedCanvasTools } from '@/components/feed/edit/feedCanvasTools';
 import { InvitationSection } from '@/components/saveMyDate/invitation/InvitationSection';
 import type { PhotoUploadSlots } from '@/hooks/usePhotoUploads';
 import { PhotoUploadsContext } from '@/hooks/usePhotoUploadsContext';
+import { opensBlockSettings } from '@/lib/feedEditing';
 import type { InvitationElement } from '@/lib/invitation/elements';
-import { photoFieldSlot, photoSlotKey } from '@/lib/invitation/photoSlots';
+import { createSection } from '@/lib/invitation/newSection';
+import { photoFieldSlot, photoFrameSlot, photoSlotKey } from '@/lib/invitation/photoSlots';
 import { createPhotoUploadStore } from '@/lib/invitation/photoUploadStore';
+import type { ImageRef } from '@/lib/invitation/primitives';
 import { buildRenderContext } from '@/lib/invitation/render';
 import { SAMPLE_DOCUMENT, SAMPLE_SECTIONS, SAMPLE_THEME } from '@/lib/invitation/samples';
 import type { InvitationSection as Section } from '@/lib/invitation/sections';
@@ -25,6 +28,10 @@ type CoupleSection = Extract<Section, { type: 'coupleProfiles' }>;
 const couple = SAMPLE_SECTIONS.coupleProfiles as CoupleSection;
 const slot = photoFieldSlot(couple.id, 'partnerA.photo');
 const gallery = { ...SAMPLE_SECTIONS.gallery, data: { ...SAMPLE_SECTIONS.gallery.data, images: [] } } as Section;
+const framed = (framePhoto: ImageRef | undefined) => {
+    const section = createSection('photoFrame', 'WEDDING');
+    return { ...section, elements: section.elements.map((element) => ({ ...element, id: 'el-frame', frameId: 'fr-oval', photo: framePhoto })) } as Section;
+};
 const oneOfTwo: CoupleSection = {
     ...couple,
     data: {
@@ -111,6 +118,36 @@ describe('feedCanvasTools', () => {
         showSection(gallery, { value: slots({ issue: { problem: 'type', sectionId: gallery.id, key: null } }) });
         expect(screen.getByRole('button', { name: photos.gallery.add })).toBeInTheDocument();
         expect(screen.getByRole('alert')).toHaveTextContent(photos.errors.type);
+    });
+
+    it("adds a photo to the theme's empty frame, and says why one isn't in it", () => {
+        const key = photoSlotKey(photoFrameSlot('el-frame'));
+        const { value } = showSection(framed(undefined), { value: slots({ issue: { problem: 'size', sectionId: null, key } }) });
+        fireEvent.click(screen.getByRole('button', { name: photos.upload }));
+        const file = new File(['x'], 'a.jpg', { type: 'image/jpeg' });
+        fireEvent.change(screen.getByTestId('photo-slot-input'), { target: { files: [file] } });
+        expect(value.upload).toHaveBeenCalledWith(photoFrameSlot('el-frame'), file);
+        expect(screen.getByRole('alert')).toHaveTextContent(photos.errors.size);
+        expect(screen.queryByTestId('frame-photo-surface')).toBeNull();
+    });
+
+    it('moves, zooms and changes the photo in the frame, apart from a tap on the block', () => {
+        const { options } = showSection(framed({ source: 'media', mediaId: 'm-1' }));
+        expect(screen.getByRole('button', { name: photos.change })).toBeInTheDocument();
+        fireEvent.click(screen.getByRole('button', { name: photos.zoomIn }));
+        expect(options.edit).toHaveBeenCalled();
+        const block = document.querySelector('section')!;
+        expect(opensBlockSettings(screen.getByTestId('frame-photo-surface'), block)).toBe(false);
+        expect(opensBlockSettings(block, block)).toBe(true);
+    });
+
+    it('shows guests the frame only with its photo, and no tools', () => {
+        showSection(framed(undefined), { guest: true });
+        expect(document.querySelector('section')).toBeNull();
+        cleanup();
+        showSection(framed({ source: 'media', mediaId: 'm-1' }), { guest: true });
+        expect(document.querySelector('.photo-frame-svg')).toBeInTheDocument();
+        expect(screen.queryByRole('button')).toBeNull();
     });
 
     it('shows guests no empty place and no empty gallery', () => {

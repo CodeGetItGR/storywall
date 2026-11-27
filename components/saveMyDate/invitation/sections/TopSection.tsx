@@ -2,10 +2,8 @@ import { useTranslations } from 'next-intl';
 
 import { InvitationElements } from '@/components/saveMyDate/invitation/InvitationElements';
 import { ThemeArtImage } from '@/components/saveMyDate/invitation/sections/ThemeArtImage';
-import { artAnimationClass, artImageStyle, type RenderContext, type TextContrast } from '@/lib/invitation/render';
+import { artAnimationClass, artImageStyle, MAIN_ART_BASE, type RenderContext, type TextContrast } from '@/lib/invitation/render';
 import type { InvitationSection } from '@/lib/invitation/sections';
-
-const MAIN_ART_BASE = 420;
 
 type TopSectionProps = {
     section: Extract<InvitationSection, { type: 'top' }>;
