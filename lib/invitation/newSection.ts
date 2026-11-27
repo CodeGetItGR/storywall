@@ -214,7 +214,7 @@ const DEFAULTS: { [T in NewSectionType]: (newId: () => string, kind: EventKind) 
     // Greek for every host, like every block's starting text (owner's choice, 2026-11-26).
     graduates: (newId) => ({
         name: 'Απόφοιτοι',
-        data: { title: 'Οι απόφοιτοί μας', graduates: [{ id: newId(), name: '', degree: '', university: '' }] },
+        data: { title: 'Οι απόφοιτοί μας', style: 'cap', graduates: [{ id: newId(), name: '', degree: '', university: '' }] },
     }),
     coupleProfiles: () => ({
         name: 'Το ζευγάρι',

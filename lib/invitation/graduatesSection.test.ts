@@ -9,7 +9,7 @@ import { createSection } from '@/lib/invitation/newSection';
 import { isPhotoField } from '@/lib/invitation/photoSlots';
 import { SAMPLE_SECTIONS } from '@/lib/invitation/samples';
 import { addableSectionTypes } from '@/lib/invitation/sectionRules';
-import { MULTI_INSTANCE_SECTION_TYPES, SECTION_DATA_SCHEMAS } from '@/lib/invitation/sections';
+import { MULTI_INSTANCE_SECTION_TYPES, SECTION_DATA_SCHEMAS, sectionSchema } from '@/lib/invitation/sections';
 
 const graduate = (id: string) => ({ id, name: 'Μαρία', degree: 'Πτυχίο Νομικής', university: 'ΑΠΘ' });
 
@@ -34,7 +34,7 @@ describe('the graduates section', () => {
         const ids = ['s1', 'g1'];
         const section = createSection('graduates', 'GRADUATION', () => ids.shift()!);
         expect(section).toMatchObject({ id: 's1', type: 'graduates', name: 'Απόφοιτοι' });
-        expect(section.data).toEqual({ title: 'Οι απόφοιτοί μας', graduates: [{ id: 'g1', name: '', degree: '', university: '' }] });
+        expect(section.data).toEqual({ title: 'Οι απόφοιτοί μας', style: 'cap', graduates: [{ id: 'g1', name: '', degree: '', university: '' }] });
     });
 
     it("keeps each graduate's photo in its own slot", () => {
@@ -89,5 +89,27 @@ describe('the Graduates block on the feed', () => {
         const document = { ...defaultFeedLayout(), sections: [] };
         expect(addableSectionTypes(document, 'GRADUATION', 'host')).not.toContain('graduates');
         expect(addableSectionTypes(document, 'GRADUATION', 'admin')).not.toContain('graduates');
+    });
+});
+
+describe('graduates style', () => {
+    const base = SAMPLE_SECTIONS.graduates;
+
+    it('keeps one of the five styles and refuses others', () => {
+        for (const style of ['plain', 'cap', 'stickers', 'polaroids', 'cover']) {
+            expect(sectionSchema.safeParse({ ...base, data: { ...base.data, style } }).success).toBe(true);
+        }
+        expect(sectionSchema.safeParse({ ...base, data: { ...base.data, style: 'gold' } }).success).toBe(false);
+    });
+
+    it('reads a block saved before styles existed', () => {
+        const data = { title: base.data.title, graduates: base.data.graduates };
+        expect(sectionSchema.safeParse({ ...base, data }).success).toBe(true);
+    });
+
+    it('starts a new block with the cap', () => {
+        let n = 0;
+        const made = createSection('graduates', 'GRADUATION', () => `id-${++n}`);
+        expect(made.type === 'graduates' && made.data.style).toBe('cap');
     });
 });
