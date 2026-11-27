@@ -496,6 +496,34 @@
 /* A graduate's degree and university, one line each under the name (KAN-302). */
 .smd-invitation .family-godparent .family-graduate-detail { display: block; margin-top: 2px; }
 
+/* Graduates styles (KAN-302): colours mixed from the theme's primary colour, never gold. */
+.smd-invitation .graduates-block {
+    --grad-accent: color-mix(in srgb, var(--primary) 35%, #f4c95d);
+    --grad-rose: color-mix(in srgb, var(--primary) 40%, #e98a8a);
+    --grad-soft: color-mix(in srgb, var(--primary) 40%, #ffffff);
+    --grad-deep: color-mix(in srgb, var(--primary) 50%, #1f3b2c);
+}
+.smd-invitation .graduates-block:not(.graduates-plain) .family-photo img { object-position: 50% 25%; }
+.smd-invitation .grad-title { position: relative; }
+
+/* Graduates: cap */
+.smd-invitation .graduates-cap .family-title { margin-bottom: 48px; }
+.smd-invitation .graduates-cap .family-godparents-list { row-gap: 64px; }
+.smd-invitation .grad-cap-photo { position: relative; width: 100%; max-width: 370px; margin: 0 auto 14px; }
+.smd-invitation .grad-cap-photo .family-photo { margin-bottom: 0; }
+.smd-invitation .grad-cap {
+    position: absolute;
+    z-index: 2;
+    top: -44px;
+    left: -14px;
+    width: 118px;
+    height: 92px;
+    transform: rotate(-13deg);
+    filter: drop-shadow(0 4px 5px rgb(0 0 0 / 0.22));
+    pointer-events: none;
+}
+.smd-invitation .graduates-cap .family-godparent:nth-child(even) .grad-cap { left: auto; right: -14px; transform: rotate(12deg); }
+
 /* Family: people without photos */
 .smd-invitation .family-godparents-simple-list { display: grid; gap: 8px; max-width: 320px; margin: 8px auto 0; }
 .smd-invitation .family-godparent-simple-item { position: relative; display: inline-block; }

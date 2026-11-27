@@ -1,6 +1,7 @@
 import type { ComponentType } from 'react';
 
 import { InvitationElements } from '@/components/saveMyDate/invitation/InvitationElements';
+import { CapGraduate } from '@/components/saveMyDate/invitation/sections/family/graduates/CapGraduate';
 import type { GraduateProps } from '@/components/saveMyDate/invitation/sections/family/graduates/GraduateName';
 import { PlainGraduate } from '@/components/saveMyDate/invitation/sections/family/graduates/PlainGraduate';
 import { SectionText } from '@/components/saveMyDate/invitation/sections/SectionText';
@@ -18,7 +19,7 @@ type GraduatesSectionProps = {
 // One graduate in each of the block's looks.
 const GRADUATE_BY_STYLE: Record<GraduatesStyle, ComponentType<GraduateProps>> = {
     plain: PlainGraduate,
-    cap: PlainGraduate,
+    cap: CapGraduate,
     stickers: PlainGraduate,
     polaroids: PlainGraduate,
     cover: PlainGraduate,
