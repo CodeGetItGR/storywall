@@ -5,6 +5,7 @@ import { CapGraduate } from '@/components/saveMyDate/invitation/sections/family/
 import type { GraduateProps } from '@/components/saveMyDate/invitation/sections/family/graduates/GraduateName';
 import { PlacedStickers } from '@/components/saveMyDate/invitation/sections/family/graduates/PlacedStickers';
 import { PlainGraduate } from '@/components/saveMyDate/invitation/sections/family/graduates/PlainGraduate';
+import { PolaroidGraduate } from '@/components/saveMyDate/invitation/sections/family/graduates/PolaroidGraduate';
 import { StickerGraduate } from '@/components/saveMyDate/invitation/sections/family/graduates/StickerGraduate';
 import { SectionText } from '@/components/saveMyDate/invitation/sections/SectionText';
 import { graduatesStyleOf, TITLE_STICKERS } from '@/lib/invitation/graduatesStyles';
@@ -23,7 +24,7 @@ const GRADUATE_BY_STYLE: Record<GraduatesStyle, ComponentType<GraduateProps>> = 
     plain: PlainGraduate,
     cap: CapGraduate,
     stickers: StickerGraduate,
-    polaroids: PlainGraduate,
+    polaroids: PolaroidGraduate,
     cover: PlainGraduate,
 };
 

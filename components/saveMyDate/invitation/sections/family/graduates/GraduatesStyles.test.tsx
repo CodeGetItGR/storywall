@@ -53,4 +53,23 @@ describe('Graduates styles', () => {
         renderStyle('cap', [NO_PHOTO], true);
         expect(screen.getByRole('img', { name: 'Καπέλο αποφοίτησης' })).toBeTruthy();
     });
+
+    it('polaroids: the name in the polaroid, degree and university on one line under it', () => {
+        renderStyle('polaroids');
+        const polaroid = document.querySelector('.grad-polaroid');
+        expect(polaroid?.textContent).toContain('Μαρία');
+        expect(screen.getByRole('img', { name: 'Ταινία' })).toBeTruthy();
+        expect(document.querySelectorAll('.grad-joined-detail')[0]?.textContent).toBe('Πτυχίο Νομικής · ΑΠΘ');
+    });
+
+    it('polaroids: no polaroid for a guest when there is no photo', () => {
+        renderStyle('polaroids', [NO_PHOTO]);
+        expect(document.querySelector('.grad-polaroid')).toBeNull();
+        expect(screen.getByText('Νίκος')).toBeTruthy();
+    });
+
+    it('polaroids: an empty polaroid for a host', () => {
+        renderStyle('polaroids', [NO_PHOTO], true);
+        expect(document.querySelector('.grad-polaroid')).toBeTruthy();
+    });
 });
