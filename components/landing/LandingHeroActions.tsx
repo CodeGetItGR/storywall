@@ -1,7 +1,6 @@
 import { heroCreateAttributes } from '@/lib/createEventFab';
-import type { LandingHeroMainAction } from '@/lib/landingHero';
+import type { HeroSecondaryLink, LandingHeroMainAction } from '@/lib/landingHero';
 import { landingClickAttributes } from '@/lib/landingTracking';
-import { routes } from '@/lib/routes';
 import { cn } from '@/lib/utils';
 
 const BUTTON =
@@ -13,17 +12,15 @@ const PLAIN = 'justify-center px-5 text-[15px] min-[761px]:px-6 min-[761px]:text
 type LandingHeroActionsProps = {
     main: LandingHeroMainAction;
     mainLabel: string;
-    // None for an occasion without a demo.
-    demoLabel?: string;
-    // An occasion page opens its own demo.
-    demoHref?: string;
+    // The demo on the landing; an occasion's demo or themes; none for an occasion without either.
+    secondary?: HeroSecondaryLink | null;
     // The occasion heroes show plain buttons.
     plain?: boolean;
     // Where the phone create button goes once this hero scrolls away: an occasion's own create link.
     createHref?: string;
 };
 
-export function LandingHeroActions({ main, mainLabel, demoLabel, demoHref = routes.demo, plain = false, createHref }: LandingHeroActionsProps) {
+export function LandingHeroActions({ main, mainLabel, secondary, plain = false, createHref }: LandingHeroActionsProps) {
     return (
         <div className="mt-7 flex flex-row flex-wrap gap-2 min-[761px]:mt-9 min-[761px]:gap-3">
             {/* Main action */}
@@ -46,14 +43,14 @@ export function LandingHeroActions({ main, mainLabel, demoLabel, demoHref = rout
                 )}
             </a>
 
-            {/* Demo: the arrow shows from desktop up so both buttons fit one phone row */}
-            {demoLabel ? (
+            {/* Second button: the arrow shows from desktop up so both buttons fit one phone row */}
+            {secondary ? (
                 <a
                     className={cn(BUTTON, 'border border-[#151313]/20 bg-white/85 pr-4 text-[#151313] min-[761px]:pr-2', plain && PLAIN)}
-                    href={demoHref}
-                    {...landingClickAttributes({ event: 'demo', placement: 'hero' })}
+                    href={secondary.href}
+                    {...landingClickAttributes(secondary.click)}
                 >
-                    <span>{demoLabel}</span>
+                    <span>{secondary.label}</span>
                     {plain ? null : (
                         <span aria-hidden="true" className={cn(ARROW, 'hidden text-[#ee9971] min-[761px]:grid')}>
                             ↗

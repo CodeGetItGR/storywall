@@ -1,8 +1,8 @@
-// The sections an occasion page's header links to. howItWorks, pricing and faq are the ids the
-// shared landing sections render.
+// The sections an occasion page links to: the header's links, and the hero and band to the themes. howItWorks, pricing and faq are the ids the shared landing sections render.
 export const OCCASION_SECTION_IDS = {
     howItWorks: 'howItWorks',
     features: 'features',
+    themes: 'themes',
     pricing: 'pricing',
     faq: 'faq',
 } as const;

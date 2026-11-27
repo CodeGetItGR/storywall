@@ -1,16 +1,26 @@
 import { getTranslations } from 'next-intl/server';
 
-import { landingClickAttributes } from '@/lib/landingTracking';
+import { type LandingClick, landingClickAttributes } from '@/lib/landingTracking';
 import { routes } from '@/lib/routes';
 
-// An occasion page links to its own demo.
-export async function LandingHeroTransition({ href = routes.demo }: { href?: string }) {
+type LandingHeroTransitionProps = {
+    // Counted as a demo click unless an occasion sends the band elsewhere.
+    click?: LandingClick;
+    // The button's words; the demo's unless given.
+    cta?: string;
+    // An occasion page links to its own demo, or to its themes.
+    href?: string;
+    // The band's name for screen readers; the demo's unless given.
+    label?: string;
+};
+
+export async function LandingHeroTransition({ click = { event: 'demo', placement: 'hero_band' }, cta, href = routes.demo, label }: LandingHeroTransitionProps) {
     const t = await getTranslations('LandingPage.transition');
 
     return (
         /* Hero-to-demo transition */
         <section
-            aria-label={t('label')}
+            aria-label={label ?? t('label')}
             className="relative isolate z-20 min-h-40 w-full overflow-hidden bg-[linear-gradient(90deg,rgba(255,111,145,0.6)_0%,rgba(255,143,111,0.6)_28%,rgba(247,183,91,0.6)_58%,rgba(248,210,92,0.6)_100%)] text-[#151313] after:pointer-events-none after:absolute after:inset-x-0 after:top-0 after:-bottom-px after:z-10 after:bg-[linear-gradient(to_bottom,rgba(255,255,255,0)_0%,rgba(255,255,255,0)_30%,rgba(255,255,255,0.05)_40%,rgba(255,255,255,0.14)_50%,rgba(255,255,255,0.28)_60%,rgba(255,255,255,0.46)_70%,rgba(255,255,255,0.66)_80%,rgba(255,255,255,0.85)_90%,rgb(255,255,255)_100%)] after:content-[''] min-[761px]:min-h-44"
         >
             <div className="relative z-20 mx-auto flex min-h-36 w-[calc(100%-34px)] items-center justify-center gap-3 min-[421px]:gap-7 min-[761px]:min-h-54 min-[761px]:w-[min(1500px,calc(100%-120px))] min-[761px]:items-start min-[761px]:justify-center min-[761px]:gap-7 min-[761px]:pt-10">
@@ -20,9 +30,9 @@ export async function LandingHeroTransition({ href = routes.demo }: { href?: str
                 <a
                     className="group flex min-h-12.5 flex-none items-center gap-2.5 rounded-full bg-white py-0 pr-3.75 pl-4.25 font-[Arial,Helvetica,sans-serif] text-[10px] leading-normal font-black tracking-widest whitespace-nowrap text-[#151313] no-underline transition-[transform,box-shadow] duration-280 ease-[ease] hover:-translate-y-px hover:shadow-[0_12px_28px_rgba(217,102,74,.18)] motion-reduce:transition-none min-[421px]:min-h-13.5 min-[421px]:gap-3.25 min-[421px]:pr-4.5 min-[421px]:pl-5.25 min-[421px]:text-[11px] min-[761px]:min-h-17 min-[761px]:gap-5.5 min-[761px]:pr-7 min-[761px]:pl-8 min-[761px]:text-[13px] min-[761px]:tracking-[0.13em]"
                     href={href}
-                    {...landingClickAttributes({ event: 'demo', placement: 'hero_band' })}
+                    {...landingClickAttributes(click)}
                 >
-                    <span>{t('cta')}</span>
+                    <span>{cta ?? t('cta')}</span>
                     <span
                         aria-hidden="true"
                         className="text-[21px] leading-none transition-transform duration-280 ease-[ease] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 motion-reduce:transition-none min-[761px]:text-[25px]"

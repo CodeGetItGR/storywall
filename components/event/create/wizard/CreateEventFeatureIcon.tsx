@@ -2,7 +2,7 @@
 
 import { type ReactNode, useId } from 'react';
 
-import { GradientIcon } from '@/components/occasions/wedding/mock/GradientIcon';
+import { GradientIcon } from '@/components/occasions/sections/mock/GradientIcon';
 import type { CreateEventFeatureKey } from '@/lib/createEventFeatures';
 import { cn } from '@/lib/utils';
 

@@ -7,6 +7,7 @@ import {
     landingHeroSpriteSizes,
     nextTypewriterStep,
     occasionHeroMainAction,
+    occasionHeroSecondary,
     TYPEWRITER_START,
 } from '@/lib/landingHero';
 import { routes } from '@/lib/routes';
@@ -93,5 +94,27 @@ describe('nextTypewriterStep', () => {
             delay: 312,
         });
         expect(nextTypewriterStep({ word: 1, length: 0, deleting: true }, 4, 2).cursor.word).toBe(0);
+    });
+});
+
+describe('occasionHeroSecondary', () => {
+    it('is the demo when there is one, counted as a demo click', () => {
+        expect(occasionHeroSecondary({ href: '/demo/wedding/feed', label: 'Demo' }, { href: '#themes', label: 'Themes' })).toEqual({
+            href: '/demo/wedding/feed',
+            label: 'Demo',
+            click: { event: 'demo', placement: 'hero' },
+        });
+    });
+
+    it('is the themes without a demo, counted as a nav click', () => {
+        expect(occasionHeroSecondary(null, { href: '#themes', label: 'Themes' })).toEqual({
+            href: '#themes',
+            label: 'Themes',
+            click: { event: 'nav', placement: 'hero', target: 'themes' },
+        });
+    });
+
+    it('is nothing without either', () => {
+        expect(occasionHeroSecondary(null, null)).toBeNull();
     });
 });

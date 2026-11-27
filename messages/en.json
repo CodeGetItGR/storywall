@@ -8941,8 +8941,8 @@
         "BAPTISM": {
             "name": "Baptisms",
             "meta": {
-                "title": "Digital Baptism Invitation & Photo Sharing | StoryWall",
-                "description": "A private page for your baptism or christening: invitation with maps, RSVPs, guest photos by QR code and a book of wishes for your child.",
+                "title": "Baptism Website & Digital Christening Invitation | StoryWall",
+                "description": "A baptism website with your digital christening invitation, themes, RSVP, schedule and maps, plus QR photo sharing for guests. No app to install.{range, select, none {} other { From {from}.}}",
                 "imageAlt": "StoryWall for baptisms",
                 "keywords": [
                     "digital baptism invitation",
@@ -8954,208 +8954,323 @@
                 ]
             },
             "hero": {
-                "h1": "Digital baptism invitation and photo sharing",
-                "headline": "A baptism full of moments <b>worth keeping.</b>",
-                "lead": "From the invitation and the first wishes to the photos, posts and moments of the day.",
-                "promise": "Everything your people share, together in one StoryWall.",
-                "cta": "Create your baptism StoryWall",
-                "imageAlt": "Family and guests celebrating a baptism outside a church",
-                "feed": {
-                    "title": "Eleni's baptism",
-                    "date": "June 14, 2027",
-                    "place": "Santorini",
-                    "stories": ["Your story", "Schedule", "Guests", "Moments"],
-                    "composer": "Share a memory…",
-                    "posts": [
+                "h1": "Baptism website & <em>digital christening invitation</em>",
+                "cta": "Create your StoryWall",
+                "themesCta": "See the themes",
+                "breadcrumb": "Baptism",
+                "kicker": "THE PRIVATE SOCIAL FOR <b>THE BAPTISM</b>",
+                "subtitle": "A baptism full of moments worth keeping.",
+                "body": "Create your baptism or christening website with a digital invitation, a theme of your choice, RSVP, schedule and maps. On the day, guests upload their photos with a QR code, and everything stays in a private StoryWall, not on public social media.",
+                "trust": [
+                    "No app",
+                    "Private",
+                    "One link"
+                ],
+                "trustPrice": "From {from}",
+                "feedAlt": "A baptism's home page on StoryWall, on the Unicorn theme"
+            },
+            "band": {
+                "label": "StoryWall themes",
+                "cta": "SEE THE THEMES"
+            },
+            "how": {
+                "kicker": "HOW IT WORKS",
+                "heading": [
+                    "Three steps.",
+                    "One baptism story."
+                ],
+                "steps": [
+                    {
+                        "title": "Create",
+                        "body": "Pick a plan and a theme, and build the baptism website with the date, church and schedule, <b>in just a few minutes.</b>"
+                    },
+                    {
+                        "title": "Share",
+                        "body": "Send your <b>digital invitation</b> with one link, plus a <b>QR code</b> for collecting photos. <b>No app.</b>"
+                    },
+                    {
+                        "title": "The story begins",
+                        "body": "Guests RSVP, share posts and stories, and <b>upload photos from the baptism.</b>"
+                    }
+                ]
+            },
+            "why": {
+                "kicker": "WHY STORYWALL",
+                "heading": [
+                    "The baptism photos",
+                    "shouldn't get lost on 100 phones."
+                ],
+                "without": {
+                    "label": "WITHOUT STORYWALL",
+                    "bubbles": [
+                        "Send them to me too! 🙏",
+                        "Who has the video?"
+                    ],
+                    "items": [
+                        "“Can you send me the photos?”",
+                        "Photos scattered across 100 phones",
+                        "Wishes lost in WhatsApp and Messenger",
+                        "Photos of your child in public posts"
+                    ]
+                },
+                "with": {
+                    "label": "WITH STORYWALL · ALL IN ONE PLACE",
+                    "subtitle": "From the preparations and the ceremony to the first birthday.",
+                    "qrAlt": "Guest scanning the StoryWall QR code to upload photos",
+                    "steps": [
                         {
-                            "author": "Maria K.",
-                            "time": "2h ago",
-                            "caption": "The moment in the church. 🤍",
-                            "likes": 48,
-                            "replies": [
-                                {
-                                    "author": "Nikos P.",
-                                    "text": "So moving!"
-                                },
-                                {
-                                    "author": "Anna M.",
-                                    "text": "Beautiful!"
-                                }
-                            ]
+                            "title": "Scan",
+                            "body": "The QR code on the table, with their phone camera."
                         },
                         {
-                            "author": "Kostas V.",
-                            "time": "3h ago",
-                            "caption": "The table is ready for little Eleni!",
-                            "likes": 36,
-                            "replies": [
-                                {
-                                    "author": "Sofia L.",
-                                    "text": "Cheers! 🥂"
-                                }
-                            ]
+                            "title": "Upload",
+                            "body": "Photos and videos. <b>No app.</b>"
                         },
                         {
-                            "author": "Eleni T.",
-                            "time": "5h ago",
-                            "caption": "Outside the church with the whole family.",
-                            "likes": 52,
-                            "replies": [
-                                {
-                                    "author": "Petros D.",
-                                    "text": "What a day ☀️"
-                                }
-                            ]
+                            "title": "All together",
+                            "body": "In your StoryWall, <b>in original quality.</b>"
+                        }
+                    ],
+                    "marquee": [
+                        {
+                            "name": "Anna",
+                            "role": "aunt",
+                            "alt": "The family outside the church, a photo by Anna, aunt"
+                        },
+                        {
+                            "name": "Giorgos",
+                            "role": "godfather",
+                            "alt": "The ceremony at the font, a photo by Giorgos, godfather"
+                        },
+                        {
+                            "name": "Eleni",
+                            "role": "grandmother",
+                            "alt": "The baptism table by the sea, a photo by Eleni, grandmother"
+                        }
+                    ],
+                    "example": "EXAMPLE · ONE BAPTISM ON STORYWALL",
+                    "stats": [
+                        {
+                            "value": "196",
+                            "label": "PHOTOS"
+                        },
+                        {
+                            "value": "28",
+                            "label": "VIDEOS"
+                        },
+                        {
+                            "value": "58",
+                            "label": "WISHES"
+                        },
+                        {
+                            "value": "72",
+                            "label": "GUESTS"
+                        }
+                    ],
+                    "chips": [
+                        "Every photo in one place",
+                        "Uploaded with one QR code, no app",
+                        "Guest book you download as a PDF",
+                        "Private, for your guests only"
+                    ]
+                }
+            },
+            "rsvp": {
+                "kicker": "Baptism RSVP",
+                "heading": [
+                    "Stop wondering who's coming.",
+                    "Every RSVP in one place."
+                ],
+                "intro": "With <b>StoryWall's RSVP</b>, guests reply in seconds and you stay in control, from the invitation to the final guest list.",
+                "alts": {
+                    "both": "Without StoryWall, RSVPs arrive scattered across WhatsApp, Messenger, email and text. With StoryWall, the RSVP form, guest list and stats are all in one place.",
+                    "without": "Without StoryWall: RSVPs arrive scattered across WhatsApp, Messenger, email and text.",
+                    "with": "With StoryWall: RSVP form, guest list and stats, all in one place."
+                },
+                "checklist": {
+                    "pill": "ALL YOUR RSVPS",
+                    "items": [
+                        {
+                            "title": "Plus-ones & kids",
+                            "body": "Lots of children come to a baptism. You know exactly how many."
+                        },
+                        {
+                            "title": "Every RSVP in one place",
+                            "body": "No more chasing replies on WhatsApp, Messenger, email and text."
+                        },
+                        {
+                            "title": "Who's coming",
+                            "body": "See at a glance who has confirmed."
+                        },
+                        {
+                            "title": "Quick and simple",
+                            "body": "Guests reply in one tap, right from the invitation."
                         }
                     ]
                 }
             },
-            "themes": {
-                "heading": "Give your baptism StoryWall the theme that suits it.",
-                "intro": "Sample themes for your baptism invitation and wall."
-            },
-            "timeline": [
-                {
-                    "title": "Before",
-                    "heading": "Everyone knows where to be.",
-                    "body": "Guests get the church, reception and schedule in one link, with maps. They RSVP from there."
-                },
-                {
-                    "title": "On the day",
-                    "heading": "Every guest becomes a photographer.",
-                    "body": "Guests scan the QR code and add their photos from the church and the reception."
-                },
-                {
-                    "title": "After",
-                    "heading": "A story your child will read one day.",
-                    "body": "The photos and the book of wishes stay together, ready for your child one day."
-                }
-            ],
-            "story": {
-                "heading": ["Your child's baptism,", "in one place."],
-                "intro": "From the invitation to the last wish, family and friends add to the same story.",
-                "rows": [
+            "private": {
+                "kicker": "BAPTISM GUESTS ONLY",
+                "heading": [
+                    "A private social full of moments.",
+                    "Just for you and your people."
+                ],
+                "intro": "Guests upload photos, write wishes and comment. Everything stays between you.",
+                "cards": [
                     {
-                        "galleryLabel": "Before the baptism",
-                        "imageAlts": ["Guest opening the digital baptism invitation on her phone", "Guest confirming the baptism RSVP on his phone"]
+                        "title": "Private wall",
+                        "body": "Only people with the baptism link can join. It isn't public and doesn't show up on Google. Your child's photos are never posted anywhere public."
                     },
                     {
-                        "galleryLabel": "The baptism day",
-                        "imageAlts": [
-                            "Priest baptizing a baby in the font inside the church",
-                            "Family and guests celebrating a baptism outside the church",
-                            "Baptism party at a table by the sea"
-                        ]
+                        "title": "You're in control",
+                        "body": "See who has joined and what's shared, all in one place. You can add a co-host too."
                     },
                     {
-                        "galleryLabel": "After the baptism",
-                        "imageAlts": ["Guest writing a wish for the child in the digital guestbook", "Family celebrating at the baptism table"]
+                        "title": "Guest roles",
+                        "body": "Parents, godparents, grandparents, family: everyone appears with their role."
+                    },
+                    {
+                        "title": "Original-quality downloads",
+                        "body": "Download every baptism photo and video, plus your guest book as a PDF."
                     }
                 ]
             },
-            "demoHeading": ["See a baptism", "StoryWall."],
+            "themes": {
+                "kicker": "BAPTISM THEMES",
+                "heading": [
+                    "Pick the theme",
+                    "for the baptism."
+                ],
+                "lead": "Unicorn, Little Prince, Paper Boat and more. The theme dresses the whole StoryWall, from the invitation to the photo wall.",
+                "cta": "Create your StoryWall",
+                "tileAlt": "{name} baptism theme",
+                "phoneAlt": "A baptism's StoryWall on a phone, on the Unicorn theme",
+                "phoneCaption": "This is how a baptism looks on the Unicorn theme."
+            },
+            "featuresHead": {
+                "kicker": "FEATURES",
+                "heading": [
+                    "Your own baptism website,",
+                    "with everything you need."
+                ]
+            },
             "features": {
                 "invitation": {
                     "title": "Digital baptism invitation",
-                    "body": "Church, reception, schedule and maps on every guest's phone."
-                },
-                "posts": {
-                    "title": "Posts from your guests",
-                    "body": "Guests share messages, photos and reactions on your baptism wall."
+                    "body": "Send your invitation with one link: your theme, the church, the reception and maps."
                 },
                 "rsvp": {
                     "title": "Baptism RSVP",
-                    "body": "Guests answer from the link and you see who is coming in one list."
-                },
-                "playlist": {
-                    "title": "Songs for the reception",
-                    "body": "Guests suggest songs and vote for the ones they want to hear."
-                },
-                "stories": {
-                    "title": "Stories from the day",
-                    "body": "Short stories from guests and hosts, as the moments happen."
+                    "body": "Guests confirm attendance and you see every reply together."
                 },
                 "gallery": {
                     "title": "Christening photo sharing",
-                    "body": "Guests scan the QR code and add their photos to one album, without installing anything."
+                    "body": "Guests scan a QR code and upload photos and videos, no sign-up needed."
                 },
-                "wishlist": {
-                    "title": "Christening gift account",
-                    "body": "Share your gift account next to the invitation, for guests who want to send a gift."
+                "posts": {
+                    "title": "Posts & reactions",
+                    "body": "Photos, messages, comments and reactions on your private baptism wall."
                 },
-                "wishbook": {
-                    "title": "A book of wishes for your child",
-                    "body": "Godparents, grandparents and friends write their christening wishes in one book your child can read one day."
+                "stories": {
+                    "title": "Baptism stories",
+                    "body": "Candid moments from the prep, the ceremony and the reception."
+                },
+                "playlist": {
+                    "title": "Song requests",
+                    "body": "Guests suggest their favourite songs for the baptism party."
                 },
                 "schedule": {
                     "title": "Baptism schedule",
-                    "body": "The church service, the reception and their times, step by step."
+                    "body": "Ceremony time and church, reception venue, so everyone knows where and when."
+                },
+                "wishbook": {
+                    "title": "Digital guest book",
+                    "body": "Wishes for your child in a digital book to read when they grow up."
+                },
+                "wishlist": {
+                    "title": "Gift registry / bank details",
+                    "body": "Share the account for gifts, discreetly."
                 }
             },
-            "featuresIntro": {
-                "heading": "Everything your baptism needs, in one link."
+            "pricing": {
+                "kicker": "PLANS",
+                "heading": "Plans for the baptism.",
+                "intro": "Choose your plan and how long it stays online."
             },
-            "howItWorksHeading": ["Three steps.", "One baptism story."],
-            "howItWorks": [
-                {
-                    "title": "Create",
-                    "body": "Pick a plan and add the church, reception and time."
-                },
-                {
-                    "title": "Share",
-                    "body": "Send the link to your guests and print the QR code for the reception."
-                },
-                {
-                    "title": "The story begins",
-                    "body": "Guests RSVP, add photos and write their wishes for your child."
-                }
-            ],
+            "faqIntro": "What parents ask about our baptism website and digital invitation.",
             "faq": [
                 {
                     "q": "What is a StoryWall baptism website?",
-                    "a": "StoryWall is a private social space for the baptism. It brings together posts, stories and guest photos and, depending on the plan, an online invitation, RSVPs and a digital guestbook."
+                    "a": "StoryWall is a private baptism website, like a small social space just for you and your guests. It combines a digital invitation, RSVP, posts, stories, guest photos and a digital guest book, depending on the plan you choose. You pick a theme too, like Unicorn, Little Prince or Paper Boat."
                 },
                 {
-                    "q": "How does the online baptism invitation work?",
-                    "a": "You send the link to your guests, who complete a short sign-up to see the invitation and the baptism details."
+                    "q": "How does the digital baptism invitation work?",
+                    "a": "You create the baptism's StoryWall with the theme you like, the church, the reception venue, the schedule and maps, and send the link to your guests by WhatsApp, Messenger, email or text. They open it on their phone with no app, and after a quick sign-up they see the invitation and the baptism wall."
                 },
                 {
-                    "q": "How do I collect baptism photos with a QR code?",
-                    "a": "Guests scan the QR code and upload photos and videos with no sign-up or app. Everything is saved in a separate collection."
+                    "q": "How do I collect baptism photos from guests?",
+                    "a": "Place the QR code on the reception tables. Guests scan it with their phone camera and upload photos and videos, with no app and no sign-up. Everything is gathered in its own gallery in your StoryWall, in original quality."
                 },
                 {
-                    "q": "Do guests need an app?",
-                    "a": "No. StoryWall works in the phone's browser, with nothing to install."
+                    "q": "Do guests need to download an app?",
+                    "a": "No. StoryWall opens straight in the phone's browser from your link or QR code, with nothing to install."
                 },
                 {
-                    "q": "Can grandparents use it easily?",
-                    "a": "Yes. They just open the link or scan the QR code. There's no app to install."
+                    "q": "How does the baptism RSVP work?",
+                    "a": "Guests answer yes or no inside the baptism's StoryWall and say how many adults and children are coming. They can leave you a message too. You see the list and the totals at once, with no calls or messages."
                 },
                 {
-                    "q": "Who sees our child's photos?",
-                    "a": "The social feed is private and open to signed-up guests. The QR photo collection is a separate feature."
+                    "q": "Who can see my child's photos?",
+                    "a": "Only your guests. The wall's photos and posts are visible to people who have the baptism link and have signed up. They aren't public and don't show up on Google, so your child's photos never end up on public social media. You see who has joined and can remove anyone. Photos uploaded with the QR code are visible only to you, the parents."
                 },
                 {
-                    "q": "Can we keep the photos and wishes?",
-                    "a": "Yes. You can download the photos and videos in their original resolution. The wishes stay in the guestbook while the event is active."
+                    "q": "Can I download all the photos after the baptism?",
+                    "a": "Yes. You download every baptism photo and video, including those uploaded with the QR code, in original quality. You can also download the guest book as a PDF."
                 },
                 {
-                    "q": "Does StoryWall replace the printed baptism invitation?",
-                    "a": "Yes. You can use only the online invitation or pair it with a printed one."
+                    "q": "How long does my StoryWall stay online?",
+                    "a": "You choose how many months it stays online, depending on the plan. The time starts on the day you buy, so if you set it up 1–2 months before the baptism, you still have plenty of time afterwards for photos, wishes and downloading everything.{extendable, select, yes { And if you want it open for longer, you can extend it in one click.} other {}}"
                 },
                 {
-                    "q": "How long does StoryWall stay active?",
-                    "a": "It depends on the plan you choose and starts on the purchase date. It can be renewed."
+                    "q": "Does StoryWall replace the baptism photographer?",
+                    "a": "No, it complements them. The photographer captures the official moments. StoryWall collects the candid ones your guests take from their own point of view, at the tables, during the children's games, at the party. Your photographer can even join StoryWall and upload their professional photos."
+                },
+                {
+                    "q": "How much does a StoryWall baptism website cost?",
+                    "a": "The price depends on the plan you choose, the number of users (guests) and how many months you want it to stay online.",
+                    "link": {
+                        "to": "pricing",
+                        "label": "See the plans and what each one includes"
+                    }
+                },
+                {
+                    "q": "How do I send the digital invitation to my guests?",
+                    "a": "Your invitation is a link. Send it however you like: WhatsApp, Messenger, email or text, to each guest or to a group chat."
+                },
+                {
+                    "q": "Digital or printed baptism invitations?",
+                    "a": "You can have both. Many parents keep printed invitations for the godparent, the grandparents and close family, and send the digital one to every guest for RSVP, maps and the schedule."
+                },
+                {
+                    "q": "Can I change details after sending it?",
+                    "a": "Yes. If the time, the church or the schedule changes, you fix it and guests see the latest version at once, from the same link. There's nothing to send again. And if you want everyone to know right away, post it on the baptism wall."
+                },
+                {
+                    "q": "Can I make a digital baptism invitation for Cyprus?",
+                    "a": "Yes, of course. StoryWall works online, so it's exactly the same for a baptism (or christening) in Cyprus: invitation, theme, RSVP, QR photo sharing and guest book. Guests open it on their phone wherever they are, even abroad."
                 }
             ],
-            "faqIntro": "What parents ask before they create their baptism StoryWall.",
             "finalCta": {
-                "heading": ["Your child's story", "starts here."],
-                "copyStart": "Create your own StoryWall and bring together the online invitation, the photos and the best memories of the baptism.",
-                "imageAlt": "Family and guests at the baptism table by the sea"
-            },
-            "pricingHeading": "Plans for your baptism.",
-            "pricingIntro": "Choose the StoryWall that fits your child's baptism. From posts and photos to the online invitation, RSVPs and the digital guestbook."
+                "heading": [
+                    "The baptism",
+                    "starts here."
+                ],
+                "copyStart": "Create your StoryWall with a digital invitation, photos and memories",
+                "imageAlt": "A family celebrating a baptism outside a church on a Greek island",
+                "eyebrow": "THE BAPTISM ON STORYWALL",
+                "copyStrong": "to share with the people you love.",
+                "cta": "Create your <b>StoryWall</b>"
+            }
         }
     },
     "QrWeddingPage": {

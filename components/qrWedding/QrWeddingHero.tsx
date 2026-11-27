@@ -6,6 +6,7 @@ import { QR_GRADIENT_TEXT } from '@/components/qrWedding/qrWeddingClasses';
 import { type QrWeddingHeroImageAlts, QrWeddingHeroVisual } from '@/components/qrWedding/QrWeddingHeroVisual';
 import type { Locale } from '@/i18n/config';
 import { getPublicLandingPath } from '@/i18n/publicLocale';
+import { occasionHeroSecondary } from '@/lib/landingHero';
 import { QR_WEDDING_CREATE_HREF, QR_WEDDING_DEMO_HREF, QR_WEDDING_MEDIA, QR_WEDDING_SECTION, qrWeddingParentPath } from '@/lib/qrWeddingPage';
 
 const POSTER = `${QR_WEDDING_MEDIA}/guest-scanning-wedding-qr-code-poster.webp`;
@@ -74,9 +75,8 @@ export async function QrWeddingHero({ locale, price }: { locale: Locale; price: 
                     <OccasionHeroActions
                         createHref={QR_WEDDING_CREATE_HREF}
                         createLabel={occasion('hero.cta')}
-                        demoHref={QR_WEDDING_DEMO_HREF}
-                        demoLabel={common('heroDemo')}
                         plansLabel={landing('hero.plansCta')}
+                        secondary={occasionHeroSecondary({ href: QR_WEDDING_DEMO_HREF, label: common('heroDemo') }, null)}
                     />
 
                     {/* Trust line */}
