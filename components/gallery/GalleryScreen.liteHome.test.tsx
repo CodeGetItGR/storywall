@@ -11,6 +11,7 @@ const mocks = vi.hoisted(() => ({
     liteHomeOptions: [] as { onDownload?: () => void }[],
 }));
 
+vi.mock('@/hooks/useGalleryFrameSetting', () => ({ useGalleryFrameSetting: () => null }));
 vi.mock('@/hooks/useModuleCopy', () => {
     const copy = (moduleKey: string) => ({ name: moduleKey, description: `${moduleKey} description`, cardLabel: moduleKey, Icon: () => null });
     return {
@@ -37,7 +38,9 @@ vi.mock('@/components/liteHome/LiteHomeHeader', () => ({ LiteHomeHeader: () => <
 vi.mock('@/hooks/useLiteHome', () => ({
     useLiteHome: (_page: string, options: { onDownload?: () => void }) => {
         mocks.liteHomeOptions.push(options);
-        return mocks.isHome ? { isHome: true, event: { id: 'event-1' }, tabs: null, actions: [], guestLink: null, upgradeHref: null } : { isHome: false };
+        return mocks.isHome
+            ? { isHome: true, event: { id: 'event-1' }, tabs: null, actions: [], guestLink: null, upgradeHref: null }
+            : { isHome: false };
     },
 }));
 vi.mock('@/hooks/useGalleryPrint', () => ({

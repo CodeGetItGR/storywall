@@ -4,6 +4,8 @@ import { Camera, Download, Images, MousePointer2, Users } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 
 import { GalleryArchiveDownloadModal } from '@/components/gallery/GalleryArchiveDownloadModal';
+import { GalleryFrameRow } from '@/components/gallery/GalleryFrameRow';
+import { GalleryFrameSheet } from '@/components/gallery/GalleryFrameSheet';
 import { GalleryMediaGrid } from '@/components/gallery/GalleryMediaGrid';
 import { GallerySelectionActions } from '@/components/gallery/GallerySelectionActions';
 import { GallerySelectionBar } from '@/components/gallery/GallerySelectionBar';
@@ -20,6 +22,7 @@ import { ModulePageShell } from '@/components/tools/ModulePageShell';
 import { Button } from '@/components/ui/button';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { SubTabs } from '@/components/ui/SubTabs';
+import { useGalleryFrameSetting } from '@/hooks/useGalleryFrameSetting';
 import { useGalleryPrint, usePrintAvailability } from '@/hooks/useGalleryPrint';
 import { useGalleryScreen } from '@/hooks/useGalleryScreen';
 import { useLiteHome } from '@/hooks/useLiteHome';
@@ -69,7 +72,8 @@ export function GalleryScreen() {
         showPreviousMedia,
         showNextMedia,
         gallerySelection,
-        uploadMediaBatch,
+        isUploading,
+        uploadFrame,
         originalMedia,
         canDownloadOriginal,
         canDeleteMedia,
@@ -104,6 +108,7 @@ export function GalleryScreen() {
         exitSelectionMode,
         closeMedia,
     } = useGalleryScreen({ printAvailable: printAvailability.available });
+    const frameSetting = useGalleryFrameSetting(activeEvent, isHost);
     const print = useGalleryPrint({
         eventId: routeEventId,
         isHost: isRouteHost,
@@ -157,11 +162,20 @@ export function GalleryScreen() {
                     uploadNotice={uploadNotice}
                     showMemberArchiveNote={isMemberArchiveEnabled(activeEvent?.modules)}
                     maxFiles={maxFiles}
-                    isUploading={uploadMediaBatch.isPending}
+                    isUploading={isUploading}
+                    frame={uploadFrame}
                     onFilesChange={handleFilesChange}
                     onClearSelection={handleClearSelection}
                     onUpload={handleUpload}
                 />
+            )}
+
+            {/* Photo frame */}
+            {showUpload && frameSetting && (
+                <>
+                    <GalleryFrameRow setting={frameSetting} />
+                    <GalleryFrameSheet setting={frameSetting} />
+                </>
             )}
 
             <section className={'mb-5'}>

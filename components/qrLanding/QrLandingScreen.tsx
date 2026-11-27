@@ -13,6 +13,7 @@ import { useQrIntro } from '@/hooks/useQrIntro';
 import type { useQrLanding } from '@/hooks/useQrLanding';
 import { useQrViewScroll } from '@/hooks/useQrViewScroll';
 import { showsQrIntro } from '@/lib/qrLanding';
+import { qrUploadFrameSource } from '@/lib/qrLinks';
 
 interface QrLandingScreenProps {
     landing: ReturnType<typeof useQrLanding>;
@@ -71,7 +72,12 @@ export function QrLandingScreen({ landing, joinActions, notice }: QrLandingScree
 
             {/* Upload */}
             {landing.view === 'upload' && landing.uploadToken ? (
-                <AnonymousQrMediaUploadForm token={landing.uploadToken} member={landing.member} onSentChange={landing.setIsSent} />
+                <AnonymousQrMediaUploadForm
+                    token={landing.uploadToken}
+                    member={landing.member}
+                    onSentChange={landing.setIsSent}
+                    frameSource={qrUploadFrameSource(landing.resolution)}
+                />
             ) : null}
 
             {/* Wish */}

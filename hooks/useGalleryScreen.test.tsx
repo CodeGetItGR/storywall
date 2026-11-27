@@ -19,12 +19,20 @@ const mocks = vi.hoisted(() => ({
     deleteMedia: vi.fn<(id: string) => Promise<void>>(),
     vendorRole: null as { accessOpen: boolean; capabilities: string[] } | null,
     vendorRoleEventId: undefined as string | null | undefined,
+    frameControl: null as object | null,
+    prepare: vi.fn<(files: File[]) => Promise<{ files: File[]; notice: string | null }>>(),
+    uploadBatch: vi.fn(),
 }));
 
 vi.mock('next/navigation', () => ({ useRouter: () => ({ push: vi.fn() }) }));
 vi.mock('next-intl', () => ({ useTranslations: () => Object.assign((key: string) => key, { has: () => false }) }));
+vi.mock('@/hooks/useUploadFrame', () => ({ useUploadFrame: () => ({ control: mocks.frameControl, prepare: mocks.prepare }) }));
 vi.mock('@/components/routing/EventRouteGate', () => ({
-    useEventRouteContext: () => ({ activeEvent: mocks.activeEvent, eventId: 'event-1', isHost: mocks.isHost }),
+    useEventRouteContext: () => ({
+        activeEvent: mocks.activeEvent && { schedule: { startAt: null, timezone: null }, ...mocks.activeEvent },
+        eventId: 'event-1',
+        isHost: mocks.isHost,
+    }),
 }));
 vi.mock('@/hooks/useApiErrorMessage', () => ({ useApiErrorMessage: () => () => 'error' }));
 vi.mock('@/hooks/useAppConfig', () => ({ useAppConfig: () => ({ data: { media: {}, reportTargetTypes: mocks.reportTargetTypes } }) }));
@@ -55,7 +63,7 @@ vi.mock('@/hooks/useMedia', () => ({
     }),
     useOriginalMedia: () => ({}),
     useDeleteMedia: () => ({ mutateAsync: mocks.deleteMedia, isPending: false }),
-    useUploadMediaBatch: () => ({}),
+    useUploadMediaBatch: () => ({ mutateAsync: mocks.uploadBatch, isPending: false }),
 }));
 vi.mock('@/hooks/useVendors', () => ({
     useMyVendorRole: (eventId: string | null) => {
@@ -394,6 +402,59 @@ describe('useGalleryScreen Pro album', () => {
         mocks.album = 'GUEST';
         mocks.setAlbum.mockReset();
         mocks.exitSelectionMode.mockReset();
+        mocks.frameControl = null;
+        mocks.prepare.mockReset();
+        mocks.uploadBatch.mockReset();
+    });
+
+    it('uploads the framed photos, shows busy while framing, and keeps the frame notice', async () => {
+        mocks.isHost = true;
+        mocks.activeEvent = { status: 'ACTIVE', deletedAt: null };
+        mocks.activeMember = { id: 'host' };
+        mocks.frameControl = { on: true };
+        const original = new File(['x'], 'a.jpg', { type: 'image/jpeg' });
+        const framed = new File(['y'], 'a.jpg', { type: 'image/jpeg' });
+        let finish!: (value: { files: File[]; notice: string | null }) => void;
+        mocks.prepare.mockReturnValue(new Promise((resolve) => (finish = resolve)));
+        mocks.uploadBatch.mockResolvedValue({ created: [{ id: 'm' }], failed: [] });
+        const { result } = renderHook(() => useGalleryScreen());
+        act(() => result.current.handleFilesChange({ target: { files: [original], value: '' } } as never));
+
+        let upload!: Promise<void>;
+        act(() => {
+            upload = result.current.handleUpload();
+        });
+        expect(result.current.isUploading).toBe(true);
+        expect(mocks.uploadBatch).not.toHaveBeenCalled();
+        // A second press while the first is under way does nothing.
+        await act(async () => {
+            await result.current.handleUpload();
+        });
+        expect(mocks.prepare).toHaveBeenCalledTimes(1);
+
+        await act(async () => {
+            finish({ files: [framed], notice: 'x' });
+            await upload;
+        });
+        expect(mocks.prepare).toHaveBeenCalledWith([original]);
+        expect(mocks.uploadBatch).toHaveBeenCalledWith(expect.objectContaining({ files: [framed] }));
+        expect(result.current.isUploading).toBe(false);
+        expect(result.current.uploadNotice).toContain('x');
+    });
+
+    it('uploads the photos as picked when the event has no frame', async () => {
+        mocks.isHost = true;
+        mocks.activeEvent = { status: 'ACTIVE', deletedAt: null };
+        mocks.activeMember = { id: 'host' };
+        const original = new File(['x'], 'a.jpg', { type: 'image/jpeg' });
+        mocks.uploadBatch.mockResolvedValue({ created: [{ id: 'm' }], failed: [] });
+        const { result } = renderHook(() => useGalleryScreen());
+        act(() => result.current.handleFilesChange({ target: { files: [original], value: '' } } as never));
+        await act(async () => {
+            await result.current.handleUpload();
+        });
+        expect(mocks.prepare).not.toHaveBeenCalled();
+        expect(mocks.uploadBatch).toHaveBeenCalledWith(expect.objectContaining({ files: [original] }));
     });
 
     it('offers the original download for a guest photo but not for a Pro photo', () => {

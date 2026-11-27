@@ -4,9 +4,10 @@ import { useQueryClient } from '@tanstack/react-query';
 import { ArrowRight, Images, Loader2, UserRound, Video, X } from 'lucide-react';
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
-import React, { useCallback, useEffect, useId, useState } from 'react';
+import React, { useCallback, useEffect, useId, useRef, useState } from 'react';
 
 import { ProtectedImage } from '@/components/common/ProtectedImage';
+import { UploadFrameSwitch } from '@/components/gallery/UploadFrameSwitch';
 import { IncidentPausedNote } from '@/components/incident/IncidentPausedNote';
 import { SignupAcceptanceCheckbox } from '@/components/legal/SignupAcceptanceCheckbox';
 import { QrSentArt } from '@/components/qrGuest/QrSentArt';
@@ -20,6 +21,7 @@ import { useUploadQrMediaBatch } from '@/hooks/useQrMediaUpload';
 import { useSlowUpload } from '@/hooks/useSlowUpload';
 import { termsVersionQueryKey, useTermsVersion } from '@/hooks/useTermsVersion';
 import { useUploadAccept } from '@/hooks/useUploadAccept';
+import { type UploadFrameSource, useUploadFrame } from '@/hooks/useUploadFrame';
 import { isGuidelinesVersionMismatchError, isTermsVersionMismatchError } from '@/lib/api/errors';
 import { formatBytes } from '@/lib/format';
 import { INCIDENT_MODE } from '@/lib/incident';
@@ -32,9 +34,11 @@ interface AnonymousQrMediaUploadFormProps {
     member?: { eventId: string; displayName: string } | null;
     // Told when the sent screen shows or hides, so the page can drop its own header there.
     onSentChange?: (sent: boolean) => void;
+    // The event's frame, when it has one: Add frame shows above the upload button (KAN-304).
+    frameSource?: UploadFrameSource | null;
 }
 
-export function AnonymousQrMediaUploadForm({ token, member = null, onSentChange }: AnonymousQrMediaUploadFormProps) {
+export function AnonymousQrMediaUploadForm({ token, member = null, onSentChange, frameSource = null }: AnonymousQrMediaUploadFormProps) {
     const t = useTranslations('QrCodePage');
     const tAlt = useTranslations('ImageAlt');
     const uploadAccept = useUploadAccept();
@@ -60,6 +64,13 @@ export function AnonymousQrMediaUploadForm({ token, member = null, onSentChange 
     const [isDragActive, setIsDragActive] = useState(false);
     const [isBusy, setIsBusy] = useState(false);
     const previews = useFilePreviews(files);
+    const uploadFrame = useUploadFrame(frameSource);
+    // Set at once, so a second submit can't start while one is under way (state would be a render late).
+    const submitting = useRef(false);
+    const [isFraming, setIsFraming] = useState(false);
+    // Framing plus upload: the upload sends the list it started with and then clears it, so the list can't change meanwhile.
+    const [isSending, setIsSending] = useState(false);
+    const [frameNotice, setFrameNotice] = useState<string | null>(null);
     const nameHintId = useId();
     const pickerLabel = files.length > 0 ? t('anonymousUpload.addMore') : t('anonymousUpload.chooseFiles');
 
@@ -75,6 +86,7 @@ export function AnonymousQrMediaUploadForm({ token, member = null, onSentChange 
     const handleUploadMore = useCallback(() => {
         setAcceptedDocuments(false);
         setSubmitError(null);
+        setFrameNotice(null);
         setDone(false);
     }, []);
 
@@ -85,6 +97,7 @@ export function AnonymousQrMediaUploadForm({ token, member = null, onSentChange 
     // A file over its own cap is refused here rather than sent to be refused.
     const addFiles = useCallback(
         (added: File[]) => {
+            if (submitting.current) return;
             const isTooLarge = (file: File) => file.size > (file.type.startsWith('video/') ? videoBytes : imageBytes);
             setSubmitError(
                 added.some(isTooLarge)
@@ -126,25 +139,45 @@ export function AnonymousQrMediaUploadForm({ token, member = null, onSentChange 
     const handleRemoveFileClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
         const target = (e.target as HTMLElement).closest<HTMLElement>('[data-remove-index]');
         if (!target) return;
+        if (submitting.current) return;
         const index = Number(target.dataset.removeIndex);
         setFiles((prev) => prev.filter((_, i) => i !== index));
     }, []);
 
     async function handleSubmit(e: React.SubmitEvent<HTMLFormElement>) {
         e.preventDefault();
+        if (submitting.current) return;
         if (files.length === 0 || !isAccepted) return;
         if (!member && (!termsVersion.data || !guidelinesVersion.data)) {
             setSubmitError(t('anonymousUpload.acceptanceUnavailable'));
             return;
         }
 
+        submitting.current = true;
+        setIsSending(true);
         setSubmitError(null);
+        let prepared: { files: File[]; notice: string | null } = { files, notice: null };
+        // Only an event with a frame goes through the framing step.
+        if (uploadFrame.control) {
+            setIsFraming(true);
+            try {
+                prepared = await uploadFrame.prepare(files);
+            } catch (error) {
+                submitting.current = false;
+                setIsSending(false);
+                throw error;
+            } finally {
+                setIsFraming(false);
+            }
+            // Kept across a retry in the same sending: a photo that went up plain stays mentioned.
+            setFrameNotice((current) => prepared.notice ?? current);
+        }
         try {
             const result = member
-                ? await memberUploadBatch.mutateAsync({ eventId: member.eventId, files, onBusy: setIsBusy })
+                ? await memberUploadBatch.mutateAsync({ eventId: member.eventId, files: prepared.files, onBusy: setIsBusy })
                 : await qrUploadBatch.mutateAsync({
                       token,
-                      files,
+                      files: prepared.files,
                       uploaderName: uploaderName.trim() || undefined,
                       acceptance: { termsVersion: termsVersion.data!, guidelinesVersion: guidelinesVersion.data! },
                       onBusy: setIsBusy,
@@ -174,6 +207,9 @@ export function AnonymousQrMediaUploadForm({ token, member = null, onSentChange 
                 return;
             }
             setSubmitError(toErrorMessage(err));
+        } finally {
+            submitting.current = false;
+            setIsSending(false);
         }
     }
 
@@ -183,6 +219,7 @@ export function AnonymousQrMediaUploadForm({ token, member = null, onSentChange 
             <div className="flex flex-col items-center gap-4 py-8 text-center">
                 <QrSentArt kind="upload" />
                 <p className="text-base font-semibold text-ink">{t('anonymousUpload.success')}</p>
+                {frameNotice && <p className="text-sm text-ink-muted">{frameNotice}</p>}
                 <button
                     type="button"
                     onClick={handleUploadMore}
@@ -208,7 +245,7 @@ export function AnonymousQrMediaUploadForm({ token, member = null, onSentChange 
                     className={cn(
                         'flex min-h-36 w-full cursor-pointer flex-col items-center justify-center gap-1 rounded-[1.25rem] border-2 border-dashed px-4 py-5 text-center transition-colors',
                         isDragActive ? 'border-primary/60 bg-primary/10' : 'border-primary/30 bg-primary/[0.04] hover:bg-primary/[0.07]',
-                        INCIDENT_MODE && 'pointer-events-none opacity-60',
+                        (INCIDENT_MODE || isSending) && 'pointer-events-none opacity-60',
                     )}
                 >
                     <span className="mb-1.5 flex h-14 w-14 items-center justify-center rounded-full bg-background shadow-xs">
@@ -221,7 +258,7 @@ export function AnonymousQrMediaUploadForm({ token, member = null, onSentChange 
                         type="file"
                         accept={uploadAccept.media}
                         multiple
-                        disabled={INCIDENT_MODE}
+                        disabled={INCIDENT_MODE || isSending}
                         onChange={handleFilesChange}
                         className="hidden"
                     />
@@ -252,6 +289,7 @@ export function AnonymousQrMediaUploadForm({ token, member = null, onSentChange 
                                 <button
                                     type="button"
                                     data-remove-index={index}
+                                    disabled={isSending}
                                     aria-label={t('anonymousUpload.removeFile')}
                                     className="absolute top-1 right-1 flex h-5 w-5 items-center justify-center rounded-full bg-black/60 text-white"
                                 >
@@ -324,13 +362,16 @@ export function AnonymousQrMediaUploadForm({ token, member = null, onSentChange 
                 )
             )}
 
+            {/* Frame */}
+            {uploadFrame.control && <UploadFrameSwitch control={uploadFrame.control} />}
+
             {/* Upload */}
             <button
                 type="submit"
-                disabled={INCIDENT_MODE || uploadBatch.isPending || files.length === 0 || !isAccepted}
+                disabled={INCIDENT_MODE || uploadBatch.isPending || isFraming || files.length === 0 || !isAccepted}
                 className="flex min-h-12 w-full items-center justify-center gap-2 rounded-full text-[15px] font-semibold text-white transition-opacity bg-gradient-brand hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
             >
-                {uploadBatch.isPending ? (
+                {uploadBatch.isPending || isFraming ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
                     <>

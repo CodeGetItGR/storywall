@@ -21,7 +21,7 @@ export function useFeedGalleryBlock(event: EventDetailResponseDto, available: bo
     const member = useActiveMember();
     const name = useModuleCopy(event.eventType)('gallery').name;
     const media = useEventMedia(available ? event.id : null);
-    const upload = useFeedGalleryUpload(event.id);
+    const upload = useFeedGalleryUpload(event);
     const accept = useUploadAccept().media;
 
     const firstPage = media.data?.pages[0];

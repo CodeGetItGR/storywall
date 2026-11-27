@@ -15,7 +15,7 @@ const PHOTOS = [
     photo('p2', '/landing/04-wedding-reception-santorini.webp'),
     photo('p3', '/landing/couple-cheering-with-guests-under-lit-arch-at-night.webp'),
 ];
-const upload = { onFiles: fn(), uploading: false, notice: null, accept: 'image/*,video/*' };
+const upload = { onFiles: fn(), uploading: false, notice: null, accept: 'image/*,video/*', frame: null };
 
 const meta = {
     title: 'Feed/Modules/FeedGalleryBlock',

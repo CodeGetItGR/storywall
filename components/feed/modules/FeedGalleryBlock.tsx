@@ -6,6 +6,8 @@ import type { ChangeEvent } from 'react';
 
 import { FeedGalleryMosaic, type FeedMosaicTile } from '@/components/feed/modules/FeedGalleryMosaic';
 import { FEED_MODULE_BUTTON, FeedModuleCard, FeedModuleTitle } from '@/components/feed/modules/FeedModuleCard';
+import { UploadFrameSwitch } from '@/components/gallery/UploadFrameSwitch';
+import type { UploadFrameControl } from '@/lib/uploadFrame';
 import { cn } from '@/lib/utils';
 
 export type FeedGalleryUpload = {
@@ -13,6 +15,8 @@ export type FeedGalleryUpload = {
     uploading: boolean;
     notice: string | null;
     accept: string;
+    // Add frame, when the event has one (KAN-304).
+    frame: UploadFrameControl | null;
 };
 
 export type FeedGalleryBlockProps = {
@@ -46,6 +50,9 @@ export function FeedGalleryBlock({ name, tiles, more, loading, photosHref, uploa
 
             {/* Empty line */}
             {empty && <p className="text-[14px] text-ink-muted">{tGallery('emptyTitle')}</p>}
+
+            {/* Frame */}
+            {available && upload?.frame && <UploadFrameSwitch control={upload.frame} />}
 
             {/* Upload */}
             {!available ? (
