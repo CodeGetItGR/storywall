@@ -24,17 +24,19 @@ type FeedCoverBlockProps = {
     editing?: boolean;
     // A Save my date theme's top illustration: what an event without a cover photo shows in the invitation.
     topArt?: FeedTopArt | null;
+    // The round place buttons; left out while the invitation shows its own Places section (KAN-293).
+    places?: boolean;
 };
 
 // The feed's cover + title block (feedCover): the banner with the session and gift buttons.
-export function FeedCoverBlock({ event, isHost, wishlist, thumbnail, clearPill, editing = false, topArt = null }: FeedCoverBlockProps) {
+export function FeedCoverBlock({ event, isHost, wishlist, thumbnail, clearPill, editing = false, topArt = null, places = true }: FeedCoverBlockProps) {
     const t = useTranslations('FeedPage');
     const cover = useFeedCoverBlock(event, wishlist);
     const addPhotoHref = isHost && !editing ? coverPhotoSettingsHref(event.id) : undefined;
 
     const actions = !editing && (
         <>
-            <EventSessionActionButtons event={event} />
+            {places && <EventSessionActionButtons event={event} />}
             {/* Gift account */}
             {cover.giftHref && (
                 <AppLink

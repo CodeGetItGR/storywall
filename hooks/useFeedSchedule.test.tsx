@@ -3,7 +3,7 @@ import { NextIntlClientProvider } from 'next-intl';
 import type { ReactNode } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { useFeedSchedule, useFeedScheduleDays } from '@/hooks/useFeedSchedule';
+import { useFeedScheduleDays } from '@/hooks/useFeedSchedule';
 import type { EventDetailResponseDto } from '@/lib/api/types';
 import en from '@/messages/en.json';
 
@@ -34,35 +34,41 @@ beforeEach(() => {
 });
 afterEach(() => vi.useRealTimers());
 
-describe('useFeedSchedule', () => {
-    it("gives each row its time in the event's time zone, its place, its state and whether it takes RSVPs", () => {
-        const { result } = renderHook(() => useFeedSchedule(event), { wrapper });
-        expect(result.current).toEqual([{ ...church, state: 'upcoming' }]);
-    });
-
-    it('moves on once a minute, and has nothing to show once the last session is over', () => {
-        const { result } = renderHook(() => useFeedSchedule(event), { wrapper });
-        act(() => {
-            vi.advanceTimersByTime(60_000);
-        });
-        expect(result.current).toEqual([{ ...church, state: 'now' }]);
-        act(() => {
-            vi.advanceTimersByTime(3_600_000);
-        });
-        expect(result.current).toBeNull();
-    });
-});
-
 describe('useFeedScheduleDays', () => {
     const wrapperIn = (locale: 'en' | 'el') =>
         function Wrapper({ children }: { children: ReactNode }) {
             return <NextIntlClientProvider locale={locale}>{children}</NextIntlClientProvider>;
         };
 
-    it('has no date heading on a one-day event, and keeps sessions that are over', () => {
-        vi.setSystemTime(new Date('2027-01-01T00:00:00Z'));
+    it("gives each row its time in the event's time zone, its place, its state and whether it takes RSVPs", () => {
         const { result } = renderHook(() => useFeedScheduleDays(event), { wrapper });
+        expect(result.current).toEqual([{ day: '2026-12-19', label: null, items: [{ ...church, state: 'upcoming' }] }]);
+    });
+
+    it('moves on once a minute, and has nothing to show once the last session is over', () => {
+        const { result } = renderHook(() => useFeedScheduleDays(event), { wrapper });
+        act(() => {
+            vi.advanceTimersByTime(60_000);
+        });
+        expect(result.current[0].items).toEqual([{ ...church, state: 'now' }]);
+        act(() => {
+            vi.advanceTimersByTime(3_600_000);
+        });
+        expect(result.current).toEqual([]);
+    });
+
+    it('keeps the past sessions, greyed, once the last one is over, when asked (edit mode)', () => {
+        vi.setSystemTime(new Date('2027-01-01T00:00:00Z'));
+        const { result } = renderHook(() => useFeedScheduleDays(event, true), { wrapper });
         expect(result.current).toEqual([{ day: '2026-12-19', label: null, items: [{ ...church, state: 'done' }] }]);
+    });
+
+    it('leaves out a day that is over, and its heading with it', () => {
+        const night = { ...event.sessions?.[0], id: 'night', title: 'Night', startAt: '2026-12-20T20:00:00Z', endAt: null };
+        const twoDays = { ...event, sessions: [...(event.sessions ?? []), night] } as EventDetailResponseDto;
+        vi.setSystemTime(new Date('2026-12-20T08:00:00Z'));
+        const { result } = renderHook(() => useFeedScheduleDays(twoDays), { wrapper });
+        expect(result.current.map((day) => [day.day, day.label, day.items.map((item) => item.id)])).toEqual([['2026-12-20', null, ['night']]]);
     });
 
     it("heads each day with its date, in the event's time zone and the viewer's language", () => {

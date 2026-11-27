@@ -636,18 +636,7 @@
     .smd-invitation .stay-contact-row { font-size: 14.5px; gap: 10px 18px; }
 }
 
-/* Program: moments alternate either side of a line. */
-.smd-invitation .program-list { position: relative; max-width: 480px; margin: 0 auto; }
-.smd-invitation .program-list::before { content: ''; position: absolute; left: 50%; top: 6px; bottom: 6px; width: var(--program-line-width, 1px); background: var(--program-color, currentColor); opacity: 0.3; transform: translateX(-50%); }
-.smd-invitation .program-item { position: relative; display: flex; align-items: flex-start; padding: 16px 0; --pc-y: calc(16px + var(--program-time-size, var(--program-size, 26px)) * 0.525); }
-.smd-invitation .program-item.side-left { justify-content: flex-end; padding-right: calc(50% + 14px); }
-.smd-invitation .program-item.side-right { justify-content: flex-start; padding-left: calc(50% + 14px); }
-.smd-invitation .program-content { max-width: 200px; }
-.smd-invitation .program-item.side-left .program-content { text-align: right; }
-.smd-invitation .program-item.side-right .program-content { text-align: left; }
-.smd-invitation .program-dot { position: absolute; left: 50%; top: calc(var(--pc-y) - 4.5px); transform: translateX(-50%); width: 9px; height: 9px; border-radius: 50%; background: var(--program-color, currentColor); z-index: 2; }
-.smd-invitation .program-time { font-size: var(--program-time-size, var(--program-size, 26px)); font-family: var(--program-time-font, var(--program-font, var(--title-font))); font-weight: 700; margin: 0 0 2px; line-height: 1.05; color: var(--program-time-color, var(--program-color, inherit)); }
-.smd-invitation .program-label { font-size: var(--program-label-size, 14px); font-family: var(--program-label-font, var(--program-font, var(--body-font))); opacity: 0.85; margin: 0; line-height: 1.25; color: var(--program-label-color, var(--program-color, inherit)); }
+/* Program: moments alternate either side of a line. Shared with the feed's schedule, in sections/info/programTimeline.css. */
 
 /* Program with icons: the widest time and the widest text set the block's width, and the block is centred. */
 .smd-invitation .program-icons-section { width: 100%; max-width: 980px; margin-left: auto; margin-right: auto; }

@@ -47,7 +47,7 @@ describe('useFeedScheduleCardPart', () => {
         expect(screen.getByRole('link', { name: en.FeedEditor.moduleOpen }).getAttribute('href')).toBe('/events/e1/tools/schedule?section=schedule');
         cleanup();
         draw({ section: todays });
-        expect(screen.getByText(en.InvitationEditor.sectionNames.feedSchedule)).toBeTruthy();
+        expect(screen.getByText('module schedule')).toBeTruthy();
     });
 
     it('leaves room for the tools in edit mode', () => {

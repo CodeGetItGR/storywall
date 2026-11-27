@@ -20,7 +20,7 @@ vi.mock('@/providers/EventProvider', () => ({ useIsHost: () => viewer.isHost }))
 vi.mock('@/hooks/useAdminInvitationThemes', () => ({ useInvitationFonts: () => ({ data: [] }) }));
 
 // An event that has ended: the read-only feed keeps only the cover and details.
-const event = { id: 'e-1', theme: null, description: null, schedule: { endAt: '2020-01-01T00:00:00Z' } } as unknown as EventDetailResponseDto;
+const event = { id: 'e-1', theme: null, description: null, location: { name: null, address: null, mapsUrl: null }, schedule: { endAt: '2020-01-01T00:00:00Z' } } as unknown as EventDetailResponseDto;
 
 const SMD = [{ moduleKey: 'save_my_date', isAvailable: true }];
 const smdEvent = { ...event, modules: SMD } as unknown as EventDetailResponseDto;
@@ -212,6 +212,13 @@ describe('useFeedTop and a schedule with no sessions', () => {
     it('keeps both for everyone once a session has a time', () => {
         expect(idsOf(eventWith({ sessions: [church] }))).toEqual(['module', 'today']);
         expect(idsOf(eventWith({ sessions: [{ ...church, startAt: null }] }))).toEqual([]);
+    });
+
+    it('leaves both out once the last session is over, but keeps them in edit mode (KAN-293)', () => {
+        viewer.isHost = true;
+        const past = eventWith({ sessions: [{ ...church, startAt: '2021-06-20T16:00:00Z', endAt: '2021-06-20T17:00:00Z' }] });
+        expect(idsOf(past)).toEqual([]);
+        expect(idsOf(past, false)).toEqual(['module', 'today']);
     });
 
     it("leaves the host's card out after the event", () => {

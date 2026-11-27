@@ -2,7 +2,16 @@ import { describe, expect, it } from 'vitest';
 
 import type { EventDetailResponseDto, EventSessionResponseDto } from '@/lib/api/types';
 import { feedModuleSection } from '@/lib/feedModuleBlocks';
-import { drawsCard, drawsScheduleCard, drawsScheduleTimeline, feedScheduleDay, feedScheduleDays, hasTimedSessions } from '@/lib/feedSchedule';
+import {
+    drawsCard,
+    drawsScheduleCard,
+    drawsScheduleTimeline,
+    feedScheduleDays,
+    hasTimedSessions,
+    hasUpcomingSessions,
+    scheduleIsOver,
+    upcomingScheduleDays,
+} from '@/lib/feedSchedule';
 import { createFeedModeSection } from '@/lib/feedSections';
 
 const session = (id: string, startAt: string | null, endAt: string | null = null) =>
@@ -28,67 +37,58 @@ const twoDays = [
     session('untimed', null),
 ];
 
-const rows = (now: string, sessions = twoDays) => feedScheduleDay(event(sessions), new Date(now))?.rows.map((row) => [row.session.id, row.state]);
+const upcoming = (now: string, sessions = twoDays) =>
+    upcomingScheduleDays(event(sessions), new Date(now)).map(({ day, rows }) => [day, rows.map((row) => [row.session.id, row.state])]);
 
-describe('feedScheduleDay', () => {
-    it("shows the first day's sessions before the event, in time order, all upcoming", () => {
-        const day = feedScheduleDay(event(twoDays), new Date('2026-12-01T10:00:00Z'));
-        expect(day?.day).toBe('2026-12-19');
-        expect(day?.timeZone).toBe('Europe/Athens');
-        expect(day?.rows.map((row) => [row.session.id, row.state])).toEqual([
-            ['church', 'upcoming'],
-            ['party', 'upcoming'],
+describe('upcomingScheduleDays', () => {
+    it('shows every day to come before the event, in time order, all upcoming', () => {
+        const days = upcomingScheduleDays(event(twoDays), new Date('2026-12-01T10:00:00Z'));
+        expect(days.map((day) => day.timeZone)).toEqual(['Europe/Athens', 'Europe/Athens']);
+        expect(upcoming('2026-12-01T10:00:00Z')).toEqual([
+            [
+                '2026-12-19',
+                [
+                    ['church', 'upcoming'],
+                    ['party', 'upcoming'],
+                ],
+            ],
+            ['2026-12-20', [['brunch', 'upcoming']]],
         ]);
     });
 
-    it('marks the running session now and the past ones done', () => {
-        expect(rows('2026-12-19T17:30:00Z')).toEqual([
-            ['church', 'done'],
-            ['party', 'now'],
+    it('leaves out the past sessions and keeps the one under way', () => {
+        expect(upcoming('2026-12-19T17:30:00Z')).toEqual([
+            ['2026-12-19', [['party', 'now']]],
+            ['2026-12-20', [['brunch', 'upcoming']]],
         ]);
     });
 
-    it('keeps the day in view between two of its sessions', () => {
-        expect(rows('2026-12-19T16:00:00Z')).toEqual([
-            ['church', 'done'],
-            ['party', 'upcoming'],
-        ]);
-    });
-
-    it('keeps the evening in view while its last session runs past midnight', () => {
+    it("drops a day once its sessions are over, the evening's past midnight too", () => {
         // 22:15 UTC is 00:15 on the 20th in Athens.
-        expect(rows('2026-12-19T22:15:00Z')).toEqual([
-            ['church', 'done'],
-            ['party', 'now'],
-        ]);
+        expect(upcoming('2026-12-19T22:15:00Z')[0]).toEqual(['2026-12-19', [['party', 'now']]]);
+        expect(upcoming('2026-12-19T22:30:00Z')).toEqual([['2026-12-20', [['brunch', 'upcoming']]]]);
     });
 
-    it("moves to the next day once a day's sessions are over, and hides after the last", () => {
-        expect(rows('2026-12-19T22:30:00Z')).toEqual([['brunch', 'upcoming']]);
-        expect(rows('2026-12-20T10:00:00Z')).toEqual([['brunch', 'now']]);
-        expect(rows('2026-12-20T11:00:00Z')).toBeUndefined();
-    });
-
-    it("moves to a later day once it starts, though an earlier day's session still runs", () => {
-        const camping = [session('camping', '2026-12-18T10:00:00Z', '2026-12-20T18:00:00Z'), ...twoDays];
-        expect(rows('2026-12-19T13:00:00Z', camping)).toEqual([['camping', 'now']]);
-        expect(rows('2026-12-19T14:30:00Z', camping)?.[0]).toEqual(['church', 'now']);
+    it('is empty after the last session', () => {
+        expect(upcoming('2026-12-20T11:00:00Z')).toEqual([]);
+        expect(hasUpcomingSessions(event(twoDays), new Date('2026-12-20T10:00:00Z'))).toBe(true);
+        expect(hasUpcomingSessions(event(twoDays), new Date('2026-12-20T11:00:00Z'))).toBe(false);
     });
 
     it("counts a session's day in the event's time zone", () => {
         // 22:00 UTC on the 19th is midnight on the 20th in Athens.
         const night = [session('night', '2026-12-19T22:00:00Z', '2026-12-19T23:00:00Z')];
-        expect(feedScheduleDay(event(night), new Date('2026-12-01T10:00:00Z'))?.day).toBe('2026-12-20');
+        expect(upcoming('2026-12-01T10:00:00Z', night)[0][0]).toBe('2026-12-20');
     });
 
     it('leaves out deleted sessions', () => {
         const deleted = { ...session('gone', '2026-12-19T14:00:00Z'), deletedAt: '2026-12-01T10:00:00Z' };
         expect(hasTimedSessions(event([deleted]))).toBe(false);
-        expect(rows('2026-12-01T10:00:00Z', [deleted])).toBeUndefined();
+        expect(upcoming('2026-12-01T10:00:00Z', [deleted])).toEqual([]);
     });
 
     it('has nothing to show without a date or timed sessions', () => {
-        expect(feedScheduleDay(event(twoDays, null), new Date('2026-12-01T10:00:00Z'))).toBeNull();
+        expect(upcomingScheduleDays(event(twoDays, null), new Date('2026-12-01T10:00:00Z'))).toEqual([]);
         expect(hasTimedSessions(event([session('untimed', null)]))).toBe(false);
         expect(hasTimedSessions(event(twoDays))).toBe(true);
         expect(hasTimedSessions(event(twoDays, null))).toBe(false);
@@ -148,5 +148,14 @@ describe('what a schedule block draws', () => {
         expect(drawsCard(todays, gone)).toBe(false);
         expect(drawsCard(playlist, gone)).toBe(true);
         expect(drawsScheduleCard(playlist, withModule([]))).toBe(false);
+    });
+
+    it("is over once the last session ends, for the block and Feed mode's schedule alike", () => {
+        const shown = withModule(twoDays);
+        const after = new Date('2026-12-20T11:00:00Z');
+        expect([block, todays, playlist].map((section) => scheduleIsOver(section, shown, after))).toEqual([true, true, false]);
+        expect(scheduleIsOver(block, shown, new Date('2026-12-20T10:00:00Z'))).toBe(false);
+        // A schedule with no sessions isn't over: hosts get its card.
+        expect(scheduleIsOver(block, withModule([session('untimed', null)]), after)).toBe(false);
     });
 });

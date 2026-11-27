@@ -96,3 +96,13 @@ describe('FeedCoverBlock while editing', () => {
         expect(screen.getByRole('link', { name: 'Gifts' })).toBeTruthy();
     });
 });
+
+describe('FeedCoverBlock with the Places section on the page (KAN-293)', () => {
+    it('leaves out the place buttons, and keeps the rest', () => {
+        renderCover({ places: false });
+        expect(session('mainSession')).toBeNull();
+        expect(session('secondarySession')).toBeNull();
+        expect(addPhoto()).toBeTruthy();
+        expect(screen.getByRole('link', { name: 'Gifts' })).toBeTruthy();
+    });
+});

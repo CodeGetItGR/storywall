@@ -1,0 +1,25 @@
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">
+<g stroke-width="1.500">
+<path d="M5 3a2 2 0 0 0-2 2" stroke="url(#g-sections-blank)"/>
+<path d="M19 3a2 2 0 0 1 2 2" stroke="url(#g-sections-blank)"/>
+<path d="M21 19a2 2 0 0 1-2 2" stroke="url(#g-sections-blank)"/>
+<path d="M5 21a2 2 0 0 1-2-2" stroke="url(#g-sections-blank)"/>
+<path d="M9 3h1" stroke="url(#g-sections-blank)"/>
+<path d="M9 21h1" stroke="url(#g-sections-blank)"/>
+<path d="M14 3h1" stroke="url(#g-sections-blank)"/>
+<path d="M14 21h1" stroke="url(#g-sections-blank)"/>
+<path d="M3 9v1" stroke="url(#g-sections-blank)"/>
+<path d="M21 9v1" stroke="url(#g-sections-blank)"/>
+<path d="M3 14v1" stroke="url(#g-sections-blank)"/>
+<path d="M21 14v1" stroke="url(#g-sections-blank)"/>
+</g>
+<defs>
+<linearGradient id="g-sections-blank" x1="-0.30" y1="-0.30" x2="20.00" y2="20.00" gradientUnits="userSpaceOnUse">
+<stop offset="0.2" stop-color="#C777B1"/>
+<stop offset="0.43" stop-color="#E48279"/>
+<stop offset="0.54" stop-color="#F2885C"/>
+<stop offset="0.99" stop-color="#FEC463"/>
+</linearGradient>
+
+</defs>
+</svg>

@@ -57,3 +57,11 @@ export const TopArtEditing: Story = { args: { topArt, clearPill: true, editing: 
 // Edit mode: no Add cover photo, and nothing under the settings button.
 export const Editing: Story = { args: { editing: true } };
 export const EditingWithCover: Story = { args: { event: withPhoto, editing: true } };
+
+// The invitation shows its own Places: the cover leaves out its place buttons (KAN-293).
+export const WithoutPlaces: Story = { tags: ['visual-desktop-only'], args: { places: false } };
+export const WithoutPlacesNarrow: Story = {
+    tags: ['visual-mobile-only'],
+    args: { places: false },
+    decorators: NoCoverHostNarrow.decorators,
+};
