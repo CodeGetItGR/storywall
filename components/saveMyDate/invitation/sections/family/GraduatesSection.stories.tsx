@@ -1,27 +1,15 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 
-import { LONG_NAME, onDark, SectionStory, storySection } from '@/.storybook/invitation';
-
-const NAMES = ['Μαρία', 'Νίκος', 'Ελένη', 'Γιώργος', 'Άννα', 'Κώστας'];
-
-function storyGraduates(count: number, withPhotos = true) {
-    return NAMES.slice(0, count).map((name, index) => ({
-        id: `graduate-${index}`,
-        name,
-        degree: 'Πτυχίο Νομικής',
-        university: 'Αριστοτέλειο Πανεπιστήμιο Θεσσαλονίκης',
-        ...(withPhotos ? { photo: { source: 'media' as const, mediaId: 'm-g1' } } : {}),
-    }));
-}
+import { HOST_TOOLS, LONG_NAME, LONG_UNIVERSITY, onDark, SectionStory, storyGraduates, storySection } from '@/.storybook/invitation';
 
 const noStyles = { textStyles: {} };
-const graduates = storySection('graduates');
+const graduates = (list: ReturnType<typeof storyGraduates>) => storySection('graduates', { style: 'plain', graduates: list }, noStyles);
 
 const meta = {
-    title: 'SaveMyDate/Family/GraduatesSection',
+    title: 'SaveMyDate/Family/Graduates/Plain',
     component: SectionStory,
     parameters: { layout: 'fullscreen' },
-    args: { section: graduates },
+    args: { section: graduates(storyGraduates(2)) },
 } satisfies Meta<typeof SectionStory>;
 
 export default meta;
@@ -29,22 +17,22 @@ type Story = StoryObj<typeof meta>;
 
 export const TwoGraduates: Story = {};
 
-export const OneGraduate: Story = {
-    args: { section: storySection('graduates', { graduates: storyGraduates(1) }, noStyles) },
+export const OneGraduate: Story = { args: { section: graduates(storyGraduates(1)) } };
+
+export const SixGraduates: Story = { args: { section: graduates(storyGraduates(6)) } };
+
+export const LongTexts: Story = {
+    args: { section: graduates(storyGraduates(2).map((graduate) => ({ ...graduate, name: LONG_NAME, university: LONG_UNIVERSITY }))) },
 };
 
-export const SixGraduates: Story = {
-    args: { section: storySection('graduates', { graduates: storyGraduates(6) }, noStyles) },
+// A guest sees a graduate without a photo as text only.
+export const WithoutPhotoGuest: Story = {
+    args: { section: graduates([storyGraduates(1)[0], storyGraduates(2, false)[1]]) },
 };
 
-export const WithoutPhotos: Story = {
-    args: { section: storySection('graduates', { graduates: storyGraduates(3, false) }, noStyles) },
+// A host sees the empty photo where one can go.
+export const WithoutPhotoHost: Story = {
+    args: { section: graduates([storyGraduates(1)[0], storyGraduates(2, false)[1]]), canvasTools: HOST_TOOLS },
 };
 
-export const LongNames: Story = {
-    args: { section: storySection('graduates', { graduates: storyGraduates(2).map((graduate) => ({ ...graduate, name: LONG_NAME })) }, noStyles) },
-};
-
-export const OnDarkBackground: Story = {
-    args: { section: onDark(graduates) },
-};
+export const OnDarkBackground: Story = { args: { section: onDark(graduates(storyGraduates(2))) } };
