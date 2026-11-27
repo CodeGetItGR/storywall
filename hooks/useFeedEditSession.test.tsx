@@ -73,6 +73,9 @@ function hideRsvp(session: ReturnType<typeof useFeedEditSession>) {
     act(() => session.store.getState().edit(setFeedBlockVisible('feed-feedRsvp', false)));
 }
 
+// The starter prompt reads next-intl, which these tests do not provide.
+vi.mock('@/hooks/useFeedStarterPrompt', () => ({ useFeedStarterPrompt: () => undefined }));
+
 describe('useFeedEditSession', () => {
     it('is clean until something changes', () => {
         const { result } = renderHook(() => useFeedEditSession(event, vi.fn()), { wrapper });

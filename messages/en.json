@@ -1178,6 +1178,11 @@
             "PRIVATE_PARTY": {
                 "title": "Party name",
                 "startAt": "Party date"
+            },
+            "GRADUATION": {
+                "title": "Event name",
+                "startAt": "Ceremony date",
+                "locationName": "Ceremony location"
             }
         },
         "initialSessions": {
@@ -1204,6 +1209,9 @@
             },
             "REUNION": {
                 "title": "Reunion"
+            },
+            "GRADUATION": {
+                "title": "Ceremony"
             }
         },
         "secondarySessions": {
@@ -1212,6 +1220,14 @@
             },
             "BAPTISM": {
                 "title": "Venue"
+            },
+            "GRADUATION": {
+                "title": "Dinner"
+            }
+        },
+        "suggestedSessions": {
+            "GRADUATION": {
+                "title": "Party"
             }
         },
         "endAtPresets": {
@@ -2346,6 +2362,7 @@
                 "notSet": "Not set",
                 "missing": "No venue session has been added yet.",
                 "mainMissing": "No ceremony session yet. Add it to show it here.",
+                "notAdded": "Not added yet.",
                 "untitled": "Untitled",
                 "editNamed": "Edit {title}",
                 "addNamed": "Add {title}",
@@ -6715,7 +6732,8 @@
         },
         "prompt": {
             "question": "What should guests photograph?",
-            "placeholder": "Show us your best dance move"
+            "placeholder": "Show us your best dance move",
+            "thenAndNow": "Then & now: post an old photo with the graduate"
         },
         "pinned": {
             "photoAlt": "Photo {number} of {count}"

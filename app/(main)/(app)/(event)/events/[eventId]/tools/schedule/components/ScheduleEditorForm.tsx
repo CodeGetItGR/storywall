@@ -45,6 +45,8 @@ interface ScheduleEditorFormProps {
     // venue) when opened via the dedicated "add secondary session" action. Ignored
     // when editing an existing session.
     secondaryPrefillTitle?: string;
+    // A suggested item's title (lib/sessionManagement getScheduleSuggestions); saved as an ordinary item.
+    prefillTitle?: string;
 }
 
 export function ScheduleEditorForm({
@@ -57,6 +59,7 @@ export function ScheduleEditorForm({
     updateSession,
     onClose,
     secondaryPrefillTitle,
+    prefillTitle,
 }: ScheduleEditorFormProps) {
     const t = useTranslations('SchedulePage');
     const tAddress = useTranslations('CreateEventPage');
@@ -67,7 +70,7 @@ export function ScheduleEditorForm({
     const rsvpReadable = useModuleReadable(eventId, 'rsvp');
 
     const createAsSecondary = !editingSession && Boolean(secondaryPrefillTitle);
-    const initialTitle = editingSession?.title ?? secondaryPrefillTitle ?? '';
+    const initialTitle = editingSession?.title ?? secondaryPrefillTitle ?? prefillTitle ?? '';
     const initialDescription = editingSession?.description ?? '';
     const initialStartAt = editingSession?.startAt ? toDatetimeLocalValue(editingSession.startAt) : defaultStartAt;
     const initialEndAt = editingSession?.endAt ? toDatetimeLocalValue(editingSession.endAt) : '';
@@ -124,7 +127,14 @@ export function ScheduleEditorForm({
           trimmedLocationAddress !== initialLocationAddress.trim() ||
           rsvpEnabled !== initialRsvpEnabled
         : Boolean(
-              trimmedTitle || trimmedDescription || startAt || endAt || trimmedLocationName || trimmedMapsUrl || trimmedLocationAddress || rsvpEnabled,
+              trimmedTitle ||
+              trimmedDescription ||
+              startAt ||
+              endAt ||
+              trimmedLocationName ||
+              trimmedMapsUrl ||
+              trimmedLocationAddress ||
+              rsvpEnabled,
           );
 
     function handleTitleChange(event: ChangeEvent<HTMLInputElement>) {

@@ -5,6 +5,7 @@ import { useCallback, useRef, useState } from 'react';
 
 import { fetchFeedLayout } from '@/hooks/useFeedLayout';
 import { useFeedLayoutSave } from '@/hooks/useFeedLayoutSave';
+import { useFeedStarterPrompt } from '@/hooks/useFeedStarterPrompt';
 import { fetchInvitationTheme } from '@/hooks/useInvitationThemeCards';
 import type { EventDetailResponseDto } from '@/lib/api/types';
 import { feedLayoutKeys, type FeedLayoutView, readFeedLayout, wallThemeDesign } from '@/lib/feedLayout';
@@ -22,6 +23,7 @@ type LayoutState = Pick<FeedLayoutView, 'document' | 'revision' | 'themeSlug'>;
 export function useFeedThemeSwitch(event: Pick<EventDetailResponseDto, 'id' | 'eventType' | 'theme'>, current: LayoutState) {
     const queryClient = useQueryClient();
     const save = useFeedLayoutSave(event.id);
+    const promptText = useFeedStarterPrompt(event.eventType);
     // Set synchronously: two clicks in one tick both see isSaving false.
     const inFlight = useRef(false);
     const [isSaving, setIsSaving] = useState(false);
@@ -50,9 +52,13 @@ export function useFeedThemeSwitch(event: Pick<EventDetailResponseDto, 'id' | 'e
     );
 
     const freshLayout = useCallback(async (): Promise<LayoutState> => {
-        const dto = await queryClient.fetchQuery({ queryKey: feedLayoutKeys.detail(event.id), queryFn: () => fetchFeedLayout(event.id), staleTime: 0 });
-        return readFeedLayout(dto, event.theme);
-    }, [event.id, event.theme, queryClient]);
+        const dto = await queryClient.fetchQuery({
+            queryKey: feedLayoutKeys.detail(event.id),
+            queryFn: () => fetchFeedLayout(event.id),
+            staleTime: 0,
+        });
+        return readFeedLayout(dto, event.theme, promptText);
+    }, [event.id, event.theme, promptText, queryClient]);
 
     const switchTo = useCallback(
         async (slug: string | null): Promise<boolean> => {

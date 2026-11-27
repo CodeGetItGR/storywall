@@ -40,6 +40,9 @@ function wrapperWith(saved: FeedLayoutDto | null) {
 
 const wrapper = wrapperWith(null);
 
+// The starter prompt reads next-intl, which these tests do not provide.
+vi.mock('@/hooks/useFeedStarterPrompt', () => ({ useFeedStarterPrompt: () => undefined }));
+
 describe('useFeedTop while editing', () => {
     const dressCode = { ...(SAMPLE_SECTIONS.dressCode as InvitationSection), id: 'dress' };
     const base = defaultFeedLayout();
@@ -167,7 +170,9 @@ describe('useFeedTop on a Save my date theme', () => {
     });
 
     it('follows the theme held in edit mode', () => {
-        const { result } = renderHook(() => useFeedTop(event, { document: themed, theme: SAMPLE_THEME, media: (id) => `https://held.test/${id}` }), { wrapper });
+        const { result } = renderHook(() => useFeedTop(event, { document: themed, theme: SAMPLE_THEME, media: (id) => `https://held.test/${id}` }), {
+            wrapper,
+        });
         expect(result.current.backdrop?.image?.desktop).toBe('https://held.test/m-content');
     });
 });
@@ -223,7 +228,9 @@ describe('useFeedTop and a schedule with no sessions', () => {
 
     it("leaves the host's card out after the event", () => {
         viewer.isHost = true;
-        expect(idsOf(eventWith({ schedule: { startAt: '2020-01-01T00:00:00Z', timezone: 'Europe/Athens', endAt: '2020-01-02T00:00:00Z' } }))).toEqual([]);
+        expect(idsOf(eventWith({ schedule: { startAt: '2020-01-01T00:00:00Z', timezone: 'Europe/Athens', endAt: '2020-01-02T00:00:00Z' } }))).toEqual(
+            [],
+        );
     });
 });
 
