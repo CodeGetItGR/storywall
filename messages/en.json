@@ -10739,7 +10739,7 @@
             "invitation": "Invitation text",
             "date": "Date",
             "countdown": "Countdown",
-            "locations": "Church & reception",
+            "locations": "Places",
             "parents": "Families",
             "rsvp": "RSVP",
             "gift": "Gift - Bank account",
@@ -10767,7 +10767,6 @@
             "feedDetails": "Details",
             "feedDescription": "Description",
             "feedRsvp": "RSVP",
-            "feedSchedule": "Today's schedule",
             "feedPrompt": "Photo prompt",
             "feedPinned": "Pinned photos"
         },

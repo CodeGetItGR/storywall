@@ -56,7 +56,7 @@ const longTitles = eventWith([
     storySession({ id: 'ses-party', title: 'Party', startAt: '2026-06-15T18:00:00Z', locationName: null }),
 ]);
 
-// The guest's RSVP: coming to the ceremony, not to the party, and lunch still to answer.
+// The guest's RSVP: coming to lunch and not to the party. The ceremony is over, so it has left the schedule.
 const answered: Story = {
     args: { event: today },
     parameters: { app: { member: storyMember({ rsvpId: 'rsvp-1' }) } },
@@ -65,7 +65,7 @@ const answered: Story = {
             http.get('*/api/rsvps/:rsvpId', () => HttpResponse.json({ id: 'rsvp-1', attendanceStatus: 'ATTENDING', adultCount: 1, childCount: 0 })),
             http.get('*/api/rsvps/:rsvpId/session-responses', () =>
                 HttpResponse.json([
-                    { id: 'answer-1', rsvpId: 'rsvp-1', eventSessionId: 'ses-main', isAttending: true },
+                    { id: 'answer-1', rsvpId: 'rsvp-1', eventSessionId: 'ses-lunch', isAttending: true },
                     { id: 'answer-2', rsvpId: 'rsvp-1', eventSessionId: 'ses-party', isAttending: false },
                 ]),
             ),

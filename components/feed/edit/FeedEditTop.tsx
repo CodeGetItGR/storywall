@@ -44,6 +44,7 @@ import { useFeedSectionContent } from '@/hooks/useFeedSectionContent';
 import { useFeedSectionName } from '@/hooks/useFeedSectionName';
 import { useFeedSectionPart } from '@/hooks/useFeedSectionPart';
 import { useFeedSectionPreviews } from '@/hooks/useFeedSectionPreviews';
+import { useFeedTextLock } from '@/hooks/useFeedTextLock';
 import { useFeedTextPresets } from '@/hooks/useFeedTextPresets';
 import { useFeedTop } from '@/hooks/useFeedTop';
 import { useFeedUploadedMedia } from '@/hooks/useFeedUploadedMedia';
@@ -110,6 +111,7 @@ export function FeedEditTop({
     useEditPageTheme(event.id, session.wallTheme, session.background, view.backdrop);
     const fonts = useInvitationFonts(true);
     const textPresets = useFeedTextPresets(fonts.data);
+    const textLock = useFeedTextLock(event);
     const hostOptions = useMemo(() => ({ rsvpMoves: view.rsvpMoves }), [view.rsvpMoves]);
     const actions = useFeedBlockActions(session.store, session.document, event, hostOptions);
     const addingInvitation = actions.adding?.kind === 'invitation';
@@ -280,6 +282,8 @@ export function FeedEditTop({
                 theme={session.theme}
                 uploadedFonts={fonts.data}
                 variant="feed"
+                event={textLock.event}
+                fieldLinks={textLock.fieldLinks}
                 presets={textPresets.presets}
                 onLinkAdded={panels.openSettings}
                 paused={previewing}

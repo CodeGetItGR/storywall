@@ -1,17 +1,20 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
 import type { ReactNode } from 'react';
 
 import { FeedScheduleTimeline } from '@/components/feed/sections/FeedScheduleTimeline';
-import { useFeedSchedule } from '@/hooks/useFeedSchedule';
+import { useFeedScheduleDays } from '@/hooks/useFeedSchedule';
+import { useModuleCopy } from '@/hooks/useModuleCopy';
 import type { EventDetailResponseDto } from '@/lib/api/types';
 
-// Today's schedule: the timeline of the day's sessions.
-export function FeedScheduleSection({ event, placeholder = null }: { event: EventDetailResponseDto; placeholder?: ReactNode }) {
-    const t = useTranslations('InvitationEditor.sectionNames');
-    const items = useFeedSchedule(event);
-    if (!items) return placeholder;
+// Feed mode's schedule: the same timeline as the Schedule block (KAN-293), the sessions to come by day, under the
+// Schedule module's name. inEditor: edit mode, where it keeps its past sessions once the last one is over.
+type FeedScheduleSectionProps = { event: EventDetailResponseDto; placeholder?: ReactNode; inEditor?: boolean };
 
-    return <FeedScheduleTimeline event={event} heading={t('feedSchedule')} days={[{ day: 'today', label: null, items }]} />;
+export function FeedScheduleSection({ event, placeholder = null, inEditor = false }: FeedScheduleSectionProps) {
+    const days = useFeedScheduleDays(event, inEditor);
+    const heading = useModuleCopy(event.eventType)('schedule').name;
+    if (days.length === 0) return placeholder;
+
+    return <FeedScheduleTimeline event={event} heading={heading} days={days} />;
 }

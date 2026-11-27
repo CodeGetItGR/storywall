@@ -1,4 +1,5 @@
 import { InvitationElements } from '@/components/saveMyDate/invitation/InvitationElements';
+import { ProgramTimeline } from '@/components/saveMyDate/invitation/sections/info/ProgramTimeline';
 import { SectionText } from '@/components/saveMyDate/invitation/sections/SectionText';
 import type { RenderContext, TextContrast } from '@/lib/invitation/render';
 import { programVars } from '@/lib/invitation/sectionCss';
@@ -19,17 +20,10 @@ export function ProgramSection({ section, contrast, ctx }: ProgramSectionProps) 
             {/* Title */}
             <SectionText section={section} path="title" value={data.title} tag="h2" contrast={contrast} ctx={ctx} />
             {/* Timeline */}
-            <div className="program-list" style={programVars(data.programStyle, contrast, ctx)}>
-                {data.items.map((item, index) => (
-                    <div key={item.id} className={`program-item ${index % 2 === 0 ? 'side-left' : 'side-right'}`}>
-                        <div className="program-content">
-                            <div className="program-time">{item.time}</div>
-                            <div className="program-label">{item.label}</div>
-                        </div>
-                        <div className="program-dot" />
-                    </div>
-                ))}
-            </div>
+            <ProgramTimeline
+                entries={data.items.map((item) => ({ id: item.id, time: item.time, label: item.label }))}
+                style={programVars(data.programStyle, contrast, ctx)}
+            />
             {/* Elements */}
             <InvitationElements elements={section.elements} contrast={contrast} ctx={ctx} />
         </div>

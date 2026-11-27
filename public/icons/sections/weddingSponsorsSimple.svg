@@ -1,0 +1,21 @@
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">
+<g stroke-width="1.500">
+<ellipse cx="7" cy="16" rx="4.6" ry="3" stroke="url(#g-sections-weddingSponsorsSimple)"/>
+<ellipse cx="17" cy="16" rx="4.6" ry="3" stroke="url(#g-sections-weddingSponsorsSimple)"/>
+<path d="M7 13C8.5 6.5 15.5 6.5 17 13" stroke="url(#g-sections-weddingSponsorsSimple)"/>
+<path d="M12 8.1l-1.2 2.9M12 8.1l1.2 2.9" stroke="url(#g-sections-weddingSponsorsSimple)"/>
+<circle cx="4.2" cy="13.6" r="1" fill="url(#g-sections-weddingSponsorsSimple)" stroke="none"/>
+<circle cx="9.8" cy="13.6" r="1" fill="url(#g-sections-weddingSponsorsSimple)" stroke="none"/>
+<circle cx="14.2" cy="13.6" r="1" fill="url(#g-sections-weddingSponsorsSimple)" stroke="none"/>
+<circle cx="19.8" cy="13.6" r="1" fill="url(#g-sections-weddingSponsorsSimple)" stroke="none"/>
+</g>
+<defs>
+<linearGradient id="g-sections-weddingSponsorsSimple" x1="-0.30" y1="-0.30" x2="20.00" y2="20.00" gradientUnits="userSpaceOnUse">
+<stop offset="0.2" stop-color="#C777B1"/>
+<stop offset="0.43" stop-color="#E48279"/>
+<stop offset="0.54" stop-color="#F2885C"/>
+<stop offset="0.99" stop-color="#FEC463"/>
+</linearGradient>
+
+</defs>
+</svg>

@@ -397,6 +397,22 @@ export function resolveLinkedSections(document: InvitationDocument, event: Invit
     return produce(document, (draft) => applyEvent(draft, event));
 }
 
+// The feed's Date sections (KAN-293): the event's date, in each section's language. Nothing else follows the event
+// on the feed, so the rest of the document stays as saved; the same document back when nothing changes.
+export function resolveEventDates(document: InvitationDocument, event: InvitationEventData): InvitationDocument {
+    if (!event.startAt || !document.sections.some((section) => section.type === 'date')) return document;
+    return produce(document, (draft) => {
+        const language = invitationLanguage(draft as InvitationDocument);
+        for (const section of draft.sections) if (section.type === 'date') applySection(section, event, language);
+    });
+}
+
+// What the feed's text lock reads of the event: only its date, so the date's words are locked there and nothing else
+// (the feed's names, schedule and places don't follow the event through the document).
+export function dateOnlyEventData(event: InvitationEventData): InvitationEventData {
+    return { ...event, title: '', rsvp: null, cover: null, location: { name: null, address: null, mapsUrl: null }, sessions: null };
+}
+
 // The editor's sync: links what follows the event and writes the event into it. A recipe for the editor store.
 export function syncWithEvent(event: InvitationEventData, samples: SampleSections | null) {
     return (draft: Draft<InvitationDocument>) => {
