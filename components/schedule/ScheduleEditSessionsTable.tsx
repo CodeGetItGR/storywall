@@ -5,7 +5,7 @@ import { useLocale, useTranslations } from 'next-intl';
 
 import { ScheduleEditSessionRow } from '@/components/schedule/ScheduleEditSessionRow';
 import type { EventDetailResponseDto, EventSessionResponseDto } from '@/lib/api/types';
-import { getManagedSessionDefinitions, type ManagedSessionDefinition } from '@/lib/sessionManagement';
+import { scheduleEditRows, type ScheduleRowDefinition } from '@/lib/sessionManagement';
 
 interface ScheduleEditSessionsTableProps {
     event: EventDetailResponseDto;
@@ -15,7 +15,7 @@ interface ScheduleEditSessionsTableProps {
     sessionLimitMessage?: string;
     deleteDisabled: boolean;
     onAddSession: () => void;
-    onCreateManagedSession: (definition: ManagedSessionDefinition) => void;
+    onCreateManagedSession: (definition: ScheduleRowDefinition) => void;
     onEditSession: (session: EventSessionResponseDto) => void;
     onDeleteSession: (session: EventSessionResponseDto) => void;
 }
@@ -34,13 +34,7 @@ export function ScheduleEditSessionsTable({
 }: ScheduleEditSessionsTableProps) {
     const t = useTranslations('SchedulePage.host.sessionManagement');
     const locale = useLocale();
-    const definitions = getManagedSessionDefinitions(event.eventType);
-    const managedRows = definitions.map((definition) => ({
-        definition,
-        session: sessions.find(definition.matches) ?? null,
-    }));
-    const managedSessionIds = new Set(managedRows.map((row) => row.session?.id).filter(Boolean));
-    const otherSessions = sessions.filter((session) => !managedSessionIds.has(session.id));
+    const rows = scheduleEditRows(event.eventType, sessions);
 
     return (
         <section className="grid gap-3">
@@ -67,7 +61,7 @@ export function ScheduleEditSessionsTable({
 
             {/* Managed session rows */}
             <div className="overflow-hidden rounded-lg border border-border/70 bg-background">
-                {[...managedRows, ...otherSessions.map((session) => ({ definition: null, session }))].map((row) => (
+                {rows.map((row) => (
                     <ScheduleEditSessionRow
                         key={row.definition?.role ?? row.session?.id}
                         definition={row.definition}

@@ -4,7 +4,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { ScheduleEditSessionRow } from '@/components/schedule/ScheduleEditSessionRow';
 import type { EventSessionResponseDto } from '@/lib/api/types';
-import { getManagedSessionDefinitions } from '@/lib/sessionManagement';
+import { getManagedSessionDefinitions, getScheduleSuggestions } from '@/lib/sessionManagement';
 import messages from '@/messages/en.json';
 
 // TargetedSection reads ?section= to highlight a row; none is targeted here.
@@ -106,5 +106,35 @@ describe('ScheduleEditSessionRow', () => {
 
         expect(container.querySelector('.lucide-party-popper')).not.toBeNull();
         expect(container.querySelector('.lucide-church')).toBeNull();
+    });
+});
+
+describe('ScheduleEditSessionRow for a graduation', () => {
+    const [ceremony, dinner] = getManagedSessionDefinitions('GRADUATION');
+    const [party] = getScheduleSuggestions('GRADUATION');
+
+    it('titles the empty rows Ceremony, Dinner and Party and says they are not added yet', () => {
+        for (const [definition, title] of [
+            [ceremony, 'Ceremony'],
+            [dinner, 'Dinner'],
+            [party, 'Party'],
+        ] as const) {
+            renderRow({ definition, eventType: 'GRADUATION' });
+            expect(screen.getByText(title)).toBeTruthy();
+            expect(screen.getByText('Not added yet.')).toBeTruthy();
+            cleanup();
+        }
+    });
+
+    it('creates from the Party suggestion', () => {
+        const handlers = renderRow({ definition: party, eventType: 'GRADUATION' });
+        fireEvent.click(screen.getByRole('button', { name: 'Add Party' }));
+        expect(handlers.onCreateManagedSession).toHaveBeenCalledWith(party);
+    });
+
+    it("keeps a wedding's wording", () => {
+        renderRow({ definition: secondaryDefinition });
+        expect(screen.getByText('Venue')).toBeTruthy();
+        expect(screen.getByText('No venue session has been added yet.')).toBeTruthy();
     });
 });

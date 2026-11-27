@@ -24,6 +24,13 @@ const CREATE_EVENT_CATALOG: Partial<Record<EventTypeConvention, CreateEventCatal
         initialSessionTitleKey: 'initialSessions.BAPTISM.title',
         secondarySessionTitleKey: 'secondarySessions.BAPTISM.title',
     },
+    // A graduation's ceremony, then a dinner (spec 2026-11-26-graduation-event-type-design.md §4.3).
+    // No backgroundImageSrc: the old create flow's photo; the wizard uses CREATE_EVENT_TYPE_PHOTOS.
+    GRADUATION: {
+        startAtLabelKey: 'fieldLabels.GRADUATION.startAt',
+        initialSessionTitleKey: 'initialSessions.GRADUATION.title',
+        secondarySessionTitleKey: 'secondarySessions.GRADUATION.title',
+    },
 };
 
 // Every event type gets a main session; types without a catalog entry use initialSessions.<type>.title.
@@ -46,6 +53,8 @@ const CREATE_EVENT_TYPE_PHOTOS: Record<EventTypeConvention, string> = {
     GENDER_REVEAL: '/landing/gender-reveal-box-opening-with-blue-balloons-and-confetti.webp',
     BABY_SHOWER: '/landing/pregnant-woman-and-friends-with-pink-and-blue-balloons.webp',
     REUNION: '/landing/friends-and-family-celebrating-at-sunset.webp',
+    // Until an admin uploads a graduation photo in the event type drawer.
+    GRADUATION: '/landing/friends-and-family-celebrating-at-sunset.webp',
 };
 
 export function createEventTypePhoto(eventType: EventTypeConvention, imageUrl: string | null): string {

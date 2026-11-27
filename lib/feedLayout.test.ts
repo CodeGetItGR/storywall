@@ -158,13 +158,16 @@ describe('feedFrame with a movable RSVP', () => {
     });
 
     it('leaves a hidden RSVP out either way', () => {
-        const hidden = { ...layout, sections: layout.sections.map((section) => (section.type === 'feedRsvp' ? { ...section, visible: false } : section)) };
+        const hidden = {
+            ...layout,
+            sections: layout.sections.map((section) => (section.type === 'feedRsvp' ? { ...section, visible: false } : section)),
+        };
         expect(feedFrame(hidden, { ended: false, rsvpMoves: true }).middle.some((section) => section.type === 'feedRsvp')).toBe(false);
     });
 });
 
 describe('the paid feed types', () => {
-    it("hold every type the Add section lists offer", () => {
+    it('hold every type the Add section lists offer', () => {
         expect(FEED_ADD_TYPES.filter((type) => !(PAID_FEED_SECTION_TYPES as readonly string[]).includes(type))).toEqual([]);
     });
 });
@@ -182,7 +185,13 @@ describe('feed sections in the frame', () => {
 
     it('drops the Save my date sections, module blocks too, from what an event without the module shows', () => {
         const prompt = { ...SAMPLE_SECTIONS.feedPrompt, id: 'p' } as InvitationSection;
-        const shown = withoutSaveMyDateSections(layoutWith({ ...faq, id: 'faq' }, feedModuleSection('playlist', () => 'module'), prompt));
+        const shown = withoutSaveMyDateSections(
+            layoutWith(
+                { ...faq, id: 'faq' },
+                feedModuleSection('playlist', () => 'module'),
+                prompt,
+            ),
+        );
         expect(shown.sections.map((section) => section.id)).toEqual([
             'feed-feedCover',
             'feed-feedDetails',
@@ -190,5 +199,31 @@ describe('feed sections in the frame', () => {
             'feed-feedRsvp',
             'p',
         ]);
+    });
+});
+
+describe('the starter prompt (KAN-303)', () => {
+    const prompt = (layout: ReturnType<typeof defaultFeedLayout>) => layout.sections.find((section) => section.type === 'feedPrompt');
+
+    it('adds a shown prompt with the text after the four feed blocks, only when given one', () => {
+        expect(prompt(defaultFeedLayout())).toBeUndefined();
+        const layout = defaultFeedLayout('Then & now: post an old photo with the graduate');
+        expect(layout.sections.map((section) => section.type)).toEqual(['feedCover', 'feedDetails', 'feedDescription', 'feedRsvp', 'feedPrompt']);
+        expect(prompt(layout)).toMatchObject({
+            id: 'feed-feedPrompt',
+            visible: true,
+            data: { text: 'Then & now: post an old photo with the graduate' },
+        });
+        expect(invitationDocumentSchema.safeParse(layout).success).toBe(true);
+    });
+
+    it('draws the prompt in Feed mode', () => {
+        expect(feedFrame(defaultFeedLayout('Then & now'), { ended: false }).feed.map((section) => section.type)).toEqual(['feedPrompt']);
+    });
+
+    it('is the stand-in for an event with no saved layout, never over a saved one', () => {
+        expect(prompt(readFeedLayout(null, null, 'Then & now').document)).toBeDefined();
+        const saved: FeedLayoutDto = { themeSlug: null, revision: 3, document: defaultFeedLayout(), design: null, imageUrls: {}, updatedAt: '' };
+        expect(prompt(readFeedLayout(saved, null, 'Then & now').document)).toBeUndefined();
     });
 });
