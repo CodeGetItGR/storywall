@@ -27,6 +27,14 @@ export type InvitationLabels = {
     parents: string;
     godparents: string;
     photoAlt: string;
+    // The Graduates block's drawings (KAN-302).
+    graduationCap: string;
+    diploma: string;
+    books: string;
+    champagne: string;
+    star: string;
+    confetti: string;
+    tape: string;
     eventPhotoAlt: string;
     galleryPhotoAlt: string;
     galleryDot: string;
@@ -92,6 +100,13 @@ export const INVITATION_LABELS: Record<DateLanguage, InvitationLabels> = {
         parents: 'Γονείς',
         godparents: 'Νονοί',
         photoAlt: 'Φωτογραφία προσώπου',
+        graduationCap: 'Καπέλο αποφοίτησης',
+        diploma: 'Δίπλωμα',
+        books: 'Βιβλία',
+        champagne: 'Σαμπάνια',
+        star: 'Αστέρι',
+        confetti: 'Κομφετί',
+        tape: 'Ταινία',
         eventPhotoAlt: 'Φωτογραφία της εκδήλωσης',
         galleryPhotoAlt: 'Φωτογραφία {n} από {total}',
         galleryDot: 'Φωτογραφία {n}',
@@ -139,6 +154,13 @@ export const INVITATION_LABELS: Record<DateLanguage, InvitationLabels> = {
         parents: 'Parents',
         godparents: 'Godparents',
         photoAlt: 'Photo of a person',
+        graduationCap: 'Graduation cap',
+        diploma: 'Diploma',
+        books: 'Books',
+        champagne: 'Champagne',
+        star: 'Star',
+        confetti: 'Confetti',
+        tape: 'Tape',
         eventPhotoAlt: 'Event photo',
         galleryPhotoAlt: 'Photo {n} of {total}',
         galleryDot: 'Photo {n}',
