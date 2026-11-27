@@ -38,31 +38,35 @@ function scheduleDays(event: ScheduleEvent, timeZone: string, now: Date): FeedSc
     });
 }
 
-// The day Today's schedule shows, among the days whose sessions aren't all over: the last one that has started (a
-// party running past midnight keeps its evening in view), else the first to come. Null once the last session is over.
-export function feedScheduleDay(event: ScheduleEvent, now: Date): FeedScheduleDay | null {
-    if (!hasEventDate(event)) return null;
-    const open = scheduleDays(event, journeyTimeZone(event), now).filter((day) => day.rows.some((row) => row.state !== 'done'));
-    const started = open.filter((day) => day.rows.some((row) => row.state !== 'upcoming'));
-    return started.at(-1) ?? open[0] ?? null;
-}
-
-// Every day with sessions, for the Schedule block's whole timeline. Empty without a date or a timed session.
+// Every day with sessions, for the whole timeline. Empty without a date or a timed session.
 export function feedScheduleDays(event: ScheduleEvent, now: Date): FeedScheduleDay[] {
     return hasEventDate(event) ? scheduleDays(event, journeyTimeZone(event), now) : [];
+}
+
+// The schedule as guests see it (KAN-293): the sessions to come and the one under way, by day. Past sessions leave
+// it, and a day whose sessions are all over goes too. Empty once the last session is over.
+export function upcomingScheduleDays(event: ScheduleEvent, now: Date): FeedScheduleDay[] {
+    return feedScheduleDays(event, now)
+        .map((day) => ({ ...day, rows: day.rows.filter((row) => row.state !== 'done') }))
+        .filter((day) => day.rows.length > 0);
+}
+
+// Whether the schedule still has a session to come or under way.
+export function hasUpcomingSessions(event: ScheduleEvent, now: Date): boolean {
+    return upcomingScheduleDays(event, now).length > 0;
 }
 
 type ScheduleBlockEvent = ScheduleEvent & Pick<EventDetailResponseDto, 'modules'>;
 type BlockSection = Pick<InvitationSection, 'type' | 'data'>;
 
-// The Schedule block and Today's schedule while the event has the module and no timed session: hosts get the white card
+// The Schedule block and Feed mode's schedule while the event has the module and no timed session: hosts get the white card
 // that opens the editor, guests nothing (useFeedTop leaves the block out).
 export function drawsScheduleCard(section: BlockSection, event: ScheduleBlockEvent): boolean {
     const isSchedule = section.type === 'feedSchedule' || moduleOfBlock(section) === 'schedule';
     return isSchedule && isModuleAvailable(event.modules, 'schedule') && !hasTimedSessions(event);
 }
 
-// The Schedule block drawn as the timeline of all sessions.
+// The Schedule block drawn as the timeline of the sessions.
 export function drawsScheduleTimeline(section: BlockSection, event: ScheduleBlockEvent): boolean {
     return moduleOfBlock(section) === 'schedule' && isModuleAvailable(event.modules, 'schedule') && hasTimedSessions(event);
 }
@@ -70,4 +74,10 @@ export function drawsScheduleTimeline(section: BlockSection, event: ScheduleBloc
 // Whether the block is a white card, which holds its own tools in edit mode.
 export function drawsCard(section: BlockSection, event: ScheduleBlockEvent): boolean {
     return (moduleOfBlock(section) !== null && !drawsScheduleTimeline(section, event)) || drawsScheduleCard(section, event);
+}
+
+// A schedule whose last session is over: off the page for everyone, hosts too (owner, 2026-11-26). Edit mode keeps it.
+export function scheduleIsOver(section: BlockSection, event: ScheduleBlockEvent, now: Date): boolean {
+    const isSchedule = section.type === 'feedSchedule' || moduleOfBlock(section) === 'schedule';
+    return isSchedule && hasTimedSessions(event) && !hasUpcomingSessions(event, now);
 }

@@ -5,6 +5,7 @@ import type { FeatureAddonOffer } from '@/lib/featureAddons';
 import { defaultFeedLayout } from '@/lib/feedLayout';
 import { feedModuleSection } from '@/lib/feedModuleBlocks';
 import { PREMIUM_TILE_MODULES, premiumTiles, VISIBLE_TILES } from '@/lib/feedModuleTiles';
+import { createSection } from '@/lib/invitation/newSection';
 
 const on = (moduleKey: string) => ({ moduleKey, isAvailable: true, isEnabled: true }) as EventModuleResponseDto;
 const offer = (grantsModuleKey: string, code = `ADD_${grantsModuleKey}`): FeatureAddonOffer => ({
@@ -27,6 +28,17 @@ describe('premiumTiles', () => {
         expect(premiumTiles({ document: defaultFeedLayout(), modules: [on('rsvp')], offers: [], canAdd: true })).toEqual([]);
         const withPlaylist = { ...defaultFeedLayout(), sections: [...defaultFeedLayout().sections, feedModuleSection('playlist', () => 'p')] };
         expect(premiumTiles({ document: withPlaylist, modules: [on('playlist')], offers: [], canAdd: true })).toEqual([]);
+    });
+
+    it('drops the Schedule tile, to add or to buy, while the page holds a typed schedule (KAN-293)', () => {
+        for (const type of ['program', 'programIcons'] as const) {
+            const withTyped = { ...withoutRsvp, sections: [...withoutRsvp.sections, createSection(type, 'WEDDING')] };
+            expect(premiumTiles({ document: withTyped, modules: [on('schedule')], offers: [], canAdd: true })).toEqual([]);
+            expect(premiumTiles({ document: withTyped, modules: [], offers: [offer('schedule')], canAdd: true })).toEqual([]);
+        }
+        expect(premiumTiles({ document: withoutRsvp, modules: [], offers: [offer('schedule')], canAdd: true })).toEqual([
+            { module: 'schedule', action: 'buy', addonCode: 'ADD_schedule' },
+        ]);
     });
 
     it('offers no adding once the page is full, but still sells', () => {

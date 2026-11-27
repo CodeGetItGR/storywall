@@ -27,7 +27,7 @@ type FeedModeSectionProps = {
 export function FeedModeSection({ event, section, media, placeholder, opensPhotos = false, inEditor = false }: FeedModeSectionProps) {
     switch (section.type) {
         case 'feedSchedule':
-            return <FeedScheduleSection event={event} placeholder={placeholder} />;
+            return <FeedScheduleSection event={event} placeholder={placeholder} inEditor={inEditor} />;
         case 'feedPrompt':
             return <FeedPromptSection text={section.data.text} placeholder={placeholder} inEditor={inEditor} />;
         case 'feedHeOrShe':

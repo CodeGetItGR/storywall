@@ -5,13 +5,15 @@ import { useMemo } from 'react';
 
 import { useInvitationFonts } from '@/hooks/useAdminInvitationThemes';
 import { useFeedLayout } from '@/hooks/useFeedLayout';
+import { useMinuteClock } from '@/hooks/useMinuteClock';
 import type { EventDetailResponseDto } from '@/lib/api/types';
 import { isEventEnded, isModuleAvailable } from '@/lib/eventLifecycle';
 import { feedEditFrame } from '@/lib/feedEditing';
+import { feedEventData, feedEventDetails, withEventDates, withEventDetails } from '@/lib/feedEventDetails';
 import { type FeedFrame, feedFrame, usesInvitationLook, withoutSaveMyDateSections } from '@/lib/feedLayout';
 import { moduleOfBlock } from '@/lib/feedModuleBlocks';
 import { feedBackdropSurface, type FeedPageBackdrop, feedPageBackdrop } from '@/lib/feedPageBackdrop';
-import { drawsScheduleCard } from '@/lib/feedSchedule';
+import { drawsScheduleCard, scheduleIsOver } from '@/lib/feedSchedule';
 import type { InvitationDocument } from '@/lib/invitation/document';
 import { isEmptyForGuests } from '@/lib/invitation/gallery';
 import { INVITATION_LABELS } from '@/lib/invitation/labels';
@@ -61,7 +63,13 @@ export function useFeedTop(event: EventDetailResponseDto, editing?: FeedTopEditi
     const isHost = useIsHost();
     const isEditing = editing !== undefined && !editing.asGuest;
     const whole = editing?.document ?? layout.document;
-    const document = useMemo(() => (saveMyDate ? whole : withoutSaveMyDateSections(whole)), [saveMyDate, whole]);
+    // Date, Countdown and Places read the event (KAN-293).
+    const eventData = useMemo(() => feedEventData(event), [event]);
+    const details = useMemo(() => feedEventDetails(eventData), [eventData]);
+    const document = useMemo(
+        () => (saveMyDate ? withEventDates(whole, eventData) : withoutSaveMyDateSections(whole)),
+        [saveMyDate, whole, eventData],
+    );
     const theme = editing?.theme ?? layout.theme;
     const media = editing?.media ?? layout.media;
     const pageTone = editing ? (editing.pageTone ?? null) : layout.pageTone;
@@ -73,34 +81,40 @@ export function useFeedTop(event: EventDetailResponseDto, editing?: FeedTopEditi
     const asHost = isHost && !editing?.asGuest;
     // With Save my date, RSVP is one of the host's blocks (spec item 17). Read as useFeedMode does, flag included.
     const rsvpMoves = enabled && saveMyDate;
+    // A schedule whose last session is over leaves the page (edit mode keeps it). Null until the browser has the time.
+    const now = useMinuteClock();
 
     const backdrop = useMemo(() => feedPageBackdrop(document, theme, media, pageTone), [document, theme, media, pageTone]);
 
     const ctx = useMemo(() => {
         const plain = buildRenderContext(document, theme, media);
-        return {
-            ...(backdrop ? onPageBackdrop(plain, feedBackdropSurface(backdrop)) : plain),
-            labels: INVITATION_LABELS[locale === 'en' ? 'en' : 'el'],
-            ownBackgrounds: true,
-            centerText: true,
-        };
-    }, [document, theme, media, locale, backdrop]);
+        return withEventDetails(
+            {
+                ...(backdrop ? onPageBackdrop(plain, feedBackdropSurface(backdrop)) : plain),
+                labels: INVITATION_LABELS[locale === 'en' ? 'en' : 'el'],
+                ownBackgrounds: true,
+                centerText: true,
+            },
+            details,
+        );
+    }, [document, theme, media, locale, backdrop, details]);
 
     const frame = useMemo(() => {
         const edited = isEditing ? feedEditFrame(document, { rsvpMoves }) : null;
         if (edited && saveMyDate) return edited;
         const split = feedFrame(document, { ended, rsvpMoves });
+        const over = (section: InvitationSection) => now !== null && scheduleIsOver(section, event, new Date(now));
         const draws = (section: InvitationSection) => {
             if (section.type === 'feedDescription') return Boolean(event.description);
             if (section.type === 'feedRsvp') return true;
             // A module block draws only while the event has the module.
             const key = moduleOfBlock(section);
-            if (key) return isModuleAvailable(event.modules, key) && (asHost || !drawsScheduleCard(section, event));
+            if (key) return isModuleAvailable(event.modules, key) && (asHost || !drawsScheduleCard(section, event)) && !over(section);
             return !isEmptyForGuests(section, ctx);
         };
-        const drawsFeed = (section: InvitationSection) => (asHost && !ended) || !drawsScheduleCard(section, event);
+        const drawsFeed = (section: InvitationSection) => ((asHost && !ended) || !drawsScheduleCard(section, event)) && !over(section);
         return { ...split, middle: split.middle.filter(draws), feed: edited?.feed ?? split.feed.filter(drawsFeed) };
-    }, [isEditing, saveMyDate, document, ended, rsvpMoves, event, asHost, ctx]);
+    }, [isEditing, saveMyDate, document, ended, rsvpMoves, event, asHost, ctx, now]);
 
     return {
         look,

@@ -22,8 +22,16 @@ export const VISIBLE_TILES = 4;
 
 export type PremiumTile = { module: TileModuleKey; action: 'add' } | { module: TileModuleKey; action: 'buy'; addonCode: string };
 
+// A saved typed schedule: a page holds one schedule only (KAN-293), so the Schedule tile stays away while one is there.
+const TYPED_SCHEDULES: ReadonlySet<string> = new Set(['program', 'programIcons']);
+
+function hasTypedSchedule(document: InvitationDocument): boolean {
+    return document.sections.some((section) => TYPED_SCHEDULES.has(section.type));
+}
+
 // A tile adds its block when the event has the module, opens the add-on when the plan sells it, else is left out. A
-// tile whose block is already on the layout is left out too (Open question 5). canAdd: the page has room.
+// tile whose block is already on the layout is left out too (Open question 5), and so is the Schedule tile while the
+// page holds a typed schedule. canAdd: the page has room.
 export function premiumTiles({
     document,
     modules,
@@ -36,6 +44,7 @@ export function premiumTiles({
     canAdd: boolean;
 }): PremiumTile[] {
     return PREMIUM_TILE_MODULES.flatMap((module): PremiumTile[] => {
+        if (module === 'schedule' && hasTypedSchedule(document)) return [];
         if (isModuleAvailable([...modules], module)) return canAdd && !layoutHasModule(document, module) ? [{ module, action: 'add' }] : [];
         const sold = offers.find((item) => item.service.grantsModuleKey === module);
         return sold ? [{ module, action: 'buy', addonCode: sold.service.code }] : [];
