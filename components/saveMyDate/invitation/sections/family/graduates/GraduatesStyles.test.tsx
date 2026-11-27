@@ -72,4 +72,29 @@ describe('Graduates styles', () => {
         renderStyle('polaroids', [NO_PHOTO], true);
         expect(document.querySelector('.grad-polaroid')).toBeTruthy();
     });
+
+    it('cover: university at the top, name and degree at the bottom, over the photo', () => {
+        renderStyle('cover');
+        const cover = document.querySelector('.grad-cover');
+        expect(cover?.querySelector('.grad-cover-top')?.textContent).toBe('ΑΠΘ');
+        expect(cover?.querySelector('.grad-cover-bottom')?.textContent).toContain('Μαρία');
+        expect(cover?.querySelector('.grad-cover-bottom')?.textContent).toContain('Πτυχίο Νομικής');
+    });
+
+    it('cover: shrinks a long name', () => {
+        renderStyle('cover', [{ ...WITH_PHOTO, name: 'Αλεξάνδρα-Παναγιώτα Παπαδημητροπούλου' }]);
+        const cover = document.querySelector<HTMLElement>('.grad-cover');
+        expect(cover?.style.getPropertyValue('--grad-name-scale')).toBe('0.6');
+    });
+
+    it('cover: no cover for a guest when there is no photo', () => {
+        renderStyle('cover', [NO_PHOTO]);
+        expect(document.querySelector('.grad-cover')).toBeNull();
+        expect(screen.getByText('ΕΚΠΑ')).toBeTruthy();
+    });
+
+    it('cover: an empty cover for a host', () => {
+        renderStyle('cover', [NO_PHOTO], true);
+        expect(document.querySelector('.grad-cover')).toBeTruthy();
+    });
 });

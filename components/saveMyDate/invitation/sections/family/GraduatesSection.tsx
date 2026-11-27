@@ -2,6 +2,7 @@ import type { ComponentType } from 'react';
 
 import { InvitationElements } from '@/components/saveMyDate/invitation/InvitationElements';
 import { CapGraduate } from '@/components/saveMyDate/invitation/sections/family/graduates/CapGraduate';
+import { CoverGraduate } from '@/components/saveMyDate/invitation/sections/family/graduates/CoverGraduate';
 import type { GraduateProps } from '@/components/saveMyDate/invitation/sections/family/graduates/GraduateName';
 import { PlacedStickers } from '@/components/saveMyDate/invitation/sections/family/graduates/PlacedStickers';
 import { PlainGraduate } from '@/components/saveMyDate/invitation/sections/family/graduates/PlainGraduate';
@@ -25,7 +26,7 @@ const GRADUATE_BY_STYLE: Record<GraduatesStyle, ComponentType<GraduateProps>> = 
     cap: CapGraduate,
     stickers: StickerGraduate,
     polaroids: PolaroidGraduate,
-    cover: PlainGraduate,
+    cover: CoverGraduate,
 };
 
 // The graduates (KAN-302): the people grid of the godparents and sponsors, in the look the host picked.
