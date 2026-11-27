@@ -10905,6 +10905,14 @@
                 "triple": "Τριπλό",
                 "calendar": "Ημερολόγιο"
             },
+            "graduatesStyle": "Στιλ",
+            "graduatesStyles": {
+                "plain": "Απλό",
+                "cap": "Καπέλο",
+                "stickers": "Αυτοκόλλητα",
+                "polaroids": "Πολαρόιντ",
+                "cover": "Εξώφυλλο"
+            },
             "language": "Γλώσσα",
             "languages": {
                 "el": "Ελληνικά",

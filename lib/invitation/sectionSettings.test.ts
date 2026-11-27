@@ -29,6 +29,7 @@ import {
     setContactLink,
     setDateLanguage,
     setDateLayout,
+    setGraduatesStyle,
     setLinkButton,
     setLocationMap,
     setPartnerContactLink,
@@ -158,6 +159,14 @@ describe('date', () => {
         expect(sectionOf(run(doc, setDateLayout(id, 'calendar')), 'date').data.displayStyle).toBe('calendar');
         const same = run(doc, setDateLanguage(id, SAMPLE_SECTIONS.date.data.displayLanguage));
         expect(sectionOf(same, 'date').data).toEqual(SAMPLE_SECTIONS.date.data);
+    });
+});
+
+describe('Graduates style', () => {
+    it('sets the Graduates style', () => {
+        const doc = documentWith(SAMPLE_SECTIONS.graduates);
+        const id = SAMPLE_SECTIONS.graduates.id;
+        expect(sectionOf(run(doc, setGraduatesStyle(id, 'polaroids')), 'graduates').data.style).toBe('polaroids');
     });
 });
 

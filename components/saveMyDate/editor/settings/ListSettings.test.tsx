@@ -203,6 +203,17 @@ describe('GraduatesSettings', () => {
         ]);
     });
 
+    it('shows the five styles, plain selected, and saves the one picked', () => {
+        graduates();
+        const names = en.InvitationEditor.sectionSettings.graduatesStyles;
+        expect(screen.getAllByRole('radio').map((radio) => radio.textContent)).toEqual([names.plain, names.cap, names.stickers, names.polaroids, names.cover]);
+        expect(screen.getByRole('radio', { name: names.plain })).toHaveAttribute('aria-checked', 'true');
+
+        fireEvent.click(screen.getByRole('radio', { name: names.polaroids }));
+        expect(items().style).toBe('polaroids');
+        expect(screen.getByRole('radio', { name: names.polaroids })).toHaveAttribute('aria-checked', 'true');
+    });
+
     it('deletes a graduate with the shared Delete button', () => {
         graduates();
         fireEvent.click(screen.getByRole('button', { name: 'Νίκος' }));
