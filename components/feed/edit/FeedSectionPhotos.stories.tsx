@@ -5,7 +5,7 @@ import { expect, userEvent, within } from 'storybook/test';
 import { useStore } from 'zustand';
 
 import { copyFor } from '@/.storybook/copy';
-import { LONG_NAME, onDark, STORY_THEME, storyInvitationMedia, storyPeople, storySection } from '@/.storybook/invitation';
+import { LONG_NAME, LONG_UNIVERSITY, onDark, STORY_THEME, storyGraduates, storyInvitationMedia, storyPeople, storySection } from '@/.storybook/invitation';
 import { feedCanvasTools } from '@/components/feed/edit/feedCanvasTools';
 import { FeedEditBlock } from '@/components/feed/edit/FeedEditBlock';
 import { FeedEditInvitationSection } from '@/components/feed/edit/FeedEditInvitationSection';
@@ -24,7 +24,7 @@ import { createSection } from '@/lib/invitation/newSection';
 import { type PhotoFieldSlot, photoFrameSlot, photoSlotKey, removeFieldPhoto } from '@/lib/invitation/photoSlots';
 import { createPhotoUploadStore } from '@/lib/invitation/photoUploadStore';
 import { buildRenderContext, onPageBackdrop } from '@/lib/invitation/render';
-import type { InvitationSection as Section } from '@/lib/invitation/sections';
+import type { GraduatesStyle, InvitationSection as Section } from '@/lib/invitation/sections';
 import type { ThemeDesign } from '@/lib/invitation/theme';
 import { pageToneProps, pageToneStyle } from '@/lib/pageTone';
 
@@ -210,3 +210,22 @@ export const GalleryEmptyAsGuest: Story = {
 // On a theme's dark page, the section having no background of its own.
 export const DarkPage: Story = { args: { section: onPage(bothPhotos), darkPage: true } };
 export const DarkPageEmpty: Story = { args: { section: onPage(noPhotos), darkPage: true } };
+
+// Graduates in the feed: one to a row in every style, at the invitation's own photo size. Cover's photo tools sit in
+// its top-right corner, clear of the name and degree.
+const graduates = (style: GraduatesStyle, withPhotos = true) => storySection('graduates', { style, graduates: storyGraduates(2, withPhotos) });
+export const GraduatesPlain: Story = { args: { section: graduates('plain') } };
+export const GraduatesCap: Story = { args: { section: graduates('cap') } };
+export const GraduatesCapEmpty: Story = { args: { section: graduates('cap', false) } };
+export const GraduatesStickers: Story = { args: { section: graduates('stickers') } };
+export const GraduatesPolaroids: Story = { args: { section: graduates('polaroids') } };
+export const GraduatesCover: Story = { args: { section: graduates('cover') } };
+export const GraduatesCoverLongTexts: Story = {
+    args: {
+        section: storySection('graduates', {
+            style: 'cover',
+            graduates: storyGraduates(1).map((graduate) => ({ ...graduate, name: LONG_NAME, university: LONG_UNIVERSITY })),
+        }),
+    },
+};
+export const GraduatesCoverAsGuest: Story = { args: { section: graduates('cover'), guest: true } };
