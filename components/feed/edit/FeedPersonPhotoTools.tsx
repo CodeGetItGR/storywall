@@ -32,7 +32,7 @@ export function FeedPersonPhotoTools({ slot, hasPhoto, onRemove, children }: Fee
             <div className="relative">
                 {children}
                 {hasPhoto && percent === null && (
-                    <div className="absolute inset-x-0 bottom-2 z-10 flex justify-center gap-2">
+                    <div className="feed-photo-tools absolute inset-x-0 bottom-2 z-10 flex justify-center gap-2">
                         <PhotoToolButton label={t('change')} onClick={pick}>
                             <Camera className="h-5 w-5" aria-hidden="true" />
                         </PhotoToolButton>
