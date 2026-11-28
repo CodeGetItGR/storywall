@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 import type { Globals } from 'storybook/internal/types';
-import { expect, fn, userEvent, within } from 'storybook/test';
+import { expect, fn, userEvent, waitFor, within } from 'storybook/test';
 
 import { labelsFor, LONG_TEXT, LONG_TITLE, onDark, SectionStory, storySection } from '@/.storybook/invitation';
 import { waitForOpen } from '@/.storybook/waitForOpen';
@@ -147,6 +147,8 @@ export const WithJoinButton: Story = {
         await submit(dialog, globals);
         await dialog.findByText(labels.rsvpThanks);
         await userEvent.click(dialog.getByRole('button', { name: labels.close }));
+        // The shut dialog keeps its own thanks until its close event lands, so wait for it to empty.
+        await waitFor(() => expect(canvasElement.querySelector('.rsvp-dialog-body')).toBeNull());
         await expect(canvas.getByText(labels.rsvpThanks)).toBeVisible();
         await expect(canvas.getByRole('link', { name: labels.joinEvent })).toBeVisible();
     },
