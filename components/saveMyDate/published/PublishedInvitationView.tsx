@@ -16,7 +16,7 @@ type PublishedInvitationViewProps = {
 export function PublishedInvitationView({ state, labels, uploadedFonts, sendRsvp }: PublishedInvitationViewProps) {
     switch (state.kind) {
         case 'found': {
-            const { document, theme, media, joinUrl } = state.invitation;
+            const { document, theme, media, joinUrl, rsvp } = state.invitation;
             return (
                 <InvitationRenderer
                     document={document}
@@ -25,6 +25,7 @@ export function PublishedInvitationView({ state, labels, uploadedFonts, sendRsvp
                     uploadedFonts={uploadedFonts}
                     sendRsvp={sendRsvp}
                     joinUrl={joinUrl}
+                    rsvp={rsvp}
                 />
             );
         }

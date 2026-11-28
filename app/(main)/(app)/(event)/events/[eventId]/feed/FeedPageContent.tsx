@@ -54,7 +54,13 @@ export function FeedPageContent() {
     const feedItems = useFeedItems(posts, event.partnerBranding);
     const endsWithPost = feedEndsWithPost(feedItems, hasNextPage);
     const [storyId, setStoryId] = useState<string | null>(null);
-    const shouldShowRSVP = useRsvpPromptVisible({ eventId, isHost, rsvpAvailable: moduleFlags.rsvp, rsvpId: currentMemberRsvpId });
+    const shouldShowRSVP = useRsvpPromptVisible({
+        eventId,
+        isHost,
+        rsvpAvailable: moduleFlags.rsvp,
+        rsvpId: currentMemberRsvpId,
+        deadline: event.schedule.rsvpDeadline ?? null,
+    });
     const top = useFeedTop(event);
     const moduleBlock = useFeedModuleBlockPart(event);
     const feedSection = useFeedSectionPart(event, top.ctx.media);

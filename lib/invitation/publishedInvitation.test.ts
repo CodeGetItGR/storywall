@@ -7,6 +7,7 @@ import {
     type PublishedInvitationLabels,
     publishedInvitationState,
     publishedInvitationTitle,
+    readPublishedInvitation,
 } from '@/lib/invitation/publishedInvitation';
 import { SAMPLE_DOCUMENT, SAMPLE_THEME } from '@/lib/invitation/samples';
 
@@ -92,6 +93,18 @@ describe('following the event', () => {
         const state = publishedInvitationState(200, { ...dto, document: linkedDate });
         expect(state.kind === 'found' && state.invitation.document).toEqual(linkedDate);
         expect(state.kind === 'found' && state.invitation.joinUrl).toBeUndefined();
+    });
+
+    it('closes the RSVP once its deadline has passed, and lists the sessions it asks about', () => {
+        const withRsvp = { ...event, rsvp: { deadline: '2027-05-01T21:00:00Z', sessions: [{ id: 's1', title: 'Τελετή', startAt: '2027-07-12T15:30:00Z' }] } };
+        const before = readPublishedInvitation({ ...dto, event: withRsvp }, new Date('2027-05-01T20:59:00Z').getTime());
+        const after = readPublishedInvitation({ ...dto, event: withRsvp }, new Date('2027-05-01T21:00:00Z').getTime());
+        expect(before.rsvp).toEqual({ closed: false, sessions: [{ id: 's1', title: 'Τελετή', when: '18:30' }] });
+        expect(after.rsvp?.closed).toBe(true);
+    });
+
+    it('keeps the RSVP open, asking about no session, for an event from an older backend', () => {
+        expect(readPublishedInvitation({ ...dto, event: { ...event, rsvp: { deadline: null } } }).rsvp).toEqual({ closed: false, sessions: [] });
     });
 
     it('keeps the saved copy, rather than failing, when the event is not in the shape the page reads', () => {

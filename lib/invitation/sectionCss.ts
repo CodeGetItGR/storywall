@@ -1,5 +1,6 @@
 import type { CSSProperties } from 'react';
 
+import { contrastRatio, MIN_INK_CONTRAST } from '@/lib/contrast';
 import { buttonTextOn } from '@/lib/invitation/buttonText';
 import { dateFieldIsTitle } from '@/lib/invitation/dateDisplay';
 import type { TextStyle } from '@/lib/invitation/primitives';
@@ -135,7 +136,15 @@ export function rsvpVars(data: RsvpData, contrast: TextContrast, ctx: RenderCont
         // The theme's button text is chosen for the theme's button colour, so the form's own colour needs its own.
         '--rsvp-btn-color': style.buttonColor ?? (style.buttonBg && !ctx.theme.colors.buttonText ? buttonTextOn(style.buttonBg) : undefined),
         '--rsvp-btn-font': ownFont(style.buttonFont, ctx),
+        // The pop-up is white: the host's label colour only where it reads there, else ink.
+        '--rsvp-dialog-label-color': readsOnWhite(style.labelColor) ? style.labelColor : undefined,
     });
+}
+
+const OPAQUE_HEX = /^#(?:[0-9a-f]{3}|[0-9a-f]{6})$/i;
+
+function readsOnWhite(color: string | undefined): color is string {
+    return Boolean(color && OPAQUE_HEX.test(color) && contrastRatio(color, '#FFFFFF') >= MIN_INK_CONTRAST);
 }
 
 type AccommodationData = Extract<InvitationSection, { type: 'accommodation' }>['data'];

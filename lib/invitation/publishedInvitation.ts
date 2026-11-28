@@ -2,7 +2,9 @@ import { z } from 'zod';
 
 import { type InvitationDocument, upgradeInvitationDocument } from '@/lib/invitation/document';
 import { type InvitationEventData, resolveLinkedSections } from '@/lib/invitation/eventLinks';
+import { invitationLanguage } from '@/lib/invitation/labels';
 import type { MediaResolver } from '@/lib/invitation/render';
+import { type InvitationRsvpState, invitationRsvpState } from '@/lib/invitation/rsvpSessions';
 import { type ThemeDesign, themeDesignSchema } from '@/lib/invitation/theme';
 
 // What GET /api/public/invitations/{slug} sends (guestwall-be PublicInvitationDto): the published copy only.
@@ -29,7 +31,12 @@ const invitationEventDataSchema: z.ZodType<InvitationEventData> = z.object({
     title: z.string(),
     timezone: z.string(),
     startAt: nullableString,
-    rsvp: z.object({ deadline: nullableString }).nullable(),
+    rsvp: z
+        .object({
+            deadline: nullableString,
+            sessions: z.array(z.object({ id: z.string(), title: z.string(), startAt: nullableString })).optional(),
+        })
+        .nullable(),
     cover: z.object({ mediaId: z.string(), width: z.number().nullable(), height: z.number().nullable() }).nullable(),
     location: z.object({ name: nullableString, address: nullableString, mapsUrl: nullableString }),
     sessions: z
@@ -66,6 +73,8 @@ export type PublishedInvitation = {
     publishedAt?: string;
     // The event's guest link, for the "Join the event" button.
     joinUrl?: string;
+    // Whether replies have closed, and the sessions the RSVP form asks about.
+    rsvp?: InvitationRsvpState;
 };
 
 export type PublishedInvitationState =
@@ -110,8 +119,9 @@ export function publicInvitationRsvpEndpoint(slug: string): string {
     return `${publicInvitationEndpoint(slug)}/rsvp`;
 }
 
-// Throws when the copy or theme isn't in the format the renderer draws. Linked sections show the event as it is now.
-export function readPublishedInvitation(dto: PublicInvitationDto): PublishedInvitation {
+// Throws when the copy or theme isn't in the format the renderer draws. Linked sections show the event as it is now,
+// and the RSVP closes at `now` once the deadline has passed.
+export function readPublishedInvitation(dto: PublicInvitationDto, now = Date.now()): PublishedInvitation {
     const imageUrls = dto.imageUrls ?? {};
     const event = readInvitationEventData(dto.event);
     const document = resolveLinkedSections(upgradeInvitationDocument(dto.document), event);
@@ -121,6 +131,7 @@ export function readPublishedInvitation(dto: PublicInvitationDto): PublishedInvi
         media: (mediaId) => imageUrls[mediaId],
         publishedAt: dto.updatedAt,
         joinUrl: event?.joinUrl ?? undefined,
+        rsvp: invitationRsvpState(event, invitationLanguage(document), now),
     };
 }
 

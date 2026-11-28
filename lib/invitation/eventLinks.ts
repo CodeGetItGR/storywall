@@ -28,6 +28,9 @@ export type InvitationEventSession = {
     isSecondary: boolean;
 };
 
+// A session that asks guests for their own answer.
+export type InvitationRsvpSession = { id: string; title: string; startAt: string | null };
+
 export type InvitationEventCover = { mediaId: string; width: number | null; height: number | null };
 
 // What the event tells its invitation. The public read endpoint returns it as `event`; the editor builds it from the
@@ -37,8 +40,9 @@ export type InvitationEventData = {
     title: string;
     timezone: string;
     startAt: string | null;
-    // Null while the event's plan has no RSVP; then `deadline` is the reply-by date, if the host set one.
-    rsvp: { deadline: string | null } | null;
+    // Null while the event's plan has no RSVP; then `deadline` is the reply-by date, if the host set one, and `sessions`
+    // the ones with RSVP turned on (KAN-298; missing from an older backend and from the editor).
+    rsvp: { deadline: string | null; sessions?: InvitationRsvpSession[] } | null;
     cover: InvitationEventCover | null;
     location: { name: string | null; address: string | null; mapsUrl: string | null };
     // Null while the event's plan has no schedule. Never holds deleted sessions.
