@@ -2,6 +2,7 @@ import { useLocale } from 'next-intl';
 import type { Globals } from 'storybook/internal/types';
 
 import { InvitationRenderer } from '@/components/saveMyDate/invitation/InvitationRenderer';
+import type { CanvasTools } from '@/lib/invitation/canvasTools';
 import type { InvitationDocument } from '@/lib/invitation/document';
 import { INVITATION_LABELS, type InvitationLabels } from '@/lib/invitation/labels';
 import type { MediaResolver } from '@/lib/invitation/render';
@@ -24,12 +25,33 @@ export const STORY_THEME = PREVIEW_THEME;
 // see-through art, as real transitions are, or it would fall through to the
 // photo below and cover its section.
 const WAVE = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 90"><path d="M0 45 C240 0 480 90 720 45 S1200 0 1440 45 V90 H0 Z" fill="#b08d57" fill-opacity=".55"/></svg>';
-const STORY_ART: Record<string, string> = { 'm-wave': `data:image/svg+xml,${encodeURIComponent(WAVE)}` };
+// Graduation photos of fictional Greek graduates (Figma AI, 2026-11-27), so graduation stories
+// never fall back to the wedding picture.
+const GRADUATION_PHOTOS = Object.fromEntries(
+    [1, 2, 3, 4, 5, 6, 7].map((n) => [`m-grad-${n}`, `/storybook-assets/graduation/grad-${n}.webp`]),
+);
+
+const STORY_ART: Record<string, string> = { 'm-wave': `data:image/svg+xml,${encodeURIComponent(WAVE)}`, ...GRADUATION_PHOTOS };
 
 // Every sample photo resolves to an image in public/images.
 export const storyInvitationMedia: MediaResolver = (mediaId) => previewMedia(mediaId) ?? STORY_ART[mediaId] ?? '/images/couple-hero.png';
 
 export const LONG_TITLE = 'Με μεγάλη χαρά και αγάπη σας προσκαλούμε στη μεγάλη μας μέρα';
+const GRADUATE_NAMES = ['Μαρία', 'Νίκος', 'Ελένη', 'Γιώργος', 'Άννα', 'Κώστας'];
+const DEGREES = ['Πτυχίο Νομικής', 'Πτυχίο Πληροφορικής', 'Πτυχίο Ιατρικής', 'Πτυχίο Οικονομικών', 'Πτυχίο Αρχιτεκτονικής', 'Πτυχίο Φυσικής'];
+
+// Graduates for the Graduates stories, each with a graduation photo of their own.
+export function storyGraduates(count: number, withPhotos = true) {
+    return GRADUATE_NAMES.slice(0, count).map((name, index) => ({
+        id: `graduate-${index}`,
+        name,
+        degree: DEGREES[index],
+        university: 'ΑΠΘ',
+        ...(withPhotos ? { photo: { source: 'media' as const, mediaId: `m-grad-${index + 1}` } } : {}),
+    }));
+}
+
+export const LONG_UNIVERSITY = 'Εθνικό και Καποδιστριακό Πανεπιστήμιο Αθηνών';
 export const LONG_NAME = 'Αλεξάνδρα-Παναγιώτα Παπαδημητροπούλου';
 export const LONG_TEXT =
     'Με μεγάλη χαρά σας προσκαλούμε να μοιραστείτε μαζί μας την πιο όμορφη μέρα της ζωής μας. Μετά την τελετή θα γιορτάσουμε όλοι μαζί με φαγητό, μουσική και χορό μέχρι το πρωί.\nΘα χαρούμε πολύ να σας δούμε εκεί.';
@@ -131,13 +153,28 @@ type SectionStoryProps = {
     sendRsvp?: RsvpSender;
     joinUrl?: string;
     rsvp?: InvitationRsvpState;
+    // The editor's tools, for a story of what a host sees.
+    canvasTools?: CanvasTools;
 };
 
 // One section drawn by the real renderer. Its fixed labels follow the toolbar's
 // language; its host-written texts are sample data and stay as they are.
-export function SectionStory({ section, before, theme = STORY_THEME, sendRsvp, joinUrl, rsvp }: SectionStoryProps) {
+export function SectionStory({ section, before, theme = STORY_THEME, sendRsvp, joinUrl, rsvp, canvasTools }: SectionStoryProps) {
     const locale = useLocale();
     const lead = before ?? [section.type === 'date' ? hiddenBlank : hiddenDate(locale)];
 
-    return <InvitationRenderer document={storyDocument([...lead, section])} theme={theme} media={storyInvitationMedia} sendRsvp={sendRsvp} joinUrl={joinUrl} rsvp={rsvp} />;
+    return (
+        <InvitationRenderer
+            document={storyDocument([...lead, section])}
+            theme={theme}
+            media={storyInvitationMedia}
+            sendRsvp={sendRsvp}
+            joinUrl={joinUrl}
+            rsvp={rsvp}
+            canvasTools={canvasTools}
+        />
+    );
 }
+
+// What a host sees in the editor: an empty photo shape where a photo can go.
+export const HOST_TOOLS: CanvasTools = { photo: () => null };

@@ -5,9 +5,11 @@ import { useTranslations } from 'next-intl';
 
 import { Banner } from '@/components/feed/Banner';
 import { EventSessionActionButtons } from '@/components/feed/EventSessionActionButtons';
+import { FeedCoverArt } from '@/components/feed/FeedCoverArt';
 import { AppLink } from '@/components/ui/AppLink';
 import { useFeedCoverBlock } from '@/hooks/useFeedCoverBlock';
 import type { EventDetailResponseDto } from '@/lib/api/types';
+import type { FeedTopArt } from '@/lib/feedTopArt';
 import { coverPhotoSettingsHref } from '@/lib/manageSectionTargets';
 
 type FeedCoverBlockProps = {
@@ -20,15 +22,40 @@ type FeedCoverBlockProps = {
     clearPill?: boolean;
     // In edit mode the cover takes no taps and draws no buttons of its own.
     editing?: boolean;
+    // A Save my date theme's top illustration: what an event without a cover photo shows in the invitation.
+    topArt?: FeedTopArt | null;
     // The round place buttons; left out while the invitation shows its own Places section (KAN-293).
     places?: boolean;
 };
 
 // The feed's cover + title block (feedCover): the banner with the session and gift buttons.
-export function FeedCoverBlock({ event, isHost, wishlist, thumbnail, clearPill, editing = false, places = true }: FeedCoverBlockProps) {
+export function FeedCoverBlock({ event, isHost, wishlist, thumbnail, clearPill, editing = false, topArt = null, places = true }: FeedCoverBlockProps) {
     const t = useTranslations('FeedPage');
     const cover = useFeedCoverBlock(event, wishlist);
     const addPhotoHref = isHost && !editing ? coverPhotoSettingsHref(event.id) : undefined;
+
+    const actions = !editing && (
+        <>
+            {places && <EventSessionActionButtons event={event} />}
+            {/* Gift account */}
+            {cover.giftHref && (
+                <AppLink
+                    href={cover.giftHref}
+                    className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-background/92 text-ink shadow-[0_8px_22px_rgba(36,31,26,0.18)] transition-transform hover:-translate-y-0.5"
+                >
+                    <Image src="/icons/present.svg" alt={cover.giftName} width={22} height={22} className="h-5 w-5" unoptimized />
+                </AppLink>
+            )}
+        </>
+    );
+
+    if (topArt && !event.coverMedia) {
+        return (
+            <section className="relative isolate mt-3">
+                <FeedCoverArt art={topArt} title={event.title} actions={actions} clearPill={clearPill} />
+            </section>
+        );
+    }
 
     return (
         <section className="relative isolate mt-3">
@@ -42,22 +69,7 @@ export function FeedCoverBlock({ event, isHost, wishlist, thumbnail, clearPill, 
                 fallbackActionLabel={t('addCoverPhoto')}
                 thumbnail={thumbnail}
                 clearPill={clearPill}
-                actions={
-                    !editing && (
-                        <>
-                            {places && <EventSessionActionButtons event={event} />}
-                            {/* Gift account */}
-                            {cover.giftHref && (
-                                <AppLink
-                                    href={cover.giftHref}
-                                    className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-background/92 text-ink shadow-[0_8px_22px_rgba(36,31,26,0.18)] transition-transform hover:-translate-y-0.5"
-                                >
-                                    <Image src="/icons/present.svg" alt={cover.giftName} width={22} height={22} className="h-5 w-5" unoptimized />
-                                </AppLink>
-                            )}
-                        </>
-                    )
-                }
+                actions={actions}
             />
         </section>
     );

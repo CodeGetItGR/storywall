@@ -211,6 +211,11 @@ const DEFAULTS: { [T in NewSectionType]: (newId: () => string, kind: EventKind) 
         name: 'Κουμπάροι',
         data: { sponsorsTitle: 'Οι κουμπάροι', sponsors: [{ id: newId(), name: 'Ελένη Δημητρίου' }] },
     }),
+    // Greek for every host, like every block's starting text (owner's choice, 2026-11-26).
+    graduates: (newId) => ({
+        name: 'Απόφοιτοι',
+        data: { title: 'Οι απόφοιτοί μας', style: 'cap', graduates: [{ id: newId(), name: '', degree: '', university: '' }] },
+    }),
     coupleProfiles: () => ({
         name: 'Το ζευγάρι',
         data: {

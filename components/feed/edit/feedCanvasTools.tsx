@@ -1,3 +1,4 @@
+import { FeedFrameCamera, FeedFramePhotoTools } from '@/components/feed/edit/FeedFramePhotoTools';
 import { FeedPersonPhotoTools } from '@/components/feed/edit/FeedPersonPhotoTools';
 import { FeedPhotoIssue } from '@/components/feed/edit/FeedPhotoIssue';
 import { FeedPhotoRemove } from '@/components/feed/edit/FeedPhotoRemove';
@@ -16,13 +17,16 @@ type FeedCanvasToolOptions = {
 };
 
 // Feed edit mode's tools inside a Save my date block: a photo the host added gets a ✕ (Open question 7), a person's
-// photo can be added, changed and deleted, and an empty gallery takes its first photos. The renderer leaves these
-// places, so guests get none of it.
+// photo can be added, changed and deleted, an empty gallery takes its first photos, and the theme's frame takes
+// one to move and zoom. The renderer leaves these places, so guests get none of it.
 export function feedCanvasTools({ edit, onRemoveElement, onRemovePhoto }: FeedCanvasToolOptions): CanvasTools {
     return {
         element: (element) => (element.kind === 'image' ? <FeedPhotoRemove elementId={element.id} onRemove={onRemoveElement} /> : null),
-        photo: (slot, hasPhoto) =>
-            hasPhoto && slot.kind === 'field' ? <FeedPhotoSlotProgress slot={slot} /> : <PhotoSlotTool slot={slot} hasPhoto={hasPhoto} />,
+        photo: (slot, hasPhoto) => {
+            if (slot.kind === 'frame') return <FeedFrameCamera slot={slot} hasPhoto={hasPhoto} />;
+            return hasPhoto && slot.kind === 'field' ? <FeedPhotoSlotProgress slot={slot} /> : <PhotoSlotTool slot={slot} hasPhoto={hasPhoto} />;
+        },
+        framePhoto: (element) => <FeedFramePhotoTools element={element} edit={edit} />,
         personPhoto: (slot, hasPhoto, photo) => (
             <FeedPersonPhotoTools slot={slot} hasPhoto={hasPhoto} onRemove={onRemovePhoto}>
                 {photo}

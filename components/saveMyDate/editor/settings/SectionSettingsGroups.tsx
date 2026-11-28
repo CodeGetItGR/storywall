@@ -10,6 +10,7 @@ import { FaqItemsSettings } from '@/components/saveMyDate/editor/settings/FaqIte
 import { FollowEventSettings } from '@/components/saveMyDate/editor/settings/FollowEventSettings';
 import { FooterSettings } from '@/components/saveMyDate/editor/settings/FooterSettings';
 import { GalleryLayoutSettings, GalleryPhotosSettings, GallerySettings } from '@/components/saveMyDate/editor/settings/GallerySettings';
+import { GraduatesSettings } from '@/components/saveMyDate/editor/settings/GraduatesSettings';
 import { LinkButtonsSettings } from '@/components/saveMyDate/editor/settings/LinkButtonsSettings';
 import { LocationsSettings } from '@/components/saveMyDate/editor/settings/LocationsSettings';
 import { PeopleSettings } from '@/components/saveMyDate/editor/settings/PeopleSettings';
@@ -122,6 +123,8 @@ function SettingsGroupContent({ scope, group }: { scope: SettingsScope; group: S
             return dressCode && <DressCodeSettings scope={dressCode} />;
         }
         case 'people': {
+            const graduates = scopeOf(scope, 'graduates');
+            if (graduates) return <GraduatesSettings scope={graduates} />;
             const people = peopleScope(scope);
             return people && <PeopleSettings scope={people} />;
         }

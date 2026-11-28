@@ -9,6 +9,7 @@ const LIST_FIELDS: Partial<Record<SectionType, string>> = {
     programIcons: 'items',
     godparents: 'godparents',
     weddingSponsors: 'sponsors',
+    graduates: 'graduates',
     parentsSimple: 'godparents',
 };
 

@@ -3,6 +3,7 @@ import { Fragment, type ReactNode } from 'react';
 import type { FeedTopView } from '@/hooks/useFeedTop';
 import { type FeedAddPlace, isHostBlock } from '@/lib/feedEditing';
 import type { FeedPageMode } from '@/lib/feedMode';
+import { type FeedTopArt, feedTopArt } from '@/lib/feedTopArt';
 import type { InvitationSection } from '@/lib/invitation/sections';
 
 export type FeedTopProps = {
@@ -15,7 +16,8 @@ export type FeedTopProps = {
     editRow?: ReactNode;
     // Social Feed mode's date + place row, under the pill.
     dateRow?: ReactNode;
-    cover: ReactNode;
+    // A function is given the theme's top illustration in the invitation, null elsewhere.
+    cover: ReactNode | ((topArt: FeedTopArt | null) => ReactNode);
     stories: ReactNode;
     description: ReactNode;
     // null when today's rules don't ask this member to reply.
@@ -71,6 +73,7 @@ export function FeedTopFrame({
 }: FeedTopProps & { parts: FeedTopParts }) {
     const { frame } = view;
     const invitation = mode !== 'feed';
+    const coverContent = typeof cover === 'function' ? cover(mode === 'invitation' ? feedTopArt(view.ctx) : null) : cover;
     // RSVP is in the middle on Save my date (lib/feedLayout feedFrame); it draws only while today's rules ask.
     const drawMiddle = (section: InvitationSection) => {
         if (section.type === 'feedDescription') return parts.block(section, description);
@@ -97,7 +100,7 @@ export function FeedTopFrame({
     return (
         <>
             {/* Cover */}
-            {parts.block(frame.cover, cover)}
+            {parts.block(frame.cover, coverContent)}
 
             {/* Invitation | Social Feed switch */}
             {modeSwitch && parts.native(modeSwitch)}

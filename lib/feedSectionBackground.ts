@@ -11,8 +11,9 @@ type Background = SectionStyle['background'];
 
 const FEED_BACKGROUND: Background = { kind: 'theme', slot: 'auto' };
 
+// The theme's framed photo holds only its frame.
 export function canHaveBackground(section: Pick<InvitationSection, 'type' | 'locked'>): boolean {
-    return isSaveMyDateSectionType(section.type) && !section.locked;
+    return section.type !== 'photoFrame' && isSaveMyDateSectionType(section.type) && !section.locked;
 }
 
 export function sectionColor({ style }: Pick<InvitationSection, 'style'>): string | undefined {

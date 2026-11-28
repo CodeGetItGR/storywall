@@ -4,6 +4,8 @@ import type { EventThemeFontDto } from '@/lib/api/types';
 import { eventThemeStyle, isHexColor, themeFontScopeProps } from '@/lib/eventTheme';
 import { defaultFeedLayout, PLAIN_FEED_STYLE, WALL_THEME_ID } from '@/lib/feedLayout';
 import { ownSectionBackground } from '@/lib/feedSectionBackground';
+import { themeFrameTemplate, withThemeFrame } from '@/lib/feedThemeFrame';
+import { FEED_BLOCK_FALLBACK_STYLE, PAGE_BACKGROUND } from '@/lib/feedThemeStyles';
 import type { InvitationDocument } from '@/lib/invitation/document';
 import { createSection, type NewSectionType } from '@/lib/invitation/newSection';
 import { type FeedSectionType, type InvitationSection, isFeedModeSectionType, isSaveMyDateSectionType, type SectionType } from '@/lib/invitation/sections';
@@ -32,12 +34,6 @@ export const FEED_BLOCK_LOOKS: Record<FeedSectionType, readonly SectionType[]> =
     feedDescription: ['invitation'],
     feedRsvp: ['rsvp'],
 };
-
-// The background of a block that sits on the page: the theme's, as the page draws it ("auto").
-const PAGE_BACKGROUND: SectionStyle['background'] = { kind: 'theme', slot: 'auto' };
-
-// A feed block on a theme with no matching section: the theme's background, nothing else.
-export const FEED_BLOCK_FALLBACK_STYLE: SectionStyle = { ...PLAIN_FEED_STYLE, background: PAGE_BACKGROUND };
 
 function borrowedStyle(type: FeedSectionType, themeDocument: InvitationDocument): SectionStyle {
     for (const kind of FEED_BLOCK_LOOKS[type]) {
@@ -70,15 +66,16 @@ function takesNoTheme(section: InvitationSection): boolean {
 // ("auto"): the theme's own sections pick top or content images, which would draw seams between
 // blocks. Only a colour or photo the host gave a section of their own stays with it.
 // Feed mode's sections and the module blocks take no theme: they stay shown, in the plain feed style.
+// The theme's framed photo comes in its frame, or waits hidden with its photo on a theme without frames.
 export function planFeedThemeSwitch(current: InvitationDocument, target: ThemeSwitchTarget, oldThemeImageIds: ReadonlySet<string>): InvitationDocument {
     const feedBlocks = defaultFeedLayout().sections.map((section) => withStyle(section, borrowedStyle(section.type as FeedSectionType, target.document)));
     const plain = current.sections.filter(takesNoTheme).map((section) => withStyle(section, PLAIN_FEED_STYLE));
-    const document = { ...target.document, sections: [...target.document.sections, ...feedBlocks, ...plain] };
+    const document = { ...target.document, sections: [...themeFrameTemplate(target), ...feedBlocks, ...plain] };
     const switched = planThemeSwitch(current, { ...target, document }, oldThemeImageIds).document;
     const keepOwn = keepOwnBackgrounds(current, oldThemeImageIds);
     const onPage = (section: InvitationSection) =>
         takesNoTheme(section) ? section : keepOwn(section, PAGE_BACKGROUND);
-    return { ...switched, sections: switched.sections.map(onPage) };
+    return withThemeFrame({ ...switched, sections: switched.sections.map(onPage) }, target);
 }
 
 // The layout back on the event's wall theme: feed blocks in the plain style, Save my date blocks in a
@@ -86,7 +83,8 @@ export function planFeedThemeSwitch(current: InvitationDocument, target: ThemeSw
 export function planFeedWallSwitch(current: InvitationDocument, wall: ThemeDesign, eventType: string, oldThemeImageIds: ReadonlySet<string>): InvitationDocument {
     const sections = current.sections.flatMap((section) => {
         if (!isSaveMyDateSectionType(section.type)) return [withStyle(section, PLAIN_FEED_STYLE)];
-        if (section.type === 'footer') return [];
+        // The framed photo waits hidden for a theme with frames.
+        if (section.type === 'footer' || section.type === 'photoFrame') return [];
         return [createSection(section.type as NewSectionType, eventType)];
     });
     const template: InvitationDocument = { ...current, themeId: WALL_THEME_ID, overrides: {}, sections };

@@ -85,6 +85,13 @@ describe('which block may do what', () => {
         expect(canDeleteFeedBlock(dressCode, OFF)).toBe(true);
     });
 
+    it("hides and moves the theme's framed photo, never deletes it", () => {
+        const framed = createSection('photoFrame', 'WEDDING');
+        const on = { rsvpMoves: true };
+        expect(feedBlockControls(layout(framed).sections, framed, on)).toMatchObject({ canHide: true, canDelete: false, movable: true });
+        expect(produce(layout(framed), deleteFeedBlock(framed.id, on)).sections).toHaveLength(layout(framed).sections.length);
+    });
+
     it('moves only middle blocks, and only among themselves', () => {
         const sections = layout(dressCode).sections;
         expect(isHostBlock(description, OFF)).toBe(true);

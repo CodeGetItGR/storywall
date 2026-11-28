@@ -47,6 +47,13 @@ export const NoCoverNoSessions: Story = { args: { event: storyEvent({ sessions: 
 
 export const WithCover: Story = { args: { event: withPhoto } };
 
+// A theme's top illustration in the invitation, on an event without a cover photo: at its size, wider than the page
+// and while editing.
+const topArt = { src: '/images/post-flowers.png', scale: 1, animation: 'none' as const };
+export const TopArt: Story = { args: { topArt, clearPill: true } };
+export const TopArtWide: Story = { args: { topArt: { ...topArt, scale: 2.5 }, clearPill: true } };
+export const TopArtEditing: Story = { args: { topArt, clearPill: true, editing: true } };
+
 // Edit mode: no Add cover photo, and nothing under the settings button.
 export const Editing: Story = { args: { editing: true } };
 export const EditingWithCover: Story = { args: { event: withPhoto, editing: true } };
